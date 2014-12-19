@@ -3,63 +3,10 @@ FORMAT: 1A
 # Docker
 Docker is a Keboola service, that allows configuring and running Docker images.
 
+# Group Images
 
-## Running images [/run]
-### Start a job [POST]
-+ Request (application/json)
-    + Headers
-    
-            X-StorageApi-Token: 123456
-
-    + Body
-    
-            {
-                "config": "keboola-next-order",
-                "data": 
-                    {
-                        "input": [
-                            {
-                                "name": "orders", 
-                                "value": "in.c-main.orders"
-                            }, 
-                            {
-                                "name": "customers", 
-                                "value": "in.c-main.customers"
-                            }
-                        ], 
-                        "parameters": {
-                            "values": [
-                                {
-                                    "name": "minimum-orders", 
-                                    "value": 10
-                                }, 
-                                {
-                                    "name": "period", 
-                                    "value": 12
-                                }
-                            ],
-                            "script": []
-                        }, 
-                        "output": [
-                            {
-                                "name": "result", 
-                                "value": "out.c-main.next-result"
-                            }
-                        ]
-                    }                
-                }
-            }
-
-+ Response 202 (application/json)
-
-        {
-            "id": "67121676",
-            "url": "https://syrup.keboola.com/queue/job/67121676",
-            "status": "waiting"
-        }
-
-## Configuration collection [/configs]
-### Create an empty configuration [POST]
+## Image collection [/configs]
+### Create an empty image [POST]
 + Request (application/json)
     + Headers
     
@@ -78,9 +25,9 @@ Docker is a Keboola service, that allows configuring and running Docker images.
                 "name": "keboola-next-order"
             }
 
-## Configuration [/configs/{id}] 
+## Image [/configs/{id}] 
 + Parameters
-    + id (string) ... ID of the configuration
+    + id (string) ... ID of the image
     
 + Model (application/json)
     + Headers
@@ -121,7 +68,7 @@ Docker is a Keboola service, that allows configuring and running Docker images.
                     }, 
                     "output": [
                         {
-                            "name": "result", 
+                            "name": "next-order", 
                             "label": "Next Order Result"
                         }
                     ]
@@ -129,6 +76,87 @@ Docker is a Keboola service, that allows configuring and running Docker images.
             }
     
     
+### Retrieve a one image definition [GET]
++ Response 200
+
+    [Image][]
+
+### Update an image [PUT]
++ Response 200
+
+    [Image][]
+
+### Delete an image [DELETE]
++ Response 204
+
+# Group Configurations
+
+## Configuration collection [/{image}/configs]
+### Create an empty configuration [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "name": "next-order-1"
+            }
+
++ Response 201 (application/json)
+
+            {
+                "id": "next-order-1"
+                "name": "next-order-1"
+            }
+
+## Configuration [/{image}/configs/{id}]
++ Parameters
+    + image (string) ... ID of the image
+    + id (string) ... ID of the configuration
+    
++ Model (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {   
+                "parameters":  {
+                    "input": [
+                        {
+                            "name": "orders", 
+                            "value": "in.c-main.orders"
+                        }, 
+                        {
+                            "name": "customers", 
+                            "value": "in.c-main.customers"
+                        }
+                    ], 
+                    "parameters": {
+                        "values": [
+                            {
+                                "name": "minimum-orders", 
+                                "value": "10"
+                            }, 
+                            {
+                                "name": "period", 
+                                "value": "12"
+                            }
+                        ],
+                        "script": false
+                    }, 
+                    "output": [
+                        {
+                            "name": "result", 
+                            "value": "out.c-main.next-order"
+                        }
+                    ]
+                } 
+            }
+
 ### Retrieve a single configuration [GET]
 + Response 200
 
