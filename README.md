@@ -77,5 +77,5 @@ Ostatní bundly budou moct bejt bez toho `script` parametru a to znamená, že b
 - Jak nějaký podrobnější ladění chyb? Uživatelské vs aplikační? Dokážem na to zneužít exit status?
 - Limitováni dockeru - to by mělo bejt asi součástí konfigurace toho image v API, měli bychom limitovat běh, paměť, io operace, prý přes `ulimit`?
 - Trošku se mi stírá mezera mezi tím, co by mělo bejt čistě v Syrupu a co v Dockeru, jestli neabstrahujeme trochu divně. Chtěl bych vyjmout remote transformace ven do samostetnejch SAPI Komponent a třeba **text-splitter** by klidně mohl bejt Docker image, ale něco, co pracuje s SQL (rekonstrukce hierarchie v **hierarchy**) by si muselo složitě initovat spojení do DB a posílat tam spoustu commandů - tak to by asi byl samostatnej bundle. 
-
+- Konfigurace - chcem ukládat konfigurace imagů, chcem tak teda ukládat i konfigurace jednotlivejch použití imagů (model podobnej jako luckyguessu)
  
