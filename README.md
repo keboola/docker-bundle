@@ -64,7 +64,7 @@ write.table(nextorder, "out/next-order.csv")
 
 `/run.sh` tuhle konfiguraci musí manifest načíst, zpracovat, spustit a vypnout se. TAPI tomu image nebude pomáhat ani s input/output mappingem, jenom pomůže v UI získat a předat parametry. Input/output mapping se bude řešit pomocí `storage-api-cli` (to bude nutné aktualizovat a doplnit tam třeba eventy). `/run.sh` se ukončí s exit kódem, který určí stav jobu. Celý výpis do příkazového řádku se pak vezme a vloží do eventu.
 
-`/run.sh` pro Rkovej Docker image teda načte věcí z inputu, uloží je do `in/*.csv`, spustí commandy, co jsou v property `script` a po ukončení vezme výstuphí CSVčka z `out/*.csv` a pošle je do SAPI. 
+`/run.sh` pro Rkovej Docker image teda načte věcí z inputu, uloží je do `in/*.csv`, spustí commandy, co jsou uložený v souboru `/script` a po ukončení vezme výstuphí CSVčka z `out/*.csv` a pošle je do SAPI. 
 
 Ostatní bundly budou moct bejt bez toho `script` parametru a to znamená, že budou zamčený (budou se parametrizovat přes `values`, pokud to bude potřeba). Tj. bude v nich natvrdo zapečená funkcionalita a bude možný jí zkonfigurovat vstupy, výstupy a parametry přes API viz Apiary. 
 
