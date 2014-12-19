@@ -5,7 +5,12 @@ Docker is a Keboola service, that allows configuring and running Docker images.
 
 # Group Images
 
+Images define what Docker image the service uses and what parameters it requires for running.
+
 ## Image collection [/configs]
+
+Only creates a new empty image.
+
 ### Create an empty image [POST]
 + Request (application/json)
     + Headers
@@ -26,6 +31,9 @@ Docker is a Keboola service, that allows configuring and running Docker images.
             }
 
 ## Image [/configs/{id}] 
+
+Get, update or delete an image.
+
 + Parameters
     + id (string) ... ID of the image
     
@@ -91,7 +99,12 @@ Docker is a Keboola service, that allows configuring and running Docker images.
 
 # Group Configurations
 
+One configuration stores all data for an image to run.
+
 ## Configuration collection [/{image}/configs]
+
+Only creates a new empty configuration.
+
 ### Create an empty configuration [POST]
 + Request (application/json)
     + Headers
@@ -112,6 +125,9 @@ Docker is a Keboola service, that allows configuring and running Docker images.
             }
 
 ## Configuration [/{image}/configs/{id}]
+
+Get, update or delete a configuration.
+
 + Parameters
     + image (string) ... ID of the image
     + id (string) ... ID of the configuration
