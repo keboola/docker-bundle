@@ -22,9 +22,8 @@ Pro R-kovej backend by mohl ten call na spuštění jobu vypadat třeba takhle:
             ], 
             "parameters": {
             	"values": [],
-                "script": 
-			"install.packages(\"fooBar\")\norders <- read.csv(\"in/orders.csv\")\ncustomers <- read.csv(\"in/customers.csv\")\n...\nwrite.table(nextorder, \"out/next-order.csv\")"
-                ]
+                "script": "install.packages(\"fooBar\")\norders <- read.csv(\"in/orders.csv\")\ncustomers <- read.csv(\"in/customers.csv\")\n...\nwrite.table(nextorder, \"out/next-order.csv\")"
+
             }, 
             "output": [
                 {
