@@ -38,7 +38,7 @@ Pro R-kovej backend by mohl ten call na spuštění jobu vypadat třeba takhle:
 
 Možná už je z toho patrný, co to cca dělá. 
 
-V každém Docker image bude povinně skript `/run.sh`, který se jako jediný spustí. Docker bundle připravý soubor `\manifest.yml`, do kterého nasype konfiguraci, kterou jsme mu předali v API, tj.:
+V každém Docker image bude povinně skript `/run.sh`, který se jako jediný spustí. Docker bundle připravý soubor `/manifest.yml`, do kterého nasype konfiguraci, kterou jsme mu předali v API, tj.:
 
 ```
 token: 235-######
@@ -52,7 +52,7 @@ config:
     values: []
 ```
 
-a vytvoří ještě `\script`, který bude obsahovat obsah property script, tj.:
+a vytvoří ještě `/script`, který bude obsahovat obsah property script, tj.:
 
 ```
 install.packages("fooBar")
