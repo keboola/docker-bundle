@@ -191,10 +191,10 @@ Run a configuration on an image.
 
 ## Run an image [/run]
 
-Run a job with all configuration in the request
+Run a job with all configuration in the request.
 
 ### Create a job [POST]
-
++ Request (application/json)
     + Headers
     
             X-StorageApi-Token: 123456
@@ -245,6 +245,9 @@ Run a job with all configuration in the request
         }
 
 ## Run an stored configuration [/{image}/run]
+
+Run a previously stored configuration.
+
 + Parameters
     + image (string) ... ID of the image
     
