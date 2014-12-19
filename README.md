@@ -1,5 +1,4 @@
 #Docker Bundle
-===
 Idea je taková, že Rkovej transformační backend bude napojenej na generickej `Docker Bundle`, jen mu UI předchroustá spoustu informací a TAPI ho zapojí do procesu. 
 
 Zařazování Docker image do KBC je popsaný v Apiary: [http://docs.kebooladocker.apiary.io/]. Zadávání parametrů bude cca shodný s tím, co dělá Doctool. Tohle API bude přístupní jen administrátorům (dočasně zase bucket v **Shared configu**?). 
@@ -68,6 +67,8 @@ config:
 `/run.sh` tuhle konfiguraci musí manifest načíst, zpracovat, spustit a vypnout se. TAPI tomu image nebude pomáhat ani s input/output mappingem, jenom pomůže v UI získat a předat parametry. Input/output mapping se bude řešit pomocí `storage-api-cli` (to bude nutné aktualizovat a doplnit tam třeba eventy). `/run.sh` se ukončí s exit kódem, který určí stav jobu. Celý výpis do příkazového řádku se pak vezme a vloží do eventu.
 
 `/run.sh` pro Rkovej Docker image teda načte věcí z inputu, uloží je do `in/*.csv`, spustí commandy, co jsou v property `script` a po ukončení vezme výstuphí CSVčka z `out/*.csv` a pošle je do SAPI. 
+
+Ostatní bundly budou moct bejt bez toho `script` parametru a to znamená, že budou zamčený (budou se parametrizovat přes `values`, pokud to bude potřeba). Tj. bude v nich natvrdo zapečená funkcionalita a bude možný jí zkonfigurovat vstupy, výstupy a parametry přes API viz Apiary. 
 
 ## Otazníky
 - Motá se mi názvosloví, configuration, data, parameters, config, napříč bundlem i předávanejma konfiguracema. 
