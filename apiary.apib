@@ -185,3 +185,31 @@ Get, update or delete a configuration.
 
 ### Delete a configuration [DELETE]
 + Response 204
+
+# Group Run
+
+Run a configuration on an image.
+
+## Run a configuration [/{image}/run]
++ Parameters
+    + image (string) ... ID of the image
+    
+### Create a job [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "config": "next-order-1"
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
