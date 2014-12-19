@@ -140,6 +140,69 @@ Get, update or delete a configuration.
     + Body
     
             {   
+                "input": [
+                    {
+                        "name": "orders", 
+                        "value": "in.c-main.orders"
+                    }, 
+                    {
+                        "name": "customers", 
+                        "value": "in.c-main.customers"
+                    }
+                ], 
+                "parameters": {
+                    "values": [
+                        {
+                            "name": "minimum-orders", 
+                            "value": "10"
+                        }, 
+                        {
+                            "name": "period", 
+                            "value": "12"
+                        }
+                    ],
+                    "script": false
+                }, 
+                "output": [
+                    {
+                        "name": "result", 
+                        "value": "out.c-main.next-order"
+                    }
+                ]
+
+            }
+
+### Retrieve a single configuration [GET]
++ Response 200
+
+    [Configuration][]
+
+### Update a configuration [PUT]
++ Response 200
+
+    [Configuration][]
+
+### Delete a configuration [DELETE]
++ Response 204
+
+# Group Run
+
+Run a configuration on an image.
+
+## Run an image [/run]
+
+Run a job with all configuration in the request
+
+### Create a job [POST]
+
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {
+                "image": "next-order-1",
                 "parameters":  {
                     "input": [
                         {
@@ -173,24 +236,15 @@ Get, update or delete a configuration.
                 } 
             }
 
-### Retrieve a single configuration [GET]
-+ Response 200
++ Response 202 (application/json)
 
-    [Configuration][]
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
 
-### Update a configuration [PUT]
-+ Response 200
-
-    [Configuration][]
-
-### Delete a configuration [DELETE]
-+ Response 204
-
-# Group Run
-
-Run a configuration on an image.
-
-## Run a configuration [/{image}/run]
+## Run an stored configuration [/{image}/run]
 + Parameters
     + image (string) ... ID of the image
     
