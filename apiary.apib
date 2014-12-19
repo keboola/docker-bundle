@@ -1,0 +1,143 @@
+FORMAT: 1A
+
+# Docker
+Docker is a Keboola service, that allows configuring and running Docker images.
+
+
+## Running images [/run]
+### Start a job [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "config": "keboola-next-order",
+                "data": 
+                    {
+                        "input": [
+                            {
+                                "name": "orders", 
+                                "value": "in.c-main.orders"
+                            }, 
+                            {
+                                "name": "customers", 
+                                "value": "in.c-main.customers"
+                            }
+                        ], 
+                        "parameters": {
+                            "values": [
+                                {
+                                    "name": "minimum-orders", 
+                                    "value": 10
+                                }, 
+                                {
+                                    "name": "period", 
+                                    "value": 12
+                                }
+                            ],
+                            "script": []
+                        }, 
+                        "output": [
+                            {
+                                "name": "result", 
+                                "value": "out.c-main.next-result"
+                            }
+                        ]
+                    }                
+                }
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+## Configuration collection [/configs]
+### Create an empty configuration [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "name": "keboola-next-order"
+            }
+
++ Response 201 (application/json)
+
+            {
+                "id": "keboola-next-order"
+                "name": "keboola-next-order"
+            }
+
+## Configuration [/configs/{id}] 
++ Parameters
+    + id (string) ... ID of the configuration
+    
++ Model (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {   
+                "image": "https://s3.amazonaws.com/keboola-docker-images/image123.zip",
+                "parameters":  {
+                    "input": [
+                        {
+                            "name": "orders", 
+                            "label": "Orders"
+                        }, 
+                        {
+                            "name": "customers", 
+                            "label": "Customers"
+                        }
+                    ], 
+                    "parameters": {
+                        "values": [
+                            {
+                                "name": "minimum-orders", 
+                                "data-type": "integer", 
+                                "label": "Minimum orders",
+                                "default": 5
+                            }, 
+                            {
+                                "name": "period", 
+                                "label": "Periond in months",
+                                "default": 10, 
+                                "data-type": "integer"
+                            }
+                        ],
+                        "script": false
+                    }, 
+                    "output": [
+                        {
+                            "name": "result", 
+                            "label": "Next Order Result"
+                        }
+                    ]
+                } 
+            }
+    
+    
+### Retrieve a single configuration [GET]
++ Response 200
+
+    [Configuration][]
+
+### Update a configuration [PUT]
++ Response 200
+
+    [Configuration][]
+
+### Delete a configuration [DELETE]
++ Response 204
