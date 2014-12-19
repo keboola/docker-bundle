@@ -1,2 +1,80 @@
-docker-bundle
-=============
+#Docker Bundle
+===
+Idea je taková, že Rkovej transformační backend bude napojenej na generickej `Docker Bundle`, jen mu UI předchroustá spoustu informací a TAPI ho zapojí do procesu. 
+
+Zařazování Docker image do KBC je popsaný v Apiary: [http://docs.kebooladocker.apiary.io/]. Zadávání parametrů bude cca shodný s tím, co dělá Doctool. Tohle API bude přístupní jen administrátorům (dočasně zase bucket v **Shared configu**?). 
+
+Pro R-kovej backend by mohl ten call na spuštění jobu vypadat třeba takhle:
+
+```
+{
+    "config": "keboola-r",
+    "data": 
+        {
+            "input": [
+                {
+                    "name": "orders", 
+                    "value": "in.c-main.orders"
+                }, 
+                {
+                    "name": "customers", 
+                    "value": "in.c-main.customers"
+                }
+            ], 
+            "parameters": {
+            	"values": [],
+                "script": [
+					"install.packages(\"fooBar\")", 
+					"orders <- read.csv(\"in/orders.csv\")", 
+					"customers <- read.csv(\"in/customers.csv\")", 
+					"...", 
+					"write.table(nextorder, \"out/next-order.csv\")"
+                ]
+            }, 
+            "output": [
+                {
+                    "name": "next-order", 
+                    "value": "out.c-main.next-order"
+                }
+            ]
+        }                
+    }
+}
+```
+
+Možná už je z toho patrný, co to cca dělá. 
+
+V každém Docker image bude povinně skript `/run.sh`, který se jako jediný spustí. Docker bundle připravý soubor `manifest.yml`, do kterého nasype konfiguraci, kterou jsme mu předali v API, tj.:
+
+```
+token: 235-######
+config: 
+  input:
+    - { name: orders, value: in.c-main.orders }
+    - { name: customers, value: in.c-main.customers }
+  output:
+    - { name: next-order, calue: out.c-main.next-order }
+  parameters:
+    values: []
+    script: 
+      - install.packages("fooBar")
+      - orders <- read.csv("in/orders.csv")
+      - customers <- read.csv("in/customers.csv")
+      - ...
+      - write.table(nextorder, "out/next-order.csv")
+  
+```
+
+`/run.sh` tuhle konfiguraci musí manifest načíst, zpracovat, spustit a vypnout se. TAPI tomu image nebude pomáhat ani s input/output mappingem, jenom pomůže v UI získat a předat parametry. Input/output mapping se bude řešit pomocí `storage-api-cli` (to bude nutné aktualizovat a doplnit tam třeba eventy). `/run.sh` se ukončí s exit kódem, který určí stav jobu. Celý výpis do příkazového řádku se pak vezme a vloží do eventu.
+
+`/run.sh` pro Rkovej Docker image teda načte věcí z inputu, uloží je do `in/*.csv`, spustí commandy, co jsou v property `script` a po ukončení vezme výstuphí CSVčka z `out/*.csv` a pošle je do SAPI. 
+
+## Otazníky
+- Motá se mi názvosloví, configuration, data, parameters, config, napříč bundlem i předávanejma konfiguracema. 
+- Moc nevím, jak to odbavit v bashi, ale na to s Padákovou pomocí snad přijdem
+- Co syslog? Jde nějak forwardovat ven?
+- Jak nějaký podrobnější ladění chyb? Uživatelské vs aplikační? Dokážem na to zneužít exit status?
+- Limitováni dockeru - to by mělo bejt asi součástí konfigurace toho image v API, měli bychom limitovat běh, paměť, io operace, prý přes `ulimit`?
+- Trošku se mi stírá mezera mezi tím, co by mělo bejt čistě v Syrupu a co v Dockeru, jestli neabstrahujeme trochu divně. Chtěl bych vyjmout remote transformace ven do samostetnejch SAPI Komponent a třeba **text-splitter** by klidně mohl bejt Docker image, ale něco, co pracuje s SQL (rekonstrukce hierarchie v **hierarchy**) by si muselo složitě initovat spojení do DB a posílat tam spoustu commandů - tak to by asi byl samostatnej bundle. 
+
+ 
