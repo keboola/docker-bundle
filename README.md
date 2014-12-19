@@ -22,12 +22,8 @@ Pro R-kovej backend by mohl ten call na spuštění jobu vypadat třeba takhle:
             ], 
             "parameters": {
             	"values": [],
-                "script": [
-					"install.packages(\"fooBar\")", 
-					"orders <- read.csv(\"in/orders.csv\")", 
-					"customers <- read.csv(\"in/customers.csv\")", 
-					"...", 
-					"write.table(nextorder, \"out/next-order.csv\")"
+                "script": 
+			"install.packages(\"fooBar\")\norders <- read.csv(\"in/orders.csv\")\ncustomers <- read.csv(\"in/customers.csv\")\n...\nwrite.table(nextorder, \"out/next-order.csv\")"
                 ]
             }, 
             "output": [
@@ -43,7 +39,7 @@ Pro R-kovej backend by mohl ten call na spuštění jobu vypadat třeba takhle:
 
 Možná už je z toho patrný, co to cca dělá. 
 
-V každém Docker image bude povinně skript `/run.sh`, který se jako jediný spustí. Docker bundle připravý soubor `manifest.yml`, do kterého nasype konfiguraci, kterou jsme mu předali v API, tj.:
+V každém Docker image bude povinně skript `/run.sh`, který se jako jediný spustí. Docker bundle připravý soubor `\manifest.yml`, do kterého nasype konfiguraci, kterou jsme mu předali v API, tj.:
 
 ```
 token: 235-######
@@ -55,13 +51,16 @@ config:
     - { name: next-order, calue: out.c-main.next-order }
   parameters:
     values: []
-    script: 
-      - install.packages("fooBar")
-      - orders <- read.csv("in/orders.csv")
-      - customers <- read.csv("in/customers.csv")
-      - ...
-      - write.table(nextorder, "out/next-order.csv")
-  
+```
+
+a vytvoří ještě `\script`, který bude obsahovat obsah property script, tj.:
+
+```
+install.packages("fooBar")
+orders <- read.csv("in/orders.csv")
+customers <- read.csv("in/customers.csv")
+...
+write.table(nextorder, "out/next-order.csv")
 ```
 
 `/run.sh` tuhle konfiguraci musí manifest načíst, zpracovat, spustit a vypnout se. TAPI tomu image nebude pomáhat ani s input/output mappingem, jenom pomůže v UI získat a předat parametry. Input/output mapping se bude řešit pomocí `storage-api-cli` (to bude nutné aktualizovat a doplnit tam třeba eventy). `/run.sh` se ukončí s exit kódem, který určí stav jobu. Celý výpis do příkazového řádku se pak vezme a vloží do eventu.
