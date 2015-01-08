@@ -78,3 +78,24 @@ Ostatní bundly budou moct bejt bez toho `script` parametru a to znamená, že b
   - [https://goldmann.pl/blog/2014/09/11/resource-management-in-docker/#_limiting_read_write_speed]
 - Trošku se mi stírá mezera mezi tím, co by mělo bejt čistě v Syrupu a co v Dockeru, jestli neabstrahujeme trochu divně. Chtěl bych vyjmout remote transformace ven do samostetnejch SAPI Komponent a třeba **text-splitter** by klidně mohl bejt Docker image, ale něco, co pracuje s SQL (rekonstrukce hierarchie v **hierarchy**) by si muselo složitě initovat spojení do DB a posílat tam spoustu commandů - tak to by asi byl samostatnej bundle. 
  
+## Ukládání konfigurací
+
+Docker příklad
+
+Seznam komponent
+
+/components/ex-db/
+- url: https://syrup.keboola.com/docker/ex-db - 
+- vlastní pole pro konfigurační JSON - limity, image, skript, konfigurace formuláře
+- typ dle typu komponenty (extraktor, recept) 
+- přepínač na 3rd party flag
+
+/components/ex-db/configs
+
+Spuštění
+
+https://syrup.keboola.com/docker/ex-db/run
+- načte si konfiguraci přes configId z /components/ex-db/configs
+- načte si konfiguraci image z /configs/ex-db
+
+Transformace - jedna konfigurace = celej bucket
