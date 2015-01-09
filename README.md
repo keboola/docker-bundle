@@ -99,3 +99,30 @@ https://syrup.keboola.com/docker/ex-db/run
 - načte si konfiguraci image z /configs/ex-db
 
 Transformace - jedna konfigurace = celej bucket
+
+## Poznámky od Padáka
+
+najít si docker best practices
+
+mountnout adresář dovnitř zvenku
+
+umožnit injekci souborů in a out, ale umožnit to nechat i na ně
+in ze sapi
+
+tagy na souborech informujou o tom, jeslti je soubor 
+
+/in/file-upload/file.xls
+/in/in.c-main.test.csv
+/out/out.c-main.test.csv
+/out/file-upload/file.jpg
+
+breezy - file upload excelu mailem
+
+informace o tom, jeslti se soubor zpracoval nebo ne, řeší docker-bundle, nikoliv docker vnitřku
+
+input mapping - table / file upload query
+output mapping - table / file upload
+
+mít možnost výstupního manifestu, kterej definuje output mapping, pokud ho předem neznám 
+	- /out/out.c-main.test.csv.manifest - pk, incremental
+	- /out/file-upload/file.jpg.manifest - tagy
