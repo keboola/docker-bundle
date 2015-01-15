@@ -125,3 +125,11 @@ output mapping - table / file upload
 mít možnost výstupního manifestu, kterej definuje output mapping, pokud ho předem neznám 
 - `/out/out.c-main.test.csv.manifest` - pk, incremental
 - `/out/file-upload/file.jpg.manifest` - tagy
+
+## Public / private image
+
+Private image by mohly mít `Dockerfile` umístěnej na S3 a musely by se pokaždý buildovat.
+
+## Uložení docker images 
+
+Ve `/var/lib/docker`, to musí bejt namountovaný do EBS, a nebo je potřeba namountovat `/tmp/` do kontejneru. 
