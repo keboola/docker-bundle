@@ -1,3 +1,8 @@
 keboola_docker_homepage:
     path:     /hello/{name}
     defaults: { _controller: KeboolaDockerBundle:Default:index }
+
+keboola_docker_run:
+    path:     /run
+    defaults: { _controller: KeboolaDockerBundle:Api:run }
+    methods:  [POST]
