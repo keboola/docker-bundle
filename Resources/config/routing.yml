@@ -1,0 +1,3 @@
+keboola_docker_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: KeboolaDockerBundle:Default:index }

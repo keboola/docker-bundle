@@ -1,0 +1,4 @@
+services:
+#    keboola_docker.example:
+#        class: Keboola\DockerBundle\Example
+#        arguments: [@service_id, "plain_value", %parameter%]
