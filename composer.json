@@ -1,0 +1,39 @@
+{
+    "name": "keboola\/dockerbundle",
+    "type": "symfony-bundle",
+    "description": "Some new component",
+    "keywords": [],
+    "authors": [],
+    "repositories": [],
+    "require": {
+        "syrup\/component-bundle": "~1.10"
+    },
+    "require-dev": {
+        "phpunit\/phpunit": "3.7.*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap"
+        ],
+        "post-update-cmd": [
+            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
+        ]
+    },
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-0": {
+            "Keboola\\DockerBundle": ""
+        }
+    },
+    "target-dir": "Keboola\/DockerBundle",
+    "extra": {
+        "symfony-app-dir": "vendor\/keboola\/syrup\/app",
+        "symfony-web-dir": "vendor\/keboola\/syrup\/web",
+        "syrup-app-name": "docker"
+    }
+}

@@ -1,0 +1,273 @@
+FORMAT: 1A
+
+# Docker
+Docker is a Keboola service, that allows configuring and running Docker images.
+
+# Group Images
+
+Images define what Docker image the service uses and what parameters it requires for running.
+
+## Image collection [/configs]
+
+Only creates a new empty image.
+
+### Create an empty image [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "name": "keboola-next-order"
+            }
+
++ Response 201 (application/json)
+
+            {
+                "id": "keboola-next-order"
+                "name": "keboola-next-order"
+            }
+
+## Image [/configs/{id}] 
+
+Get, update or delete an image.
+
++ Parameters
+    + id (string) ... ID of the image
+    
++ Model (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {   
+                "image": "https://s3.amazonaws.com/keboola-docker-images/image123.zip",
+                "parameters":  {
+                    "input": [
+                        {
+                            "name": "orders", 
+                            "label": "Orders"
+                        }, 
+                        {
+                            "name": "customers", 
+                            "label": "Customers"
+                        }
+                    ], 
+                    "parameters": {
+                        "values": [
+                            {
+                                "name": "minimum-orders", 
+                                "data-type": "integer", 
+                                "label": "Minimum orders",
+                                "default": 5
+                            }, 
+                            {
+                                "name": "period", 
+                                "label": "Periond in months",
+                                "default": 10, 
+                                "data-type": "integer"
+                            }
+                        ],
+                        "script": null
+                    }, 
+                    "output": [
+                        {
+                            "name": "next-order", 
+                            "label": "Next Order Result"
+                        }
+                    ]
+                } 
+            }
+    
+    
+### Retrieve a one image definition [GET]
++ Response 200
+
+    [Image][]
+
+### Update an image definition [PUT]
++ Response 200
+
+    [Image][]
+
+### Delete an image definition [DELETE]
++ Response 204
+
+# Group Configurations
+
+One configuration stores all data for an image to run.
+
+## Configuration collection [/{image}/configs]
+
+Only creates a new empty configuration.
+
+### Create an empty configuration [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "name": "next-order-1"
+            }
+
++ Response 201 (application/json)
+
+            {
+                "id": "next-order-1"
+                "name": "next-order-1"
+            }
+
+## Configuration [/{image}/configs/{id}]
+
+Get, update or delete a configuration.
+
++ Parameters
+    + image (string) ... ID of the image
+    + id (string) ... ID of the configuration
+    
++ Model (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {   
+                "input": [
+                    {
+                        "name": "orders", 
+                        "value": "in.c-main.orders"
+                    }, 
+                    {
+                        "name": "customers", 
+                        "value": "in.c-main.customers"
+                    }
+                ], 
+                "parameters": {
+                    "values": [
+                        {
+                            "name": "minimum-orders", 
+                            "value": "10"
+                        }, 
+                        {
+                            "name": "period", 
+                            "value": "12"
+                        }
+                    ],
+                    "script": null
+                }, 
+                "output": [
+                    {
+                        "name": "result", 
+                        "value": "out.c-main.next-order"
+                    }
+                ]
+
+            }
+
+### Retrieve a single configuration [GET]
++ Response 200
+
+    [Configuration][]
+
+### Update a configuration [PUT]
++ Response 200
+
+    [Configuration][]
+
+### Delete a configuration [DELETE]
++ Response 204
+
+# Group Run
+
+Run a configuration on an image.
+
+## Run an image [/run]
+
+Run a job with all configuration in the request.
+
+### Create a job [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+        
+    + Body
+    
+            {
+                "image": "next-order-1",
+                "parameters":  {
+                    "input": [
+                        {
+                            "name": "orders", 
+                            "value": "in.c-main.orders"
+                        }, 
+                        {
+                            "name": "customers", 
+                            "value": "in.c-main.customers"
+                        }
+                    ], 
+                    "parameters": {
+                        "values": [
+                            {
+                                "name": "minimum-orders", 
+                                "value": "10"
+                            }, 
+                            {
+                                "name": "period", 
+                                "value": "12"
+                            }
+                        ],
+                        "script": null
+                    }, 
+                    "output": [
+                        {
+                            "name": "result", 
+                            "value": "out.c-main.next-order"
+                        }
+                    ]
+                } 
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+## Run an stored configuration [/{image}/run]
+
+Run a previously stored configuration.
+
++ Parameters
+    + image (string) ... ID of the image
+    
+### Create a job [POST]
++ Request (application/json)
+    + Headers
+    
+            X-StorageApi-Token: 123456
+
+    + Body
+    
+            {
+                "config": "next-order-1"
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
