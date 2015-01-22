@@ -6,3 +6,8 @@ keboola_docker_run:
     path:     /run
     defaults: { _controller: KeboolaDockerBundle:Api:run }
     methods:  [POST]
+
+keboola_docker_component_run:
+    path:     /{component}/run
+    defaults: { _controller: KeboolaDockerBundle:Api:run }
+    methods:  [POST]

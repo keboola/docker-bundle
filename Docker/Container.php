@@ -1,0 +1,193 @@
+<?php
+
+namespace Keboola\DockerBundle\Docker;
+
+use Keboola\DockerBundle\Docker\Image\DockerHub;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Process;
+use Syrup\ComponentBundle\Exception\UserException;
+
+class Container
+{
+    /**
+     *
+     * Image Id
+     *
+     * @var string
+     */
+    protected $id;
+
+    /**
+     * @var Image
+     */
+    protected $image;
+
+    /**
+     * @var string
+     */
+    protected $version = 'latest';
+
+    /**
+     * @var string
+     */
+    protected $dataDir;
+
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    /**
+     * @return Image
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    /**
+     * @param Image $image
+     * @return $this
+     */
+    public function setImage($image)
+    {
+        $this->image = $image;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param string $version
+     * @return $this
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+        return $this;
+    }
+
+    /**
+     * @param Image $image
+     */
+    public function __construct(Image $image)
+    {
+        $this->setImage($image);
+    }
+
+    /**
+     * @return string
+     */
+    public function getDataDir()
+    {
+        return $this->dataDir;
+    }
+
+    /**
+     * @param string $dataDir
+     * @return $this
+     */
+    public function setDataDir($dataDir)
+    {
+        $this->dataDir = $dataDir;
+        return $this;
+    }
+
+    /**
+     * @return Process
+     * @throws \Exception
+     */
+    public function run()
+    {
+        $id = $this->getImage()->prepare($this);
+        $this->setId($id);
+
+        if (!$this->getDataDir()) {
+            throw new \Exception("Data directory not set.");
+        }
+        // TODO input mapping, dump configuration
+        $process = new Process($this->getRunCommand());
+        $process->run();
+        if (!$process->isSuccessful()) {
+            if ($process->getExitCode() == 1) {
+                throw new UserException("Container '{$this->getId()}': {$process->getErrorOutput()}");
+            } else {
+                throw new \Exception("Container '{$this->getId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}");
+            }
+        }
+        return $process;
+    }
+
+    /**
+     * @param $root
+     * @return $this
+     */
+    public function createDataDir($root)
+    {
+        $fs = new Filesystem();
+        $structure = array(
+            $root . "/data",
+            $root . "/data/in",
+            $root . "/data/in/tables",
+            $root . "/data/in/files",
+            $root . "/data/out",
+            $root . "/data/out/tables",
+            $root . "/data/out/files"
+        );
+
+        $fs->mkdir($structure);
+        $this->setDataDir($root . "/data");
+        return $this;
+    }
+
+    /**
+     * Remove whole directory structure
+     */
+    public function dropDataDir()
+    {
+        $fs = new Filesystem();
+        $structure = array(
+            $this->getDataDir() . "/in/tables",
+            $this->getDataDir() . "/in/files",
+            $this->getDataDir() . "/in",
+            $this->getDataDir() . "/out/files",
+            $this->getDataDir() . "/out/tables",
+            $this->getDataDir() . "/out",
+            $this->getDataDir()
+        );
+        $finder = new Finder();
+        $finder->files()->in($structure);
+        $fs->remove($finder);
+        $fs->remove($structure);
+    }
+
+    /**
+     * @return string
+     */
+    public function getRunCommand()
+    {
+        $command = "sudo docker run --volume={$this->getDataDir()}:/data --memory={$this->getImage()->getMemory()} --cpu-shares={$this->getImage()->getCpuShares()} --rm {$this->getId()}";
+        return $command;
+    }
+
+}
