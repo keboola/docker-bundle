@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8dd7ec78f871d51a5e1732520be9ec7c",
+    "hash": "d0541f0cdabcbe1df1e534b217ec46a3",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2244,17 +2244,17 @@
         },
         {
             "name": "syrup/component-bundle",
-            "version": "1.10.19",
+            "version": "1.11.0",
             "target-dir": "Syrup/ComponentBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup-component-bundle.git",
-                "reference": "ff186ecd22aad8a7cd001522148a298df20312b1"
+                "reference": "2b6f20d43bba90fd978c6f83b5a1713fd0a68494"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup-component-bundle/zipball/ff186ecd22aad8a7cd001522148a298df20312b1",
-                "reference": "ff186ecd22aad8a7cd001522148a298df20312b1",
+                "url": "https://api.github.com/repos/keboola/syrup-component-bundle/zipball/2b6f20d43bba90fd978c6f83b5a1713fd0a68494",
+                "reference": "2b6f20d43bba90fd978c6f83b5a1713fd0a68494",
                 "shasum": ""
             },
             "require": {
@@ -2294,7 +2294,7 @@
                 }
             ],
             "description": "Syrup ComponentBundle",
-            "time": "2015-01-15 13:19:02"
+            "time": "2015-01-22 17:03:28"
         },
         {
             "name": "twig/twig",

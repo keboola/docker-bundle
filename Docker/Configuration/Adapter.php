@@ -77,6 +77,7 @@ class Adapter
      * Read configuration from file
      *
      * @param $file
+     * @return array
      * @throws \Exception
      */
     public function readFromFile($file)
@@ -85,6 +86,7 @@ class Adapter
         if (!$fs->exists($file)) {
             throw new \Exception("File '$file' not found.");
         }
+
         $serialized = $this->getContents($file);
 
         if ($this->getFormat() == 'yaml') {
@@ -95,6 +97,7 @@ class Adapter
             $data = $encoder->decode($serialized, $encoder::FORMAT);
         }
         $this->setConfig($data);
+        return $this->getConfig();
     }
 
     /**

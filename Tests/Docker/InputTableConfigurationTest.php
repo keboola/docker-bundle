@@ -41,7 +41,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "source" => "in.c-main.test",
             "destination" => "test",
-            "days" => 1,
+            "changed_since" => "-1 days",
             "columns" => array("Id", "Name"),
             "where_column" => "status",
             "where_values" => array("val1", "val2"),
@@ -51,7 +51,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         $expectedArray = array(
             "source" => "in.c-main.test",
             "destination" => "test",
-            "days" => 1,
+            "changed_since" => "-1 days",
             "columns" => array("Id", "Name"),
             "where_column" => "status",
             "where_values" => array("val1", "val2"),
@@ -60,22 +60,6 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
 
         $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage The value -1 is too small for path "table.days". Should be greater than or equal to 0
-     */
-    public function testInvalidDays()
-    {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
-        $config = array(
-            "source" => "in.c-main.test",
-            "days" => -1
-        );
-
-        $processor->processConfiguration($configurationDefinition, array("config" => $config));
     }
 
     /**
