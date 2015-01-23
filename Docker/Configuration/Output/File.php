@@ -17,15 +17,7 @@ class File implements ConfigurationInterface
 
     public static function configureNode(NodeDefinition $node)
     {
-        $node
-            ->children()
-                ->scalarNode("name")->end()
-                ->scalarNode("content_type")->end()
-                ->booleanNode("is_public")->defaultValue(false)->end()
-                ->booleanNode("is_permanent")->defaultValue(false)->end()
-                ->booleanNode("is_encrypted")->defaultValue(false)->end()
-                ->booleanNode("notify")->defaultValue(false)->end()
-                ->arrayNode("tags")->prototype("scalar")->end()->end()
-            ;
+        File\Manifest::configureNode($node);
+        $node->children()->scalarNode("source")->isRequired()->end();
     }
 }

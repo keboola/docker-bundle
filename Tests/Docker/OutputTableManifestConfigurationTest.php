@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 use Symfony\Component\Config\Definition\Processor;
 
-class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
+class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
 {
 
     /**
@@ -14,14 +14,12 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     public function testBasicConfiguration()
     {
         $processor = new Processor();
-        $configurationDefinition = new Table();
+        $configurationDefinition = new Table\Manifest();
         $config = array(
-            "source" => "data.csv",
             "destination" => "in.c-main.test"
         );
 
         $expectedArray = array(
-            "source" => "data.csv",
             "destination" => "in.c-main.test",
             "primary_key" => array(),
             "incremental" => false,
@@ -40,9 +38,8 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     public function testComplexConfiguration()
     {
         $processor = new Processor();
-        $configurationDefinition = new Table();
+        $configurationDefinition = new Table\Manifest();
         $config = array(
-            "source" => "test",
             "destination" => "in.c-main.test",
             "incremental" => true,
             "primary_key" => array("Id", "Name"),
@@ -52,7 +49,6 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         );
 
         $expectedArray = array(
-            "source" => "test",
             "destination" => "in.c-main.test",
             "incremental" => true,
             "primary_key" => array("Id", "Name"),
@@ -65,6 +61,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
+
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
      * @expectedExceptionMessage Invalid configuration for path "table.delete_where_operator": Invalid operator in delete_where_operator "abc"
@@ -72,7 +69,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     public function testInvalidWhereOperator()
     {
         $processor = new Processor();
-        $configurationDefinition = new Table();
+        $configurationDefinition = new Table\Manifest();
         $config = array(
             "destination" => "in.c-main.test",
             "delete_where_operator" => 'abc'
@@ -88,7 +85,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     public function testEmptyConfiguration()
     {
         $processor = new Processor();
-        $configurationDefinition = new Table();
+        $configurationDefinition = new Table\Manifest();
         $processor->processConfiguration($configurationDefinition, array("config" => array()));
     }
 
