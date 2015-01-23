@@ -107,9 +107,6 @@ class Reader
             "size_bytes" => $fileInfo["sizeBytes"]
         );
 
-        if (isset($fileInfo["content_type"])) {
-            $manifest["content_type"] = $fileInfo["contentType"];
-        }
         $adapter = new Input\File\Manifest\Adapter();
         $adapter->setFormat($this->getFormat());
         $adapter->setConfig($manifest);

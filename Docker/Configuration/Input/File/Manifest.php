@@ -22,7 +22,6 @@ class Manifest implements ConfigurationInterface
                 ->integerNode("id")->isRequired()->end()
                 ->scalarNode("name")->end()
                 ->scalarNode("created")->end()
-                ->scalarNode("content_type")->end()
                 ->booleanNode("is_public")->defaultValue(false)->end()
                 ->booleanNode("is_encrypted")->defaultValue(false)->end()
                 ->arrayNode("tags")->prototype("scalar")->end()->end()

@@ -19,7 +19,6 @@ class InputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "id" => 1,
             "name" => "test",
             "created" => "2015-01-23T04:11:18+0100",
-            "content_type" => "text/javascript",
             "is_public" => false,
             "is_encrypted" => false,
             "tags" => array("tag1", "tag2"),
