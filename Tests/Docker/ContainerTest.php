@@ -52,7 +52,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $configFile = <<< EOT
 system:
-  image_tag: 0.6 # just an example, latest by default
+  image_tag: latest # just an example, latest by default
 storage:
   input:
     tables:

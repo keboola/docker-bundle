@@ -23,7 +23,15 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m"
         );
-        $expectedConfiguration  = $config;
+        $expectedConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "ondrejhlavacek/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
         $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -53,6 +61,28 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m"
+        );
+        $expectedConfiguration  = $config;
+        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Invalid configuration for path "image.configuration_format": Invalid configuration_format "fail".
+     */
+    public function testWrongConfigurationFormat()
+    {
+        $processor = new Processor();
+        $configurationDefinition = new Configuration\Image();
+        $config = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "ondrejhlavacek/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "fail"
         );
         $expectedConfiguration  = $config;
         $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));

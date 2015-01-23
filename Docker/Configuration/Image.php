@@ -10,14 +10,7 @@ class Image implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root("image");
-        // System
-        /**
-         *             "definition" => array(
-                         "dockerhub" => "ondrejhlavacek/docker-demo"
-                     ),
-                     "cpu_shares" => 2048,
-                     "memory" => "128m"
-         */
+
         $root
             ->children()
                 ->arrayNode("definition")
@@ -34,6 +27,14 @@ class Image implements ConfigurationInterface
                 ->end()
             ->integerNode("cpu_shares")->isRequired()->min(0)->defaultValue(1024)->end()
             ->scalarNode("memory")->isRequired()->end()
+            ->scalarNode("configuration_format")
+                ->defaultValue("yaml")
+                ->validate()
+                ->ifNotInArray(array("yaml", "json"))
+                    ->thenInvalid("Invalid configuration_format %s.")
+                ->end()
+            ->end()
+
             ;
 
 

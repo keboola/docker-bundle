@@ -34,7 +34,7 @@ class Image
     /**
      * @var string
      */
-    protected $configFormat = 'yml';
+    protected $configFormat = 'yaml';
 
     /**
      * @return string
@@ -105,7 +105,7 @@ class Image
      */
     public function setConfigFormat($configFormat)
     {
-        if (!in_array($configFormat, array('yml', 'json', 'ini'))) {
+        if (!in_array($configFormat, array('yaml', 'json'))) {
             throw new \Exception("Configuration format '{$configFormat}' not supported");
         }
         $this->configFormat = $configFormat;
