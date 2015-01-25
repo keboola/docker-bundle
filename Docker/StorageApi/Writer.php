@@ -5,12 +5,8 @@ namespace Keboola\DockerBundle\Docker\StorageApi;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
-use Keboola\StorageApi\Aws\S3\S3Client;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\GetFileOptions;
-use Keboola\StorageApi\Options\ListFilesOptions;
-use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -99,9 +95,7 @@ class Writer
                 $configFromManifest = $this->readFileManifest($file->getPathname() . ".manifest");
             }
 
-            $processor = new Processor();
-            $definition = new File\Manifest();
-            $config = $processor->processConfiguration($definition, array($configFromMapping, $configFromManifest));
+            $config = (new File\Manifest())->parse(array($configFromMapping, $configFromManifest));
             $this->uploadFile($file->getPathname(), $config);
         }
     }
@@ -167,9 +161,7 @@ class Writer
                 }
             }
 
-            $processor = new Processor();
-            $definition = new Table\Manifest();
-            $config = $processor->processConfiguration($definition, array($configFromMapping, $configFromManifest));
+            $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));
             $this->uploadTable($file->getPathname(), $config);
         }
     }

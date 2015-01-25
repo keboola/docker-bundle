@@ -25,7 +25,7 @@ class Image
 
     /**
      *
-     * Processor allowance
+     * CPU allowance
      *
      * @var int
      */
@@ -113,13 +113,14 @@ class Image
     }
 
     /**
-     *
+     * @param array $config
+     * @return Image|DockerHub
      */
     public static function factory($config=array())
     {
-        if (isset($config["definition"]["dockerhub"])) {
+        if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub") {
             $instance = new DockerHub();
-            $instance->setDockerHubImageId($config["definition"]["dockerhub"]);
+            $instance->setDockerHubImageId($config["definition"]["uri"]);
         } else {
             $instance = new self;
         }

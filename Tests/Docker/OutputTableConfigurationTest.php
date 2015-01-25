@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
-use Symfony\Component\Config\Definition\Processor;
 
 class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,8 +12,6 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testBasicConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "source" => "data.csv",
             "destination" => "in.c-main.test"
@@ -29,7 +26,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "eq"
         );
 
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
 
     }
@@ -39,8 +36,6 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testComplexConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "source" => "test",
             "destination" => "in.c-main.test",
@@ -61,7 +56,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "ne"
         );
 
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
@@ -71,14 +66,12 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidWhereOperator()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "destination" => "in.c-main.test",
             "delete_where_operator" => 'abc'
         );
 
-        $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        (new Table())->parse(array("config" => $config));
     }
 
     /**
@@ -87,9 +80,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
-        $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new Table())->parse(array("config" => array()));
     }
 
 }

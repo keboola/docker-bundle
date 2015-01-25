@@ -2,14 +2,10 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Symfony\Component\Config\Definition\Processor;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 

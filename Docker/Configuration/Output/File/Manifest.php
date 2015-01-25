@@ -1,12 +1,12 @@
 <?php
 namespace Keboola\DockerBundle\Docker\Configuration\Output\File;
 
+use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class Manifest implements ConfigurationInterface
+class Manifest extends Configuration
 {
     public function getConfigTreeBuilder()
     {

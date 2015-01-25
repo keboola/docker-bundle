@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Input\Table;
-use Symfony\Component\Config\Definition\Processor;
 
 class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,8 +12,6 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testBasicConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "source" => "in.c-main.test"
         );
@@ -25,8 +22,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "where_values" => array(),
             "where_operator" => "eq"
         );
-
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
 
     }
@@ -36,8 +32,6 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testComplexConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "source" => "in.c-main.test",
             "destination" => "test",
@@ -58,7 +52,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "where_operator" => "ne"
         );
 
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
@@ -68,14 +62,12 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidWhereOperator()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
         $config = array(
             "source" => "in.c-main.test",
             "where_operator" => 'abc'
         );
 
-        $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        (new Table())->parse(array("config" => $config));
     }
 
     /**
@@ -84,9 +76,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Table();
-        $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new Table())->parse(array("config" => array()));
     }
 
 }

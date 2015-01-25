@@ -17,7 +17,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $configuration = array(
             "definition" => array(
-                "dockerhub" => "ondrejhlavacek/docker-demo"
+                "type" => "dockerhub",
+                "uri" => "ondrejhlavacek/docker-demo"
             ),
             "cpu_shares" => 2048,
             "memory" => "128m"

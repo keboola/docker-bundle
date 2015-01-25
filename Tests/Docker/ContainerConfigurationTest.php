@@ -4,8 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Image;
-use Symfony\Component\Config\Definition\Processor;
-use Symfony\Component\Filesystem\Filesystem;
 
 
 class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
@@ -13,9 +11,7 @@ class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Configuration\Container();
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array(
+        (new Configuration\Container())->parse(array(
             "config" => array(
                 "system" => array(
                     "image_tag" => "0.6"
@@ -33,7 +29,20 @@ class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
                                 "query" => "esquery"
                             )
                         )
-
+                    ),
+                    "output" => array(
+                        "tables" => array(
+                            array(
+                                "source" => "test.csv",
+                                "destination" => "out.c-main.data"
+                            )
+                        ),
+                        "files" => array(
+                            array(
+                                "source" => "file",
+                                "tags" => array("tag")
+                            )
+                        )
                     )
                 ),
                 "user" => array(

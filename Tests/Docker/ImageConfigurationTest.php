@@ -4,8 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Image;
-use Symfony\Component\Config\Definition\Processor;
-use Symfony\Component\Filesystem\Filesystem;
 
 
 class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
@@ -13,8 +11,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Configuration\Image();
         $config = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -32,7 +28,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "configuration_format" => "yaml"
         );
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
@@ -41,9 +37,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Configuration\Image();
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new Configuration\Image())->parse(array("config" => array()));
     }
 
     /**
@@ -52,8 +46,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testWrongDefinitionType()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Configuration\Image();
         $config = array(
             "definition" => array(
                 "type" => "whatever",
@@ -63,7 +55,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m"
         );
         $expectedConfiguration  = $config;
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
@@ -73,8 +65,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testWrongConfigurationFormat()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Configuration\Image();
         $config = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -85,8 +75,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "fail"
         );
         $expectedConfiguration  = $config;
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
-
 }

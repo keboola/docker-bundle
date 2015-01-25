@@ -2,15 +2,14 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration\Adapter;
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
-use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
 
-class MockConfiguration implements ConfigurationInterface
+class MockConfiguration extends Configuration
 {
     public function getConfigTreeBuilder()
     {
@@ -27,7 +26,6 @@ class MockAdapter extends Adapter
 {
     protected $configClass = 'Keboola\DockerBundle\Tests\MockConfiguration';
 }
-
 
 class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
 {

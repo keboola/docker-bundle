@@ -4,3 +4,4 @@ services:
 #        arguments: [@service_id, "plain_value", %parameter%]
     docker.job_executor:
         class: Keboola\DockerBundle\Job\Executor
+        arguments: [@logger, @syrup.temp]

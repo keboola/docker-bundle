@@ -1,10 +1,10 @@
 <?php
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Keboola\DockerBundle\Docker\Configuration;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
-class Image implements ConfigurationInterface
+class Image extends Configuration
 {
     public function getConfigTreeBuilder()
     {
@@ -36,8 +36,6 @@ class Image implements ConfigurationInterface
             ->end()
 
             ;
-
-
 
         return $treeBuilder;
     }

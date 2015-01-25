@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Input\File;
-use Symfony\Component\Config\Definition\Processor;
 
 class InputFileConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,14 +12,12 @@ class InputFileConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new File();
         $config = array(
                 "tags" => array("tag1", "tag2"),
                 "query" => "esquery"
             );
         $expectedResponse = $config;
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new File())->parse(array("config" => $config));
         $this->assertEquals($expectedResponse, $processedConfiguration);
 
     }
@@ -31,9 +28,7 @@ class InputFileConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new File();
-        $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new File())->parse(array("config" => array()));
     }
 
 }

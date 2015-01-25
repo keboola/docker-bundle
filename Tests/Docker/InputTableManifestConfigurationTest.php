@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Input\Table\Manifest;
-use Symfony\Component\Config\Definition\Processor;
 
 class InputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,8 +12,6 @@ class InputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Manifest();
         $config = array(
             "id" => "in.c-docker-test.test",
             "uri" => "https://connection.keboola.com//v2/storage/tables/in.c-docker-test.test",
@@ -31,7 +28,7 @@ class InputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "attributes" => array(array("name" => "test", "value" => "test", "protected" => false))
         );
         $expectedResponse = $config;
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Manifest())->parse(array("config" => $config));
         $this->assertEquals($expectedResponse, $processedConfiguration);
     }
 
@@ -41,9 +38,7 @@ class InputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Manifest();
-        $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new Manifest())->parse(array("config" => array()));
     }
 
 }

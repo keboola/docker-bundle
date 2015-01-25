@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Input\File\Manifest;
-use Symfony\Component\Config\Definition\Processor;
 
 class InputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,8 +12,6 @@ class InputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Manifest();
         $config = array(
             "id" => 1,
             "name" => "test",
@@ -26,7 +23,7 @@ class InputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "size_bytes" => 4
         );
         $expectedResponse = $config;
-        $processedConfiguration = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $processedConfiguration = (new Manifest())->parse(array("config" => $config));
         $this->assertEquals($expectedResponse, $processedConfiguration);
     }
 
@@ -36,9 +33,7 @@ class InputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testEmptyConfiguration()
     {
-        $processor = new Processor();
-        $configurationDefinition = new Manifest();
-        $processor->processConfiguration($configurationDefinition, array("config" => array()));
+        (new Manifest())->parse(array("config" => array()));
     }
 
 }

@@ -2,13 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Symfony\Component\Config\Definition\Processor;
 use  Keboola\DockerBundle\Docker\Configuration;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Yaml\Yaml;
 
 class Adapter
@@ -65,10 +61,8 @@ class Adapter
      */
     public function setConfig($config)
     {
-        $processor = new Processor();
         $className = $this->configClass;
-        $configurationDefinition = new $className();
-        $this->config = $processor->processConfiguration($configurationDefinition, array("config" => $config));
+        $this->config = (new $className())->parse(array("config" => $config));
         return $this;
     }
 

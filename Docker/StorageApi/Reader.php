@@ -75,7 +75,7 @@ class Reader
     public function downloadFiles($configuration, $destination)
     {
         $options = new ListFilesOptions();
-        if (count($configuration["tags"])) {
+        if (isset($configuration["tags"]) && count($configuration["tags"])) {
             $options->setTags($configuration["tags"]);
         }
         if (isset($configuration["query"])) {
@@ -160,7 +160,7 @@ class Reader
                 $file = $destination . "/" . $table["destination"] . ".csv";
             }
             $exportOptions = array();
-            if (isset($table["columns"])) {
+            if (isset($table["columns"]) && count($table["columns"])) {
                 $exportOptions["columns"] = $table["columns"];
             }
             if (isset($table["changed_since"])) {
