@@ -10,6 +10,7 @@ use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Syrup\ComponentBundle\Exception\UserException;
 
 class Writer
 {
@@ -159,6 +160,9 @@ class Writer
                 if (!isset($configFromMapping["destination"])) {
                     $configFromMapping["destination"] = substr($file->getFilename(), 0, strlen($file->getFilename()) - 4);
                 }
+            }
+            if (count(explode(".", $configFromMapping["destination"])) != 3) {
+                throw new UserException("'{$configFromMapping["destination"]}' does not seem to be a table identifier.");
             }
 
             $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));

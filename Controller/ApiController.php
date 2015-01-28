@@ -7,6 +7,27 @@ use Syrup\ComponentBundle\Exception\UserException;
 
 class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
 {
+
+    public function preExecute(Request $request)
+    {
+
+        parent::preExecute($request);
+
+        // Check list of components
+        $components = $this->storageApi->indexAction();
+        foreach($components["components"] as $c) {
+            if ($c["id"] == $request->get("component")) {
+                $component = $c;
+            }
+        }
+
+        if (!isset($component)) {
+            throw new UserException("Component '{$request->get("component")}' not found.");
+        }
+
+        $this->container->get('syrup.monolog.json_formatter')->setAppName($component["id"]);
+    }
+
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response

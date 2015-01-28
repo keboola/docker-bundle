@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Event;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -31,6 +32,7 @@ class Executor extends BaseExecutor
 
     /**
      * @param Logger $log
+     * @param Temp $temp
      */
     public function __construct(Logger $log, Temp $temp)
     {
@@ -55,66 +57,38 @@ class Executor extends BaseExecutor
             }
         }
 
-        // FIXME Mock
-        $component = array(
-            "id" => "docker-demo",
-            "type" => "other",
-            "name" => "Docker Demo",
-            "description" => "Docker Demo",
-            "hasUI" => false,
-            "hasRun" => true,
-            "ico32" => "",
-            "ico64" =>  "",
-            "uri" => "https://syrup.keboola.com/docker/docker-demo",
-            "data" => "{\"definition\": {\"type\": \"dockerhub\", \"uri\":\"ondrejhlavacek/docker-demo\"}}"
-        );
-        // End of mock
-
         if (!isset($component)) {
             throw new UserException("Component '{$params["component"]}' not found.");
         }
 
-        // Parse data from component
-        $encoder = new JsonEncoder();
-        $data = $encoder->decode($component["data"], $encoder::FORMAT);
-        $image = Image::factory($data);
+        // Get the formatters and change the component
+        foreach ($this->log->getHandlers() as $handler) {
+            if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
+                $handler->getFormatter()->setAppName($params["component"]);
+            }
+        }
 
-        // TODO Check list of configs
-        // TODO storage api php client support
-        // TODO Manual config
+        // Parse data from component
+        $image = Image::factory($component["data"]);
+
+
 
         $fs = new Filesystem();
         $tmpDir = $this->temp->getTmpFolder();
         $fs->mkdir($tmpDir);
 
-        // FIXME Mock config
-        $configData = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
-                            "source" => "in.c-docker-demo.data"
-                        )
-                    ),
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
-                            "source" => "out.c-docker-demo.data.csv",
-                            "destination" => "out.c-docker-demo.data"
-                        )
-                    )
-                )
-            ),
-            "user" => array(
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "255"
-            )
-        );
+        // TODO Manual config
+
+        // Read config
+        try {
+            $components = new Components($this->storageApi);
+            $configData = $components->getConfiguration($component["id"], $params["config"]);
+        } catch(ClientException $e) {
+            throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
+        }
 
         try {
-            $config = (new \Keboola\DockerBundle\Docker\Configuration\Container())->parse(array("config" => $configData));
+            $config = (new \Keboola\DockerBundle\Docker\Configuration\Container())->parse(array("config" => $configData["configuration"]));
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
         }
@@ -172,7 +146,7 @@ class Executor extends BaseExecutor
 
         try {
             $writer->uploadTables($tmpDir . "/data/out/tables", $outputTablesConfig);
-            $writer->uploadTables($tmpDir . "/data/out/files", $outputFilesConfig);
+            $writer->uploadFiles($tmpDir . "/data/out/files", $outputFilesConfig);
         } catch(ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
         }
