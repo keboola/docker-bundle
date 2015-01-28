@@ -62,6 +62,7 @@ storage:
   output:
     tables:
       0:
+        source: sliced.csv
         destination: out.c-main.data
 user:
   primary_key_column: id

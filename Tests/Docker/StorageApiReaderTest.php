@@ -32,8 +32,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $fs->mkdir($root . "/download");
         $this->tmpDir = $root;
 
-
-        // TODO config!
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
 
         // Create bucket

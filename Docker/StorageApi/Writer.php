@@ -161,11 +161,13 @@ class Writer
                     $configFromMapping["destination"] = substr($file->getFilename(), 0, strlen($file->getFilename()) - 4);
                 }
             }
-            if (count(explode(".", $configFromMapping["destination"])) != 3) {
-                throw new UserException("'{$configFromMapping["destination"]}' does not seem to be a table identifier.");
-            }
 
             $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));
+
+            if (count(explode(".", $config["destination"])) != 3) {
+                throw new UserException("'{$config["destination"]}' does not seem to be a table identifier.");
+            }
+            
             $this->uploadTable($file->getPathname(), $config);
         }
     }
