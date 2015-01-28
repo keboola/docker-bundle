@@ -77,18 +77,21 @@ class Executor extends BaseExecutor
         $tmpDir = $this->temp->getTmpFolder();
         $fs->mkdir($tmpDir);
 
-        // TODO Manual config
-
-        // Read config
-        try {
-            $components = new Components($this->storageApi);
-            $configData = $components->getConfiguration($component["id"], $params["config"]);
-        } catch(ClientException $e) {
-            throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
+        // Manual config from request
+        if (isset($params["configData"])) {
+            $configData = $params["configData"];
+        } else {
+            // Read config from storage
+            try {
+                $components = new Components($this->storageApi);
+                $configData = $components->getConfiguration($component["id"], $params["config"])["configuration"];
+            } catch (ClientException $e) {
+                throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
+            }
         }
 
         try {
-            $config = (new \Keboola\DockerBundle\Docker\Configuration\Container())->parse(array("config" => $configData["configuration"]));
+            $config = (new \Keboola\DockerBundle\Docker\Configuration\Container())->parse(array("config" => $configData));
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
         }
