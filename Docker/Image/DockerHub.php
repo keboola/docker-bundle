@@ -40,7 +40,7 @@ class DockerHub extends Image
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
         $process = new Process("sudo docker pull {$tag}");
-        $process->setTimeout(360);
+        $process->setTimeout(3600);
         $process->run();
         if (!$process->isSuccessful()) {
             throw new \Exception("Cannot pull image '$tag': ({$process->getExitCode()}) {$process->getErrorOutput()}");
