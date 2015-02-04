@@ -185,7 +185,12 @@ class Executor
 
         $image->prepare($container);
         $process = $container->run();
-        $this->getLog()->info($process->getOutput());
+
+        if ($process->getOutput()) {
+            $this->getLog()->info($process->getOutput());
+        } else {
+            $this->getLog()->info("Processing finished.");
+        }
 
         $writer = new Writer($this->getStorageApiClient());
         $writer->setFormat($image->getConfigFormat());
