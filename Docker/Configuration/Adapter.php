@@ -4,6 +4,8 @@ namespace Keboola\DockerBundle\Docker\Configuration;
 
 use  Keboola\DockerBundle\Docker\Configuration;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Yaml\Yaml;
 
@@ -115,19 +117,20 @@ class Adapter
 
     /**
      * @param $file
-     * @return string
+     * @return mixed
+     * @throws \Exception
      */
     public function getContents($file)
-        {
-            $level = error_reporting(0);
-            $content = file_get_contents($file);
-            error_reporting($level);
-            if (false === $content) {
-                $error = error_get_last();
-                throw new \RuntimeException($error['message']);
-            }
-
-            return $content;
+    {
+        if (!(new Filesystem())->exists($file)) {
+            throw new \Exception("File" . $file . " not found.");
         }
+        $fileHandler = new SplFileInfo($file, "", basename($file));
+        if ($fileHandler) {
+            return $fileHandler->getContents();
+        } else {
+            throw new \Exception("File" . $file . " not found.");
+        }
+    }
 
 }
