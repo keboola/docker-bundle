@@ -10,4 +10,4 @@ branches:
   only:
   - master
 install:
-  - composer install
+  - composer install --no-scripts
