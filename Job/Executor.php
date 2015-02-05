@@ -80,14 +80,14 @@ class Executor extends BaseExecutor
             $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
             $image = Image::factory($component["data"]);
             $container = new Container($image);
+            $this->log->info("Running Docker container for '{$component['id']}'", $configData);
+            $executor->setTmpFolder($this->temp->getTmpFolder());
+            $process = $executor->run($container, $configData);
+            $this->log->info("Docker container for '{$component['id']}' finished.");
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
         }
 
-        $this->log->info("Running Docker container for '{$component['id']}'", $configData);
-        $executor->setTmpFolder($this->temp->getTmpFolder());
-        $process = $executor->run($container, $configData);
-        $this->log->info("Docker container for '{$component['id']}' finished.");
 
         if ($process->getOutput()) {
             $message = $process->getOutput();
