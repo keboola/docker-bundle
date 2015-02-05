@@ -39,7 +39,7 @@ class DockerHub extends Image
     public function prepare(Container $container)
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
-        $process = new Process("sudo docker pull {$tag}");
+        $process = new Process("sudo docker pull " . escapeshellarg($tag));
         $process->setTimeout(3600);
         $process->run();
         if (!$process->isSuccessful()) {

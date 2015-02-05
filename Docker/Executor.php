@@ -154,6 +154,17 @@ class Executor
         $image = $this->getImage();
         $container = new Container($image);
         $container->createDataDir($tmpDir);
+
+        $tokenInfo = $this->getStorageApiClient()->getLogData();
+        $envs = array(
+            "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
+            "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
+            "KBC_PROJECTNAME" => $tokenInfo["owner"]["name"],
+            "KBC_TOKENID" => $tokenInfo["id"],
+            "KBC_TOKENDESC" => $tokenInfo["description"],
+        );
+        $container->setEnvironmentVariables($envs);
+
         $reader = new Reader($this->getStorageApiClient());
         $reader->setFormat($image->getConfigFormat());
 

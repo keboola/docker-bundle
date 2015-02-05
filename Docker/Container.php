@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -32,6 +31,11 @@ class Container
      * @var string
      */
     protected $dataDir;
+
+    /**
+     * @var array
+     */
+    protected $environmentVariables = array();
 
     /**
      * @return string
@@ -114,6 +118,24 @@ class Container
     }
 
     /**
+     * @return array
+     */
+    public function getEnvironmentVariables()
+    {
+        return $this->environmentVariables;
+    }
+
+    /**
+     * @param array $environmentVariables
+     * @return $this
+     */
+    public function setEnvironmentVariables($environmentVariables)
+    {
+        $this->environmentVariables = $environmentVariables;
+        return $this;
+    }
+
+    /**
      * @return Process
      * @throws \Exception
      */
@@ -186,7 +208,21 @@ class Container
      */
     public function getRunCommand()
     {
-        $command = "sudo docker run --volume={$this->getDataDir()}:/data --memory={$this->getImage()->getMemory()} --cpu-shares={$this->getImage()->getCpuShares()} --rm {$this->getId()}";
+        $envs = "";
+        foreach($this->getEnvironmentVariables() as $key => $value) {
+            $envs .=  " -e \"{$key}={$value}\"";
+        }
+        $command = "sudo docker run"
+            . " --volume=" . escapeshellarg($this->getDataDir()). ":/data"
+            . " --memory=" . escapeshellarg($this->getImage()->getMemory())
+            . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
+            . $envs
+            . " --rm"
+            // TODO --net + nastavení
+            . " " . escapeshellarg($this->getId())
+
+
+        ;
         return $command;
     }
 
