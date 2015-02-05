@@ -15,3 +15,5 @@ after_success:
 env:
   global:
     secure: KMjTyndS3OXhGR3XQlmonIgnJI1p1Xl1NcRK9oZzoGyyjpCmD8eAhI4UHUS4aki/iveMaokuSxdmDkt0E5AmbDD5rmMzyMo7UMd/tDAH9rVI5IZVbkLcEwB8cntgrg7eBZqzFyzgqze4kKB6me/XjGP0BcON3+kEWjI4Hj1hZHY=
+notifications:
+  slack: keboola:r0kMBhPydXbzz4F9j0aCzUaZ
