@@ -36,6 +36,15 @@ The script defined in `ENTRYPOINT` or `CMD` can provide an exit status. Everythi
 
 Keboola Connection will inject configuration and (optionally) an input mapping in the Docker container in `/data` folder. 
 
+### Environment variables
+
+A couple of enviromnent variables are injected in the container:
+
+ - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
+ - `KBC_PROJECTID` - Id of the project in KBC
+ - `KBC_PROJECTNAME` - Name of the project in KBC
+ - `KBC_TOKENID` - Id of the token running the container
+ - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container
 
 ### Configuration
 
