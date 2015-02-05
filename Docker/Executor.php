@@ -13,16 +13,6 @@ use Syrup\ComponentBundle\Exception\UserException;
 class Executor
 {
     /**
-     * @var Image
-     */
-    protected $image;
-
-    /**
-     * @var array
-     */
-    protected $config = array();
-
-    /**
      * @var string
      */
     protected $tmpFolder = "/tmp";
@@ -36,42 +26,6 @@ class Executor
      * @var Logger
      */
     protected $log;
-
-    /**
-     * @return Image
-     */
-    public function getImage()
-    {
-        return $this->image;
-    }
-
-    /**
-     * @param Image $image
-     * @return $this
-     */
-    public function setImage($image)
-    {
-        $this->image = $image;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function setConfig($config)
-    {
-        $this->config = (new Configuration\Container())->parse(array("config" => $config));
-        return $this;
-    }
 
     /**
      * @return string
@@ -128,31 +82,27 @@ class Executor
     }
 
     /**
-     * @param $component
-     * @param $config
      * @param Client $storageApi
+     * @param Logger $log
      */
-    public function __construct($component, $config, Client $storageApi, Logger $log)
+    public function __construct(Client $storageApi, Logger $log)
     {
-        $this->setImage(Image::factory($component));
-        $this->setConfig($config);
         $this->setStorageApiClient($storageApi);
         $this->setLog($log);
     }
 
     /**
+     * @param Container $container
+     * @param $config
      * @return \Symfony\Component\Process\Process
-     * @throws UserException
      * @throws \Exception
      */
-    public function run()
+    public function run(Container $container, $config)
     {
         $fs = new Filesystem();
         $tmpDir = $this->getTmpFolder();
         $fs->mkdir($tmpDir);
 
-        $image = $this->getImage();
-        $container = new Container($image);
         $container->createDataDir($tmpDir);
 
         $tokenInfo = $this->getStorageApiClient()->getLogData();
@@ -166,9 +116,7 @@ class Executor
         $container->setEnvironmentVariables($envs);
 
         $reader = new Reader($this->getStorageApiClient());
-        $reader->setFormat($image->getConfigFormat());
-
-        $config = $this->getConfig();
+        $reader->setFormat($container->getImage()->getConfigFormat());
 
         try {
             if (isset($config["storage"]["input"]["tables"]) && count($config["storage"]["input"]["tables"])) {
@@ -182,7 +130,7 @@ class Executor
         }
 
         $adapter = new Configuration\Container\Adapter();
-        $adapter->setFormat($image->getConfigFormat());
+        $adapter->setFormat($container->getImage()->getConfigFormat());
         $adapter->setConfig($config);
         switch($adapter->getFormat()) {
             case 'yaml':
@@ -194,7 +142,6 @@ class Executor
         }
         $adapter->writeToFile($tmpDir . "/data/config" . $fileSuffix);
 
-        $image->prepare($container);
         $process = $container->run();
 
         if ($process->getOutput()) {
@@ -204,7 +151,7 @@ class Executor
         }
 
         $writer = new Writer($this->getStorageApiClient());
-        $writer->setFormat($image->getConfigFormat());
+        $writer->setFormat($container->getImage()->getConfigFormat());
 
         $outputTablesConfig = array();
         $outputFilesConfig = array();

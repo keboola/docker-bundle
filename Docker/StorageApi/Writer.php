@@ -80,6 +80,14 @@ class Writer
 
         $files = $finder->files()->notName("*.manifest")->in($source);
 
+        $outputMappingFiles = array();
+        foreach($configurations as $config) {
+            $outputMappingFiles[] = $config["source"];
+        }
+        $outputMappingFiles = array_unique($outputMappingFiles);
+        $processedOutputMappingFiles = array();
+
+
         /**
          * @var $file SplFileInfo
          */
@@ -89,6 +97,7 @@ class Writer
             foreach($configurations as $config) {
                 if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
                     $configFromMapping = $config;
+                    $processedOutputMappingFiles[] = $configFromMapping["source"];
                     unset($configFromMapping["source"]);
                 }
             }
@@ -98,6 +107,12 @@ class Writer
 
             $config = (new File\Manifest())->parse(array($configFromMapping, $configFromManifest));
             $this->uploadFile($file->getPathname(), $config);
+        }
+
+        $processedOutputMappingFiles = array_unique($processedOutputMappingFiles);
+        $diff = array_diff(array_merge($outputMappingFiles, $processedOutputMappingFiles), $processedOutputMappingFiles);
+        if (count($diff)) {
+            throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
         }
     }
 
@@ -141,6 +156,14 @@ class Writer
         $finder = new Finder();
 
         $files = $finder->files()->name("*.csv")->in($source);
+
+        $outputMappingTables = array();
+        foreach($configurations as $config) {
+            $outputMappingTables[] = $config["source"];
+        }
+        $outputMappingTables = array_unique($outputMappingTables);
+        $processedOutputMappingTables = array();
+
         /**
          * @var $file SplFileInfo
          */
@@ -150,6 +173,7 @@ class Writer
             foreach($configurations as $config) {
                 if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
                     $configFromMapping = $config;
+                    $processedOutputMappingTables[] = $configFromMapping["source"];
                     unset($configFromMapping["source"]);
                 }
             }
@@ -167,8 +191,14 @@ class Writer
             if (count(explode(".", $config["destination"])) != 3) {
                 throw new UserException("'{$config["destination"]}' does not seem to be a table identifier.");
             }
-            
+
             $this->uploadTable($file->getPathname(), $config);
+        }
+
+        $processedOutputMappingTables = array_unique($processedOutputMappingTables);
+        $diff = array_diff(array_merge($outputMappingTables, $processedOutputMappingTables), $processedOutputMappingTables);
+        if (count($diff)) {
+            throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
         }
     }
 

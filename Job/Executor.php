@@ -1,6 +1,7 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -76,17 +77,24 @@ class Executor extends BaseExecutor
         }
 
         try {
-            $executor = new \Keboola\DockerBundle\Docker\Executor($component["data"], $configData, $this->storageApi, $this->log);
+            $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
+            $image = Image::factory($component["data"]);
+            $container = new Container($image);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
         }
 
         $this->log->info("Running Docker container for '{$component['id']}'", $configData);
         $executor->setTmpFolder($this->temp->getTmpFolder());
-        $process = $executor->run();
+        $process = $executor->run($container, $configData);
         $this->log->info("Docker container for '{$component['id']}' finished.");
 
-        return ["message" => "{$process->getOutput()}"];
+        if ($process->getOutput()) {
+            $message = $process->getOutput();
+        } else {
+            $message = "Container finished.";
+        }
+        return ["message" => $message];
     }
 
 }

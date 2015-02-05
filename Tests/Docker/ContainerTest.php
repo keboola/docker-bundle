@@ -5,7 +5,24 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
+
+/**
+ * Class MockContainer
+ * @package Keboola\DockerBundle\Tests
+ */
+class MockContainer_2 extends Container
+{
+    /**
+     * @return Process
+     */
+    public function run() {
+        $process = new Process('echo "Processed 2 rows."');
+        $process->run();
+        return $process;
+    }
+}
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -44,7 +61,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             )
         );
         $image = Image::factory($imageConfiguration);
-        $container = new Container($image);
+        $container = new MockContainer_2($image);
 
         $root = "/tmp/docker/" . uniqid("", true);
         $fs = new Filesystem();
@@ -81,7 +98,7 @@ EOF;
 
         $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("Processed 2 rows.", $process->getOutput());
+        $this->assertEquals("Processed 2 rows.", trim($process->getOutput()));
         $container->dropDataDir();
     }
 }

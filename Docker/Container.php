@@ -147,7 +147,6 @@ class Container
         if (!$this->getDataDir()) {
             throw new \Exception("Data directory not set.");
         }
-        // TODO input mapping, dump configuration
         $process = new Process($this->getRunCommand());
         $process->run();
         if (!$process->isSuccessful()) {

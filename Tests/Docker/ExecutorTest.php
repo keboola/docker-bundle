@@ -3,12 +3,31 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\Client;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Process;
 
+/**
+ * Class MockContainer
+ * @package Keboola\DockerBundle\Tests
+ */
+class MockContainer extends Container
+{
+    /**
+     * @return Process
+     */
+    public function run() {
+        $fs = new Filesystem();
+        $fs->dumpFile($this->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+        $process = new Process('echo "Processed 1 rows."');
+        $process->run();
+        return $process;
+    }
+}
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -104,10 +123,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new \Symfony\Bridge\Monolog\Logger("null");
         $log->pushHandler(new \Monolog\Handler\NullHandler());
 
-        $executor = new Executor($imageConfig, $config, $this->client, $log);
+        $image = Image::factory($imageConfig);
+        $container = new MockContainer($image);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
-        $process = $executor->run();
-        $this->assertEquals("Processed 1 rows.", $process->getOutput());
+        $process = $executor->run($container, $config);
+        $this->assertEquals("Processed 1 rows.", trim($process->getOutput()));
     }
 
 }
