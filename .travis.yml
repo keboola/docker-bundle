@@ -1,16 +1,17 @@
 language: php
 php:
-  - 5.4
   - 5.5
-  - 5.6
-  - hhvm
 notifications:
   email: false
 branches:
   only:
   - master
 install:
-  - composer install --no-scripts
+  - composer install --dev --no-scripts
+script:
+  - phpunit --coverage-clover build/logs/clover.xml
+after_success:
+  - CODECLIMATE_REPO_TOKEN=4f83203f4ad71bff744ddc65039f34fb43183acf9d733aeac90b5e0cd726d50e ./vendor/bin/test-reporter
 env:
   global:
     secure: KMjTyndS3OXhGR3XQlmonIgnJI1p1Xl1NcRK9oZzoGyyjpCmD8eAhI4UHUS4aki/iveMaokuSxdmDkt0E5AmbDD5rmMzyMo7UMd/tDAH9rVI5IZVbkLcEwB8cntgrg7eBZqzFyzgqze4kKB6me/XjGP0BcON3+kEWjI4Hj1hZHY=

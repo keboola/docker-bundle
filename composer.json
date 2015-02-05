@@ -11,7 +11,8 @@
     },
     "require-dev": {
         "phpunit\/phpunit": "3.7.*",
-        "symfony/var-dumper": "~2.6"
+        "symfony/var-dumper": "~2.6",
+        "codeclimate/php-test-reporter": "dev-master"
     },
     "scripts": {
         "post-install-cmd": [
