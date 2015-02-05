@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Syrup\ComponentBundle\Exception\ApplicationException;
 use Syrup\ComponentBundle\Exception\UserException;
 
 class Container
@@ -150,10 +151,22 @@ class Container
         $process = new Process($this->getRunCommand());
         $process->run();
         if (!$process->isSuccessful()) {
+            $message = $process->getErrorOutput();
+            if (!$message) {
+                $message = $process->getOutput();
+            }
+            if (!$message) {
+                $message = "No error message.";
+            }
+            $data = array(
+                "output" => $process->getOutput(),
+                "errorOutput" => $process->getErrorOutput()
+            );
+
             if ($process->getExitCode() == 1) {
-                throw new UserException("Container '{$this->getId()}': {$process->getErrorOutput()}");
+                throw new UserException("Container '{$this->getId()}': {$message}", null, $data);
             } else {
-                throw new \Exception("Container '{$this->getId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}");
+                throw new ApplicationException("Container '{$this->getId()}': ({$process->getExitCode()}) {$message}", null, $data);
             }
         }
         return $process;
@@ -219,8 +232,6 @@ class Container
             . " --rm"
             // TODO --net + nastavení
             . " " . escapeshellarg($this->getId())
-
-
         ;
         return $command;
     }
