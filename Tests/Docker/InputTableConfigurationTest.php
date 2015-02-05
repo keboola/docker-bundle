@@ -42,15 +42,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "where_operator" => "ne"
         );
 
-        $expectedArray = array(
-            "source" => "in.c-main.test",
-            "destination" => "test",
-            "changed_since" => "-1 days",
-            "columns" => array("Id", "Name"),
-            "where_column" => "status",
-            "where_values" => array("val1", "val2"),
-            "where_operator" => "ne"
-        );
+        $expectedArray = $config;
 
         $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);

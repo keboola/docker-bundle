@@ -46,15 +46,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "ne"
         );
 
-        $expectedArray = array(
-            "source" => "test",
-            "destination" => "in.c-main.test",
-            "incremental" => true,
-            "primary_key" => array("Id", "Name"),
-            "delete_where_column" => "status",
-            "delete_where_values" => array("val1", "val2"),
-            "delete_where_operator" => "ne"
-        );
+        $expectedArray = $config;
 
         $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);

@@ -42,14 +42,7 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "ne"
         );
 
-        $expectedArray = array(
-            "destination" => "in.c-main.test",
-            "incremental" => true,
-            "primary_key" => array("Id", "Name"),
-            "delete_where_column" => "status",
-            "delete_where_values" => array("val1", "val2"),
-            "delete_where_operator" => "ne"
-        );
+        $expectedArray = $config;
 
         $processedConfiguration = (new Table\Manifest())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
