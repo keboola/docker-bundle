@@ -20,7 +20,7 @@ class Container extends Configuration
             ;
         $root
             ->children()
-                ->variableNode("user")
+                ->variableNode("parameters")
         ;
         $storage = $root
             ->children()

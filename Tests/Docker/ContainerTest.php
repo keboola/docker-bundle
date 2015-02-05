@@ -81,7 +81,7 @@ storage:
       0:
         source: sliced.csv
         destination: out.c-main.data
-user:
+parameters:
   primary_key_column: id
   data_column: text
   string_length: 10

@@ -113,7 +113,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                     )
                 )
             ),
-            "user" => array(
+            "parameters" => array(
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"

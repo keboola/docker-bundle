@@ -16,7 +16,7 @@ class MockConfiguration extends Configuration
         $treeBuilder = new TreeBuilder();
         $treeBuilder->root("test")
             ->children()
-            ->variableNode("user")->end()
+            ->variableNode("parameters")->end()
             ->variableNode("storage")->end();
         return $treeBuilder;
     }
@@ -49,7 +49,7 @@ class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
                             ),
                     ),
             ),
-        'user' =>
+        'parameters' =>
             array(
                 'primary_key_column' => 'id',
             ),
@@ -66,7 +66,7 @@ storage:
                 columns:
                     - Id
                     - Name
-user:
+parameters:
     primary_key_column: id
 
 EOT;
@@ -76,7 +76,7 @@ EOT;
     protected function getJsonConfigFileTemplate()
     {
         $data = <<< EOT
-{"storage":{"input":{"tables":[{"source":"in.c-main.data","columns":["Id","Name"]}]}},"user":{"primary_key_column":"id"}}
+{"storage":{"input":{"tables":[{"source":"in.c-main.data","columns":["Id","Name"]}]}},"parameters":{"primary_key_column":"id"}}
 EOT;
         return $data;
     }
