@@ -73,7 +73,7 @@ class Writer
      * @param $source
      * @param array $configurations
      */
-    public function uploadFiles($source, $configurations=array())
+    public function uploadFiles($source, $configurations = array())
     {
         $fs = new Filesystem();
         $finder = new Finder();
@@ -81,7 +81,7 @@ class Writer
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingFiles = array();
-        foreach($configurations as $config) {
+        foreach ($configurations as $config) {
             $outputMappingFiles[] = $config["source"];
         }
         $outputMappingFiles = array_unique($outputMappingFiles);
@@ -94,7 +94,7 @@ class Writer
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
-            foreach($configurations as $config) {
+            foreach ($configurations as $config) {
                 if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
                     $configFromMapping = $config;
                     $processedOutputMappingFiles[] = $configFromMapping["source"];
@@ -133,7 +133,7 @@ class Writer
      * @param array $config
      * @throws \Keboola\StorageApi\ClientException
      */
-    protected function uploadFile($source, $config=array())
+    protected function uploadFile($source, $config = array())
     {
         $options = new FileUploadOptions();
         $options
@@ -150,7 +150,7 @@ class Writer
      * @param $source
      * @param array $configurations
      */
-    public function uploadTables($source, $configurations=array())
+    public function uploadTables($source, $configurations = array())
     {
         $fs = new Filesystem();
         $finder = new Finder();
@@ -158,7 +158,7 @@ class Writer
         $files = $finder->files()->name("*.csv")->in($source);
 
         $outputMappingTables = array();
-        foreach($configurations as $config) {
+        foreach ($configurations as $config) {
             $outputMappingTables[] = $config["source"];
         }
         $outputMappingTables = array_unique($outputMappingTables);
@@ -170,7 +170,7 @@ class Writer
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
-            foreach($configurations as $config) {
+            foreach ($configurations as $config) {
                 if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
                     $configFromMapping = $config;
                     $processedOutputMappingTables[] = $configFromMapping["source"];
@@ -219,7 +219,7 @@ class Writer
      * @param array $config
      * @throws \Keboola\StorageApi\ClientException
      */
-    protected function uploadTable($source, $config=array())
+    protected function uploadTable($source, $config = array())
     {
         $csvFile = new CsvFile($source);
         $tableIdParts = explode(".", $config["destination"]);
@@ -228,12 +228,12 @@ class Writer
         $tableName = $tableIdParts[2];
 
         // Create bucket if not exists
-        if(!$this->client->bucketExists($bucketId)) {
+        if (!$this->client->bucketExists($bucketId)) {
             // TODO component name!
             $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Bundle");
         }
 
-        if($this->client->tableExists($config["destination"])) {
+        if ($this->client->tableExists($config["destination"])) {
             if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
@@ -260,5 +260,4 @@ class Writer
             $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
         }
     }
-
 }

@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Image;
 
-
 class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -14,7 +13,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m"
@@ -22,7 +21,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $expectedConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -49,7 +48,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "definition" => array(
                 "type" => "whatever",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m"
@@ -68,7 +67,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",

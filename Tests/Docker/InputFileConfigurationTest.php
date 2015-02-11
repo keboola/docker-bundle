@@ -30,5 +30,4 @@ class InputFileConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new File())->parse(array("config" => array()));
     }
-
 }

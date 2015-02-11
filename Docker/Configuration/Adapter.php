@@ -2,9 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use  Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Configuration;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Yaml\Yaml;
@@ -132,5 +131,4 @@ class Adapter
             throw new \Exception("File" . $file . " not found.");
         }
     }
-
 }

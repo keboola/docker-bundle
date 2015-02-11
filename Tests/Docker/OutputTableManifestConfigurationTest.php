@@ -70,5 +70,4 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new Table\Manifest())->parse(array("config" => array()));
     }
-
 }

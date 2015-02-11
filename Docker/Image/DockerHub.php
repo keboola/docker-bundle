@@ -47,5 +47,4 @@ class DockerHub extends Image
         }
         return $tag;
     }
-
 }

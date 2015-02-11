@@ -116,7 +116,7 @@ class Image
      * @param array $config
      * @return Image|DockerHub
      */
-    public static function factory($config=array())
+    public static function factory($config = array())
     {
         if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub") {
             $instance = new DockerHub();

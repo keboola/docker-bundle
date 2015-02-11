@@ -25,10 +25,10 @@ class Configuration implements ConfigurationInterface
      * @param $configurations
      * @return array
      */
-    public function parse($configurations) {
+    public function parse($configurations)
+    {
         $processor = new Processor();
         $definition = new static();
         return $processor->processConfiguration($definition, $configurations);
     }
-
 }

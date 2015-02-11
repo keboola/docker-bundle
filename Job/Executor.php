@@ -1,5 +1,6 @@
 <?php
 namespace Keboola\DockerBundle\Job;
+
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -46,7 +47,7 @@ class Executor extends BaseExecutor
 
         // Check list of components
         $components = $this->storageApi->indexAction();
-        foreach($components["components"] as $c) {
+        foreach ($components["components"] as $c) {
             if ($c["id"] == $params["component"]) {
                 $component = $c;
             }
@@ -96,5 +97,4 @@ class Executor extends BaseExecutor
         }
         return ["message" => $message];
     }
-
 }

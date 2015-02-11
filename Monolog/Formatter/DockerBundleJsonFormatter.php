@@ -1,5 +1,6 @@
 <?php
 namespace Keboola\DockerBundle\Monolog\Formatter;
+
 use Syrup\ComponentBundle\Monolog\Formatter\SyrupJsonFormatter;
 
 class DockerBundleJsonFormatter extends SyrupJsonFormatter

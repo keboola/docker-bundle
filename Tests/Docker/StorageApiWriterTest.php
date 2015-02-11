@@ -25,7 +25,8 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      * @throws \Exception
      * @throws \Keboola\StorageApi\ClientException
      */
-    protected function clearBucket() {
+    protected function clearBucket()
+    {
         // Delete tables and bucket
         if ($this->client->bucketExists("out.c-docker-test")) {
             foreach ($this->client->listTables("out.c-docker-test") as $table) {
@@ -122,7 +123,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(3, $files);
 
-        foreach($files as $file) {
+        foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
             }

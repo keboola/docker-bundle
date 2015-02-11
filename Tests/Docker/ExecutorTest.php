@@ -3,31 +3,12 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\Client;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-
-/**
- * Class MockContainer
- * @package Keboola\DockerBundle\Tests
- */
-class MockContainer extends Container
-{
-    /**
-     * @return Process
-     */
-    public function run() {
-        $fs = new Filesystem();
-        $fs->dumpFile($this->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
-        $process = new Process('echo "Processed 1 rows."');
-        $process->run();
-        return $process;
-    }
-}
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -75,7 +56,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $fs->remove($this->tmpDir);
 
         // Delete tables
-        foreach($this->client->listTables("in.c-docker-test") as $table) {
+        foreach ($this->client->listTables("in.c-docker-test") as $table) {
             $this->client->dropTable($table["id"]);
         }
 
@@ -88,7 +69,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -124,11 +105,22 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new \Monolog\Handler\NullHandler());
 
         $image = Image::factory($imageConfig);
-        $container = new MockContainer($image);
+
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+
+        $callback = function() use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile($container->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $process = new Process('echo "Processed 1 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $process = $executor->run($container, $config);
         $this->assertEquals("Processed 1 rows.", trim($process->getOutput()));
     }
-
 }

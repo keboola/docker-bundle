@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration\Input\File\Manifest;
 
-use  Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Configuration;
 
 class Adapter extends Configuration\Adapter
 {

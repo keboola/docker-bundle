@@ -68,7 +68,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         }
 
         // Delete tables
-        foreach($this->client->listTables("in.c-docker-test") as $table) {
+        foreach ($this->client->listTables("in.c-docker-test") as $table) {
             $this->client->dropTable($table["id"]);
         }
 
@@ -127,5 +127,4 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("val1", $manifest["attributes"][0]["value"]);
 
     }
-
 }

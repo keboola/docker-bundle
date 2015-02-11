@@ -82,7 +82,7 @@ class Reader
             $options->setQuery($configuration["query"]);
         }
         $files = $this->getClient()->listFiles($options);
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
             $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
             $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
@@ -119,22 +119,22 @@ class Reader
      */
     protected function downloadFile($fileInfo, $destination)
     {
-		// Initialize S3Client with credentials from Storage API
-		$s3Client = S3Client::factory(array(
-			"key" => $fileInfo["credentials"]["AccessKeyId"],
-			"secret" => $fileInfo["credentials"]["SecretAccessKey"],
-			"token" => $fileInfo["credentials"]["SessionToken"]
-		));
+        // Initialize S3Client with credentials from Storage API
+        $s3Client = S3Client::factory(array(
+            "key" => $fileInfo["credentials"]["AccessKeyId"],
+            "secret" => $fileInfo["credentials"]["SecretAccessKey"],
+            "token" => $fileInfo["credentials"]["SessionToken"]
+        ));
 
-		// CURL options
-		$s3Client->getConfig()->set('curl.options', array(
-			CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0
-		));
+        // CURL options
+        $s3Client->getConfig()->set('curl.options', array(
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0
+        ));
 
-		$fs = new Filesystem();
-		if (!$fs->exists(dirname($destination))) {
-			$fs->mkdir($destination);
-		}
+        $fs = new Filesystem();
+        if (!$fs->exists(dirname($destination))) {
+            $fs->mkdir($destination);
+        }
 
         /**
          * NonSliced file, just move from temp to destination file
@@ -153,7 +153,7 @@ class Reader
     public function downloadTables($configuration, $destination)
     {
         $tableExporter = new TableExporter($this->getClient());
-        foreach($configuration as $table) {
+        foreach ($configuration as $table) {
             if (!isset($table["destination"])) {
                 $file = $destination . "/" . $table["source"] . ".csv";
             } else {
@@ -199,7 +199,7 @@ class Reader
             "columns" => $tableInfo["columns"],
             "attributes" => array()
         );
-        foreach($tableInfo["attributes"] as $attribute) {
+        foreach ($tableInfo["attributes"] as $attribute) {
             $manifest["attributes"][] = array(
                 "name" => $attribute["name"],
                 "value" => $attribute["value"],
@@ -212,5 +212,4 @@ class Reader
         $adapter->setConfig($manifest);
         $adapter->writeToFile($destination);
     }
-
 }

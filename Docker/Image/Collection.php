@@ -52,7 +52,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     public function add(Image $image)
     {
         $found = false;
-        foreach($this->images as $key => $item) {
+        foreach ($this->images as $key => $item) {
             if ($item->getId() == $image->getId()) {
                 $found = true;
                 $this->images[$key] = $item;
@@ -71,8 +71,9 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      * @return Image
      * @throws UserException
      */
-    public function get($name) {
-        foreach($this->images as $item) {
+    public function get($name)
+    {
+        foreach ($this->images as $item) {
             if ($item->getId() == $name) {
                 return $item;
             }
@@ -98,7 +99,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      */
     public function offsetExists($offset)
     {
-        foreach($this->images as $key => $item) {
+        foreach ($this->images as $key => $item) {
             if ($item->getId() == $offset) {
                 return true;
             }
@@ -111,7 +112,7 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
      */
     public function offsetUnset($offset)
     {
-        foreach($this->images as $key => $item) {
+        foreach ($this->images as $key => $item) {
             if ($item->getId() == $offset) {
                 unset($this->images[$key]);
             }
@@ -126,6 +127,4 @@ class Collection implements \Iterator, \Countable, \ArrayAccess
     {
         return $this->get($offset);
     }
-
-
 }

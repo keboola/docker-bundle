@@ -70,5 +70,4 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new Table())->parse(array("config" => array()));
     }
-
 }

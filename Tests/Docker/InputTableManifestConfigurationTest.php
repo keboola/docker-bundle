@@ -40,5 +40,4 @@ class InputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new Manifest())->parse(array("config" => array()));
     }
-
 }

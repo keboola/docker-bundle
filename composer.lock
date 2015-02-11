@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "42e9b42422fd052853e1bdf1cac2aef5",
+    "hash": "091e3c3f9b502ae4b6afd351d30a0355",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1424,16 +1424,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "1.7.13",
+            "version": "1.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "c56a7e9563252547ce6eec0c7b4532e290afb458"
+                "reference": "b1e63d1b2c73012391047f71f6d3ac4fdeb6755f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/c56a7e9563252547ce6eec0c7b4532e290afb458",
-                "reference": "c56a7e9563252547ce6eec0c7b4532e290afb458",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/b1e63d1b2c73012391047f71f6d3ac4fdeb6755f",
+                "reference": "b1e63d1b2c73012391047f71f6d3ac4fdeb6755f",
                 "shasum": ""
             },
             "require": {
@@ -1464,7 +1464,7 @@
                 "MIT"
             ],
             "description": "Syrup - Concentrated extract(or)s",
-            "time": "2015-01-28 13:56:55"
+            "time": "2015-02-05 14:45:10"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -1806,17 +1806,17 @@
         },
         {
             "name": "sensio/generator-bundle",
-            "version": "v2.5.1",
+            "version": "v2.5.2",
             "target-dir": "Sensio/Bundle/GeneratorBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/SensioGeneratorBundle.git",
-                "reference": "9e23fc3de265ae013690d84aab98e7a84f46edcd"
+                "reference": "4b09746520a826a7bf34a466ba31c7d8740fef7e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/SensioGeneratorBundle/zipball/9e23fc3de265ae013690d84aab98e7a84f46edcd",
-                "reference": "9e23fc3de265ae013690d84aab98e7a84f46edcd",
+                "url": "https://api.github.com/repos/sensiolabs/SensioGeneratorBundle/zipball/4b09746520a826a7bf34a466ba31c7d8740fef7e",
+                "reference": "4b09746520a826a7bf34a466ba31c7d8740fef7e",
                 "shasum": ""
             },
             "require": {
@@ -1850,7 +1850,7 @@
                 }
             ],
             "description": "This bundle generates code for you",
-            "time": "2015-01-13 07:33:46"
+            "time": "2015-02-11 07:21:23"
         },
         {
             "name": "sensiolabs/security-checker",
@@ -2245,17 +2245,17 @@
         },
         {
             "name": "syrup/component-bundle",
-            "version": "1.12.1",
+            "version": "1.13.3",
             "target-dir": "Syrup/ComponentBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup-component-bundle.git",
-                "reference": "acfb50266830bad006cdd106ca87e9d45bb51e60"
+                "reference": "10796749c9c947c86878339960790d342f8d5f8d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup-component-bundle/zipball/acfb50266830bad006cdd106ca87e9d45bb51e60",
-                "reference": "acfb50266830bad006cdd106ca87e9d45bb51e60",
+                "url": "https://api.github.com/repos/keboola/syrup-component-bundle/zipball/10796749c9c947c86878339960790d342f8d5f8d",
+                "reference": "10796749c9c947c86878339960790d342f8d5f8d",
                 "shasum": ""
             },
             "require": {
@@ -2265,13 +2265,14 @@
                 "keboola/php-encryption": "~0.2.0",
                 "keboola/php-temp": ">=0.1.0",
                 "keboola/storage-api-client": "~2.11.0",
-                "keboola/syrup": "~1.7.0",
+                "keboola/syrup": "~1.8.0",
                 "php": ">=5.4.0",
                 "pimple/pimple": "2.0.*",
                 "sensio/generator-bundle": "~2.3"
             },
             "require-dev": {
                 "codeclimate/php-test-reporter": "dev-master",
+                "phpmd/phpmd": "@stable",
                 "phpunit/phpunit": "3.7.*",
                 "squizlabs/php_codesniffer": "2.*",
                 "symfony/var-dumper": "~2.6"
@@ -2298,7 +2299,7 @@
                 }
             ],
             "description": "Syrup ComponentBundle",
-            "time": "2015-02-02 11:48:55"
+            "time": "2015-02-11 13:30:56"
         },
         {
             "name": "twig/twig",
@@ -2849,6 +2850,74 @@
                 "test"
             ],
             "time": "2013-05-04 08:07:33"
+        },
+        {
+            "name": "squizlabs/php_codesniffer",
+            "version": "2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
+                "reference": "b301c98f19414d836fdaa678648745fcca5aeb4f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/b301c98f19414d836fdaa678648745fcca5aeb4f",
+                "reference": "b301c98f19414d836fdaa678648745fcca5aeb4f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-tokenizer": "*",
+                "php": ">=5.1.2"
+            },
+            "bin": [
+                "scripts/phpcs",
+                "scripts/phpcbf"
+            ],
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "CodeSniffer.php",
+                    "CodeSniffer/CLI.php",
+                    "CodeSniffer/Exception.php",
+                    "CodeSniffer/File.php",
+                    "CodeSniffer/Fixer.php",
+                    "CodeSniffer/Report.php",
+                    "CodeSniffer/Reporting.php",
+                    "CodeSniffer/Sniff.php",
+                    "CodeSniffer/Tokens.php",
+                    "CodeSniffer/Reports/",
+                    "CodeSniffer/Tokenizers/",
+                    "CodeSniffer/DocGenerators/",
+                    "CodeSniffer/Standards/AbstractPatternSniff.php",
+                    "CodeSniffer/Standards/AbstractScopeSniff.php",
+                    "CodeSniffer/Standards/AbstractVariableSniff.php",
+                    "CodeSniffer/Standards/IncorrectPatternException.php",
+                    "CodeSniffer/Standards/Generic/Sniffs/",
+                    "CodeSniffer/Standards/MySource/Sniffs/",
+                    "CodeSniffer/Standards/PEAR/Sniffs/",
+                    "CodeSniffer/Standards/PSR1/Sniffs/",
+                    "CodeSniffer/Standards/PSR2/Sniffs/",
+                    "CodeSniffer/Standards/Squiz/Sniffs/",
+                    "CodeSniffer/Standards/Zend/Sniffs/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Greg Sherwood",
+                    "role": "lead"
+                }
+            ],
+            "description": "PHP_CodeSniffer tokenizes PHP, JavaScript and CSS files and detects violations of a defined set of coding standards.",
+            "homepage": "http://www.squizlabs.com/php-codesniffer",
+            "keywords": [
+                "phpcs",
+                "standards"
+            ],
+            "time": "2015-01-21 22:44:05"
         },
         {
             "name": "symfony/var-dumper",

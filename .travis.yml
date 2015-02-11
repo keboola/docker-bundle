@@ -9,6 +9,7 @@ branches:
 install:
   - composer install --dev --no-scripts
 script:
+  - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
   - phpunit --coverage-clover build/logs/clover.xml
 after_success:
   - CODECLIMATE_REPO_TOKEN=4f83203f4ad71bff744ddc65039f34fb43183acf9d733aeac90b5e0cd726d50e ./vendor/bin/test-reporter --stdout > codeclimate.json

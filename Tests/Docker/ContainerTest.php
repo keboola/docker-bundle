@@ -7,23 +7,6 @@ use Keboola\DockerBundle\Docker\Image;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
-
-/**
- * Class MockContainer
- * @package Keboola\DockerBundle\Tests
- */
-class MockContainer_2 extends Container
-{
-    /**
-     * @return Process
-     */
-    public function run() {
-        $process = new Process('echo "Processed 2 rows."');
-        $process->run();
-        return $process;
-    }
-}
-
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -45,7 +28,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertTrue($fs->exists($structure));
 
-        foreach($structure as $folder) {
+        foreach ($structure as $folder) {
             $fs->touch($folder . "/file");
         }
         $container->dropDataDir();
@@ -57,11 +40,20 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             )
         );
         $image = Image::factory($imageConfiguration);
-        $container = new MockContainer_2($image);
+
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+
+        $callback = function() {
+            $process = new Process('echo "Processed 2 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
 
         $root = "/tmp/docker/" . uniqid("", true);
         $fs = new Filesystem();

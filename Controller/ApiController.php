@@ -15,7 +15,7 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
 
         // Check list of components
         $components = $this->storageApi->indexAction();
-        foreach($components["components"] as $c) {
+        foreach ($components["components"] as $c) {
             if ($c["id"] == $request->get("component")) {
                 $component = $c;
             }
@@ -32,7 +32,8 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function runAction(Request $request) {
+    public function runAction(Request $request)
+    {
         if (!$request->get("component")) {
             throw new UserException("Component not set.");
         }
@@ -57,6 +58,4 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
         $json["component"] = $request->get("component");
         return $json;
     }
-
-
 }

@@ -221,7 +221,7 @@ class Container
     public function getRunCommand()
     {
         $envs = "";
-        foreach($this->getEnvironmentVariables() as $key => $value) {
+        foreach ($this->getEnvironmentVariables() as $key => $value) {
             $envs .=  " -e \"" . escapeshellarg($key) . "=" . escapeshellarg($value) . "\"";
         }
         $command = "sudo docker run"
@@ -235,5 +235,4 @@ class Container
         ;
         return $command;
     }
-
 }

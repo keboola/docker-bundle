@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
 
-
 class ImageTest extends \PHPUnit_Framework_TestCase
 {
     public function testFactory()
@@ -18,7 +17,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "ondrejhlavacek/docker-demo"
+                "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 2048,
             "memory" => "128m"

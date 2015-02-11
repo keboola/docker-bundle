@@ -125,7 +125,7 @@ class Executor
             if (isset($config["storage"]["input"]["files"]) && count($config["storage"]["input"]["files"])) {
                 $reader->downloadFiles($config["storage"]["input"]["tables"], $tmpDir . "/data/in/files");
             }
-        } catch(ClientException $e) {
+        } catch (ClientException $e) {
             throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
         }
 
@@ -166,7 +166,7 @@ class Executor
         try {
             $writer->uploadTables($tmpDir . "/data/out/tables", $outputTablesConfig);
             $writer->uploadFiles($tmpDir . "/data/out/files", $outputFilesConfig);
-        } catch(ClientException $e) {
+        } catch (ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
         }
 

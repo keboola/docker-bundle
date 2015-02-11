@@ -20,8 +20,7 @@ class OutputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "tags" => array("tag1", "tag2")
         );
         $processedConfiguration = (new File\Manifest())->parse(array("config" => $config));
-        $this->assertEquals($expectedResponse,$processedConfiguration);
+        $this->assertEquals($expectedResponse, $processedConfiguration);
 
     }
-
 }

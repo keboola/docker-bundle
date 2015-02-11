@@ -3,56 +3,30 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Configuration\Adapter;
 use Keboola\DockerBundle\Docker\Image;
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
+use Keboola\DockerBundle\Tests\Docker\Mock\Configuration\Adapter;
 use Symfony\Component\Filesystem\Filesystem;
-
-
-class MockConfiguration extends Configuration
-{
-    public function getConfigTreeBuilder()
-    {
-        $treeBuilder = new TreeBuilder();
-        $treeBuilder->root("test")
-            ->children()
-            ->variableNode("parameters")->end()
-            ->variableNode("storage")->end();
-        return $treeBuilder;
-    }
-}
-
-class MockAdapter extends Adapter
-{
-    protected $configClass = 'Keboola\DockerBundle\Tests\MockConfiguration';
-}
 
 class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
 {
 
     protected $structure = array(
-        'storage' =>
-            array(
-                'input' =>
-                    array(
-                        'tables' =>
-                            array(
-                                0 =>
-                                    array(
-                                        'source' => 'in.c-main.data',
-                                        'columns' =>
-                                            array(
-                                                0 => 'Id',
-                                                1 => 'Name',
-                                            ),
-                                    ),
-                            ),
+        'storage' => array(
+            'input' => array(
+                'tables' => array(
+                    0 => array(
+                        'source' => 'in.c-main.data',
+                        'columns' => array(
+                            0 => 'Id',
+                            1 => 'Name',
+                        ),
                     ),
+                ),
             ),
-        'parameters' =>
-            array(
-                'primary_key_column' => 'id',
-            ),
+        ),
+        'parameters' => array(
+            'primary_key_column' => 'id',
+        ),
     );
 
     protected function getYmlConfigFileTemplate()
@@ -92,7 +66,7 @@ EOT;
 
         file_put_contents($root . "/config.yml", $this->getYmlConfigFileTemplate());
 
-        $adapter = new MockAdapter();
+        $adapter = new Adapter();
         $adapter->readFromFile($root . "/config.yml");
 
         $this->assertEquals($this->structure, $adapter->getConfig());
@@ -112,7 +86,7 @@ EOT;
 
         file_put_contents($root . "/config.json", $this->getJsonConfigFileTemplate());
 
-        $adapter = new MockAdapter();
+        $adapter = new Adapter();
         $adapter->setFormat("json");
         $adapter->readFromFile($root . "/config.json");
 
@@ -131,7 +105,7 @@ EOT;
         $fs = new Filesystem();
         $fs->mkdir($root);
 
-        $adapter = new MockAdapter();
+        $adapter = new Adapter();
         $adapter->setConfig($this->structure);
         $adapter->writeToFile($root . "/config.yml");
 
@@ -151,7 +125,7 @@ EOT;
         $fs = new Filesystem();
         $fs->mkdir($root);
 
-        $adapter = new MockAdapter();
+        $adapter = new Adapter();
         $adapter->setConfig($this->structure);
         $adapter->setFormat("json");
         $adapter->writeToFile($root . "/config.json");
