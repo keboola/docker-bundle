@@ -38,28 +38,17 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
             throw new UserException("Component not set.");
         }
 
-        if (!$request->get("config") && !$request->get("configData")) {
+        $body = $this->getPostJson($request);
+
+        if (!isset($body["config"]) && !isset($body["configData"])) {
             throw new UserException("Specify 'config' or 'configData'.");
         }
-        
-        if ($request->get("config") && $request->get("configData")) {
+
+        if (isset($body["config"]) && isset($body["configData"])) {
             throw new UserException("Cannot specify both 'config' and 'configData'.");
         }
 
         return parent::runAction($request);
     }
 
-    /**
-     *
-     * Add component property to JSON
-     *
-     * @param Request $request
-     * @return array
-     */
-    protected function getPostJson(Request $request)
-    {
-        $json = parent::getPostJson($request);
-        $json["component"] = $request->get("component");
-        return $json;
-    }
 }
