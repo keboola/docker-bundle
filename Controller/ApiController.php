@@ -50,5 +50,4 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
 
         return parent::runAction($request);
     }
-
 }
