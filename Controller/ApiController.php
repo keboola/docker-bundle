@@ -50,4 +50,18 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
 
         return parent::runAction($request);
     }
+
+    /**
+     *
+     * Add component property to JSON
+     *
+     * @param Request $request
+     * @return array
+     */
+    protected function getPostJson(Request $request)
+    {
+        $json = parent::getPostJson($request);
+        $json["component"] = $request->get("component");
+        return $json;
+    }
 }
