@@ -113,7 +113,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $configuration = array(
             array(
                 "source" => "in.c-docker-test.test",
-                "destination" => "test"
+                "destination" => "test.csv"
             )
         );
 
@@ -125,6 +125,5 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("in.c-docker-test.test", $manifest["id"]);
         $this->assertEquals("val1", $manifest["attributes"][0]["value"]);
-
     }
 }

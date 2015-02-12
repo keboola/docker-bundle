@@ -71,9 +71,17 @@ As a part of container configuration you can specify tables and files that will 
 
 Tables from input mapping will are mounted to `/data/in/tables`, where file name equals to the table name with `.csv` suffix. 
 
-Input mapping parameters are similar to [Storage API export table options ](http://docs.keboola.apiary.io/#tables). If `destination` is not set, the CSV file will have the same name as the table.
+Input mapping parameters are similar to [Storage API export table options ](http://docs.keboola.apiary.io/#tables). If `destination` is not set, the CSV file will have the same name as the table with `.csv` suffix.
 
-The tables element in configuration is an array.
+The tables element in configuration is an array and supports these attributes
+
+  - `source`
+  - `destination`
+  - `changed_since`
+  - `columns`
+  - `where_column`
+  - `where_operator`
+  - `where_values`
 
 ##### Examples
 
@@ -85,10 +93,10 @@ storage:
     tables:
       0:
         source: in.c-ex-salesforce.Leads
-        destination: leads
+        destination: leads.csv
       1:
         source: in.c-ex-salesforce.Accounts
-        destination: accounts
+        destination: accounts.csv
 
 ```
 
@@ -123,7 +131,7 @@ storage:
     tables:
       0:
         source: in.c-ex-salesforce.Leads
-        destination: closed_leads
+        destination: closed_leads.csv
         where_column: Status
         where_values: ["Closed Won", "Closed Lost"]
         where_operator: eq
@@ -185,11 +193,19 @@ Basically manifests allow you to process files in `/data/out` folder without def
 
 #### Tables
 
-In the simplest format, output mapping processes CSV files in the `/data/out/tables` folder and uploads them into tables. The name of the file may be equal to the name of the table.
+In the simplest format, output mapping processes CSV files in the `/data/out/tables` folder and uploads them into tables. The name of the file may be equal to the name of the table (after removing `.csv` suffix).
 
 Output mapping parameters are similar to [Transfiormation API output mapping ](http://wiki.keboola.com/home/keboola-connection/devel-space/transformations/intro#TOC-Output-mapping). If `source` is not set, the CSV file is expected to have the same name as the `destination` table.
 
-The tables element in configuration is an array. 
+The tables element in configuration is an array and supports these attributes:
+
+  - `source`
+  - `destination`
+  - `incremental`
+  - `primary_key`
+  - `delete_where_column`
+  - `delete_where_column`
+  - `delete_where_operator`
 
 ##### Examples
 
@@ -200,6 +216,7 @@ storage:
   output:
     tables:
       0:
+        source: out.c-main.data.csv
         destination: out.c-main.data
 ```
 
@@ -211,7 +228,7 @@ storage:
   output:
     tables:
       0:
-        source: data
+        source: data.csv
         destination: out.c-main.data
         incremental: 1
         primary_key: ["id"]

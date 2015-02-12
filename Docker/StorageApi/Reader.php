@@ -155,9 +155,9 @@ class Reader
         $tableExporter = new TableExporter($this->getClient());
         foreach ($configuration as $table) {
             if (!isset($table["destination"])) {
-                $file = $destination . "/" . $table["source"] . ".csv";
+                $file = $destination . "/" . $table["source"];
             } else {
-                $file = $destination . "/" . $table["destination"] . ".csv";
+                $file = $destination . "/" . $table["destination"];
             }
             $exportOptions = array();
             if (isset($table["columns"]) && count($table["columns"])) {
