@@ -38,6 +38,10 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
             throw new UserException("Component not set.");
         }
 
+        if (!$request->get("config") && !$request->get("configData")) {
+            throw new UserException("Specify 'config' or 'configData'.");
+        }
+        
         if ($request->get("config") && $request->get("configData")) {
             throw new UserException("Cannot specify both 'config' and 'configData'.");
         }
