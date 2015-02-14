@@ -37,6 +37,14 @@ class Image
     protected $configFormat = 'yaml';
 
     /**
+     *
+     * process timeout in seconds
+     *
+     * @var int
+     */
+    protected $processTimeout = 3600;
+
+    /**
      * @return string
      */
     public function getId()
@@ -113,6 +121,24 @@ class Image
     }
 
     /**
+     * @return int
+     */
+    public function getProcessTimeout()
+    {
+        return $this->processTimeout;
+    }
+
+    /**
+     * @param int $timeout
+     * @return $this
+     */
+    public function setProcessTimeout($timeout)
+    {
+        $this->processTimeout = (int)$timeout;
+        return $this;
+    }
+
+    /**
      * @param array $config
      * @return Image|DockerHub
      */
@@ -133,6 +159,10 @@ class Image
         if (isset($config["memory"])) {
             $instance->setMemory($config["memory"]);
         }
+        if (isset($config["process_timeout"])) {
+            $instance->setProcessTimeout($config["process_timeout"]);
+        }
+
         return $instance;
     }
 

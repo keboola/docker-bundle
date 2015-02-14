@@ -149,6 +149,7 @@ class Container
             throw new \Exception("Data directory not set.");
         }
         $process = new Process($this->getRunCommand());
+        $process->setTimeout($this->getImage()->getTimeout());
         $process->run();
         if (!$process->isSuccessful()) {
             $message = $process->getErrorOutput();

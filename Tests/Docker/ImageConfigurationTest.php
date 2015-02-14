@@ -25,7 +25,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "yaml",
+            "process_timeout" => 3600,
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);

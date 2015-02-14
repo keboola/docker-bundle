@@ -8,6 +8,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Syrup\ComponentBundle\Exception\UserException;
 
 class Executor
@@ -142,7 +143,11 @@ class Executor
         }
         $adapter->writeToFile($tmpDir . "/data/config" . $fileSuffix);
 
-        $process = $container->run();
+        try {
+            $process = $container->run();
+        } catch (ProcessTimedOutException $e) {
+            throw new UserException("Running container exceeded the timeout of {$container->getImage()->getProcessTimeout()} seconds.");
+        }
 
         if ($process->getOutput()) {
             $this->getLog()->info($process->getOutput());

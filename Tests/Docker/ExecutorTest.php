@@ -9,6 +9,7 @@ use Keboola\StorageApi\Client;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Syrup\ComponentBundle\Exception\UserException;
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -122,5 +123,55 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setTmpFolder($this->tmpDir);
         $process = $executor->run($container, $config);
         $this->assertEquals("Processed 1 rows.", trim($process->getOutput()));
+    }
+
+    /**
+     * @expectedException \Syrup\ComponentBundle\Exception\UserException
+     * @expectedExceptionMessage Running container exceeded the timeout of 1 seconds.
+     */
+    public function testExecutorRunTimeout()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "process_timeout" => 1
+        );
+
+        $config = array(
+            "storage" => array(
+            ),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log->pushHandler(new \Monolog\Handler\NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+
+        $callback = function() use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile($container->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $process = new Process('sleep 2 && echo "Processed 1 rows."');
+            $process->setTimeout($container->getImage()->getProcessTimeout());
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->run($container, $config);
     }
 }

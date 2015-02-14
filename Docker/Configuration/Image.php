@@ -34,8 +34,8 @@ class Image extends Configuration
                     ->thenInvalid("Invalid configuration_format %s.")
                 ->end()
             ->end()
-
-            ;
+            ->integerNode("process_timeout")->min(0)->defaultValue(3600)->end()
+        ;
 
         return $treeBuilder;
     }
