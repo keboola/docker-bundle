@@ -15,11 +15,12 @@ class Container extends \Keboola\DockerBundle\Docker\Container
     protected $runMethod;
 
     /**
-     * @return Process
+     * @param string $containerName
+     * @return mixed
      */
-    public function run()
+    public function run($containerName = "")
     {
-        return $this->runMethod();
+        return $this->runMethod($containerName);
     }
 
     /**
