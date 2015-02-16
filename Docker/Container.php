@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Syrup\ComponentBundle\Exception\ApplicationException;
 use Syrup\ComponentBundle\Exception\UserException;
@@ -150,7 +151,11 @@ class Container
         }
         $process = new Process($this->getRunCommand());
         $process->setTimeout($this->getImage()->getProcessTimeout());
-        $process->run();
+        try {
+            $process->run();
+        } catch (ProcessTimedOutException $e) {
+            throw new UserException("Docker process timed out.", $e);
+        }
         if (!$process->isSuccessful()) {
             $message = $process->getErrorOutput();
             if (!$message) {
