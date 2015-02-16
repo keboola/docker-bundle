@@ -151,11 +151,7 @@ class Container
         }
         $process = new Process($this->getRunCommand());
         $process->setTimeout($this->getImage()->getProcessTimeout());
-        try {
-            $process->run();
-        } catch (ProcessTimedOutException $e) {
-            throw new UserException("Docker process timed out.", $e);
-        }
+        $process->run();
         if (!$process->isSuccessful()) {
             $message = $process->getErrorOutput();
             if (!$message) {
