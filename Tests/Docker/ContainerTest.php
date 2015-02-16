@@ -108,7 +108,7 @@ EOF;
         $container->setId("test");
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(array("var" => "val"));
-        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"'var'='val'\" --rm -name test-name 'test'";
+        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"'var'='val'\" --rm --name='test-name' 'test'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 }
