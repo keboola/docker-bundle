@@ -234,7 +234,7 @@ class Container
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs
             . " --rm"
-            . " --name=" . escapeshellarg($this->getId() . ($containerName ? "-" . $containerName : ""))
+            . " --name=" . escapeshellarg(strtr($this->getId(), ":/", "--") . ($containerName ? "-" . $containerName : ""))
             // TODO --net + nastavení
             . " " . escapeshellarg($this->getId())
         ;
