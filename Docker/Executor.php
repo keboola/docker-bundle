@@ -144,7 +144,7 @@ class Executor
         $adapter->writeToFile($tmpDir . "/data/config" . $fileSuffix);
 
         try {
-            $process = $container->run();
+            $process = $container->run($this->getStorageApiClient()->getRunId());
         } catch (ProcessTimedOutException $e) {
             throw new UserException("Running container exceeded the timeout of {$container->getImage()->getProcessTimeout()} seconds.");
         }

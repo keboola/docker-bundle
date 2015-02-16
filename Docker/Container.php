@@ -138,10 +138,11 @@ class Container
     }
 
     /**
+     * @param string $containerName suffix to the container tag
      * @return Process
      * @throws \Exception
      */
-    public function run()
+    public function run($containerName = "")
     {
         $id = $this->getImage()->prepare($this);
         $this->setId($id);
@@ -149,7 +150,7 @@ class Container
         if (!$this->getDataDir()) {
             throw new \Exception("Data directory not set.");
         }
-        $process = new Process($this->getRunCommand());
+        $process = new Process($this->getRunCommand($containerName));
         $process->setTimeout($this->getImage()->getProcessTimeout());
         $process->run();
         if (!$process->isSuccessful()) {
@@ -218,9 +219,10 @@ class Container
     }
 
     /**
+     * @param string $containerName
      * @return string
      */
-    public function getRunCommand()
+    public function getRunCommand($containerName = "")
     {
         $envs = "";
         foreach ($this->getEnvironmentVariables() as $key => $value) {
@@ -232,6 +234,7 @@ class Container
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs
             . " --rm"
+            . " -name " . $this->getId() . ($containerName ? "-" . $containerName : "")
             // TODO --net + nastavení
             . " " . escapeshellarg($this->getId())
         ;
