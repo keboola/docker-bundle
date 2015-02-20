@@ -1,10 +1,15 @@
 <?php
 namespace Keboola\DockerBundle\Monolog\Formatter;
 
-use Syrup\ComponentBundle\Monolog\Formatter\SyrupJsonFormatter;
+use Syrup\ComponentBundle\Monolog\Formatter\JsonFormatter;
 
-class DockerBundleJsonFormatter extends SyrupJsonFormatter
+class DockerBundleJsonFormatter extends JsonFormatter
 {
+    /**
+     * @var
+     */
+    protected $appName;
+
     /**
      * @param String $appName
      * @return $this
@@ -13,6 +18,14 @@ class DockerBundleJsonFormatter extends SyrupJsonFormatter
     {
         $this->appName = $appName;
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAppName()
+    {
+        return $this->appName;
     }
 
     /**

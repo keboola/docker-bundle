@@ -6,6 +6,6 @@ services:
         class: Keboola\DockerBundle\Job\Executor
         arguments: [@logger, @syrup.temp]
 
-    syrup.monolog.json_formatter:
+    syrup.monolog.formatter:
         class: Keboola\DockerBundle\Monolog\Formatter\DockerBundleJsonFormatter
         arguments: [%app_name%, @syrup.monolog.s3_uploader, @storage_api]

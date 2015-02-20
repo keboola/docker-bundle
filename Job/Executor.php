@@ -12,6 +12,8 @@ use Syrup\ComponentBundle\Exception\UserException;
 use Syrup\ComponentBundle\Filesystem\Temp;
 use Syrup\ComponentBundle\Job\Executor as BaseExecutor;
 use Syrup\ComponentBundle\Job\Metadata\Job;
+use Syrup\ComponentBundle\Monolog\Handler\StorageApiHandler;
+use Syrup\ComponentBundle\Service\StorageApi\StorageApiService;
 
 class Executor extends BaseExecutor
 {
@@ -34,6 +36,7 @@ class Executor extends BaseExecutor
     {
         $this->log = $log;
         $this->temp = $temp;
+
     }
 
     /**
@@ -56,6 +59,11 @@ class Executor extends BaseExecutor
         if (!isset($component)) {
             throw new UserException("Component '{$params["component"]}' not found.");
         }
+
+        // Add storage api handler
+        $service = new StorageApiService();
+        $service->setClient($this->storageApi);
+        $this->log->pushHandler(new StorageApiHandler($params["component"], $service));
 
         // Get the formatters and change the component
         foreach ($this->log->getHandlers() as $handler) {
@@ -81,14 +89,13 @@ class Executor extends BaseExecutor
             $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
             $image = Image::factory($component["data"]);
             $container = new Container($image);
-            $this->log->info("Running Docker container for '{$component['id']}'", $configData);
+            $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
             $executor->setTmpFolder($this->temp->getTmpFolder());
             $process = $executor->run($container, $configData);
             $this->log->info("Docker container for '{$component['id']}' finished.");
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
         }
-
 
         if ($process->getOutput()) {
             $message = $process->getOutput();

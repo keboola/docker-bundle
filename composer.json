@@ -1,16 +1,17 @@
 {
-    "name": "keboola\/dockerbundle",
+    "name": "keboola/dockerbundle",
     "type": "symfony-bundle",
     "description": "Some new component",
     "keywords": [],
     "authors": [],
     "repositories": [],
     "require": {
-        "syrup\/component-bundle": "~1.10",
-        "aws/aws-sdk-php": "~2.6.16"
+        "syrup/component-bundle": "~1.10",
+        "aws/aws-sdk-php": "~2.6.16",
+        "doctrine/annotations": "1.2.2"
     },
     "require-dev": {
-        "phpunit\/phpunit": "3.7.*",
+        "phpunit/phpunit": "3.7.*",
         "symfony/var-dumper": "~2.6",
         "codeclimate/php-test-reporter": "dev-master",
         "squizlabs/php_codesniffer": "2.*"
@@ -34,10 +35,10 @@
             "Keboola\\DockerBundle": ""
         }
     },
-    "target-dir": "Keboola\/DockerBundle",
+    "target-dir": "Keboola/DockerBundle",
     "extra": {
-        "symfony-app-dir": "vendor\/keboola\/syrup\/app",
-        "symfony-web-dir": "vendor\/keboola\/syrup\/web",
+        "symfony-app-dir": "vendor/keboola/syrup/app",
+        "symfony-web-dir": "vendor/keboola/syrup/web",
         "syrup-app-name": "docker"
     }
 }
