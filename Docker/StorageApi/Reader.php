@@ -159,7 +159,9 @@ class Reader
             } else {
                 $file = $destination . "/" . $table["destination"];
             }
-            $exportOptions = array();
+            $exportOptions = array(
+                "format" => "rfc"
+            );
             if (isset($table["columns"]) && count($table["columns"])) {
                 $exportOptions["columns"] = $table["columns"];
             }

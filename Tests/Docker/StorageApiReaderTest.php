@@ -33,20 +33,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->tmpDir = $root;
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
-
-        // Create bucket
-        if (!$this->client->bucketExists("in.c-docker-test")) {
-            $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker Testsuite");
-        }
-
-        // Create table
-        if (!$this->client->tableExists("in.c-docker-test.test")) {
-            $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(array("Id", "Name"));
-            $csv->writeRow(array("test", "test"));
-            $this->client->createTableAsync("in.c-docker-test", "test", $csv);
-            $this->client->setTableAttribute("in.c-docker-test.test", "attr1", "val1");
-        }
     }
 
     public function tearDown()
@@ -67,13 +53,25 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $this->client->deleteFile($file["id"]);
         }
 
-        // Delete tables
-        foreach ($this->client->listTables("in.c-docker-test") as $table) {
-            $this->client->dropTable($table["id"]);
+        if ($this->client->bucketExists("in.c-docker-test")) {
+            // Delete tables
+            foreach ($this->client->listTables("in.c-docker-test") as $table) {
+                $this->client->dropTable($table["id"]);
+            }
+
+            // Delete bucket
+            $this->client->dropBucket("in.c-docker-test");
         }
 
-        // Delete bucket
-        $this->client->dropBucket("in.c-docker-test");
+        if ($this->client->bucketExists("in.c-docker-test-redshift")) {
+            // Delete tables
+            foreach ($this->client->listTables("in.c-docker-test-redshift") as $table) {
+                $this->client->dropTable($table["id"]);
+            }
+
+            // Delete bucket
+            $this->client->dropBucket("in.c-docker-test-redshift");
+        }
     }
 
     /**
@@ -105,8 +103,22 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     /**
      *
      */
-    public function testReadTables()
+    public function testReadTablesMysql()
     {
+        // Create bucket
+        if (!$this->client->bucketExists("in.c-docker-test")) {
+            $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker Testsuite");
+        }
+
+        // Create table
+        if (!$this->client->tableExists("in.c-docker-test.test")) {
+            $csv = new CsvFile($this->tmpDir . "/upload.csv");
+            $csv->writeRow(array("Id", "Name"));
+            $csv->writeRow(array("test", "test"));
+            $this->client->createTableAsync("in.c-docker-test", "test", $csv);
+            $this->client->setTableAttribute("in.c-docker-test.test", "attr1", "val1");
+        }
+
         $root = $this->tmpDir;
 
         $reader = new Reader($this->client);
@@ -120,10 +132,51 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $reader->downloadTables($configuration, $root . "/download");
 
         $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test\"\n", file_get_contents($root . "/download/test.csv"));
-        $adapter = new Configuration\Input\Table\Manifest\Adapter();
-        $manifest = $adapter->readFromFile($root . "/download/test.csv.manifest");
 
+        $adapter = new Configuration\Input\Table\Manifest\Adapter();
+
+        $manifest = $adapter->readFromFile($root . "/download/test.csv.manifest");
         $this->assertEquals("in.c-docker-test.test", $manifest["id"]);
         $this->assertEquals("val1", $manifest["attributes"][0]["value"]);
+    }
+
+    /**
+     *
+     */
+    public function testReadTablesRedshift()
+    {
+        // Create bucket
+        if (!$this->client->bucketExists("in.c-docker-test-redshift")) {
+            $this->client->createBucket("docker-test-redshift", Client::STAGE_IN, "Docker Testsuite", "redshift");
+        }
+
+        // Create table
+        if (!$this->client->tableExists("in.c-docker-test-redshift.test")) {
+            $csv = new CsvFile($this->tmpDir . "/upload.csv");
+            $csv->writeRow(array("Id", "Name"));
+            $csv->writeRow(array("test", "test"));
+            $this->client->createTableAsync("in.c-docker-test-redshift", "test", $csv);
+            $this->client->setTableAttribute("in.c-docker-test-redshift.test", "attr1", "val2");
+        }
+
+        $root = $this->tmpDir;
+
+        $reader = new Reader($this->client);
+        $configuration = array(
+            array(
+                "source" => "in.c-docker-test-redshift.test",
+                "destination" => "test-redshift.csv"
+            )
+        );
+
+        $reader->downloadTables($configuration, $root . "/download");
+
+        $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test\"\n", file_get_contents($root . "/download/test-redshift.csv"));
+
+        $adapter = new Configuration\Input\Table\Manifest\Adapter();
+
+        $manifest = $adapter->readFromFile($root . "/download/test-redshift.csv.manifest");
+        $this->assertEquals("in.c-docker-test-redshift.test", $manifest["id"]);
+        $this->assertEquals("val2", $manifest["attributes"][0]["value"]);
     }
 }
