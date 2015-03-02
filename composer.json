@@ -6,7 +6,7 @@
     "authors": [],
     "repositories": [],
     "require": {
-        "syrup/component-bundle": "~1.10",
+        "syrup/component-bundle": "~1.13.4",
         "aws/aws-sdk-php": "~2.6.16",
         "doctrine/annotations": "1.2.2"
     },

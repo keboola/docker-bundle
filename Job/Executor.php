@@ -65,13 +65,13 @@ class Executor extends BaseExecutor
         $service->setClient($this->storageApi);
         $this->log->pushHandler(new StorageApiHandler($params["component"], $service));
 
-        // Get the formatters and change the component
+        // Get the formatters and change the component in syslog handler
         foreach ($this->log->getHandlers() as $handler) {
             if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
                 $handler->getFormatter()->setAppName($params["component"]);
             }
         }
-
+        
         // Manual config from request
         if (isset($params["configData"])) {
             $configData = $params["configData"];
