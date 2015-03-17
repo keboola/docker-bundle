@@ -154,16 +154,16 @@ class Container
         $process->setTimeout($this->getImage()->getProcessTimeout());
         $process->run();
         if (!$process->isSuccessful()) {
-            $message = $process->getErrorOutput();
+            $message = substr($process->getErrorOutput(), 0, 8192);
             if (!$message) {
-                $message = $process->getOutput();
+                $message = substr($process->getOutput(), 0, 8192);
             }
             if (!$message) {
                 $message = "No error message.";
             }
             $data = array(
-                "output" => $process->getOutput(),
-                "errorOutput" => $process->getErrorOutput()
+                "output" => substr($process->getOutput(), 0, 8192),
+                "errorOutput" => substr($process->getErrorOutput(), 0, 8192)
             );
 
             if ($process->getExitCode() == 1) {
