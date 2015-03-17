@@ -5,16 +5,16 @@ Docker is a Keboola service, that runs Docker images.
 
 # Group Run
 
-Run a configuration on an image.
+Run a configuration in an image.
 
-## Run an image [/{image}/run]
+## Create a job [/{image}/run]
 
-Run a job with all configuration in the request.
+Create a job on a specified docker image.
 
 + Parameters
     + image (string) ... ID of the image
 
-### Create a job [POST]
+### Custom configuration [POST]
 + Request (application/json)
     + Headers
     
@@ -65,15 +65,8 @@ Run a job with all configuration in the request.
             "url": "https://syrup.keboola.com/queue/job/67121676",
             "status": "waiting"
         }
-
-## Run an stored configuration [/{image}/run]
-
-Run a previously stored configuration.
-
-+ Parameters
-    + image (string) ... ID of the image
     
-### Create a job [POST]
+### Stored configuration [POST]
 + Request (application/json)
     + Headers
     
