@@ -9,7 +9,7 @@ use Keboola\StorageApi\Client;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\UserException;
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -64,7 +64,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         // Delete bucket
         $this->client->dropBucket("in.c-docker-test");
     }
-    
+
     public function testExecutorRun()
     {
         $imageConfig = array(
@@ -126,7 +126,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Syrup\ComponentBundle\Exception\UserException
+     * @expectedException UserException
      * @expectedExceptionMessage Running container exceeded the timeout of 1 seconds.
      */
     public function testExecutorRunTimeout()

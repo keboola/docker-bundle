@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Image\DockerHub;
-use Syrup\ComponentBundle\Exception\UserException;
 
 class Image
 {

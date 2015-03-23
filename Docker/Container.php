@@ -4,10 +4,9 @@ namespace Keboola\DockerBundle\Docker;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
-use Syrup\ComponentBundle\Exception\ApplicationException;
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 
 class Container
 {
@@ -154,22 +153,26 @@ class Container
         $process->setTimeout($this->getImage()->getProcessTimeout());
         $process->run();
         if (!$process->isSuccessful()) {
-            $message = $process->getErrorOutput();
+            $message = substr($process->getErrorOutput(), 0, 8192);
             if (!$message) {
-                $message = $process->getOutput();
+                $message = substr($process->getOutput(), 0, 8192);
             }
             if (!$message) {
                 $message = "No error message.";
             }
-            $data = array(
-                "output" => $process->getOutput(),
-                "errorOutput" => $process->getErrorOutput()
-            );
+            $data = [
+                "output" => substr($process->getOutput(), 0, 8192),
+                "errorOutput" => substr($process->getErrorOutput(), 0, 8192)
+            ];
 
             if ($process->getExitCode() == 1) {
                 throw new UserException("Container '{$this->getId()}': {$message}", null, $data);
             } else {
-                throw new ApplicationException("Container '{$this->getId()}': ({$process->getExitCode()}) {$message}", null, $data);
+                throw new ApplicationException(
+                    "Container '{$this->getId()}': ({$process->getExitCode()}) {$message}",
+                    null,
+                    $data
+                );
             }
         }
         return $process;
@@ -225,11 +228,15 @@ class Container
     public function getRunCommand($containerName = "")
     {
         $envs = "";
+        $dataDir = str_replace('C:\\Users\\ONDRE_~1\\', '/c/Users/ondre_000/', $this->dataDir);
+        $dataDir = strtr($dataDir, DIRECTORY_SEPARATOR, '/');
+
         foreach ($this->getEnvironmentVariables() as $key => $value) {
-            $envs .=  " -e \"" . escapeshellarg($key) . "=" . escapeshellarg($value) . "\"";
+//            $envs .=  " -e " . escapeshellarg($key) . "=" . escapeshellarg($value);
+            $envs .=  " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value)) ;
         }
-        $command = "sudo docker run"
-            . " --volume=" . escapeshellarg($this->getDataDir()). ":/data"
+        $command = "plink -load docker sudo docker run"
+            . " --volume=" . escapeshellarg($dataDir). ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs

@@ -6,10 +6,11 @@ use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\UserException;
 
 class Executor
 {
@@ -107,13 +108,13 @@ class Executor
         $container->createDataDir($tmpDir);
 
         $tokenInfo = $this->getStorageApiClient()->getLogData();
-        $envs = array(
+        $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
             "KBC_PROJECTNAME" => $tokenInfo["owner"]["name"],
             "KBC_TOKENID" => $tokenInfo["id"],
-            "KBC_TOKENDESC" => $tokenInfo["description"],
-        );
+            "KBC_TOKENDESC" => $tokenInfo["description"]
+        ];
         $container->setEnvironmentVariables($envs);
 
         $reader = new Reader($this->getStorageApiClient());
@@ -133,20 +134,24 @@ class Executor
         $adapter = new Configuration\Container\Adapter();
         $adapter->setFormat($container->getImage()->getConfigFormat());
         $adapter->setConfig($config);
-        switch($adapter->getFormat()) {
+        switch ($adapter->getFormat()) {
             case 'yaml':
                 $fileSuffix = ".yml";
                 break;
             case 'json':
                 $fileSuffix = ".json";
                 break;
+            default:
+                throw new ApplicationException("Invalid config file format ".$adapter->getFormat());
         }
         $adapter->writeToFile($tmpDir . "/data/config" . $fileSuffix);
 
         try {
             $process = $container->run($this->getStorageApiClient()->getRunId());
         } catch (ProcessTimedOutException $e) {
-            throw new UserException("Running container exceeded the timeout of {$container->getImage()->getProcessTimeout()} seconds.");
+            throw new UserException(
+                "Running container exceeded the timeout of {$container->getImage()->getProcessTimeout()} seconds."
+            );
         }
 
         if ($process->getOutput()) {
@@ -158,8 +163,8 @@ class Executor
         $writer = new Writer($this->getStorageApiClient());
         $writer->setFormat($container->getImage()->getConfigFormat());
 
-        $outputTablesConfig = array();
-        $outputFilesConfig = array();
+        $outputTablesConfig = [];
+        $outputFilesConfig = [];
 
         if (isset($config["storage"]["output"]["tables"]) && count($config["storage"]["output"]["tables"])) {
             $outputTablesConfig = $config["storage"]["output"]["tables"];
