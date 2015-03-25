@@ -1,14 +1,13 @@
 {
     "name": "keboola/dockerbundle",
     "type": "symfony-bundle",
-    "description": "Some new component",
+    "description": "Component for running Docker images in KBC",
     "keywords": [],
     "authors": [],
     "repositories": [],
     "require": {
-        "syrup/component-bundle": "~1.13.4",
-        "aws/aws-sdk-php": "~2.6.16",
-        "doctrine/annotations": "1.2.2"
+        "keboola/syrup": "~2.1.0",
+        "symfony/symfony": "<2.6.5"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
@@ -18,13 +17,14 @@
     },
     "scripts": {
         "post-install-cmd": [
-            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getParameters",
-            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getSharedParameters",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap"
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
         ],
         "post-update-cmd": [
-            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getParameters",
-            "Syrup\\CoreBundle\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
         ]

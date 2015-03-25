@@ -3,9 +3,9 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\UserException;
 
-class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
+class ApiController extends \Keboola\Syrup\Controller\ApiController
 {
 
     public function preExecute(Request $request)
@@ -26,13 +26,13 @@ class ApiController extends \Syrup\ComponentBundle\Controller\ApiController
         }
 
         // Get the formatters and change the component
-        foreach ($this->logger->getHandlers() as $handler) {
-            if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
-                $handler->getFormatter()->setAppName($component["id"]);
-            }
-        }
+//        foreach ($this->logger->getHandlers() as $handler) {
+      //      if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
+    //            $handler->getFormatter()->setAppName($component["id"]);
+  //          }
+//        }
 
-        $this->container->get('syrup.monolog.formatter')->setAppName($component["id"]);
+ //       $this->container->get('syrup.monolog.formatter')->setAppName($component["id"]);
     }
 
     /**

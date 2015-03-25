@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\UserException;
 
 class Collection implements \Iterator, \Countable, \ArrayAccess
 {

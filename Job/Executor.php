@@ -8,12 +8,10 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Syrup\ComponentBundle\Exception\UserException;
-use Syrup\ComponentBundle\Filesystem\Temp;
-use Syrup\ComponentBundle\Job\Executor as BaseExecutor;
-use Syrup\ComponentBundle\Job\Metadata\Job;
-use Syrup\ComponentBundle\Monolog\Handler\StorageApiHandler;
-use Syrup\ComponentBundle\Service\StorageApi\StorageApiService;
+use Keboola\Syrup\Exception\UserException;
+use Keboola\Temp\Temp;
+use Keboola\Syrup\Job\Executor as BaseExecutor;
+use Keboola\Syrup\Job\Metadata\Job;
 
 class Executor extends BaseExecutor
 {
@@ -61,17 +59,17 @@ class Executor extends BaseExecutor
         }
 
         // Add storage api handler
-        $service = new StorageApiService();
-        $service->setClient($this->storageApi);
-        $this->log->pushHandler(new StorageApiHandler($params["component"], $service));
+  //      $service = new StorageApiService();
+//        $service->setClient($this->storageApi);
+//        $this->log->pushHandler(new StorageApiHandler($params["component"], $service));
 
         // Get the formatters and change the component in syslog handler
-        foreach ($this->log->getHandlers() as $handler) {
-            if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
-                $handler->getFormatter()->setAppName($params["component"]);
-            }
-        }
-        
+  //      foreach ($this->log->getHandlers() as $handler) {
+//if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
+      //          $handler->getFormatter()->setAppName($params["component"]);
+    //        }
+  //      }
+
         // Manual config from request
         if (isset($params["configData"])) {
             $configData = $params["configData"];
