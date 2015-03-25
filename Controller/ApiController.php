@@ -24,15 +24,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         if (!isset($component)) {
             throw new UserException("Component '{$request->get("component")}' not found.");
         }
-
-        // Get the formatters and change the component
-//        foreach ($this->logger->getHandlers() as $handler) {
-      //      if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
-    //            $handler->getFormatter()->setAppName($component["id"]);
-  //          }
-//        }
-
- //       $this->container->get('syrup.monolog.formatter')->setAppName($component["id"]);
     }
 
     /**

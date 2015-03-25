@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Job;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Monolog\Logger;
@@ -58,17 +59,11 @@ class Executor extends BaseExecutor
             throw new UserException("Component '{$params["component"]}' not found.");
         }
 
-        // Add storage api handler
-  //      $service = new StorageApiService();
-//        $service->setClient($this->storageApi);
-//        $this->log->pushHandler(new StorageApiHandler($params["component"], $service));
-
-        // Get the formatters and change the component in syslog handler
-  //      foreach ($this->log->getHandlers() as $handler) {
-//if (get_class($handler->getFormatter()) == 'Keboola\\DockerBundle\\Monolog\\Formatter\\DockerBundleJsonFormatter') {
-      //          $handler->getFormatter()->setAppName($params["component"]);
-    //        }
-  //      }
+        $processor = new DockerProcessor($component);
+        // attach the processor to all handlers and channels
+        foreach ($this->log->getHandlers() as $handler) {
+            $handler->pushProcessor(array($processor, 'processRecord'));
+        }
 
         // Manual config from request
         if (isset($params["configData"])) {
