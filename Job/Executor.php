@@ -59,7 +59,7 @@ class Executor extends BaseExecutor
             throw new UserException("Component '{$params["component"]}' not found.");
         }
 
-        $processor = new DockerProcessor($component);
+        $processor = new DockerProcessor($component['id']);
         // attach the processor to all handlers and channels
         foreach ($this->log->getHandlers() as $handler) {
             $handler->pushProcessor(array($processor, 'processRecord'));
