@@ -2,15 +2,35 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Job\Metadata\JobFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
 class ApiController extends \Keboola\Syrup\Controller\ApiController
 {
 
+    /**
+     * Validate request body configuration.
+     *
+     * @param array $body Configuration parameters
+     * @throws UserException In case of error.
+     */
+    private function validateParams($body)
+    {
+        if (!isset($body["config"]) && !isset($body["configData"])) {
+            throw new UserException("Specify 'config' or 'configData'.");
+        }
+
+        if (isset($body["config"]) && isset($body["configData"])) {
+            throw new UserException("Cannot specify both 'config' and 'configData'.");
+        }
+    }
+
+
     public function preExecute(Request $request)
     {
-
         parent::preExecute($request);
 
         // Check list of components
@@ -27,27 +47,73 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     }
 
     /**
+     * Run docker component with the provided configuration.
+     *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function runAction(Request $request)
     {
-        if (!$request->get("component")) {
-            throw new UserException("Component not set.");
-        }
-
-        $body = $this->getPostJson($request);
-
-        if (!isset($body["config"]) && !isset($body["configData"])) {
-            throw new UserException("Specify 'config' or 'configData'.");
-        }
-
-        if (isset($body["config"]) && isset($body["configData"])) {
-            throw new UserException("Cannot specify both 'config' and 'configData'.");
-        }
-
+        $this->validateParams($this->getPostJson($request));
         return parent::runAction($request);
     }
+
+
+    /**
+     * Dry run - generate configuration environment for docker image and
+     *  store it in KBC Storage.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function dryRunAction(Request $request)
+    {
+        // Get params from request
+        $params = $this->getPostJson($request);
+        $this->validateParams($params);
+        $params['dryRun'] = 1;
+
+        // check params against ES mapping
+        $this->checkMappingParams($params);
+
+        // Create new job
+        /** @var JobFactory $jobFactory */
+        $jobFactory = $this->container->get('syrup.job_factory');
+        $jobFactory->setStorageApiClient($this->storageApi);
+        $job = $jobFactory->create('run', $params);
+
+        // Add job to Elasticsearch
+        try {
+            /** @var JobMapper $jobMapper */
+            $jobMapper = $this->container->get('syrup.elasticsearch.current_component_job_mapper');
+            $jobId = $jobMapper->create($job);
+        } catch (\Exception $e) {
+            throw new ApplicationException("Failed to create job", $e);
+        }
+
+        // Add job to SQS
+        $queueName = 'default';
+        $queueParams = $this->container->getParameter('queue');
+
+        if (isset($queueParams['sqs'])) {
+            $queueName = $queueParams['sqs'];
+        }
+        $messageId = $this->enqueue($jobId, $queueName);
+
+        $this->logger->info('Job created', [
+            'sqsQueue' => $queueName,
+            'sqsMessageId' => $messageId,
+            'job' => $job->getLogData()
+        ]);
+
+        // Response with link to job resource
+        return $this->createJsonResponse([
+            'id'        => $jobId,
+            'url'       => $this->getJobUrl($jobId),
+            'status'    => $job->getStatus()
+        ], 202);
+    }
+
 
     /**
      *

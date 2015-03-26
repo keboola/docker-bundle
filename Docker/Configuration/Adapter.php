@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -26,6 +27,17 @@ class Adapter
     protected $format = 'yaml';
 
     /**
+     * Constructor.
+     *
+     * @param string $format Configuration file format ('yaml', 'json')
+     */
+    public function __construct($format)
+    {
+        $this->setFormat($format);
+    }
+
+
+    /**
      * @return array
      */
     public function getConfig()
@@ -41,15 +53,32 @@ class Adapter
         return $this->format;
     }
 
+
+    /**
+     * Get configuration file suffix.
+     *
+     * @return string File extension.
+     */
+    public function getFileExtension()
+    {
+        switch ($this->format) {
+            case 'yaml':
+            case 'json':
+                return '.' . $this->format;
+            default:
+                throw new ApplicationException("Invalid configuration format {$this->format}.");
+        }
+    }
+
     /**
      * @param $format
      * @return $this
-     * @throws \Exception
+     * @throws ApplicationException
      */
     public function setFormat($format)
     {
         if (!in_array($format, array('yaml', 'json'))) {
-            throw new \Exception("Configuration format '{$format}' not supported");
+            throw new ApplicationException("Configuration format '{$format}' not supported");
         }
         $this->format = $format;
         return $this;
@@ -73,13 +102,13 @@ class Adapter
      *
      * @param $file
      * @return array
-     * @throws \Exception
+     * @throws ApplicationException
      */
     public function readFromFile($file)
     {
         $fs = new Filesystem();
         if (!$fs->exists($file)) {
-            throw new \Exception("File '$file' not found.");
+            throw new ApplicationException("File '$file' not found.");
         }
 
         $serialized = $this->getContents($file);
@@ -90,6 +119,8 @@ class Adapter
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
             $data = $encoder->decode($serialized, $encoder::FORMAT);
+        } else {
+            throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
         $this->setConfig($data);
         return $this->getConfig();
@@ -109,6 +140,8 @@ class Adapter
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
             $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT);
+        } else {
+            throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
         $fs = new Filesystem();
         $fs->dumpFile($file, $serialized);
@@ -117,18 +150,18 @@ class Adapter
     /**
      * @param $file
      * @return mixed
-     * @throws \Exception
+     * @throws ApplicationException
      */
     public function getContents($file)
     {
         if (!(new Filesystem())->exists($file)) {
-            throw new \Exception("File" . $file . " not found.");
+            throw new ApplicationException("File" . $file . " not found.");
         }
         $fileHandler = new SplFileInfo($file, "", basename($file));
         if ($fileHandler) {
             return $fileHandler->getContents();
         } else {
-            throw new \Exception("File" . $file . " not found.");
+            throw new ApplicationException("File" . $file . " not found.");
         }
     }
 }

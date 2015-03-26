@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9787d44bc46b447608f9698788fc2bbe",
+    "hash": "daaa9860fac093123e3c09ceae8e6a8b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1332,16 +1332,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "2.12.7",
+            "version": "2.12.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "a36c63d8cd25ddc0a56d1b4af782a51ba695d35b"
+                "reference": "6f5cd7204cd5de0ad9581e6aa6f46ed7f47da506"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/a36c63d8cd25ddc0a56d1b4af782a51ba695d35b",
-                "reference": "a36c63d8cd25ddc0a56d1b4af782a51ba695d35b",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/6f5cd7204cd5de0ad9581e6aa6f46ed7f47da506",
+                "reference": "6f5cd7204cd5de0ad9581e6aa6f46ed7f47da506",
                 "shasum": ""
             },
             "require": {
@@ -1370,20 +1370,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2015-02-21 14:26:37"
+            "time": "2015-03-26 10:09:43"
         },
         {
             "name": "keboola/syrup",
-            "version": "2.1.3",
+            "version": "2.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "32ec3116e370ba9db6f5684e9f88f6d29ee2be08"
+                "reference": "d51a33f9719efc9b8f3ea19e8a6a80cc7cbc7736"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/32ec3116e370ba9db6f5684e9f88f6d29ee2be08",
-                "reference": "32ec3116e370ba9db6f5684e9f88f6d29ee2be08",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/d51a33f9719efc9b8f3ea19e8a6a80cc7cbc7736",
+                "reference": "d51a33f9719efc9b8f3ea19e8a6a80cc7cbc7736",
                 "shasum": ""
             },
             "require": {
@@ -1402,7 +1402,7 @@
                 "symfony/assetic-bundle": "~2.3",
                 "symfony/monolog-bundle": "~2.6",
                 "symfony/swiftmailer-bundle": "~2.3",
-                "symfony/symfony": "~2.6"
+                "symfony/symfony": "~2.6 >=2.6.5"
             },
             "require-dev": {
                 "codeclimate/php-test-reporter": "dev-master",
@@ -1435,7 +1435,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-03-12 21:14:49"
+            "time": "2015-03-25 08:54:18"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -1670,17 +1670,17 @@
         },
         {
             "name": "sensio/distribution-bundle",
-            "version": "v3.0.18",
+            "version": "v3.0.19",
             "target-dir": "Sensio/Bundle/DistributionBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/SensioDistributionBundle.git",
-                "reference": "ac026149ffb1d3a5c893290d2d3ca8795013de08"
+                "reference": "c68d47e3bcdfca74d92ab9d9382e276adf451424"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/ac026149ffb1d3a5c893290d2d3ca8795013de08",
-                "reference": "ac026149ffb1d3a5c893290d2d3ca8795013de08",
+                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/c68d47e3bcdfca74d92ab9d9382e276adf451424",
+                "reference": "c68d47e3bcdfca74d92ab9d9382e276adf451424",
                 "shasum": ""
             },
             "require": {
@@ -1726,21 +1726,21 @@
                 "configuration",
                 "distribution"
             ],
-            "time": "2015-02-27 12:59:18"
+            "time": "2015-03-25 09:01:40"
         },
         {
             "name": "sensio/framework-extra-bundle",
-            "version": "v3.0.5",
+            "version": "v3.0.6",
             "target-dir": "Sensio/Bundle/FrameworkExtraBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/SensioFrameworkExtraBundle.git",
-                "reference": "a72ce75a73d86c3593eceed5650b58fd3807a0cf"
+                "reference": "1c3ed356bd1ff67cd71806efbb71511644035c85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/a72ce75a73d86c3593eceed5650b58fd3807a0cf",
-                "reference": "a72ce75a73d86c3593eceed5650b58fd3807a0cf",
+                "url": "https://api.github.com/repos/sensiolabs/SensioFrameworkExtraBundle/zipball/1c3ed356bd1ff67cd71806efbb71511644035c85",
+                "reference": "1c3ed356bd1ff67cd71806efbb71511644035c85",
                 "shasum": ""
             },
             "require": {
@@ -1781,7 +1781,7 @@
                 "annotations",
                 "controllers"
             ],
-            "time": "2015-02-05 07:39:23"
+            "time": "2015-03-24 15:12:07"
         },
         {
             "name": "sensio/generator-bundle",
@@ -2111,16 +2111,16 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v2.6.4",
+            "version": "v2.6.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "23b647f1e4eeb24a457d3c47f5f5046377d5a3bf"
+                "reference": "80833da9d04b004fa59fd23102e6dfad80c98106"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/23b647f1e4eeb24a457d3c47f5f5046377d5a3bf",
-                "reference": "23b647f1e4eeb24a457d3c47f5f5046377d5a3bf",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/80833da9d04b004fa59fd23102e6dfad80c98106",
+                "reference": "80833da9d04b004fa59fd23102e6dfad80c98106",
                 "shasum": ""
             },
             "require": {
@@ -2184,7 +2184,8 @@
                 "ircmaxell/password-compat": "~1.0",
                 "monolog/monolog": "~1.11",
                 "ocramius/proxy-manager": "~0.4|~1.0",
-                "propel/propel1": "~1.6"
+                "propel/propel1": "~1.6",
+                "symfony/phpunit-bridge": "~2.7"
             },
             "type": "library",
             "extra": {
@@ -2223,7 +2224,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2015-02-02 18:02:30"
+            "time": "2015-03-17 14:58:46"
         },
         {
             "name": "twig/twig",

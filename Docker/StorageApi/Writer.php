@@ -7,10 +7,12 @@ use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Syrup\ComponentBundle\Exception\UserException;
+use Keboola\Syrup\Exception\UserException;
+
 
 class Writer
 {
@@ -70,8 +72,10 @@ class Writer
     }
 
     /**
-     * @param $source
-     * @param array $configurations
+     * Upload files from local temp directory to Storage.
+     *
+     * @param string $source Source path.
+     * @param array $configurations Upload configurations.
      */
     public function uploadFiles($source, $configurations = array())
     {
@@ -86,7 +90,6 @@ class Writer
         }
         $outputMappingFiles = array_unique($outputMappingFiles);
         $processedOutputMappingFiles = array();
-
 
         /**
          * @var $file SplFileInfo
@@ -105,8 +108,13 @@ class Writer
                 $configFromManifest = $this->readFileManifest($file->getPathname() . ".manifest");
             }
 
-            $config = (new File\Manifest())->parse(array($configFromMapping, $configFromManifest));
-            $this->uploadFile($file->getPathname(), $config);
+            try {
+                $storageConfig = (new File\Manifest())->parse(array($configFromMapping, $configFromManifest));
+            } catch (InvalidConfigurationException $e) {
+                throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
+            }
+
+            $this->uploadFile($file->getPathname(), $storageConfig);
         }
 
         $processedOutputMappingFiles = array_unique($processedOutputMappingFiles);
@@ -123,8 +131,7 @@ class Writer
      */
     protected function readFileManifest($source)
     {
-        $adapter = new File\Manifest\Adapter();
-        $adapter->setFormat($this->getFormat());
+        $adapter = new File\Manifest\Adapter($this->getFormat());
         return $adapter->readFromFile($source);
     }
 
@@ -186,7 +193,11 @@ class Writer
                 }
             }
 
-            $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));
+            try {
+                $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));
+            } catch (InvalidConfigurationException $e) {
+                throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
+            }
 
             if (count(explode(".", $config["destination"])) != 3) {
                 throw new UserException("'{$config["destination"]}' does not seem to be a table identifier.");
@@ -209,8 +220,7 @@ class Writer
      */
     protected function readTableManifest($source)
     {
-        $adapter = new Table\Manifest\Adapter();
-        $adapter->setFormat($this->getFormat());
+        $adapter = new Table\Manifest\Adapter($this->getFormat());
         return $adapter->readFromFile($source);
     }
 

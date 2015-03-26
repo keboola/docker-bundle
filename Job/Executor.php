@@ -78,23 +78,25 @@ class Executor extends BaseExecutor
             }
         }
 
-        try {
-            $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
-            $image = Image::factory($component["data"]);
-            $container = new Container($image);
-            $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
-            $executor->setTmpFolder($this->temp->getTmpFolder());
-            $process = $executor->run($container, $configData);
-            $this->log->info("Docker container for '{$component['id']}' finished.");
-        } catch (InvalidConfigurationException $e) {
-            throw new UserException("Parsing configuration failed: " . $e->getMessage(), $e);
-        }
-
-        if ($process->getOutput()) {
-            $message = $process->getOutput();
+        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
+        $image = Image::factory($component["data"]);
+        $container = new Container($image);
+        $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+        $executor->setTmpFolder($this->temp->getTmpFolder());
+        $executor->initialize($container, $configData);
+        if (!empty($params['dryRun'])) {
+            $executor->dryRun($container, $configData);
+            $message = 'Dry run finished, docker container did not run.';
         } else {
-            $message = "Container finished.";
+            $process = $executor->run($container, $configData);
+            if ($process->getOutput()) {
+                $message = $process->getOutput();
+            } else {
+                $message = "Container finished successfully.";
+            }
         }
+        $this->log->info("Docker container for '{$component['id']}' finished.");
+
         return ["message" => $message];
     }
 }

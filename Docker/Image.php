@@ -138,7 +138,7 @@ class Image
     }
 
     /**
-     * @param array $config
+     * @param array $config Docker image configuration.
      * @return Image|DockerHub
      */
     public static function factory($config = array())

@@ -1,11 +1,4 @@
 services:
-#    keboola_docker.example:
-#        class: Keboola\DockerBundle\Example
-#        arguments: [@service_id, "plain_value", %parameter%]
-    docker.job_executor:
+    syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
         arguments: [@logger, @syrup.temp]
-
-#    syrup.monolog.formatter:
-#        class: Keboola\DockerBundle\Monolog\Formatter\DockerBundleJsonFormatter
-#        arguments: [%app_name%, @syrup.monolog.s3_uploader, @storage_api]

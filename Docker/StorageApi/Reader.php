@@ -8,6 +8,10 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Filesystem\Filesystem;
 
 class Reader
@@ -74,18 +78,28 @@ class Reader
      */
     public function downloadFiles($configuration, $destination)
     {
-        $options = new ListFilesOptions();
-        if (isset($configuration["tags"]) && count($configuration["tags"])) {
-            $options->setTags($configuration["tags"]);
-        }
-        if (isset($configuration["query"])) {
-            $options->setQuery($configuration["query"]);
-        }
-        $files = $this->getClient()->listFiles($options);
-        foreach ($files as $file) {
-            $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
-            $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
-            $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
+        foreach ($configuration as $fileConfiguration) {
+            $options = new ListFilesOptions();
+            if (empty($fileConfiguration['tags']) && empty($fileConfiguration['query'])) {
+                throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
+            }
+            if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
+                $options->setTags($fileConfiguration["tags"]);
+            }
+            if (isset($fileConfiguration["query"])) {
+                $options->setQuery($fileConfiguration["query"]);
+            }
+            $files = $this->getClient()->listFiles($options);
+
+            // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
+            if (count($files) > 10) {
+                throw new UserException("File mapping leads maps to more than 10 files, this seems like a mistake.");
+            }
+            foreach ($files as $file) {
+                $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
+                $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
+                $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
+            }
         }
     }
 
@@ -107,10 +121,17 @@ class Reader
             "size_bytes" => $fileInfo["sizeBytes"]
         );
 
-        $adapter = new Input\File\Manifest\Adapter();
-        $adapter->setFormat($this->getFormat());
-        $adapter->setConfig($manifest);
-        $adapter->writeToFile($destination);
+        $adapter = new Input\File\Manifest\Adapter($this->getFormat());
+        try {
+            $adapter->setConfig($manifest);
+            $adapter->writeToFile($destination);
+        } catch (InvalidConfigurationException $e) {
+            throw new ApplicationException(
+                "Failed to write manifest for file {$fileInfo['id']} - {$fileInfo['name']}.",
+                $e
+            );
+        }
+
     }
 
     /**
@@ -209,9 +230,15 @@ class Reader
             );
         }
 
-        $adapter = new Input\Table\Manifest\Adapter();
-        $adapter->setFormat($this->getFormat());
-        $adapter->setConfig($manifest);
-        $adapter->writeToFile($destination);
+        $adapter = new Input\Table\Manifest\Adapter($this->getFormat());
+        try {
+            $adapter->setConfig($manifest);
+            $adapter->writeToFile($destination);
+        } catch (InvalidConfigurationException $e) {
+            throw new ApplicationException(
+                "Failed to write manifest for table {$tableInfo['id']} - {$tableInfo['name']}.",
+                $e
+            );
+        }
     }
 }

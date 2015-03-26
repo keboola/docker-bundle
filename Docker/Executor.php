@@ -9,6 +9,9 @@ use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Keboola\Syrup\Exception\UserException;
 
@@ -28,6 +31,21 @@ class Executor
      * @var Logger
      */
     protected $log;
+
+    /**
+     * Current temporary directory when running the container.
+     *
+     * @var string
+     */
+    private $currentTmpDir;
+
+    /**
+     * Pathname to currently used configuration file.
+     *
+     * @var string
+     */
+    private $currentConfigFile;
+
 
     /**
      * @return string
@@ -93,6 +111,49 @@ class Executor
         $this->setLog($log);
     }
 
+
+    /**
+     * Initialize container environment.
+     */
+    public function initialize(Container $container, $config)
+    {
+        // create temporary working folder and all of its sub-folders
+        $fs = new Filesystem();
+        $this->currentTmpDir = $this->getTmpFolder();
+        $fs->mkdir($this->currentTmpDir);
+        $container->createDataDir($this->currentTmpDir);
+
+        // download source files
+        $reader = new Reader($this->getStorageApiClient());
+        $reader->setFormat($container->getImage()->getConfigFormat());
+
+        try {
+            if (isset($config["storage"]["input"]["tables"]) && count($config["storage"]["input"]["tables"])) {
+                $this->getLog()->debug("Downloading tables.");
+                $reader->downloadTables(
+                    $config["storage"]["input"]["tables"],
+                    $this->currentTmpDir . "/data/in/tables"
+                );
+            }
+            $this->getLog()->debug("Downloading tables");
+            if (isset($config["storage"]["input"]["files"]) && count($config["storage"]["input"]["files"])) {
+                $this->getLog()->debug("Downloading files.");
+                $reader->downloadFiles(
+                    $config["storage"]["input"]["files"],
+                    $this->currentTmpDir . "/data/in/files"
+                );
+            }
+        } catch (ClientException $e) {
+            throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
+        }
+
+        // create configuration file injected into docker
+        $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
+        $adapter->setConfig($config);
+        $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
+        $adapter->writeToFile($this->currentConfigFile);
+    }
+
     /**
      * @param Container $container
      * @param $config
@@ -101,12 +162,7 @@ class Executor
      */
     public function run(Container $container, $config)
     {
-        $fs = new Filesystem();
-        $tmpDir = $this->getTmpFolder();
-        $fs->mkdir($tmpDir);
-
-        $container->createDataDir($tmpDir);
-
+        // set environment variables
         $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
@@ -117,35 +173,7 @@ class Executor
         ];
         $container->setEnvironmentVariables($envs);
 
-        $reader = new Reader($this->getStorageApiClient());
-        $reader->setFormat($container->getImage()->getConfigFormat());
-
-        try {
-            if (isset($config["storage"]["input"]["tables"]) && count($config["storage"]["input"]["tables"])) {
-                $reader->downloadTables($config["storage"]["input"]["tables"], $tmpDir . "/data/in/tables");
-            }
-            if (isset($config["storage"]["input"]["files"]) && count($config["storage"]["input"]["files"])) {
-                $reader->downloadFiles($config["storage"]["input"]["tables"], $tmpDir . "/data/in/files");
-            }
-        } catch (ClientException $e) {
-            throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
-        }
-
-        $adapter = new Configuration\Container\Adapter();
-        $adapter->setFormat($container->getImage()->getConfigFormat());
-        $adapter->setConfig($config);
-        switch ($adapter->getFormat()) {
-            case 'yaml':
-                $fileSuffix = ".yml";
-                break;
-            case 'json':
-                $fileSuffix = ".json";
-                break;
-            default:
-                throw new ApplicationException("Invalid config file format ".$adapter->getFormat());
-        }
-        $adapter->writeToFile($tmpDir . "/data/config" . $fileSuffix);
-
+        // run the container
         try {
             $process = $container->run($this->getStorageApiClient()->getRunId());
         } catch (ProcessTimedOutException $e) {
@@ -174,13 +202,57 @@ class Executor
         }
 
         try {
-            $writer->uploadTables($tmpDir . "/data/out/tables", $outputTablesConfig);
-            $writer->uploadFiles($tmpDir . "/data/out/files", $outputFilesConfig);
+            $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
+            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
         } catch (ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
         }
 
         $container->dropDataDir();
         return $process;
+    }
+
+
+    public function dryRun(Container $container, $config)
+    {
+        $zip = new \ZipArchive();
+        $zipFileName = 'dataDirectory.zip';
+        $zipDir = $this->currentTmpDir . DIRECTORY_SEPARATOR . 'zip';
+        $fs = new Filesystem();
+        $fs->mkdir($zipDir);
+        $zip->open($zipDir. DIRECTORY_SEPARATOR . $zipFileName, \ZipArchive::CREATE);
+        $finder = new Finder();
+        /** @var SplFileInfo $item */
+        foreach ($finder->in($this->currentTmpDir) as $item) {
+            if ($item->isDir()) {
+                if (!$zip->addEmptyDir(DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
+//                    $this->getLog()->warn("Failed to add directory: ".$item->getRelativePathname());
+                    throw new ApplicationException("Failed to add directory: ".$item->getFilename());
+                }
+            } else {
+                if (!$zip->addFile($item->getPathname(), DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
+  //                  $this->getLog()->warn("Failed to add file: ".$item->getRelativePathname());
+                    throw new ApplicationException("Failed to add file: ".$item->getFilename());
+                }
+            }
+        }
+        $zip->close();
+
+        $writer = new Writer($this->getStorageApiClient());
+        $writer->setFormat($container->getImage()->getConfigFormat());
+        // zip archive must be created in special directory, because uploadFiles is recursive
+        $writer->uploadFiles(
+            $zipDir,
+            [
+                [
+                    'source' => $zipFileName,
+                    'tags' => ['dryRun', 'docker'],
+                    'is_permanent' => false,
+                    'is_encrypted' => true,
+                    'is_public' => false,
+                    'notify' => false
+                ]
+            ]
+        );
     }
 }

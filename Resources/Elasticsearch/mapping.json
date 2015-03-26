@@ -11,6 +11,9 @@
             "configData": {
                 "type": "object",
                 "enabled": "false"
+            },
+            "dryRun": {
+                "type": "integer"
             }
         }
     }
