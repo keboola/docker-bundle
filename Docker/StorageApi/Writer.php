@@ -118,7 +118,9 @@ class Writer
         }
 
         $processedOutputMappingFiles = array_unique($processedOutputMappingFiles);
-        $diff = array_diff(array_merge($outputMappingFiles, $processedOutputMappingFiles), $processedOutputMappingFiles);
+        $diff = array_diff(
+            array_merge($outputMappingFiles, $processedOutputMappingFiles), $processedOutputMappingFiles
+        );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
         }
@@ -189,7 +191,11 @@ class Writer
             } else {
                 // If no manifest found and no output mapping, use filename (without .csv) as table id
                 if (!isset($configFromMapping["destination"])) {
-                    $configFromMapping["destination"] = substr($file->getFilename(), 0, strlen($file->getFilename()) - 4);
+                    $configFromMapping["destination"] = substr(
+                        $file->getFilename(),
+                        0,
+                        strlen($file->getFilename()) - 4
+                    );
                 }
             }
 
@@ -207,7 +213,9 @@ class Writer
         }
 
         $processedOutputMappingTables = array_unique($processedOutputMappingTables);
-        $diff = array_diff(array_merge($outputMappingTables, $processedOutputMappingTables), $processedOutputMappingTables);
+        $diff = array_diff(
+            array_merge($outputMappingTables, $processedOutputMappingTables), $processedOutputMappingTables
+        );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
         }
@@ -248,7 +256,9 @@ class Writer
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
                 if (!in_array($config["delete_where_column"], $tableInfo["indexedColumns"])) {
-                    $this->getClient()->markTableColumnAsIndexed($config["destination"], $config["delete_where_column"]);
+                    $this->getClient()->markTableColumnAsIndexed(
+                        $config["destination"], $config["delete_where_column"]
+                    );
                 }
 
                 // Delete rows

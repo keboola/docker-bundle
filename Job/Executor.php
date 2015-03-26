@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Monolog\Logger;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
@@ -85,8 +84,9 @@ class Executor extends BaseExecutor
         $executor->setTmpFolder($this->temp->getTmpFolder());
         $executor->initialize($container, $configData);
         if (!empty($params['dryRun'])) {
-            $executor->dryRun($container, $configData);
+            $executor->dryRun($container);
             $message = 'Dry run finished, docker container did not run.';
+            $this->log->info($message);
         } else {
             $process = $executor->run($container, $configData);
             if ($process->getOutput()) {
@@ -94,8 +94,8 @@ class Executor extends BaseExecutor
             } else {
                 $message = "Container finished successfully.";
             }
+            $this->log->info("Docker container for '{$component['id']}' finished.");
         }
-        $this->log->info("Docker container for '{$component['id']}' finished.");
 
         return ["message" => $message];
     }

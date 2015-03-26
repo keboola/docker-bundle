@@ -11,7 +11,6 @@ use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Keboola\Syrup\Exception\UserException;
 
@@ -213,7 +212,7 @@ class Executor
     }
 
 
-    public function dryRun(Container $container, $config)
+    public function dryRun(Container $container)
     {
         $zip = new \ZipArchive();
         $zipFileName = 'dataDirectory.zip';
@@ -226,12 +225,10 @@ class Executor
         foreach ($finder->in($this->currentTmpDir) as $item) {
             if ($item->isDir()) {
                 if (!$zip->addEmptyDir(DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
-//                    $this->getLog()->warn("Failed to add directory: ".$item->getRelativePathname());
                     throw new ApplicationException("Failed to add directory: ".$item->getFilename());
                 }
             } else {
                 if (!$zip->addFile($item->getPathname(), DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
-  //                  $this->getLog()->warn("Failed to add file: ".$item->getRelativePathname());
                     throw new ApplicationException("Failed to add file: ".$item->getFilename());
                 }
             }
