@@ -69,9 +69,9 @@ As a part of container configuration you can specify tables and files that will 
 
 #### Tables
 
-Tables from input mapping will are mounted to `/data/in/tables`, where file name equals to the table name with `.csv` suffix. 
+Tables from input mapping will are mounted to `/data/in/tables`. 
 
-Input mapping parameters are similar to [Storage API export table options ](http://docs.keboola.apiary.io/#tables). If `destination` is not set, the CSV file will have the same name as the table with `.csv` suffix.
+Input mapping parameters are similar to [Storage API export table options ](http://docs.keboola.apiary.io/#tables). If `destination` is not set, the CSV file will have the same name as the table (without adding `.csv` suffix).
 
 The tables element in configuration is an array and supports these attributes
 
@@ -101,7 +101,7 @@ storage:
 ```
 
 
-Download 2 days of data from table `in.c-storage.StoredData` to `/data/tables/in/in.c-storage.StoredData.csv`
+Download 2 days of data from table `in.c-storage.StoredData` to `/data/tables/in/in.c-storage.StoredData`
 
 ```
 storage: 
