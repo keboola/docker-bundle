@@ -43,6 +43,14 @@ class Image
      */
     protected $processTimeout = 3600;
 
+
+    /**
+     * Constructor (use @see {factory()})
+     */
+    protected function __construct()
+    {
+    }
+
     /**
      * @return string
      */
@@ -112,7 +120,7 @@ class Image
      */
     public function setConfigFormat($configFormat)
     {
-        if (!in_array($configFormat, array('yaml', 'json'))) {
+        if (!in_array($configFormat, ['yaml', 'json'])) {
             throw new \Exception("Configuration format '{$configFormat}' not supported");
         }
         $this->configFormat = $configFormat;
@@ -141,13 +149,13 @@ class Image
      * @param array $config Docker image configuration.
      * @return Image|DockerHub
      */
-    public static function factory($config = array())
+    public static function factory($config = [])
     {
         if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub") {
             $instance = new DockerHub();
             $instance->setDockerHubImageId($config["definition"]["uri"]);
         } else {
-            $instance = new self;
+            $instance = new self();
         }
         if (isset($config["id"])) {
             $instance->setId($config["id"]);
@@ -167,6 +175,7 @@ class Image
 
     /**
      * @param Container $container
+     * @return string Image tag name.
      * @throws \Exception
      */
     public function prepare(Container $container)
