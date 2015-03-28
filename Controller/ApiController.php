@@ -38,6 +38,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         foreach ($components["components"] as $c) {
             if ($c["id"] == $request->get("component")) {
                 $component = $c;
+                break;
             }
         }
 
