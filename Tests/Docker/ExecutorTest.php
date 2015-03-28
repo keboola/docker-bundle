@@ -6,10 +6,12 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
-use Keboola\Syrup\Exception\UserException;
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -24,13 +26,17 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
      */
     protected $tmpDir;
 
+    /**
+     * @var Temp
+     */
+    private $temp;
+
     public function setUp()
     {
         // Create folders
-        $root = "/tmp/docker/" . uniqid("", true);
-        $fs = new Filesystem();
-        $fs->mkdir($root);
-        $this->tmpDir = $root;
+        $this->temp = new Temp('docker');
+        $this->temp->initRunFolder();
+        $this->tmpDir = $this->temp->getTmpFolder();
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
 
@@ -51,14 +57,18 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         // Delete local files
-        $finder = new Finder();
-        $fs = new Filesystem();
-        $fs->remove($finder->files()->in($this->tmpDir));
-        $fs->remove($this->tmpDir);
+        $this->temp = null;
 
         // Delete tables
         foreach ($this->client->listTables("in.c-docker-test") as $table) {
             $this->client->dropTable($table["id"]);
+        }
+
+        $listFiles = new ListFilesOptions();
+        $listFiles->setTags(['dryRun']);
+        $listFiles->setRunId($this->client->getRunId());
+        foreach ($this->client->listFiles($listFiles) as $file) {
+            $this->client->deleteFile($file['id']);
         }
 
         // Delete bucket
@@ -121,14 +131,11 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
         $process = $executor->run($container, $config);
-        $this->assertEquals("Processed 1 rows.", trim($process->getOutput()));
+        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
     }
 
-    /**
-     * @expectedException UserException
-     * @expectedExceptionMessage Running container exceeded the timeout of 1 seconds.
-     */
     public function testExecutorRunTimeout()
     {
         $imageConfig = array(
@@ -172,6 +179,71 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
-        $executor->run($container, $config);
+        try {
+            $executor->run($container, $config);
+            $this->fail("Timeouted process should raise exception.");
+        } catch (ProcessTimedOutException $e) {
+            $this->assertContains('exceeded the timeout', $e->getMessage());
+        }
+    }
+
+
+    public function testExecutorDryRun()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test"
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        )
+                    )
+                )
+            ),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log->pushHandler(new \Monolog\Handler\NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $executor->dryRun($container);
+        $this->assertFileExists(
+            $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'dataDirectory.zip'
+        );
+        $listFiles = new ListFilesOptions();
+        $listFiles->setTags(['dryRun']);
+        $listFiles->setRunId($this->client->getRunId());
+        $files = $this->client->listFiles($listFiles);
+        $this->assertEquals(1, count($files));
+        $this->assertEquals(0, strcasecmp('dataDirectory.zip', $files[0]['name']));
     }
 }
