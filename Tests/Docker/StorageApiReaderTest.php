@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -74,9 +75,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    /**
-     * @throws \Keboola\StorageApi\ClientException
-     */
     public function testReadFiles()
     {
         $root = $this->tmpDir;
@@ -86,7 +84,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
 
         $reader = new Reader($this->client);
-        $configuration = array("tags" => array("docker-bundle-test"));
+        $configuration = [["tags" => ["docker-bundle-test"]]];
         $reader->downloadFiles($configuration, $root . "/download");
 
         $this->assertEquals("test", file_get_contents($root . "/download/" . $id1));
@@ -99,6 +97,40 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($id1, $manifest1["id"]);
         $this->assertEquals($id2, $manifest2["id"]);
     }
+
+    public function testReadFilesErrors()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload", "test");
+
+        // make at least 10 files in the project
+        for ($i = 0; $i < 12; $i++) {
+            $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+        }
+
+        $reader = new Reader($this->client);
+        $configuration = [];
+        $reader->downloadFiles($configuration, $root . "/download");
+
+
+        $reader = new Reader($this->client);
+        $configuration = [[]];
+        try {
+            $reader->downloadFiles($configuration, $root . "/download");
+            $this->fail("Invalid configuration should fail.");
+        } catch (UserException $e) {
+        }
+
+        $reader = new Reader($this->client);
+        $configuration = [['query' => 'id: >0']];
+        try {
+            $reader->downloadFiles($configuration, $root . "/download");
+            $this->fail("Too broad query should fail.");
+        } catch (UserException $e) {
+        }
+
+    }
+
 
     /**
      *
