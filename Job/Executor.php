@@ -76,6 +76,16 @@ class Executor extends BaseExecutor
                 throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
             }
         }
+        if (!empty($params['dryRun'])) {
+            if (isset($configData['storage']['input']['tables']) &&
+                is_array($configData['storage']['input']['tables'])
+            ) {
+                foreach ($configData['storage']['input']['tables'] as $index => $table) {
+                    $table['limit'] = 50;
+                    $configData['storage']['input']['tables'][$index] = $table;
+                }
+            }
+        }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
         $image = Image::factory($component["data"]);
