@@ -31,7 +31,7 @@ class Adapter
      *
      * @param string $format Configuration file format ('yaml', 'json')
      */
-    public function __construct($format)
+    public function __construct($format = 'yaml')
     {
         $this->setFormat($format);
     }
@@ -63,8 +63,9 @@ class Adapter
     {
         switch ($this->format) {
             case 'yaml':
+                return '.yml';
             case 'json':
-                return '.' . $this->format;
+                return '.json';
             default:
                 throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
