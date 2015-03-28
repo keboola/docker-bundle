@@ -3,9 +3,6 @@ php:
   - 5.5
 notifications:
   email: false
-branches:
-  only:
-  - master
 install:
   - composer install --dev --no-scripts
 script:
