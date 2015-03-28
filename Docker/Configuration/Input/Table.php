@@ -24,6 +24,7 @@ class Table extends Configuration
                 ->scalarNode("changed_since")->end()
                 ->arrayNode("columns")->prototype("scalar")->end()->end()
                 ->scalarNode("where_column")->end()
+                ->integerNode("limit")->end()
                 ->arrayNode("where_values")->prototype("scalar")->end()->end()
                 ->scalarNode("where_operator")
                     ->defaultValue("eq")

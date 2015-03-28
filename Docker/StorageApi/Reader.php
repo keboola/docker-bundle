@@ -194,6 +194,9 @@ class Reader
                 $exportOptions["whereValues"] = $table["where_values"];
                 $exportOptions["whereOperator"] = $table["where_operator"];
             }
+            if (isset($table['limit'])) {
+                $exportOptions['limit'] = $table['limit'];
+            }
             $tableExporter->exportTable($table["source"], $file, $exportOptions);
             $tableInfo = $this->getClient()->getTable($table["source"]);
             $this->writeTableManifest($tableInfo, $file . ".manifest");
