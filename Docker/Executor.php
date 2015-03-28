@@ -113,8 +113,10 @@ class Executor
 
     /**
      * Initialize container environment.
+     * @param Container $container Docker container.
+     * @param array $config Configuration injected into docker image.
      */
-    public function initialize(Container $container, $config)
+    public function initialize(Container $container, array $config)
     {
         // create temporary working folder and all of its sub-folders
         $fs = new Filesystem();
@@ -128,15 +130,14 @@ class Executor
 
         try {
             if (isset($config["storage"]["input"]["tables"]) && count($config["storage"]["input"]["tables"])) {
-                $this->getLog()->debug("Downloading tables.");
+                $this->getLog()->debug("Downloading source tables.");
                 $reader->downloadTables(
                     $config["storage"]["input"]["tables"],
                     $this->currentTmpDir . "/data/in/tables"
                 );
             }
-            $this->getLog()->debug("Downloading tables");
             if (isset($config["storage"]["input"]["files"]) && count($config["storage"]["input"]["files"])) {
-                $this->getLog()->debug("Downloading files.");
+                $this->getLog()->debug("Downloading source files.");
                 $reader->downloadFiles(
                     $config["storage"]["input"]["files"],
                     $this->currentTmpDir . "/data/in/files"
@@ -152,6 +153,7 @@ class Executor
         $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
         $adapter->writeToFile($this->currentConfigFile);
     }
+
 
     /**
      * @param Container $container
@@ -173,18 +175,11 @@ class Executor
         $container->setEnvironmentVariables($envs);
 
         // run the container
-        try {
-            $process = $container->run($this->getStorageApiClient()->getRunId());
-        } catch (ProcessTimedOutException $e) {
-            throw new UserException(
-                "Running container exceeded the timeout of {$container->getImage()->getProcessTimeout()} seconds."
-            );
-        }
-
+        $process = $container->run($this->getStorageApiClient()->getRunId());
         if ($process->getOutput()) {
             $this->getLog()->info($process->getOutput());
         } else {
-            $this->getLog()->info("Processing finished.");
+            $this->getLog()->info("Docker container processing finished.");
         }
 
         $writer = new Writer($this->getStorageApiClient());
@@ -201,6 +196,7 @@ class Executor
         }
 
         try {
+            $this->getLog()->debug("Uploading output tables and files.");
             $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
             $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
         } catch (ClientException $e) {

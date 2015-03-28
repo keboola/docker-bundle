@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -139,19 +140,26 @@ class Container
     /**
      * @param string $containerName suffix to the container tag
      * @return Process
-     * @throws \Exception
+     * @throws ApplicationException
      */
     public function run($containerName = "")
     {
+        if (!$this->getDataDir()) {
+            throw new ApplicationException("Data directory not set.");
+        }
+
         $id = $this->getImage()->prepare($this);
         $this->setId($id);
 
-        if (!$this->getDataDir()) {
-            throw new \Exception("Data directory not set.");
-        }
         $process = new Process($this->getRunCommand($containerName));
         $process->setTimeout($this->getImage()->getProcessTimeout());
-        $process->run();
+        try {
+            $process->run();
+        } catch (ProcessTimedOutException $e) {
+            throw new UserException(
+                "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+            );
+        }
         if (!$process->isSuccessful()) {
             $message = substr($process->getErrorOutput(), 0, 8192);
             if (!$message) {
@@ -166,10 +174,11 @@ class Container
             ];
 
             if ($process->getExitCode() == 1) {
-                throw new UserException("Container '{$this->getId()}': {$message}", null, $data);
+                throw new UserException("Container '{$this->getId()}' failed: {$message}", null, $data);
             } else {
+                // syrup will make sure that the actual exception message will be hidden to end-user
                 throw new ApplicationException(
-                    "Container '{$this->getId()}': ({$process->getExitCode()}) {$message}",
+                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
                     $data
                 );
@@ -228,23 +237,27 @@ class Container
     public function getRunCommand($containerName = "")
     {
         $envs = "";
-        $dataDir = str_replace('C:\\Users\\ONDRE_~1\\', '/c/Users/ondre_000/', $this->dataDir);
-        $dataDir = strtr($dataDir, DIRECTORY_SEPARATOR, '/');
-
-        foreach ($this->getEnvironmentVariables() as $key => $value) {
-//            $envs .=  " -e " . escapeshellarg($key) . "=" . escapeshellarg($value);
-            $envs .=  " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value)) ;
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
+            }
+            $command = "plink -load docker sudo docker run";
+        } else {
+            $dataDir = $this->dataDir;
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e \"" . escapeshellarg($key) . "=" . escapeshellarg($value). "\"";
+            }
+            $command = "sudo docker run";
         }
-        $command = "plink -load docker sudo docker run"
-            . " --volume=" . escapeshellarg($dataDir). ":/data"
+
+        $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs
             . " --rm"
             . " --name=" . escapeshellarg(strtr($this->getId(), ":/", "--") . ($containerName ? "-" . $containerName : ""))
-            // TODO --net + nastavení
-            . " " . escapeshellarg($this->getId())
-        ;
+            . " " . escapeshellarg($this->getId());
         return $command;
     }
 }

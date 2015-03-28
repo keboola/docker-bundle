@@ -2,8 +2,10 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
+use Aws\CloudFront\Exception\Exception;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Process\Process;
 
 class DockerHub extends Image
@@ -33,20 +35,31 @@ class DockerHub extends Image
 
     /**
      * @param Container $container
-     * @return string
-     * @throws \Exception
+     * @return string Image tag name.
+     * @throws ApplicationException
      */
     public function prepare(Container $container)
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
-        $process = new Process("plink -load docker sudo docker pull " . escapeshellarg($tag));
-        $process->setTimeout(3600);
-        $process->run();
-        $output = $process->getOutput();
-        $errOutput = $process->getErrorOutput();
-        if (!$process->isSuccessful()) {
-            throw new \Exception("Cannot pull image '$tag': ({$process->getExitCode()}) {$process->getErrorOutput()}");
+
+        try {
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                $process = new Process("plink -load docker sudo docker pull " . escapeshellarg($tag));
+            } else {
+                $process = new Process("sudo docker pull " . escapeshellarg($tag));
+            }
+            $process->setTimeout(3600);
+            $process->run();
+        } catch (Exception $e) {
+            throw new ApplicationException("Failed to prepare container {$tag}, error: ".$e->getMessage(), $e);
         }
+
+        if (!$process->isSuccessful()) {
+            throw new ApplicationException(
+                "Cannot pull image '$tag': ({$process->getExitCode()}) {$process->getErrorOutput()}"
+            );
+        }
+
         return $tag;
     }
 }
