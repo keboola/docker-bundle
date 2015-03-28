@@ -236,6 +236,7 @@ class Container
      */
     public function getRunCommand($containerName = "")
     {
+        setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
@@ -243,7 +244,7 @@ class Container
                 $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
             }
             $command = "plink -load docker sudo docker run";
-        } else {
+        } else { 
             $dataDir = $this->dataDir;
             foreach ($this->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e \"" . escapeshellarg($key) . "=" . escapeshellarg($value). "\"";
