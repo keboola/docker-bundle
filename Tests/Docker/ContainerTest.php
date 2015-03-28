@@ -47,7 +47,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
         $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
 
-        $callback = function() {
+        $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
             $process->run();
             return $process;
@@ -148,5 +148,4 @@ EOF;
         $container = new Container($image);
         $container->run();
     }
-
 }

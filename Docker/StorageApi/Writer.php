@@ -13,7 +13,6 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
 
-
 class Writer
 {
 
@@ -119,7 +118,8 @@ class Writer
 
         $processedOutputMappingFiles = array_unique($processedOutputMappingFiles);
         $diff = array_diff(
-            array_merge($outputMappingFiles, $processedOutputMappingFiles), $processedOutputMappingFiles
+            array_merge($outputMappingFiles, $processedOutputMappingFiles),
+            $processedOutputMappingFiles
         );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
@@ -150,8 +150,7 @@ class Writer
             ->setIsPermanent($config["is_permanent"])
             ->setIsEncrypted($config["is_encrypted"])
             ->setIsPublic($config["is_public"])
-            ->setNotify($config["notify"])
-            ;
+            ->setNotify($config["notify"]);
         $this->getClient()->uploadFile($source, $options);
     }
 
@@ -214,7 +213,8 @@ class Writer
 
         $processedOutputMappingTables = array_unique($processedOutputMappingTables);
         $diff = array_diff(
-            array_merge($outputMappingTables, $processedOutputMappingTables), $processedOutputMappingTables
+            array_merge($outputMappingTables, $processedOutputMappingTables),
+            $processedOutputMappingTables
         );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
@@ -257,7 +257,8 @@ class Writer
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
                 if (!in_array($config["delete_where_column"], $tableInfo["indexedColumns"])) {
                     $this->getClient()->markTableColumnAsIndexed(
-                        $config["destination"], $config["delete_where_column"]
+                        $config["destination"],
+                        $config["delete_where_column"]
                     );
                 }
 

@@ -25,7 +25,7 @@ class File extends Configuration
                 ->scalarNode("query")->end()
             ->end()
         ->validate()
-            ->ifTrue(function($v) {
+            ->ifTrue(function ($v) {
                 if ((!isset($v["tags"]) || count($v["tags"] == 0)) && !isset($v["query"])) {
                     return true;
                 }

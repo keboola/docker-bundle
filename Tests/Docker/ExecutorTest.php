@@ -119,9 +119,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
 
-        $callback = function() use ($container) {
+        $callback = function () use ($container) {
             $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $fs->dumpFile($container->getDataDir() . "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
             $process = new Process('echo "Processed 1 rows."');
             $process->run();
             return $process;
@@ -150,8 +150,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         );
 
         $config = array(
-            "storage" => array(
-            ),
+            "storage" => array(),
             "parameters" => array(
                 "primary_key_column" => "id",
                 "data_column" => "text",
@@ -166,9 +165,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
 
-        $callback = function() use ($container) {
+        $callback = function () use ($container) {
             $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() .  "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $fs->dumpFile($container->getDataDir() . "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
             $process = new Process('sleep 2 && echo "Processed 1 rows."');
             $process->setTimeout($container->getImage()->getProcessTimeout());
             $process->run();
