@@ -29,4 +29,17 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2048, $image->getCpuShares());
         $this->assertEquals(7200, $image->getProcessTimeout());
     }
+
+
+    public function testFormat()
+    {
+        $image = Image::factory();
+        $image->setConfigFormat('yaml');
+        $this->assertEquals('yaml', $image->getConfigFormat());
+        try {
+            $image->setConfigFormat('fooBar');
+            $this->fail("Invalid format should cause exception.");
+        } catch (\Exception $e) {
+        }
+    }
 }
