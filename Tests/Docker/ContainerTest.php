@@ -90,7 +90,7 @@ EOF;
 
         $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("Processed 2 rows.", trim($process->getOutput()));
+        $this->assertContains("Processed 2 rows.", trim($process->getOutput()));
         $container->dropDataDir();
     }
 
@@ -111,4 +111,42 @@ EOF;
         $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"'var'='val'\" --rm --name='keboola-demo-latest-name' 'keboola/demo:latest'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
+
+
+    public function testHelloWorld()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+
+        $container = new Container($image);
+        $container->setId("hello-world");
+        $container->setDataDir("/tmp");
+        $process = $container->run();
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertContains("Hello from Docker", trim($process->getOutput()));
+    }
+
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\ApplicationException
+     */
+    public function testException()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+
+        $container = new Container($image);
+        $container->run();
+    }
+
 }
