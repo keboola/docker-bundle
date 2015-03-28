@@ -22,7 +22,7 @@ What happens before and after running a Docker container.
 
   - Download and build specified docker image
   - Download all tables and files specified in input mapping
-  - Create configurationi file
+  - Create configuration file (i.e config.yml)
   - Run the container
   - Upload all tables and files in output mapping
   - Delete the container and all temporary files
@@ -38,19 +38,19 @@ Keboola Connection will inject configuration and (optionally) an input mapping i
 
 ### Environment variables
 
-A couple of enviromnent variables are injected in the container:
+A couple of environment variables are injected in the container:
 
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
  - `KBC_PROJECTID` - Id of the project in KBC
  - `KBC_PROJECTNAME` - Name of the project in KBC
- - `KBC_TOKENID` - Id of the token running the container
+ - `KBC_TOKENID` - Token running the container
  - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container
 
 ### Configuration
 
 Note: all multiword parameter names are used with underscores instead of camel case.
 
-The configuration file will be one of the following, depending on the settings.
+The configuration file will be one of the following, depending on the image settings (default is yml).
 
  - `/data/config.yml`
  - `/data/config.json`
@@ -69,7 +69,7 @@ As a part of container configuration you can specify tables and files that will 
 
 #### Tables
 
-Tables from input mapping will are mounted to `/data/in/tables`, where file name equals to the table name with `.csv` suffix. 
+Tables from input mapping are mounted to `/data/in/tables`, where file name equals to the table name with `.csv` suffix. 
 
 Input mapping parameters are similar to [Storage API export table options ](http://docs.keboola.apiary.io/#tables). If `destination` is not set, the CSV file will have the same name as the table with `.csv` suffix.
 
@@ -82,6 +82,7 @@ The tables element in configuration is an array and supports these attributes
   - `where_column`
   - `where_operator`
   - `where_values`
+  - 'limit'
 
 ##### Examples
 
@@ -135,14 +136,12 @@ storage:
         where_column: Status
         where_values: ["Closed Won", "Closed Lost"]
         where_operator: eq
-      
 ```
-
 
 
 #### Files
 
-You can also download files from file uploads using a ES query.
+You can also download files from file uploads using an ES query or filtering using tags. Note that the results of a file mapping are limited to 10 files (to prevent accidental downloads). If you need more files you can use multiple file mappings.  
 
 ```
 storage: 
@@ -181,9 +180,6 @@ All files that will match the fulltext search will be downloaded to the `/data/i
     description: "ondrej.hlavacek@keboola.com"
 ```
 
-##### Incremental Processing
-
-Since you might be processing the same files over and over, if the image is set to work incrementally with files from file upload, upon each successful run of the container all files, that have been downloaded, will get tagged with `[COMPONENT_ID]/[CONFIGURATION_ID]:processed` tag (eg. `docker-demo/test-config:processed`). These files will be automatically excluded from the next input mapping.
 
 ### Output Mapping
 
@@ -195,7 +191,7 @@ Basically manifests allow you to process files in `/data/out` folder without def
 
 In the simplest format, output mapping processes CSV files in the `/data/out/tables` folder and uploads them into tables. The name of the file may be equal to the name of the table (after removing `.csv` suffix).
 
-Output mapping parameters are similar to [Transfiormation API output mapping ](http://wiki.keboola.com/home/keboola-connection/devel-space/transformations/intro#TOC-Output-mapping). If `source` is not set, the CSV file is expected to have the same name as the `destination` table.
+Output mapping parameters are similar to [Transformation API output mapping ](http://wiki.keboola.com/home/keboola-connection/devel-space/transformations/intro#TOC-Output-mapping). If `source` is not set, the CSV file is expected to have the same name as the `destination` table.
 
 The tables element in configuration is an array and supports these attributes:
 
@@ -282,6 +278,7 @@ These manifest parameters can be used (taken from [Storage API File Import](http
  - `notify`
  - `tags`
  - `is_encrypted`
+
 
 #####Example
 
