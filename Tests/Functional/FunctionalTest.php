@@ -213,4 +213,41 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
     }
+
+
+    public function testHelloWorld()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+
+        $container = new Container($image);
+        $container->setId("hello-world");
+        $container->setDataDir("/tmp");
+        $process = $container->run();
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertContains("Hello from Docker", trim($process->getOutput()));
+    }
+
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\ApplicationException
+     */
+    public function testException()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+
+        $container = new Container($image);
+        $container->run();
+    }
 }

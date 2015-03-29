@@ -111,41 +111,4 @@ EOF;
         $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"'var'='val'\" -e \"'příliš'='žluťoučký'\" --rm --name='keboola-demo-latest-name' 'keboola/demo:latest'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
-
-
-    public function testHelloWorld()
-    {
-        $imageConfiguration = array(
-            "definition" => array(
-                "type" => "dockerhub",
-                "uri" => "hello-world"
-            )
-        );
-        $image = Image::factory($imageConfiguration);
-
-        $container = new Container($image);
-        $container->setId("hello-world");
-        $container->setDataDir("/tmp");
-        $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("Hello from Docker", trim($process->getOutput()));
-    }
-
-
-    /**
-     * @expectedException \Keboola\Syrup\Exception\ApplicationException
-     */
-    public function testException()
-    {
-        $imageConfiguration = array(
-            "definition" => array(
-                "type" => "dockerhub",
-                "uri" => "hello-world"
-            )
-        );
-        $image = Image::factory($imageConfiguration);
-
-        $container = new Container($image);
-        $container->run();
-    }
 }
