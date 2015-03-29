@@ -179,6 +179,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         try {
+            $executor->initialize($container, $config);
             $executor->run($container, $config);
             $this->fail("Timeouted process should raise exception.");
         } catch (ProcessTimedOutException $e) {
