@@ -5,6 +5,6 @@ namespace Keboola\DockerBundle\Exception;
 /**
  * Class ManifestMismatchException
  */
-class ManifestMismatchException extends \Keboola\Syrup\Exception\UserException {
-
+class ManifestMismatchException extends \Keboola\Syrup\Exception\UserException
+{
 }
