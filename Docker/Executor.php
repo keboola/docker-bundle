@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
@@ -11,7 +12,6 @@ use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
-use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Keboola\Syrup\Exception\UserException;
 
 class Executor
@@ -198,7 +198,11 @@ class Executor
         try {
             $this->getLog()->debug("Uploading output tables and files.");
             $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
-            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
+            try {
+                $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
+            } catch (ManifestMismatchException $e) {
+                $this->getLog()->warn($e->getMessage());
+            }
         } catch (ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
         }
@@ -208,6 +212,10 @@ class Executor
     }
 
 
+    /**
+     * Prepare data directory and save it to Storage, do not actually run the container.
+     * @param Container $container
+     */
     public function dryRun(Container $container)
     {
         $zip = new \ZipArchive();

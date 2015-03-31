@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\StorageApi;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
+use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -13,6 +14,10 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
 
+/**
+ * Class Writer
+ * @package Keboola\DockerBundle\Docker\StorageApi
+ */
 class Writer
 {
 
@@ -78,8 +83,13 @@ class Writer
      */
     public function uploadFiles($source, $configurations = array())
     {
-        $fs = new Filesystem();
         $finder = new Finder();
+        $manifests = $finder->files()->name("*.manifest")->in($source);
+        $manifestNames = [];
+        /** @var SplFileInfo $manifest */
+        foreach ($manifests as $manifest) {
+            $manifestNames[$manifest->getPathName()] = 1;
+        }
 
         $files = $finder->files()->notName("*.manifest")->in($source);
 
@@ -103,8 +113,9 @@ class Writer
                     unset($configFromMapping["source"]);
                 }
             }
-            if ($fs->exists($file->getPathname() . ".manifest")) {
+            if (isset($manifestNames[$file->getPathname() . ".manifest"])) {
                 $configFromManifest = $this->readFileManifest($file->getPathname() . ".manifest");
+                unset($manifestNames[$file->getPathname() . ".manifest"]);
             }
 
             try {
@@ -123,6 +134,9 @@ class Writer
         );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
+        }
+        if (count($manifestNames) > 0) {
+            throw new ManifestMismatchException("Found orphaned file manifests: " . implode("', '", array_keys($manifestNames)));
         }
     }
 
