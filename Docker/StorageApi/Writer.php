@@ -91,6 +91,7 @@ class Writer
             $manifestNames[$manifest->getPathName()] = 1;
         }
 
+        $finder = new Finder();
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingFiles = array();
