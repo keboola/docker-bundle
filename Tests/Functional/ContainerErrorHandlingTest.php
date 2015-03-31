@@ -29,13 +29,13 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/docker-php-test"
+                "uri" => "keboola/docker-php-test"
             ]
         ];
         $image = Image::factory($imageConfiguration);
 
         $container = new Container($image);
-        $container->setId("odinuv/docker-php-test");
+        $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
@@ -51,13 +51,13 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/docker-php-test"
+                "uri" => "keboola/docker-php-test"
             ]
         ];
         $image = Image::factory($imageConfiguration);
 
         $container = new Container($image);
-        $container->setId("odinuv/docker-php-test");
+        $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php this would be a parse error');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
@@ -77,13 +77,13 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/docker-php-test"
+                "uri" => "keboola/docker-php-test"
             ]
         ];
         $image = Image::factory($imageConfiguration);
 
         $container = new Container($image);
-        $container->setId("odinuv/docker-php-test");
+        $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
@@ -103,13 +103,13 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/docker-php-test"
+                "uri" => "keboola/docker-php-test"
             ]
         ];
         $image = Image::factory($imageConfiguration);
 
         $container = new Container($image);
-        $container->setId("odinuv/docker-php-test");
+        $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
@@ -128,7 +128,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/docker-php-test"
+                "uri" => "keboola/docker-php-test"
             ]
         ];
         $image = Image::factory($imageConfiguration);
