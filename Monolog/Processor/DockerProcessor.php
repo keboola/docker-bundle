@@ -38,7 +38,7 @@ class DockerProcessor
     public function processRecord(array $record)
     {
         $record['component'] = $this->componentName;
-        $record['parentComponent'] = 'docker';
+        $record['app'] = 'docker';
         return $record;
     }
 }

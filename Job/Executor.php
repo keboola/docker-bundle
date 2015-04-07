@@ -60,9 +60,7 @@ class Executor extends BaseExecutor
 
         $processor = new DockerProcessor($component['id']);
         // attach the processor to all handlers and channels
-        foreach ($this->log->getHandlers() as $handler) {
-            $handler->pushProcessor(array($processor, 'processRecord'));
-        }
+        $this->log->pushProcessor([$processor, 'processRecord']);
 
         // Manual config from request
         if (isset($params["configData"])) {
