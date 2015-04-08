@@ -226,7 +226,7 @@ class Container
     {
         $envs = "";
         foreach ($this->getEnvironmentVariables() as $key => $value) {
-            $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $key). "\"";
+            $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
         }
         $command = "sudo docker run"
             . " --volume=" . escapeshellarg($this->getDataDir()). ":/data"
