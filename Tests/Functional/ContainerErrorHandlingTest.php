@@ -122,6 +122,28 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testEnvironmentPassing()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-php-test"
+            ]
+        ];
+        $image = Image::factory($imageConfiguration);
+
+        $container = new Container($image);
+        $container->setId("keboola/docker-php-test");
+        $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
+        $container->setDataDir($dataDir);
+        $value = '123 ščř =-\'"321';
+        $container->setEnvironmentVariables(['command' => '/data/test.php', 'KBC_TOKENID' => $value]);
+
+        $process = $container->run();
+        $this->assertEquals($value, $process->getOutput());
+    }
+
     public function testTimeout()
     {
         $temp = new Temp('docker');
