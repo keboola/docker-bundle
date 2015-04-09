@@ -172,6 +172,9 @@ class Executor
             "KBC_TOKENID" => $tokenInfo["id"],
             "KBC_TOKENDESC" => $tokenInfo["description"]
         ];
+        if ($container->getImage()->getForwardToken()) {
+            $envs["KBC_TOKEN"] = $this->getStorageApiClient()->getTokenString();
+        }
         $container->setEnvironmentVariables($envs);
 
         // run the container

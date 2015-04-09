@@ -35,6 +35,7 @@ class Image extends Configuration
                 ->end()
             ->end()
             ->integerNode("process_timeout")->min(0)->defaultValue(3600)->end()
+            ->booleanNode("forward_token")->defaultValue(false)->end()
         ;
 
         return $treeBuilder;

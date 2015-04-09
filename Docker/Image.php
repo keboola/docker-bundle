@@ -36,6 +36,11 @@ class Image
     protected $configFormat = 'yaml';
 
     /**
+     * @var bool
+     */
+    protected $forwardToken = false;
+
+    /**
      *
      * process timeout in seconds
      *
@@ -136,6 +141,24 @@ class Image
     }
 
     /**
+     * @param $forwardToken
+     * @return $this
+     */
+    public function setForwardToken($forwardtoken)
+    {
+        $this->forwardToken = $forwardtoken;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getForwardToken()
+    {
+        return $this->forwardToken;
+    }
+
+    /**
      * @param int $timeout
      * @return $this
      */
@@ -168,6 +191,9 @@ class Image
         }
         if (isset($config["process_timeout"])) {
             $instance->setProcessTimeout($config["process_timeout"]);
+        }
+        if (isset($config["forward_token"])) {
+            $instance->setForwardToken($config["forward_token"]);
         }
 
         return $instance;

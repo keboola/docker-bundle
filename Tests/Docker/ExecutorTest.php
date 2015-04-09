@@ -134,6 +134,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config);
         $process = $executor->run($container, $config);
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $ret = $container->getRunCommand('test');
+        // make sure that the token is NOT forwarded by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
     }
 
     public function testExecutorRunTimeout()
@@ -185,6 +188,54 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         } catch (ProcessTimedOutException $e) {
             $this->assertContains('exceeded the timeout', $e->getMessage());
         }
+    }
+
+
+    public function testExecutorForwardToken()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "process_timeout" => 1,
+            "forward_token" => true
+        );
+
+        $config = array(
+            "storage" => array(),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log->pushHandler(new \Monolog\Handler\NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $executor->run($container, $config);
+        $ret = $container->getRunCommand('test');
+        $this->assertContains('KBC_TOKEN', $ret);
+        $this->assertContains(STORAGE_API_TOKEN, $ret);
     }
 
 

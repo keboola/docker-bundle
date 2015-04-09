@@ -21,13 +21,15 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 2048,
             "memory" => "128m",
-            "process_timeout" => 7200
+            "process_timeout" => 7200,
+            "forward_token" => true
         );
         $image = Image::factory($configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
         $this->assertEquals("128m", $image->getMemory());
         $this->assertEquals(2048, $image->getCpuShares());
         $this->assertEquals(7200, $image->getProcessTimeout());
+        $this->assertEquals(true, $image->getForwardToken());
     }
 
 
