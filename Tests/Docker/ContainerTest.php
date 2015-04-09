@@ -107,8 +107,8 @@ EOF;
         $container = new Container($image);
         $container->setId("keboola/demo:latest");
         $container->setDataDir("/tmp");
-        $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký']);
-        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"'var'='val'\" -e \"'příliš'='žluťoučký'\" --rm --name='keboola-demo-latest-name' 'keboola/demo:latest'";
+        $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
+        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\"' --rm --name='keboola-demo-latest-name' 'keboola/demo:latest'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 }

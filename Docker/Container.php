@@ -247,7 +247,7 @@ class Container
         } else {
             $dataDir = $this->dataDir;
             foreach ($this->getEnvironmentVariables() as $key => $value) {
-                $envs .= " -e \"" . escapeshellarg($key) . "=" . escapeshellarg($value). "\"";
+                $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
             }
             $command = "sudo docker run";
         }
