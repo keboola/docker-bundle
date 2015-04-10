@@ -141,6 +141,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
     public function testDryRun()
     {
+        // Delete file uploads
+        $options = new ListFilesOptions();
+        $options->setTags(array("dryRun"));
+        $files = $this->client->listFiles($options);
+        foreach ($files as $file) {
+            $this->client->deleteFile($file["id"]);
+        }
+
         $data = [
             'params' => [
                 'component' => 'docker-r',
