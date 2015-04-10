@@ -61,7 +61,7 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "docker-r"
         ];
-        $request = Request::create("docker/docker-r/dryrun", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("docker/docker-r/dry-run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);

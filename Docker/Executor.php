@@ -250,7 +250,7 @@ class Executor
             [
                 [
                     'source' => $zipFileName,
-                    'tags' => ['dryRun', 'docker'],
+                    'tags' => ['dry-run', 'docker'],
                     'is_permanent' => false,
                     'is_encrypted' => true,
                     'is_public' => false,

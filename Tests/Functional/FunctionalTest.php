@@ -143,7 +143,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
     {
         // Delete file uploads
         $options = new ListFilesOptions();
-        $options->setTags(array("dryRun"));
+        $options->setTags(array("dry-Run"));
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
             $this->client->deleteFile($file["id"]);
@@ -217,7 +217,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         }
 
         $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['dryRun']);
+        $listOptions->setTags(['dry-run']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));

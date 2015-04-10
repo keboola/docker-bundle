@@ -79,7 +79,7 @@ During development, it is handy to be able to change the configuration quickly. 
 	}
   
 
-For debugging purposes it is possible to generate the contents of the injected `/data` directory. The [Dry run](http://docs.kebooladocker.apiary.io/#reference/dryrun) API call will prepare the `/data` directory including the input mappings. The whole directory will be stored in your KBC Storage project as a zip archive. You use this archive to replicate the input in your local environment. Note that when using dry run, only a sample of 50 rows from each table will be exported. 
+For debugging purposes it is possible to generate the contents of the injected `/data` directory. The [Dry run](http://docs.kebooladocker.apiary.io/#reference/dry-run) API call will prepare the `/data` directory including the input mappings. The whole directory will be stored in your KBC Storage project as a zip archive. You use this archive to replicate the input in your local environment. Note that when using dry run, only a sample of 50 rows from each table will be exported. 
 
 Read more details about configuration in [ENVIRONMENT.md](ENVIRONMENT.md)
 
