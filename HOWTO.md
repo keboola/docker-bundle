@@ -5,19 +5,16 @@ This guide will show you how you can create your own Docker image that can be ru
 
 ## Architecture
 
-The [docker-demo repository on GitHub](https://github.com/keboola/docker-demo) contains the docker image
-application, create a new tag in the application and update the docker image definition in **Dockerfile**. 
-definition. This prepares the docker environment including the application itself. Both - the docker image definition and the app itself are in a single repository, but you may choose to work with two separate repositories, one for the image definition and one for the application itself. A hook from Dockerhub builds the docker image automatically on every commit. The docker image refers to a specific version of the application. To release a new version of the 
+The [docker-demo repository on GitHub](https://github.com/keboola/docker-demo) contains an example application. The repository contains both the docker image application and the docker image definition in **Dockerfile**. Docker image definition prepares the docker environment including the application itself. Both - the docker image definition and the app itself are in a single repository, but you may choose to work with two separate repositories, one for the image definition and one for the application itself. A hook from Dockerhub builds the docker image automatically on every commit.  
 
-
-The demo application itself represented by a single script `/src/script.php`. Which is a PHP script, that performs the actual logic of the Docker image.
+The demo application itself is represented by a single script `/src/script.php`. Which is a PHP script, that performs the actual logic of the Docker image.
 
 
 ## Develop
 
 For developing the business logic of an image you can use any language and tool available in your chosen system. For the demo app we chose PHP and wrote a simple script in `/scr/script.php`. We also used `composer` to add some libraries to the application.
 
-To develop and run the demo app localy you can use the following command line:
+To develop and run the demo app locally you can use the following command line:
 
 	php ./src/script.php --data=/data
 	
@@ -100,11 +97,8 @@ Once the business logic was working, I started to build the Docker image in the 
 
 	ENTRYPOINT php ./src/script.php --data=/data
 
-All we is to clone the repository (to get the `/src` folder), run `composer install` and call the `php ./src/script.php --data=/data` command. The last line with **ENTRYPOINT** is actually the command that 
+All we need to do is to clone the repository (to get the `/src` folder), run `composer install` and call the `php ./src/script.php --data=/data` command. The last line with **ENTRYPOINT** is actually the command that 
 will get executed when the docker image is run. Docker bundle automatically provides all files (tables, file uploads and configuration) to the `/data` directory in the container, so you do not need to worry about any input or output mapping. 
-
-_Note: if you do some changes in the business logic, don't forget to update the DockerFile repository and change the application version. Docker hub downloads only the latest commit from the repo and builds the image only if the Dockerfile changed._
-
 
 ## Deploy
 
