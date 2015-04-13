@@ -6,8 +6,8 @@ This guide will show you how you can create your own Docker image that can be ru
 ## Architecture
 
 The [docker-demo repository on GitHub](https://github.com/keboola/docker-demo) contains the docker image
-definition. This prepares the docker environment including the application itself [docker-demo-bundle Application](https://github.com/keboola/docker-demo-bundle). A hook from Dockerhub builds the docker image automatically on every commit. The docker image refers to a specific version of the application. To release a new version of the 
 application, create a new tag in the application and update the docker image definition in **Dockerfile**. 
+definition. This prepares the docker environment including the application itself. Both - the docker image definition and the app itself are in a single repository, but you may choose to work with two separate repositories, one for the image definition and one for the application itself. A hook from Dockerhub builds the docker image automatically on every commit. The docker image refers to a specific version of the application. To release a new version of the 
 
 
 The demo application itself represented by a single script `/src/script.php`. Which is a PHP script, that performs the actual logic of the Docker image.
