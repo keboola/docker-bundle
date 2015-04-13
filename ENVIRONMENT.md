@@ -82,7 +82,7 @@ The tables element in configuration is an array and supports these attributes
   - `where_column`
   - `where_operator`
   - `where_values`
-  - 'limit'
+  - `limit`
 
 ##### Examples
 
