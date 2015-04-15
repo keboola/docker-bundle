@@ -219,7 +219,7 @@ class Executor
      * Prepare data directory and save it to Storage, do not actually run the container.
      * @param Container $container
      */
-    public function dryRun(Container $container)
+    public function prepare(Container $container)
     {
         $zip = new \ZipArchive();
         $zipFileName = 'dataDirectory.zip';
@@ -230,7 +230,10 @@ class Executor
         $finder = new Finder();
         /** @var SplFileInfo $item */
         foreach ($finder->in($this->currentTmpDir) as $item) {
-            if ($item->isDir()) {
+            if ($item->getPathname() == $zipDir) {
+                continue;
+            }
+            if ($item->isDir())  {
                 if (!$zip->addEmptyDir(DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
                     throw new ApplicationException("Failed to add directory: ".$item->getFilename());
                 }
@@ -250,7 +253,7 @@ class Executor
             [
                 [
                     'source' => $zipFileName,
-                    'tags' => ['dry-run', 'docker'],
+                    'tags' => ['prepare', 'docker'],
                     'is_permanent' => false,
                     'is_encrypted' => true,
                     'is_public' => false,

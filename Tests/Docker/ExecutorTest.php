@@ -65,7 +65,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
 
         $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['dry-run']);
+        $listFiles->setTags(['prepare']);
         $listFiles->setRunId($this->client->getRunId());
         foreach ($this->client->listFiles($listFiles) as $file) {
             $this->client->deleteFile($file['id']);
@@ -239,7 +239,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testExecutorDryRun()
+    public function testExecutorPrepare()
     {
         $imageConfig = array(
             "definition" => array(
@@ -286,12 +286,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->dryRun($container);
+        $executor->prepare($container);
         $this->assertFileExists(
             $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'dataDirectory.zip'
         );
         $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['dry-run']);
+        $listFiles->setTags(['prepare']);
         $listFiles->setRunId($this->client->getRunId());
         $files = $this->client->listFiles($listFiles);
         $this->assertEquals(1, count($files));

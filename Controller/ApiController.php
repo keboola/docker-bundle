@@ -28,11 +28,8 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         }
     }
 
-
-    public function preExecute(Request $request)
+    public function checkComponent(Request $request)
     {
-        parent::preExecute($request);
-
         // Check list of components
         $components = $this->storageApi->indexAction();
         foreach ($components["components"] as $c) {
@@ -55,24 +52,32 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function runAction(Request $request)
     {
+        $this->checkComponent($request);
         $this->validateParams($this->getPostJson($request));
         return parent::runAction($request);
     }
 
 
     /**
-     * Dry run - generate configuration environment for docker image and
+     *  Prepare - generate configuration environment for docker image and
      *  store it in KBC Storage.
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function dryRunAction(Request $request)
+    public function prepareAction(Request $request)
     {
         // Get params from request
         $params = $this->getPostJson($request);
         $this->validateParams($params);
-        $params['dryRun'] = 1;
+        $params['prepare'] = 1;
+
+        $params["format"] = $request->get("format", "yaml");
+        if (!in_array($params["format"], ["yaml", "json"])) {
+            throw new UserException("Invalid configuration format '{$params["format"]}'.");
+        }
+
+        $params['prepare'] = 1;
 
         // check params against ES mapping
         $this->checkMappingParams($params);

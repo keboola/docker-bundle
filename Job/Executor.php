@@ -46,35 +46,13 @@ class Executor extends BaseExecutor
     {
         $params = $job->getParams();
 
-        // Check list of components
-        $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $params["component"]) {
-                $component = $c;
+        if (!empty($params['prepare'])) {
+            if (!isset($params["configData"]) || empty($params["configData"])) {
+                throw new UserException("Configuration must be specified in 'configData'.");
             }
-        }
-
-        if (!isset($component)) {
-            throw new UserException("Component '{$params["component"]}' not found.");
-        }
-
-        $processor = new DockerProcessor($component['id']);
-        // attach the processor to all handlers and channels
-        $this->log->pushProcessor([$processor, 'processRecord']);
-
-        // Manual config from request
-        if (isset($params["configData"])) {
             $configData = $params["configData"];
-        } else {
-            // Read config from storage
-            try {
-                $components = new Components($this->storageApi);
-                $configData = $components->getConfiguration($component["id"], $params["config"])["configuration"];
-            } catch (ClientException $e) {
-                throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
-            }
-        }
-        if (!empty($params['dryRun'])) {
+
+            // Add 50 rows limit for each table
             if (isset($configData['storage']['input']['tables']) &&
                 is_array($configData['storage']['input']['tables'])
             ) {
@@ -83,19 +61,66 @@ class Executor extends BaseExecutor
                     $configData['storage']['input']['tables'][$index] = $table;
                 }
             }
+        } else {
+            // Check list of components
+            $components = $this->storageApi->indexAction();
+            foreach ($components["components"] as $c) {
+                if ($c["id"] == $params["component"]) {
+                    $component = $c;
+                }
+            }
+
+            if (!isset($component)) {
+                throw new UserException("Component '{$params["component"]}' not found.");
+            }
+
+            $processor = new DockerProcessor($component['id']);
+            // attach the processor to all handlers and channels
+            $this->log->pushProcessor([$processor, 'processRecord']);
+
+            // Manual config from request
+            if (isset($params["configData"])) {
+                $configData = $params["configData"];
+            } else {
+                // Read config from storage
+                try {
+                    $components = new Components($this->storageApi);
+                    $configData = $components->getConfiguration($component["id"], $params["config"])["configuration"];
+                } catch (ClientException $e) {
+                    throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
+                }
+            }
         }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
-        $image = Image::factory($component["data"]);
-        $container = new Container($image);
-        $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
-        $executor->setTmpFolder($this->temp->getTmpFolder());
-        $executor->initialize($container, $configData);
-        if (!empty($params['dryRun'])) {
-            $executor->dryRun($container);
-            $message = 'Dry run finished, docker container did not run.';
+
+        if (!empty($params['prepare'])) {
+            $this->log->info("Preparing configuration.", $configData);
+
+            // Dummy image and container
+            $image = Image::factory([]);
+            $image->setConfigFormat($params["format"]);
+
+            $container = new Container($image);
+
+            $executor->setTmpFolder($this->temp->getTmpFolder());
+            $executor->initialize($container, $configData);
+            $executor->prepare($container);
+
+            $message = 'Configuration prepared.';
             $this->log->info($message);
+            return ["message" => $message];
+
         } else {
+
+            $image = Image::factory($component["data"]);
+            $container = new Container($image);
+
+            $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+
+            $executor->setTmpFolder($this->temp->getTmpFolder());
+            $executor->initialize($container, $configData);
+
             $process = $executor->run($container, $configData);
             if ($process->getOutput()) {
                 $message = $process->getOutput();
@@ -103,8 +128,8 @@ class Executor extends BaseExecutor
                 $message = "Container finished successfully.";
             }
             $this->log->info("Docker container for '{$component['id']}' finished.");
+            return ["message" => $message];
         }
 
-        return ["message" => $message];
     }
 }

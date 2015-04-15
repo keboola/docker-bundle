@@ -87,12 +87,14 @@ Create a job on a specified docker image.
         }
 
 
-## Create a dummy job [/{image}/dry-run]
+## Prepare data[/prepare?format={format}]
 
-Create a job on a specified docker image. The job will prepare the `\data\` folder. Then it will put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. The image itself will not be downloaded nor executed. 
+This job will prepare the `\data\` folder including serialized configuration file in the given format. Then it will put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. The image itself will not be downloaded nor executed.
+
+Note: only 50 first rows of each table will be exported.
 
 + Parameters
-    + image (string) ... ID of the image
+    + format (string) ... format of configuration file and file/table manifests `json` or `yaml`
 
 ### Custom configuration [POST]
 + Request (application/json)
@@ -136,26 +138,6 @@ Create a job on a specified docker image. The job will prepare the `\data\` fold
                         "script": null
                     }
                 } 
-            }
-
-+ Response 202 (application/json)
-
-        {
-            "id": "67121676",
-            "url": "https://syrup.keboola.com/queue/job/67121676",
-            "status": "waiting"
-        }
-    
-### Stored configuration [POST]
-+ Request (application/json)
-    + Headers
-    
-            X-StorageApi-Token: 123456
-
-    + Body
-    
-            {
-                "config": "next-order-1"
             }
 
 + Response 202 (application/json)

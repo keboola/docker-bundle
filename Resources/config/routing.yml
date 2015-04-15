@@ -1,9 +1,10 @@
+keboola_docker_prepare:
+    path:     /prepare
+    defaults: { _controller: KeboolaDockerBundle:Api:prepare }
+    methods:  [POST]
+
 keboola_docker_component_run:
     path:     /{component}/run
     defaults: { _controller: KeboolaDockerBundle:Api:run }
     methods:  [POST]
 
-keboola_docker_component_dry_run:
-    path:     /{component}/dry-run
-    defaults: { _controller: KeboolaDockerBundle:Api:dryRun }
-    methods:  [POST]

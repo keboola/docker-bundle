@@ -12,8 +12,11 @@
                 "type": "object",
                 "enabled": "false"
             },
-            "dryRun": {
+            "prepare": {
                 "type": "integer"
+            },
+            "format": {
+                "type": "string"
             }
         }
     }

@@ -40,7 +40,7 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "docker-r"
         ];
-        $request = Request::create("docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -49,7 +49,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $response->getStatusCode());
     }
 
-    public function testDryRun()
+    public function testPrepare()
     {
         $content = '
         {
@@ -58,15 +58,13 @@ class ApiControllerTest extends WebTestCase
         $server = [
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
-        $parameters = [
-            "component" => "docker-r"
-        ];
-        $request = Request::create("docker/docker-r/dry-run", 'POST', $parameters, [], [], $server, $content);
+        $parameters = [];
+        $request = Request::create("/docker/prepare", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
-        $response = $ctrl->dryRunAction($request);
+        $response = $ctrl->prepareAction($request);
         $this->assertEquals(202, $response->getStatusCode());
     }
 
@@ -83,7 +81,7 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "invalid-component"
         ];
-        $request = Request::create("docker/invalid-component/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/invalid-component/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -106,7 +104,7 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "docker-r"
         ];
-        $request = Request::create("docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -133,7 +131,7 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "docker-r"
         ];
-        $request = Request::create("docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);

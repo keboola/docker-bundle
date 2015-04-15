@@ -139,11 +139,11 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testDryRun()
+    public function testPrepare()
     {
         // Delete file uploads
         $options = new ListFilesOptions();
-        $options->setTags(array("dry-Run"));
+        $options->setTags(array("prepare"));
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
             $this->client->deleteFile($file["id"]);
@@ -177,7 +177,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                         ],
                     ]
                 ],
-                'dryRun' => 1
+                'prepare' => 1,
+                'format' => 'yaml'
             ]
         ];
         $job = new Job($data);
@@ -217,7 +218,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         }
 
         $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['dry-run']);
+        $listOptions->setTags(['prepare']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
