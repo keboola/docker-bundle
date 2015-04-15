@@ -233,7 +233,7 @@ class Executor
             if ($item->getPathname() == $zipDir) {
                 continue;
             }
-            if ($item->isDir())  {
+            if ($item->isDir()) {
                 if (!$zip->addEmptyDir(DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
                     throw new ApplicationException("Failed to add directory: ".$item->getFilename());
                 }
