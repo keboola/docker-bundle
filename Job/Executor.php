@@ -112,7 +112,6 @@ class Executor extends BaseExecutor
             return ["message" => $message];
 
         } else {
-
             $image = Image::factory($component["data"]);
             $container = new Container($image);
 
