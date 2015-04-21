@@ -13,6 +13,7 @@ use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Component\Filesystem\Filesystem;
 
 class FunctionalTests extends \PHPUnit_Framework_TestCase
 {
@@ -67,6 +68,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             // Delete bucket
             $this->client->dropBucket("out.c-docker-test");
         }
+        $fs = new Filesystem();
+        $fs->remove($this->temp->getTmpFolder());
     }
 
 
@@ -201,6 +204,9 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 $csv->writeRow([$i, '100', '1000']);
             }
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+            $fs = new Filesystem();
+            unset($csv);
+            $fs->remove($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
         }
 
         $log = new Logger("null");

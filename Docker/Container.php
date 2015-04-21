@@ -243,7 +243,7 @@ class Container
             foreach ($this->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
             }
-            $command = "plink -load docker sudo docker run";
+            $command = "docker run";
         } else {
             $dataDir = $this->dataDir;
             foreach ($this->getEnvironmentVariables() as $key => $value) {

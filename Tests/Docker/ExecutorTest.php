@@ -9,7 +9,6 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
@@ -52,6 +51,14 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $csv->writeRow(array("test", "testtesttest"));
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
         }
+
+        // delete test files
+        $listFiles = new ListFilesOptions();
+        $listFiles->setTags(['sandbox']);
+        $listFiles->setRunId($this->client->getRunId());
+        foreach ($this->client->listFiles($listFiles) as $file) {
+            $this->client->deleteFile($file['id']);
+        }
     }
 
     public function tearDown()
@@ -65,7 +72,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
 
         $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['prepare']);
+        $listFiles->setTags(['sandbox']);
         $listFiles->setRunId($this->client->getRunId());
         foreach ($this->client->listFiles($listFiles) as $file) {
             $this->client->deleteFile($file['id']);
@@ -239,7 +246,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testExecutorPrepare()
+    public function testExecutorSandbox()
     {
         $imageConfig = array(
             "definition" => array(

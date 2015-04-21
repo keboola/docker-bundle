@@ -39,7 +39,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
-        $process = $container->run();
+        $process = $container->run(uniqid());
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Keboola Space Program", trim($process->getOutput()));
@@ -63,7 +63,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('Parse error', $e->getMessage());
@@ -89,7 +89,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -115,7 +115,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -140,7 +140,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $value = '123 ščř =-\'"321';
         $container->setEnvironmentVariables(['command' => '/data/test.php', 'KBC_TOKENID' => $value]);
 
-        $process = $container->run();
+        $process = $container->run(uniqid());
         $this->assertEquals($value, $process->getOutput());
     }
 
@@ -163,7 +163,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('timeout', $e->getMessage());
@@ -183,7 +183,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         $container = new Container($image);
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception when data directory is not set.");
         } catch (ApplicationException $e) {
             $this->assertContains('directory', $e->getMessage());
@@ -209,7 +209,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container = new Container($image);
         $container->setDataDir($dataDir);
         try {
-            $container->run();
+            $container->run(uniqid());
             $this->fail("Must raise an exception for invalid immage");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
