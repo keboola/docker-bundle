@@ -43,8 +43,9 @@ A couple of environment variables are injected in the container:
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
  - `KBC_PROJECTID` - Id of the project in KBC
  - `KBC_PROJECTNAME` - Name of the project in KBC
- - `KBC_TOKENID` - Token running the container
+ - `KBC_TOKENID` - Id of token running the container
  - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container
+ - `KBC_TOKEN` - Actual token running the container. Note that this environment is available only if enabled in component configuration. 
 
 ### Configuration
 
@@ -82,7 +83,7 @@ The tables element in configuration is an array and supports these attributes
   - `where_column`
   - `where_operator`
   - `where_values`
-  - 'limit'
+  - `limit`
 
 ##### Examples
 
@@ -237,6 +238,7 @@ storage:
   output:
     tables:
       0:
+        source: data.csv
         destination: out.c-main.Leads
         incremental: 1
         delete_where_column: Status
@@ -253,7 +255,7 @@ To allow dynamic data outputs, that cannot be determined before running the cont
 /data/out/tables/table.csv.manifest
 ```
 
-`/data/out/table.csv.manifest`: 
+`/data/out/tables/table.csv.manifest`: 
 
 ```
 destination: out.c-main.Leads
@@ -262,14 +264,9 @@ incremental: 1
 
 #### Files
 
-Output files from `/data/out/files` folder are automatically uploaded to file uploads. If the manifest file is defined, the information from the manifest file will be used. 
+All output files from `/data/out/files` folder are automatically uploaded to file uploads. There are two ways how to define file upload options - configuration and manifest files, where manifest has a lower priority.
 
-```
-/data/out/files/image.jpg
-/data/out/files/image.jpg.manifest
-```
-
-These manifest parameters can be used (taken from [Storage API File Import](http://docs.keboola.apiary.io/#files)):
+These parameters can be used (taken from [Storage API File Import](http://docs.keboola.apiary.io/#files)):
 
  - `is_public`
  - `is_permanent`
@@ -277,8 +274,48 @@ These manifest parameters can be used (taken from [Storage API File Import](http
  - `tags`
  - `is_encrypted`
 
+##### Example
 
-#####Example
+You can define files in the output mapping configuration using their filename (eg. `file.csv`). If that file is not present, docker-bundle will throw an exception. Note that docker-bundle will upload all files in the `/data/out/files` folder, not only those specified in the output mapping.
+
+```
+storage: 
+  output:
+    files:
+      0:
+        source: file.csv
+        tags: 
+          - processed-file
+          - csv
+      1:
+        source: image.jpg
+        is_public: true
+        is_permanent: true
+        tags: 
+          - image
+          - pie-chart
+```
+
+
+##### Manifests
+
+If the manifest file is defined, the information from the manifest file will be used with lower priority than configuration. 
+
+```
+/data/out/files/file.csv
+/data/out/files/file.csv.manifest
+/data/out/files/image.jpg
+/data/out/files/image.jpg.manifest
+```
+
+`/data/out/files/table.csv.manifest`: 
+
+```
+tags: 
+  - processed-file
+  - csv
+```
+
 
 `/data/out/files/image.jpg.manifest`: 
 

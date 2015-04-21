@@ -6,10 +6,10 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
+use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
@@ -46,6 +46,7 @@ class Writer
     public function setFormat($format)
     {
         $this->format = $format;
+
         return $this;
     }
 
@@ -64,6 +65,7 @@ class Writer
     public function setClient(Client $client)
     {
         $this->client = $client;
+
         return $this;
     }
 
@@ -83,15 +85,11 @@ class Writer
      */
     public function uploadFiles($source, $configurations = array())
     {
-        $finder = new Finder();
-        $manifests = $finder->files()->name("*.manifest")->in($source);
-        $manifestNames = [];
-        /** @var SplFileInfo $manifest */
-        foreach ($manifests as $manifest) {
-            $manifestNames[$manifest->getPathName()] = 1;
-        }
+
+        $manifestNames = $this->getManifestFiles($source);
 
         $finder = new Finder();
+        /** @var SplFileInfo[] $files */
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingFiles = array();
@@ -101,9 +99,25 @@ class Writer
         $outputMappingFiles = array_unique($outputMappingFiles);
         $processedOutputMappingFiles = array();
 
-        /**
-         * @var $file SplFileInfo
-         */
+        $fileNames = [];
+        foreach ($files as $file) {
+            $fileNames[] = $file->getFilename();
+        }
+
+        // Check if all files from output mappings are present
+        foreach ($configurations as $config) {
+            if (!in_array($config["source"], $fileNames)) {
+                throw new MissingFileException("File '{$config["source"]}' not found.");
+            }
+        }
+
+        // Check for manifest orphans
+        foreach ($manifestNames as $manifest) {
+            if (!in_array(substr(basename($manifest), 0, -9), $fileNames)) {
+                throw new ManifestMismatchException("Found orphaned file manifest: '" . basename($manifest) . "'");
+            }
+        }
+
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
@@ -114,13 +128,19 @@ class Writer
                     unset($configFromMapping["source"]);
                 }
             }
-            if (isset($manifestNames[$file->getPathname() . ".manifest"])) {
+            $manifestKey = array_search($file->getPathname() . ".manifest", $manifestNames);
+            if ($manifestKey !== false) {
                 $configFromManifest = $this->readFileManifest($file->getPathname() . ".manifest");
-                unset($manifestNames[$file->getPathname() . ".manifest"]);
+                unset($manifestNames[$manifestKey]);
             }
-
             try {
-                $storageConfig = (new File\Manifest())->parse(array($configFromMapping, $configFromManifest));
+                // Mapping with higher priority
+                if ($configFromMapping || !$configFromManifest) {
+                    $storageConfig = (new File\Manifest())->parse(array($configFromMapping));
+                } else {
+                    $storageConfig = (new File\Manifest())->parse(array($configFromManifest));
+                }
+
             } catch (InvalidConfigurationException $e) {
                 throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
             }
@@ -136,9 +156,6 @@ class Writer
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
         }
-        if (count($manifestNames) > 0) {
-            throw new ManifestMismatchException("Found orphaned file manifests: " . implode("', '", array_keys($manifestNames)));
-        }
     }
 
     /**
@@ -149,6 +166,7 @@ class Writer
     protected function readFileManifest($source)
     {
         $adapter = new File\Manifest\Adapter($this->getFormat());
+
         return $adapter->readFromFile($source);
     }
 
@@ -175,9 +193,11 @@ class Writer
      */
     public function uploadTables($source, $configurations = array())
     {
-        $fs = new Filesystem();
+        $manifestNames = $this->getManifestFiles($source);
+
         $finder = new Finder();
 
+        /** @var SplFileInfo[] $files */
         $files = $finder->files()->name("*.csv")->in($source);
 
         $outputMappingTables = array();
@@ -187,9 +207,25 @@ class Writer
         $outputMappingTables = array_unique($outputMappingTables);
         $processedOutputMappingTables = array();
 
-        /**
-         * @var $file SplFileInfo
-         */
+        $fileNames = [];
+        foreach ($files as $file) {
+            $fileNames[] = $file->getFilename();
+        }
+
+        // Check if all files from output mappings are present
+        foreach ($configurations as $config) {
+            if (!in_array($config["source"], $fileNames)) {
+                throw new MissingFileException("Table source '{$config["source"]}' not found.");
+            }
+        }
+
+        // Check for manifest orphans
+        foreach ($manifestNames as $manifest) {
+            if (!in_array(substr(basename($manifest), 0, -9), $fileNames)) {
+                throw new ManifestMismatchException("Found orphaned table manifest: '" . basename($manifest) . "'");
+            }
+        }
+
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
@@ -200,8 +236,11 @@ class Writer
                     unset($configFromMapping["source"]);
                 }
             }
-            if ($fs->exists($file->getPathname() . ".manifest")) {
+
+            $manifestKey = array_search($file->getPathname() . ".manifest", $manifestNames);
+            if ($manifestKey !== false) {
                 $configFromManifest = $this->readTableManifest($file->getPathname() . ".manifest");
+                unset($manifestNames[$manifestKey]);
             } else {
                 // If no manifest found and no output mapping, use filename (without .csv) as table id
                 if (!isset($configFromMapping["destination"])) {
@@ -214,7 +253,12 @@ class Writer
             }
 
             try {
-                $config = (new Table\Manifest())->parse(array($configFromMapping, $configFromManifest));
+                // Mapping with higher priority
+                if ($configFromMapping || !$configFromManifest) {
+                    $config = (new Table\Manifest())->parse(array($configFromMapping));
+                } else {
+                    $config = (new Table\Manifest())->parse(array($configFromManifest));
+                }
             } catch (InvalidConfigurationException $e) {
                 throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
             }
@@ -244,6 +288,7 @@ class Writer
     protected function readTableManifest($source)
     {
         $adapter = new Table\Manifest\Adapter($this->getFormat());
+
         return $adapter->readFromFile($source);
     }
 
@@ -295,5 +340,21 @@ class Writer
             );
             $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
         }
+    }
+
+    /**
+     * @param $dir
+     * @return array
+     */
+    protected function getManifestFiles($dir)
+    {
+        $finder = new Finder();
+        $manifests = $finder->files()->name("*.manifest")->in($dir);
+        $manifestNames = [];
+        /** @var SplFileInfo $manifest */
+        foreach ($manifests as $manifest) {
+            $manifestNames[] = $manifest->getPathname();
+        }
+        return $manifestNames;
     }
 }
