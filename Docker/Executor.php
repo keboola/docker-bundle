@@ -156,12 +156,12 @@ class Executor
 
 
     /**
+     * Run a container.
+     *
      * @param Container $container
-     * @param $config
      * @return \Symfony\Component\Process\Process
-     * @throws \Exception
      */
-    public function run(Container $container, $config)
+    public function run(Container $container)
     {
         // set environment variables
         $tokenInfo = $this->getStorageApiClient()->getLogData();
@@ -184,6 +184,18 @@ class Executor
         } else {
             $this->getLog()->info("Docker container processing finished.");
         }
+        return $process;
+    }
+
+
+    /**
+     * Store results of last executed container (perform output mapping)
+     * @param Container $container
+     * @param $config
+     */
+    public function storeOutput(Container $container, $config)
+    {
+        $this->getLog()->debug("Storing results.");
 
         $writer = new Writer($this->getStorageApiClient());
         $writer->setFormat($container->getImage()->getConfigFormat());
@@ -211,15 +223,15 @@ class Executor
         }
 
         $container->dropDataDir();
-        return $process;
     }
 
 
     /**
-     * Prepare data directory and save it to Storage, do not actually run the container.
+     * Archive data directory and save it to Storage, do not actually run the container.
      * @param Container $container
+     * @param array $tags Arbitrary storage tags
      */
-    public function prepare(Container $container)
+    public function storeDataArchive(Container $container, array $tags)
     {
         $zip = new \ZipArchive();
         $zipFileName = 'dataDirectory.zip';
@@ -253,7 +265,7 @@ class Executor
             [
                 [
                     'source' => $zipFileName,
-                    'tags' => ['sandbox', 'docker'],
+                    'tags' => $tags,
                     'is_permanent' => false,
                     'is_encrypted' => true,
                     'is_public' => false,

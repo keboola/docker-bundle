@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -46,7 +47,7 @@ class Executor extends BaseExecutor
     {
         $params = $job->getParams();
 
-        if (!empty($params['prepare'])) {
+        if ($params['mode'] == 'sandbox') {
             if (!isset($params["configData"]) || empty($params["configData"])) {
                 throw new UserException("Configuration must be specified in 'configData'.");
             }
@@ -61,6 +62,7 @@ class Executor extends BaseExecutor
                     $configData['storage']['input']['tables'][$index] = $table;
                 }
             }
+            $component = null;
         } else {
             // Check list of components
             $components = $this->storageApi->indexAction();
@@ -94,41 +96,74 @@ class Executor extends BaseExecutor
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
 
-        if (!empty($params['prepare'])) {
-            $this->log->info("Preparing configuration.", $configData);
+        switch ($params['mode']) {
+            case 'sandbox':
+                $this->log->info("Preparing configuration.", $configData);
 
-            // Dummy image and container
-            $image = Image::factory([]);
-            $image->setConfigFormat($params["format"]);
+                // Dummy image and container
+                $image = Image::factory([]);
+                $image->setConfigFormat($params["format"]);
 
-            $container = new Container($image);
+                $container = new Container($image);
 
-            $executor->setTmpFolder($this->temp->getTmpFolder());
-            $executor->initialize($container, $configData);
-            $executor->prepare($container);
+                $executor->setTmpFolder($this->temp->getTmpFolder());
+                $executor->initialize($container, $configData);
+                $executor->storeDataArchive($container, ['sandbox', 'docker']);
 
-            $message = 'Configuration prepared.';
-            $this->log->info($message);
-            return ["message" => $message];
+                $message = 'Configuration prepared.';
+                $this->log->info($message);
+                return ["message" => $message];
+            case 'input':
+                $this->log->info("Preparing image configuration.", $configData);
 
-        } else {
-            $image = Image::factory($component["data"]);
-            $container = new Container($image);
+                $image = Image::factory($component["data"]);
+                $container = new Container($image);
 
-            $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+                $executor->setTmpFolder($this->temp->getTmpFolder());
+                $executor->initialize($container, $configData);
+                $executor->storeDataArchive($container, ['input', 'docker']);
 
-            $executor->setTmpFolder($this->temp->getTmpFolder());
-            $executor->initialize($container, $configData);
+                $message = 'Image configuration prepared.';
+                $this->log->info($message);
+                return ["message" => $message];
+            case 'dry-run':
+                $image = Image::factory($component["data"]);
+                $container = new Container($image);
+                $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
 
-            $process = $executor->run($container, $configData);
-            if ($process->getOutput()) {
-                $message = $process->getOutput();
-            } else {
-                $message = "Container finished successfully.";
-            }
-            $this->log->info("Docker container for '{$component['id']}' finished.");
-            return ["message" => $message];
+                $executor->setTmpFolder($this->temp->getTmpFolder());
+                $executor->initialize($container, $configData);
+                $process = $executor->run($container);
+                $executor->storeDataArchive($container, ['dry-run', 'docker']);
+
+                if ($process->getOutput()) {
+                    $message = $process->getOutput();
+                } else {
+                    $message = "Container finished successfully.";
+                }
+
+                $this->log->info("Docker container for '{$component['id']}' finished.");
+                return ["message" => $message];
+            case 'run':
+                $image = Image::factory($component["data"]);
+                $container = new Container($image);
+                $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+
+                $executor->setTmpFolder($this->temp->getTmpFolder());
+                $executor->initialize($container, $configData);
+                $process = $executor->run($container);
+                $executor->storeOutput($container, $configData);
+
+                if ($process->getOutput()) {
+                    $message = $process->getOutput();
+                } else {
+                    $message = "Container finished successfully.";
+                }
+
+                $this->log->info("Docker container for '{$component['id']}' finished.");
+                return ["message" => $message];
+            default:
+                throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
-
     }
 }

@@ -28,55 +28,38 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         }
     }
 
-    public function checkComponent(Request $request)
+
+    /**
+     * Make sure that a given KBC component is valid.
+     *
+     * @param string $componentName KBC Component name.
+     * @throw UserException in case of invalid component.
+     */
+    private function checkComponent($componentName)
     {
         // Check list of components
         $components = $this->storageApi->indexAction();
         foreach ($components["components"] as $c) {
-            if ($c["id"] == $request->get("component")) {
+            if ($c["id"] == $componentName) {
                 $component = $c;
                 break;
             }
         }
 
         if (!isset($component)) {
-            throw new UserException("Component '{$request->get("component")}' not found.");
+            throw new UserException("Component '$componentName' not found.");
         }
-    }
-
-    /**
-     * Run docker component with the provided configuration.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function runAction(Request $request)
-    {
-        $this->checkComponent($request);
-        $this->validateParams($this->getPostJson($request));
-        return parent::runAction($request);
     }
 
 
     /**
-     *  Prepare - generate configuration environment for docker image and
-     *  store it in KBC Storage.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * Create syrup Job from request parameters.
+     * @param array $params
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @throws \Exception
      */
-    public function sandboxAction(Request $request)
+    private function createJobFromParams($params)
     {
-        // Get params from request
-        $params = $this->getPostJson($request);
-        $this->validateParams($params);
-        $params['prepare'] = 1;
-
-        $params["format"] = $request->get("format", "yaml");
-        if (!in_array($params["format"], ["yaml", "json"])) {
-            throw new UserException("Invalid configuration format '{$params["format"]}'.");
-        }
-
         // check params against ES mapping
         $this->checkMappingParams($params);
 
@@ -116,6 +99,85 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             'url'       => $this->getJobUrl($jobId),
             'status'    => $job->getStatus()
         ], 202);
+    }
+
+
+    /**
+     *  Sandbox - generate configuration and environment and
+     *  store it in KBC Storage.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function sandboxAction(Request $request)
+    {
+        // Get params from request
+        $params = $this->getPostJson($request);
+        $this->validateParams($params);
+        $params['mode'] = 'sandbox';
+
+        $params["format"] = $request->get("format", "yaml");
+        if (!in_array($params["format"], ["yaml", "json"])) {
+            throw new UserException("Invalid configuration format '{$params["format"]}'.");
+        }
+
+        return $this->createJobFromParams($params);
+    }
+
+
+    /**
+     *  Prepare - generate configuration and environment for an existing docker image and
+     *  store it in KBC Storage.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function inputAction(Request $request)
+    {
+        // Get params from request
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'input';
+
+        return $this->createJobFromParams($params);
+    }
+
+
+    /**
+     * Run docker component with the provided configuration.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function dryRunAction(Request $request)
+    {
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'dry-run';
+
+        return $this->createJobFromParams($params);
+    }
+
+
+    /**
+     * Run docker component with the provided configuration.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function runAction(Request $request)
+    {
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'run';
+
+        return $this->createJobFromParams($params);
     }
 
 

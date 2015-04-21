@@ -12,8 +12,8 @@
                 "type": "object",
                 "enabled": "false"
             },
-            "prepare": {
-                "type": "integer"
+            "mode": {
+                "type": "string"
             },
             "format": {
                 "type": "string"

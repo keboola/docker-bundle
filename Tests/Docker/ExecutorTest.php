@@ -286,7 +286,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->prepare($container);
+        $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
         $this->assertFileExists(
             $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'dataDirectory.zip'
         );

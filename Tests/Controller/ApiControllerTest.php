@@ -69,7 +69,75 @@ class ApiControllerTest extends WebTestCase
     }
 
 
-    public function testInvalidComponent()
+    public function testInput()
+    {
+        $content = '
+        {
+            "config": "dummy"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => "docker-r"
+        ];
+        $request = Request::create("/docker/docker-r/input", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->inputAction($request);
+        $this->assertEquals(202, $response->getStatusCode());
+    }
+
+    public function testDryRun()
+    {
+        $content = '
+        {
+            "config": "dummy"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => "docker-r"
+        ];
+        $request = Request::create("/docker/docker-r/dry-run", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->dryRunAction($request);
+        $this->assertEquals(202, $response->getStatusCode());
+    }
+
+
+    public function testInvalidComponentInput()
+    {
+        $content = '
+        {
+            "config": "dummy"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => "invalid-component"
+        ];
+        $request = Request::create("/docker/invalid-component/input", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        try {
+            $ctrl->preExecute($request);
+            $ctrl->runAction($request);
+            $this->fail("Invalid component should raise exception.");
+        } catch (UserException $e) {
+        }
+    }
+
+
+    public function testInvalidComponentRun()
     {
         $content = '
         {
@@ -82,6 +150,30 @@ class ApiControllerTest extends WebTestCase
             "component" => "invalid-component"
         ];
         $request = Request::create("/docker/invalid-component/run", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        try {
+            $ctrl->preExecute($request);
+            $ctrl->runAction($request);
+            $this->fail("Invalid component should raise exception.");
+        } catch (UserException $e) {
+        }
+    }
+
+    public function testInvalidComponentDryRun()
+    {
+        $content = '
+        {
+            "config": "dummy"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => "invalid-component"
+        ];
+        $request = Request::create("/docker/invalid-component/dry-run", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
