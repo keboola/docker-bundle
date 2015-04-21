@@ -98,7 +98,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file2", "test");
-        file_put_contents($root . "/upload/file2.manifest", "tags: [\"docker-bundle-test\"]\nis_public: false");
+        file_put_contents($root . "/upload/file2.manifest", "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: false");
         file_put_contents($root . "/upload/file3", "test");
         file_put_contents($root . "/upload/file3.manifest", "tags: [\"docker-bundle-test\"]\nis_public: true");
 
@@ -109,7 +109,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             ),
             array(
                 "source" => "file2",
-                "tags" => array("another-tag"),
+                "tags" => array("docker-bundle-test", "another-tag"),
                 "is_public" => true
             )
         );
@@ -140,11 +140,118 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertNotNull($file3);
         $this->assertEquals(4, $file1["sizeBytes"]);
         $this->assertEquals(array("docker-bundle-test"), $file1["tags"]);
-        $this->assertEquals(array("another-tag", "docker-bundle-test"), $file2["tags"]);
+        $this->assertEquals(array("docker-bundle-test", "another-tag"), $file2["tags"]);
         $this->assertEquals(array("docker-bundle-test"), $file3["tags"]);
         $this->assertFalse($file1["isPublic"]);
-        $this->assertFalse($file2["isPublic"]);
+        $this->assertTrue($file2["isPublic"]);
         $this->assertTrue($file3["isPublic"]);
+    }
+
+
+    /**
+     * @throws \Keboola\StorageApi\ClientException
+     */
+    public function testWriteFilesOutputMapping()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1", "test");
+
+        $configs = array(
+            array(
+                "source" => "file1",
+                "tags" => array("docker-bundle-test")
+            )
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadFiles($root . "/upload", $configs);
+
+        $options = new ListFilesOptions();
+        $options->setTags(array("docker-bundle-test"));
+        $files = $this->client->listFiles($options);
+        $this->assertCount(1, $files);
+
+        foreach ($files as $file) {
+            if ($file["name"] == 'file1') {
+                $file1 = $file;
+            }
+        }
+
+        $this->assertNotNull($file1);
+        $this->assertEquals(4, $file1["sizeBytes"]);
+        $this->assertEquals(array("docker-bundle-test"), $file1["tags"]);
+    }
+
+
+    /**
+     */
+    public function testWriteFilesOutputMappingAndManifest()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1", "test");
+        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: true");
+
+        $configs = array(
+            array(
+                "source" => "file1",
+                "tags" => array("docker-bundle-test", "yyy"),
+                "is_public" => false
+            )
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadFiles($root . "/upload", $configs);
+
+        $options = new ListFilesOptions();
+        $options->setTags(array("docker-bundle-test"));
+        $files = $this->client->listFiles($options);
+        $this->assertCount(1, $files);
+
+        foreach ($files as $file) {
+            if ($file["name"] == 'file1') {
+                $file1 = $file;
+            }
+        }
+
+        $this->assertNotNull($file1);
+        $this->assertEquals(4, $file1["sizeBytes"]);
+        $this->assertEquals(array("docker-bundle-test", "yyy"), $file1["tags"]);
+        $this->assertFalse($file1["isPublic"]);
+    }
+
+    /**
+     * @expectedException \Keboola\DockerBundle\Exception\MissingFileException
+     * @expectedExceptionMessage File 'file2' not found
+     */
+    public function testWriteFilesOutputMappingMissing()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1", "test");
+        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
+
+        $configs = array(
+            array(
+                "source" => "file2",
+                "tags" => array("docker-bundle-test"),
+                "is_public" => false
+            )
+        );
+        $writer = new Writer($this->client);
+        $writer->uploadFiles($root . "/upload", $configs);
+    }
+
+    /**
+     * @expectedException \Keboola\DockerBundle\Exception\ManifestMismatchException
+     * @expectedExceptionMessage User error: Found orphaned file manifest: 'file1.manifest'
+     */
+    public function testWriteFilesOrphanedManifest()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
+        $writer = new Writer($this->client);
+        $writer->uploadFiles($root . "/upload");
     }
 
     /**
@@ -193,11 +300,15 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-test.table2', $tables[0]["id"]);
-        $this->assertEquals(array("Id"), $tables[0]["primaryKey"]);
+        $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
+        $this->assertEquals(array(), $tables[0]["primaryKey"]);
 
     }
 
+
+    /**
+     *
+     */
     public function testWriteTableManifest()
     {
         $root = $this->tmpDir;
@@ -212,6 +323,37 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
         $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
+    }
+
+    /**
+     * @expectedException \Keboola\DockerBundle\Exception\ManifestMismatchException
+     * @expectedExceptionMessage User error: Found orphaned table manifest: 'table.csv.manifest'
+     */
+    public function testWriteTableOrphanedManifest()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/table.csv.manifest", "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]");
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload");
+    }
+
+
+    /**
+     * @expectedException \Keboola\DockerBundle\Exception\MissingFileException
+     * @expectedExceptionMessage User error: Table source 'table1.csv' not found
+     */
+    public function testWriteTableOutputMappingMissing()
+    {
+        $root = $this->tmpDir;
+
+        $configs = array(
+            array(
+                "source" => "table1.csv",
+                "destination" => "out.c-docker-test.table1"
+            )
+        );
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload", $configs);
     }
 
     /**
