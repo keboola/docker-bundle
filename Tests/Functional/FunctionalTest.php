@@ -218,7 +218,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         }
 
         $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['prepare']);
+        $listOptions->setTags(['sandbox']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));

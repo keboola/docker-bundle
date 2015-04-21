@@ -291,7 +291,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'dataDirectory.zip'
         );
         $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['prepare']);
+        $listFiles->setTags(['sandbox']);
         $listFiles->setRunId($this->client->getRunId());
         $files = $this->client->listFiles($listFiles);
         $this->assertEquals(1, count($files));

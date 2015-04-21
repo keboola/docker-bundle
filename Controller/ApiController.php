@@ -65,7 +65,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function prepareAction(Request $request)
+    public function sandboxAction(Request $request)
     {
         // Get params from request
         $params = $this->getPostJson($request);
@@ -76,8 +76,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         if (!in_array($params["format"], ["yaml", "json"])) {
             throw new UserException("Invalid configuration format '{$params["format"]}'.");
         }
-
-        $params['prepare'] = 1;
 
         // check params against ES mapping
         $this->checkMappingParams($params);

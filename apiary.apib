@@ -17,11 +17,11 @@ Create a job on a specified docker image.
 ### Custom configuration [POST]
 + Request (application/json)
     + Headers
-    
+
             X-StorageApi-Token: 123456
-        
+
     + Body
-    
+
             {
                 "configData":  {
                     "storage": {
@@ -55,7 +55,7 @@ Create a job on a specified docker image.
                         ],
                         "script": null
                     }
-                } 
+                }
             }
 
 + Response 202 (application/json)
@@ -65,15 +65,15 @@ Create a job on a specified docker image.
             "url": "https://syrup.keboola.com/queue/job/67121676",
             "status": "waiting"
         }
-    
+
 ### Stored configuration [POST]
 + Request (application/json)
     + Headers
-    
+
             X-StorageApi-Token: 123456
 
     + Body
-    
+
             {
                 "config": "next-order-1"
             }
@@ -87,7 +87,7 @@ Create a job on a specified docker image.
         }
 
 
-## Prepare data[/prepare?format={format}]
+## Prepare data[/sandbox?format={format}]
 
 This job will prepare the `\data\` folder including serialized configuration file in the given format. Then it will put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. The image itself will not be downloaded nor executed.
 
@@ -99,11 +99,11 @@ Note: only 50 first rows of each table will be exported.
 ### Custom configuration [POST]
 + Request (application/json)
     + Headers
-    
+
             X-StorageApi-Token: 123456
-        
+
     + Body
-    
+
             {
                 "configData":  {
                     "storage": {
@@ -137,7 +137,7 @@ Note: only 50 first rows of each table will be exported.
                         ],
                         "script": null
                     }
-                } 
+                }
             }
 
 + Response 202 (application/json)

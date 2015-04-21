@@ -49,7 +49,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $response->getStatusCode());
     }
 
-    public function testPrepare()
+    public function testSandbox()
     {
         $content = '
         {
@@ -59,12 +59,12 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [];
-        $request = Request::create("/docker/prepare", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/sandbox", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
-        $response = $ctrl->prepareAction($request);
+        $response = $ctrl->sandboxAction($request);
         $this->assertEquals(202, $response->getStatusCode());
     }
 

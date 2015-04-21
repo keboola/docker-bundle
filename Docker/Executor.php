@@ -253,7 +253,7 @@ class Executor
             [
                 [
                     'source' => $zipFileName,
-                    'tags' => ['prepare', 'docker'],
+                    'tags' => ['sandbox', 'docker'],
                     'is_permanent' => false,
                     'is_encrypted' => true,
                     'is_public' => false,
