@@ -10,7 +10,6 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
@@ -90,6 +89,7 @@ class Writer
         $manifestNames = $this->getManifestFiles($source);
 
         $finder = new Finder();
+        /** @var SplFileInfo[] $files */
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingFiles = array();
@@ -118,9 +118,6 @@ class Writer
             }
         }
 
-        /**
-         * @var $file SplFileInfo
-         */
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
@@ -199,6 +196,8 @@ class Writer
         $manifestNames = $this->getManifestFiles($source);
 
         $finder = new Finder();
+
+        /** @var SplFileInfo[] $files */
         $files = $finder->files()->name("*.csv")->in($source);
 
         $outputMappingTables = array();
@@ -227,9 +226,6 @@ class Writer
             }
         }
 
-        /**
-         * @var $file SplFileInfo
-         */
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
