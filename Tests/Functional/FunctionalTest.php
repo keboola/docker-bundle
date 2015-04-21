@@ -12,6 +12,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Symfony\Bridge\Monolog\Logger;
 
 class FunctionalTests extends \PHPUnit_Framework_TestCase
 {
@@ -123,7 +124,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -202,7 +203,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -288,7 +289,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -350,7 +351,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                         ],
                     ]
                 ],
-                'mode' => 'input',
+                'mode' => 'dry-run',
                 'format' => 'yaml'
             ]
         ];
@@ -368,14 +369,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         if (!$this->client->tableExists("in.c-docker-test.source")) {
             $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
             $csv->writeRow(['name', 'oldValue', 'newValue']);
-            $csv->writeRow(['price', '100', '1000']);
-            $csv->writeRow(['size', 'small', 'big']);
-            $csv->writeRow(['age', 'low', 'high']);
-            $csv->writeRow(['kindness', 'no', 'yes']);
+            for ($i = 0; $i < 1000; $i++) {
+                $csv->writeRow([$i, '100', '1000']);
+            }
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -395,7 +395,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
-        //$this->assertGreaterThan(6000, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
     }
 
 
