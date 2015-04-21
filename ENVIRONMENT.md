@@ -299,7 +299,7 @@ storage:
 
 ##### Manifests
 
-If the manifest file is defined, the information from the manifest file will be used instead of the configuration. 
+If the manifest file is defined, the information from the manifest file will be used with lower priority than configuration. 
 
 ```
 /data/out/files/file.csv
