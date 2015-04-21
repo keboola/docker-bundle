@@ -264,7 +264,7 @@ incremental: 1
 
 #### Files
 
-Output files from `/data/out/files` folder are automatically uploaded to file uploads. There are two ways how to define file upload options - configuration and manifest files, where manifest has a higher priority.
+All output files from `/data/out/files` folder are automatically uploaded to file uploads. There are two ways how to define file upload options - configuration and manifest files, where manifest has a lower priority.
 
 These parameters can be used (taken from [Storage API File Import](http://docs.keboola.apiary.io/#files)):
 
