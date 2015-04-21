@@ -238,6 +238,7 @@ storage:
   output:
     tables:
       0:
+        source: data.csv
         destination: out.c-main.Leads
         incremental: 1
         delete_where_column: Status
@@ -281,7 +282,8 @@ You can define files in the output mapping configuration using their filename (e
 storage: 
   output:
     files:
-      file.csv:
+      0:
+        source: file.csv
         tags: 
           - processed-file
           - csv
