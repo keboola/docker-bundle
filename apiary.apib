@@ -22,41 +22,50 @@ Create a job on a specified docker image.
 
     + Body
 
-            {
-                "configData":  {
-                    "storage": {
-                        "input": [
+        {
+            "configData": {
+                "storage": {
+                    "input": {
+                        "files": [
                             {
-                                "name": "orders",
-                                "value": "in.c-main.orders"
-                            },
-                            {
-                                "name": "customers",
-                                "value": "in.c-main.customers"
+                                "query": "name: testloop.php"
                             }
                         ],
-                        "output": [
+                        "tables": [
                             {
-                                "name": "result",
-                                "value": "out.c-main.next-order"
+                                "source": "in.c-redshift.cashier-data",
+                                "destination": "table1.csv"
+                            },
+                            {
+                                "source": "in.c-redshift.kmeans_test_ihg",
+                                "destination": "table2.csv"
                             }
                         ]
                     },
-                    "parameters": {
-                        "values": [
+                    "output": {
+                        "files": [
                             {
-                                "name": "minimum-orders",
-                                "value": "10"
-                            },
-                            {
-                                "name": "period",
-                                "value": "12"
+                                "source": "file.csv",
+                                "tags": [
+                                    "processed-file",
+                                    "csv"
+                                ]
                             }
                         ],
-                        "script": null
+                        "tables": [
+                            {
+                                "source": "sliced.csv",
+                                "destination": "out.c-main.data"
+                            }
+                        ]
                     }
+                },
+                "parameters": {
+                    "foo": "bar",
+                    "script": null
                 }
             }
+        }
 
 + Response 202 (application/json)
 
@@ -104,41 +113,50 @@ Note: only 50 first rows of each table will be exported.
 
     + Body
 
-            {
-                "configData":  {
-                    "storage": {
-                        "input": [
+        {
+            "configData": {
+                "storage": {
+                    "input": {
+                        "files": [
                             {
-                                "name": "orders",
-                                "value": "in.c-main.orders"
-                            },
-                            {
-                                "name": "customers",
-                                "value": "in.c-main.customers"
+                                "query": "name: testloop.php"
                             }
                         ],
-                        "output": [
+                        "tables": [
                             {
-                                "name": "result",
-                                "value": "out.c-main.next-order"
+                                "source": "in.c-redshift.cashier-data",
+                                "destination": "table1.csv"
+                            },
+                            {
+                                "source": "in.c-redshift.kmeans_test_ihg",
+                                "destination": "table2.csv"
                             }
                         ]
                     },
-                    "parameters": {
-                        "values": [
+                    "output": {
+                        "files": [
                             {
-                                "name": "minimum-orders",
-                                "value": "10"
-                            },
-                            {
-                                "name": "period",
-                                "value": "12"
+                                "source": "file.csv",
+                                "tags": [
+                                    "processed-file",
+                                    "csv"
+                                ]
                             }
                         ],
-                        "script": null
+                        "tables": [
+                            {
+                                "source": "sliced.csv",
+                                "destination": "out.c-main.data"
+                            }
+                        ]
                     }
+                },
+                "parameters": {
+                    "foo": "bar",
+                    "script": null
                 }
             }
+        }
 
 + Response 202 (application/json)
 
