@@ -100,7 +100,7 @@ class Writer
         $processedOutputMappingFiles = array();
 
         $fileNames = [];
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $fileNames[] = $file->getFilename();
         }
 
@@ -112,7 +112,7 @@ class Writer
         }
 
         // Check for manifest orphans
-        foreach($manifestNames as $manifest) {
+        foreach ($manifestNames as $manifest) {
             if (!in_array(substr(basename($manifest), 0, -9), $fileNames)) {
                 throw new ManifestMismatchException("Found orphaned file manifest: '" . basename($manifest) . "'");
             }
@@ -209,7 +209,7 @@ class Writer
         $processedOutputMappingTables = array();
 
         $fileNames = [];
-        foreach($files as $file) {
+        foreach ($files as $file) {
             $fileNames[] = $file->getFilename();
         }
 
@@ -221,7 +221,7 @@ class Writer
         }
 
         // Check for manifest orphans
-        foreach($manifestNames as $manifest) {
+        foreach ($manifestNames as $manifest) {
             if (!in_array(substr(basename($manifest), 0, -9), $fileNames)) {
                 throw new ManifestMismatchException("Found orphaned table manifest: '" . basename($manifest) . "'");
             }
