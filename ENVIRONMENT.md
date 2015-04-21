@@ -287,6 +287,13 @@ storage:
         tags: 
           - processed-file
           - csv
+      1:
+        source: image.jpg
+        is_public: true
+        is_permanent: true
+        tags: 
+          - image
+          - pie-chart
 ```
 
 
