@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "8d0d062ba108440884bebb0a7ba0776f",
+    "hash": "daaa9860fac093123e3c09ceae8e6a8b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -986,21 +986,21 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "4.1.8",
+            "version": "4.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "e196b8f44f9492a11261ea8f7b9724613a198daf"
+                "reference": "66fd916e9f9130bc22c51450476823391cb2f67c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/e196b8f44f9492a11261ea8f7b9724613a198daf",
-                "reference": "e196b8f44f9492a11261ea8f7b9724613a198daf",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/66fd916e9f9130bc22c51450476823391cb2f67c",
+                "reference": "66fd916e9f9130bc22c51450476823391cb2f67c",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "guzzlehttp/streams": "~1.4",
+                "guzzlehttp/streams": "~2.1",
                 "php": ">=5.4.0"
             },
             "require-dev": {
@@ -1014,7 +1014,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.1-dev"
+                    "dev-master": "4.2-dev"
                 }
             },
             "autoload": {
@@ -1047,7 +1047,7 @@
                 "rest",
                 "web service"
             ],
-            "time": "2014-08-14 20:29:51"
+            "time": "2014-10-05 19:29:14"
         },
         {
             "name": "guzzlehttp/log-subscriber",
@@ -1152,16 +1152,16 @@
         },
         {
             "name": "guzzlehttp/streams",
-            "version": "1.5.1",
+            "version": "2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/streams.git",
-                "reference": "fb0d1ee29987c2bdc59867bffaade6fc88c2675f"
+                "reference": "f91b721d73f0e561410903b3b3c90a5d0e40b534"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/streams/zipball/fb0d1ee29987c2bdc59867bffaade6fc88c2675f",
-                "reference": "fb0d1ee29987c2bdc59867bffaade6fc88c2675f",
+                "url": "https://api.github.com/repos/guzzle/streams/zipball/f91b721d73f0e561410903b3b3c90a5d0e40b534",
+                "reference": "f91b721d73f0e561410903b3b3c90a5d0e40b534",
                 "shasum": ""
             },
             "require": {
@@ -1173,7 +1173,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.5-dev"
+                    "dev-master": "2.0-dev"
                 }
             },
             "autoload": {
@@ -1201,7 +1201,7 @@
                 "Guzzle",
                 "stream"
             ],
-            "time": "2014-08-10 23:57:01"
+            "time": "2014-08-17 21:15:53"
         },
         {
             "name": "jdorn/sql-formatter",
@@ -1634,53 +1634,6 @@
             "time": "2015-03-09 09:58:04"
         },
         {
-            "name": "namshi/cuzzle",
-            "version": "0.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/namshi/cuzzle.git",
-                "reference": "f908af7717d00c6fde1533930b11825dc481faed"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/namshi/cuzzle/zipball/f908af7717d00c6fde1533930b11825dc481faed",
-                "reference": "f908af7717d00c6fde1533930b11825dc481faed",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "4.*",
-                "php": ">=5.4.0"
-            },
-            "require-dev": {
-                "ext-curl": "*",
-                "guzzlehttp/guzzle": "4.2.1",
-                "monolog/monolog": "1.10.0",
-                "phpunit/phpunit": "4.2.2"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Namshi\\Cuzzle\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Nikita Nefedov",
-                    "email": "inefedor@gmail.com"
-                },
-                {
-                    "name": "cirpo",
-                    "email": "alessandro.cinelli@gmail.com"
-                }
-            ],
-            "description": "Get the cURL shell command from a Guzzle request",
-            "time": "2014-09-02 13:00:48"
-        },
-        {
             "name": "pimple/pimple",
             "version": "v3.0.0",
             "source": {
@@ -1929,16 +1882,16 @@
         },
         {
             "name": "sensiolabs/security-checker",
-            "version": "v2.0.1",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/security-checker.git",
-                "reference": "134cecf1c61256bd8e973e11376891a724543820"
+                "reference": "cecb1397087dc9c733796eda6e9d121336039cdc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/security-checker/zipball/134cecf1c61256bd8e973e11376891a724543820",
-                "reference": "134cecf1c61256bd8e973e11376891a724543820",
+                "url": "https://api.github.com/repos/sensiolabs/security-checker/zipball/cecb1397087dc9c733796eda6e9d121336039cdc",
+                "reference": "cecb1397087dc9c733796eda6e9d121336039cdc",
                 "shasum": ""
             },
             "require": {
@@ -1970,44 +1923,7 @@
                 }
             ],
             "description": "A security checker for your composer.lock",
-            "time": "2015-01-26 16:25:19"
-        },
-        {
-            "name": "stage1/docker-php",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/stage1/docker-php.git",
-                "reference": "1c5f150516d51465d74d02856a7cd3b98204e115"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/stage1/docker-php/zipball/1c5f150516d51465d74d02856a7cd3b98204e115",
-                "reference": "1c5f150516d51465d74d02856a7cd3b98204e115",
-                "shasum": ""
-            },
-            "require": {
-                "guzzlehttp/guzzle": "~4.1",
-                "guzzlehttp/streams": "~1.3",
-                "php": ">=5.4",
-                "symfony/filesystem": "~2.3",
-                "symfony/process": "~2.3"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "~3.7"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-0": {
-                    "": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A Docker PHP client",
-            "time": "2015-03-11 14:02:45"
+            "time": "2015-04-21 07:52:05"
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -2990,7 +2906,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "stage1/docker-php": 20,
         "codeclimate/php-test-reporter": 20
     },
     "prefer-stable": false,
