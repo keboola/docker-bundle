@@ -12,6 +12,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Symfony\Bridge\Monolog\Logger;
 
 class FunctionalTests extends \PHPUnit_Framework_TestCase
 {
@@ -122,7 +123,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -202,7 +203,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -235,7 +236,9 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("hello-world");
         $container->setDataDir("/tmp");
         $process = $container->run();
@@ -257,7 +260,9 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->run();
     }
 }
