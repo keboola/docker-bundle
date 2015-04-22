@@ -26,7 +26,7 @@ class File extends Configuration
             ->end()
         ->validate()
             ->ifTrue(function ($v) {
-                if ((!isset($v["tags"]) || count($v["tags"] == 0)) && !isset($v["query"])) {
+                if ((!isset($v["tags"]) || count($v["tags"]) == 0) && !isset($v["query"])) {
                     return true;
                 }
                 return false;
