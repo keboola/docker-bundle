@@ -75,8 +75,14 @@ During development, it is handy to be able to change the configuration quickly. 
 		}
 	}
   
+  
+### Debugging
+For debugging purposes it is possible to obtain the contents of the injected `/data` directory. There are three API calls for that purpose:
+- [Sandbox](http://docs.kebooladocker.apiary.io/#reference/sandbox)
+- [Input](http://docs.kebooladocker.apiary.io/#reference/input)
+- [Dry run](http://docs.kebooladocker.apiary.io/#reference/dry-run)
 
-For debugging purposes it is possible to generate the contents of the injected `/data` directory. The [Dry run](http://docs.kebooladocker.apiary.io/#reference/prepare) API call will prepare the `/data` directory including the input mappings. The whole directory will be stored in your KBC Storage project as a zip archive. You use this archive to replicate the input in your local environment. Note that when using dry run, only a sample of 50 rows from each table will be exported. 
+The [Sandbox](http://docs.kebooladocker.apiary.io/#reference/sandbox) API call is useful for obtaining a sample environment configuration when starting with development of a new docker image. The [Input](http://docs.kebooladocker.apiary.io/#reference/input) API call is useful for obtaining an environment configuration for existing docker image (registered as KBC component). The [Dry run](http://docs.kebooladocker.apiary.io/#reference/dry-run) API call is the last step. It will do everything except output mapping and is therefore useful for debugging an existing image without modifying and files and tables in KBC project.
 
 Read more details about configuration in [ENVIRONMENT.md](ENVIRONMENT.md)
 
@@ -92,7 +98,6 @@ Once the business logic was working, I started to build the Docker image in the 
 	
 	# Initialize 
 	RUN git clone https://github.com/keboola/docker-demo.git ./
-	RUN git checkout tags/1.0.0
 	RUN composer install --no-interaction
 
 	ENTRYPOINT php ./src/script.php --data=/data
@@ -107,4 +112,3 @@ To deploy the Docker image to Keboola connection you need to publish your image 
 Once you have the image available in Dockerhub, let us know on [support@keboola.com](mailto:support@keboola.com) and we'll integrate it into our list of components.
 
 The components usually require a UI to configure the input and output mapping and the parameters. Users could probably configure your image using a documentation, but using a UI is just much better. Talk to us.
-
