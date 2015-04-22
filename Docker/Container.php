@@ -2,20 +2,13 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Docker\Docker;
-use Docker\Http\DockerClient;
 use Monolog\Logger;
-use Symfony\Bundle\MonologBundle\MonologBundle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Namshi\Cuzzle\Formatter\CurlFormatter;
-use GuzzleHttp\Message\Request;
-
 
 class Container
 {
