@@ -41,6 +41,11 @@ class Image
     protected $forwardToken = false;
 
     /**
+     * @var bool
+     */
+    private $streamingLogs = false;
+
+    /**
      *
      * process timeout in seconds
      *
@@ -141,12 +146,22 @@ class Image
     }
 
     /**
+     * @param int $timeout
+     * @return $this
+     */
+    public function setProcessTimeout($timeout)
+    {
+        $this->processTimeout = (int)$timeout;
+        return $this;
+    }
+
+    /**
      * @param $forwardToken
      * @return $this
      */
-    public function setForwardToken($forwardtoken)
+    public function setForwardToken($forwardToken)
     {
-        $this->forwardToken = $forwardtoken;
+        $this->forwardToken = $forwardToken;
         return $this;
     }
 
@@ -159,13 +174,21 @@ class Image
     }
 
     /**
-     * @param int $timeout
+     * @param $streamingLogs
      * @return $this
      */
-    public function setProcessTimeout($timeout)
+    public function setStreamingLogs($streamingLogs)
     {
-        $this->processTimeout = (int)$timeout;
+        $this->streamingLogs = $streamingLogs;
         return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getStreamingLogs()
+    {
+        return $this->streamingLogs;
     }
 
     /**
@@ -194,6 +217,9 @@ class Image
         }
         if (isset($config["forward_token"])) {
             $instance->setForwardToken($config["forward_token"]);
+        }
+        if (isset($config["streaming_logs"])) {
+            $instance->setStreamingLogs($config["streaming_logs"]);
         }
 
         return $instance;

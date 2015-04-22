@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
@@ -12,7 +13,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateAndDropDataDir()
     {
-        $container = new Container(Image::factory());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container(Image::factory(), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);
@@ -45,7 +48,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image, $log);
 
         $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
@@ -104,7 +109,9 @@ EOF;
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
