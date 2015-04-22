@@ -101,7 +101,7 @@ class Executor extends BaseExecutor
             $image = Image::factory([]);
             $image->setConfigFormat($params["format"]);
 
-            $container = new Container($image);
+        $container = new Container($image, $this->log);
 
             $executor->setTmpFolder($this->temp->getTmpFolder());
             $executor->initialize($container, $configData);
