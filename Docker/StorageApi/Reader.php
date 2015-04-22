@@ -75,8 +75,10 @@ class Reader
     /**
      * @param $configuration array
      * @param $destination string Destination directory
+     * @param $tagInputFiles array Array of tags which will be added to input files (to mark that
+     *  they were downloaded).
      */
-    public function downloadFiles($configuration, $destination)
+    public function downloadFiles($configuration, $destination, array $tagInputFiles = [])
     {
         foreach ($configuration as $fileConfiguration) {
             $options = new ListFilesOptions();
@@ -99,6 +101,9 @@ class Reader
                 $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
                 $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
                 $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
+                foreach ($tagInputFiles as $tag) {
+                    $this->getClient()->addFileTag($file["id"], $tag);
+                }
             }
         }
     }

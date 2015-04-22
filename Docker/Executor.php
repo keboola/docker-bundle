@@ -140,7 +140,8 @@ class Executor
                 $this->getLog()->debug("Downloading source files.");
                 $reader->downloadFiles(
                     $config["storage"]["input"]["files"],
-                    $this->currentTmpDir . "/data/in/files"
+                    $this->currentTmpDir . "/data/in/files",
+                    !empty($config['tagInputFiles']) ? $config['tagInputFiles'] : []
                 );
             }
         } catch (ClientException $e) {
