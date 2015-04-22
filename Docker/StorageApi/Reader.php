@@ -75,37 +75,59 @@ class Reader
     /**
      * @param $configuration array
      * @param $destination string Destination directory
-     * @param $tagInputFiles array Array of tags which will be added to input files (to mark that
-     *  they were downloaded).
      */
-    public function downloadFiles($configuration, $destination, array $tagInputFiles = [])
+    public function downloadFiles($configuration, $destination)
     {
         foreach ($configuration as $fileConfiguration) {
-            $options = new ListFilesOptions();
-            if (empty($fileConfiguration['tags']) && empty($fileConfiguration['query'])) {
-                throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
-            }
-            if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
-                $options->setTags($fileConfiguration["tags"]);
-            }
-            if (isset($fileConfiguration["query"])) {
-                $options->setQuery($fileConfiguration["query"]);
-            }
-            $files = $this->getClient()->listFiles($options);
-
-            // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
-            if (count($files) > 10) {
-                throw new UserException("File mapping leads maps to more than 10 files, this seems like a mistake.");
-            }
+            $files = $this->getFiles($fileConfiguration);
             foreach ($files as $file) {
                 $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
                 $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
                 $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
-                foreach ($tagInputFiles as $tag) {
+            }
+        }
+    }
+
+    /**
+     * Add tags to processed input files.
+     * @param $configuration array
+     * @param $tags array
+     */
+    public function tagFiles(array $configuration, array $tags)
+    {
+        foreach ($configuration as $fileConfiguration) {
+            $files = $this->getFiles($fileConfiguration);
+            foreach ($files as $file) {
+                foreach ($tags as $tag) {
                     $this->getClient()->addFileTag($file["id"], $tag);
                 }
             }
         }
+    }
+
+    /**
+     * @param $fileConfiguration
+     * @return array
+     */
+    private function getFiles($fileConfiguration)
+    {
+        $options = new ListFilesOptions();
+        if (empty($fileConfiguration['tags']) && empty($fileConfiguration['query'])) {
+            throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
+        }
+        if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
+            $options->setTags($fileConfiguration["tags"]);
+        }
+        if (isset($fileConfiguration["query"])) {
+            $options->setQuery($fileConfiguration["query"]);
+        }
+        $files = $this->getClient()->listFiles($options);
+
+        // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
+        if (count($files) > 10) {
+            throw new UserException("File mapping leads maps to more than 10 files, this seems like a mistake.");
+        }
+        return $files;
     }
 
     /**

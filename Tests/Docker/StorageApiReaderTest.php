@@ -99,7 +99,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testReadFilesAndTag()
+    public function testTagFiles()
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
@@ -109,10 +109,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         $reader = new Reader($this->client);
         $configuration = [["tags" => ["docker-bundle-test"]]];
-        $reader->downloadFiles($configuration, $root . "/download", ['downloaded']);
-
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id1));
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id2));
+        $reader->tagFiles($configuration, ['downloaded']);
 
         $file = $this->client->getFile($id1);
         $this->assertTrue(in_array('downloaded', $file['tags']));

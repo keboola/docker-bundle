@@ -140,8 +140,7 @@ class Executor
                 $this->getLog()->debug("Downloading source files.");
                 $reader->downloadFiles(
                     $config["storage"]["input"]["files"],
-                    $this->currentTmpDir . "/data/in/files",
-                    !empty($config['tagInputFiles']) ? $config['tagInputFiles'] : []
+                    $this->currentTmpDir . "/data/in/files"
                 );
             }
         } catch (ClientException $e) {
@@ -209,6 +208,12 @@ class Executor
             }
         } catch (ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
+        }
+
+        if (isset($config["storage"]["input"]["files"]) && !empty(['tagInputFiles'])) {
+            // tag input files
+            $reader = new Reader($this->getStorageApiClient());
+            $reader->tagFiles($config["storage"]["input"]["files"], $config['tagInputFiles']);
         }
 
         $container->dropDataDir();
