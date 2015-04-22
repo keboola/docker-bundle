@@ -50,7 +50,24 @@ EOT;
     protected function getJsonConfigFileTemplate()
     {
         $data = <<< EOT
-{"storage":{"input":{"tables":[{"source":"in.c-main.data","columns":["Id","Name"]}]}},"parameters":{"primary_key_column":"id"}}
+{
+    "storage": {
+        "input": {
+            "tables": [
+                {
+                    "source": "in.c-main.data",
+                    "columns": [
+                        "Id",
+                        "Name"
+                    ]
+                }
+            ]
+        }
+    },
+    "parameters": {
+        "primary_key_column": "id"
+    }
+}
 EOT;
         return $data;
     }

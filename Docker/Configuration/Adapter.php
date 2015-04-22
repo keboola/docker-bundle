@@ -140,7 +140,7 @@ class Adapter
             $serialized = $yaml->dump($this->getConfig(), 10);
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
-            $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT);
+            $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
         } else {
             throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
