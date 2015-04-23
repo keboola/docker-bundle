@@ -25,7 +25,6 @@ class File extends Configuration
                 ->scalarNode("query")->end()
                 ->arrayNode("processedTags")
                     ->prototype("scalar")->end()
-            ->end()
         ->validate()
             ->ifTrue(function ($v) {
                 if ((!isset($v["tags"]) || count($v["tags"]) == 0) && !isset($v["query"])) {
