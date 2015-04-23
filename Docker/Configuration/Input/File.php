@@ -25,6 +25,7 @@ class File extends Configuration
                 ->scalarNode("query")->end()
                 ->arrayNode("processedTags")
                     ->prototype("scalar")->end()
+                ->end()
             ->end()
         ->validate()
             ->ifTrue(function ($v) {
@@ -33,7 +34,8 @@ class File extends Configuration
                 }
                 return false;
             })
-                ->thenInvalid("At least one of 'tags' or 'query' parameters must be defined.");
-        ;
+                ->thenInvalid("At least one of 'tags' or 'query' parameters must be defined.")
+
+    ;
     }
 }
