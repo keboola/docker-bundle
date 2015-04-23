@@ -34,8 +34,6 @@ class File extends Configuration
                 }
                 return false;
             })
-                ->thenInvalid("At least one of 'tags' or 'query' parameters must be defined.")
-
-    ;
+                ->thenInvalid("At least one of 'tags' or 'query' parameters must be defined.");
     }
 }
