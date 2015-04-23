@@ -108,8 +108,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
 
         $reader = new Reader($this->client);
-        $configuration = [["tags" => ["docker-bundle-test"]]];
-        $reader->tagFiles($configuration, ['downloaded']);
+        $configuration = [["tags" => ["docker-bundle-test"], "processedTags" => ['downloaded']]];
+        $reader->tagFiles($configuration);
 
         $file = $this->client->getFile($id1);
         $this->assertTrue(in_array('downloaded', $file['tags']));

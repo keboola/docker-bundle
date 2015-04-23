@@ -23,6 +23,8 @@ class File extends Configuration
                     ->prototype("scalar")->end()
                 ->end()
                 ->scalarNode("query")->end()
+                ->arrayNode("processedTags")
+                    ->prototype("scalar")->end()
             ->end()
         ->validate()
             ->ifTrue(function ($v) {

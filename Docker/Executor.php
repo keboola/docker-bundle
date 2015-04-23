@@ -210,10 +210,10 @@ class Executor
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
         }
 
-        if (isset($config["storage"]["input"]["files"]) && !empty(['tagInputFiles'])) {
+        if (isset($config["storage"]["input"]["files"])) {
             // tag input files
             $reader = new Reader($this->getStorageApiClient());
-            $reader->tagFiles($config["storage"]["input"]["files"], $config['tagInputFiles']);
+            $reader->tagFiles($config["storage"]["input"]["files"]);
         }
 
         $container->dropDataDir();

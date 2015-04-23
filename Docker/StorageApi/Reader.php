@@ -91,15 +91,16 @@ class Reader
     /**
      * Add tags to processed input files.
      * @param $configuration array
-     * @param $tags array
      */
-    public function tagFiles(array $configuration, array $tags)
+    public function tagFiles(array $configuration)
     {
         foreach ($configuration as $fileConfiguration) {
-            $files = $this->getFiles($fileConfiguration);
-            foreach ($files as $file) {
-                foreach ($tags as $tag) {
-                    $this->getClient()->addFileTag($file["id"], $tag);
+            if (!empty($fileConfiguration['processedTags'])) {
+                $files = $this->getFiles($fileConfiguration);
+                foreach ($files as $file) {
+                    foreach ($fileConfiguration['processedTags'] as $tag) {
+                        $this->getClient()->addFileTag($file["id"], $tag);
+                    }
                 }
             }
         }
