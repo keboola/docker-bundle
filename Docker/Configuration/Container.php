@@ -62,11 +62,6 @@ class Container extends Configuration
         ;
         Output\File::configureNode($outputFile);
 
-        $root
-            ->children()
-                ->arrayNode("tagInputFiles")
-                    ->prototype("scalar")
-        ;
         return $treeBuilder;
     }
 }

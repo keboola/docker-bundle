@@ -8,10 +8,12 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Symfony\Bridge\Monolog\Logger;
 
 class FunctionalTests extends \PHPUnit_Framework_TestCase
 {
@@ -66,6 +68,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             // Delete bucket
             $this->client->dropBucket("out.c-docker-test");
         }
+
+        $options = new ListFilesOptions();
+        $options->setTags(array("docker-bundle-test"));
+        $files = $this->client->listFiles($options);
+        foreach ($files as $file) {
+            $this->client->deleteFile($file["id"]);
+        }
+
     }
 
 
@@ -122,7 +132,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -202,7 +212,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
+        $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $jobExecutor = new Executor($log, $this->temp);
         $jobExecutor->setStorageApi($this->client);
@@ -259,5 +269,87 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $container = new Container($image);
         $container->run();
+    }
+
+
+    public function testIncrementalTags()
+    {
+        $data = [
+            'params' => [
+                'component' => 'docker-r',
+                'configData' => [
+                    'storage' => [
+                        'input' => [
+                            'files' => [[
+                                'query' => 'tags: toprocess AND NOT tags: downloaded',
+                                'processed_tags' => [
+                                    'downloaded', 'experimental'
+                                ],
+                            ]]
+                        ]
+                    ],
+                    'parameters' => [
+                        'script' => [
+                            "inDirectory <- '/data/in/files/'",
+                            "outDirectory <- '/data/out/files/'",
+                            "files <- list.files(inDirectory, pattern = '^[0-9]+$', full.names = FALSE)",
+                            "for (file in files) {",
+                            "    fn <- paste0(outDirectory, file, '.csv');",
+                            "    file.copy(paste0(inDirectory, file), fn);",
+                            "    wrapper.saveFileManifest(fn, c('processed', 'docker-bundle-test'))",
+                            "}"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $job = new Job($data);
+
+        // Create buckets
+        if (!$this->client->bucketExists("in.c-docker-test")) {
+            $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker TestSuite");
+        }
+        if (!$this->client->bucketExists("out.c-docker-test")) {
+            $this->client->createBucket("docker-test", Client::STAGE_OUT, "Docker TestSuite");
+        }
+
+        // Create file
+        $root = $this->temp->getTmpFolder();
+        file_put_contents($root . "/upload", "test");
+
+        $id1 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "toprocess"])
+        );
+        $id2 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "toprocess"])
+        );
+        $id3 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "incremental-test"])
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $jobExecutor = new Executor($log, $this->temp);
+        $jobExecutor->setStorageApi($this->client);
+        $jobExecutor->execute($job);
+
+        $listFileOptions = new ListFilesOptions();
+        $listFileOptions->setTags(['downloaded']);
+        $files = $this->client->listFiles($listFileOptions);
+        $ids = [];
+        foreach ($files as $file) {
+            $ids[] = $file['id'];
+        }
+        $this->assertContains($id1, $ids);
+        $this->assertContains($id2, $ids);
+        $this->assertNotContains($id3, $ids);
+
+        $listFileOptions = new ListFilesOptions();
+        $listFileOptions->setTags(['processed']);
+        $files = $this->client->listFiles($listFileOptions);
+        $this->assertEquals(2, count($files));
     }
 }
