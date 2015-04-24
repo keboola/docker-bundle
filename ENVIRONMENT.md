@@ -329,7 +329,7 @@ tags:
 
 ### Configuration for incremental processing
 
-Docker containers may be used to process unknown files incrementally. This means that when a container is run, it will download any files not yet downloaded, and process them. To achieve this behavior, it is necessary to select only the files which have not been processed yet and to tag processed files somehow. The former can be achieved by using proper [ElasticSerch query](http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) and the latter is achieved using the `processedTags` setting. `processedTags` setting is an array of tags which will be added to the *input* files once they are downloaded. A sample API request:  
+Docker containers may be used to process unknown files incrementally. This means that when a container is run, it will download any files not yet downloaded, and process them. To achieve this behavior, it is necessary to select only the files which have not been processed yet and to tag processed files somehow. The former can be achieved by using proper [ElasticSerch query](http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) and the latter is achieved using the `processed_tags` setting. `processed_tags` setting is an array of tags which will be added to the *input* files once they are downloaded. A sample API request:  
 
 ```
 {
@@ -339,7 +339,7 @@ Docker containers may be used to process unknown files incrementally. This means
                 "files": [
                     {
                         "query": "tags: toprocess AND NOT tags: downloaded",
-				        "processedTags": [
+				        "processed_tags": [
                             "downloaded", "my-image"
                         ]
                     }

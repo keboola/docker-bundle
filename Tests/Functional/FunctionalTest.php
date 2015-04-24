@@ -282,7 +282,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                         'input' => [
                             'files' => [[
                                 'query' => 'tags: toprocess AND NOT tags: downloaded',
-                                'processedTags' => [
+                                'processed_tags' => [
                                     'downloaded', 'experimental'
                                 ],
                             ]]

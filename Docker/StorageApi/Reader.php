@@ -95,10 +95,10 @@ class Reader
     public function tagFiles(array $configuration)
     {
         foreach ($configuration as $fileConfiguration) {
-            if (!empty($fileConfiguration['processedTags'])) {
+            if (!empty($fileConfiguration['processed_tags'])) {
                 $files = $this->getFiles($fileConfiguration);
                 foreach ($files as $file) {
-                    foreach ($fileConfiguration['processedTags'] as $tag) {
+                    foreach ($fileConfiguration['processed_tags'] as $tag) {
                         $this->getClient()->addFileTag($file["id"], $tag);
                     }
                 }
