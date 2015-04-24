@@ -132,7 +132,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
-        $process = $executor->run($container, $config);
+        $process = $executor->run($container, $config, "testsuite");
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -183,7 +183,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
-            $executor->run($container, $config);
+            $executor->run($container, $config, "testsuite");
             $this->fail("Timeouted process should raise exception.");
         } catch (ProcessTimedOutException $e) {
             $this->assertContains('exceeded the timeout', $e->getMessage());
@@ -232,7 +232,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->run($container, $config);
+        $executor->run($container, $config, "testsuite");
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_TOKEN', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);

@@ -138,11 +138,11 @@ class Container
     }
 
     /**
-     * @param string $containerName suffix to the container tag
+     * @param string $containerId container id
      * @return Process
      * @throws ApplicationException
      */
-    public function run($containerName = "")
+    public function run($containerId = "")
     {
         if (!$this->getDataDir()) {
             throw new ApplicationException("Data directory not set.");
@@ -151,7 +151,8 @@ class Container
         $id = $this->getImage()->prepare($this);
         $this->setId($id);
 
-        $process = new Process($this->getRunCommand($containerName));
+        // Run container
+        $process = new Process($this->getRunCommand($containerId));
         $process->setTimeout($this->getImage()->getProcessTimeout());
         try {
             $process->run();
@@ -231,10 +232,10 @@ class Container
     }
 
     /**
-     * @param string $containerName
+     * @param string $containerId
      * @return string
      */
-    public function getRunCommand($containerName = "")
+    public function getRunCommand($containerId = "")
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
@@ -257,8 +258,9 @@ class Container
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs
             . " --rm"
-            . " --name=" . escapeshellarg(strtr($this->getId(), ":/", "--") . ($containerName ? "-" . $containerName : ""))
+            . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getId());
         return $command;
     }
+
 }
