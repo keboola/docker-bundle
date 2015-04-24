@@ -17,7 +17,7 @@ class OutputFileConfigurationTest extends \PHPUnit_Framework_TestCase
             "source" => "file",
             "is_public" => false,
             "is_permanent" => false,
-            "is_encrypted" => false,
+            "is_encrypted" => true,
             "notify" => false,
             "tags" => array("tag1", "tag2")
         );
