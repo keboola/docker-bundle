@@ -179,7 +179,7 @@ class Executor
 
         // run the container
         $process = $container->run($this->getStorageApiClient()->getRunId());
-        if ($process->getOutput()) {
+        if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
             $this->getLog()->info($process->getOutput());
         } else {
             $this->getLog()->info("Docker container processing finished.");

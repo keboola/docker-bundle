@@ -245,7 +245,9 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("hello-world");
         $container->setDataDir("/tmp");
         $process = $container->run();
@@ -267,7 +269,9 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         );
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->run();
     }
 
