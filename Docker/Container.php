@@ -164,7 +164,7 @@ class Container
 
         try {
             $this->log->debug("Executing docker process.");
-            if ($this->getImage()->getStreamingLogs()) {
+            if ($this->getImage()->isStreamingLogs()) {
                 $process->run(function ($type, $buffer) {
                     if ($type === Process::ERR) {
                         $this->log->error($buffer);

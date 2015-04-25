@@ -31,7 +31,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2048, $image->getCpuShares());
         $this->assertEquals(7200, $image->getProcessTimeout());
         $this->assertEquals(true, $image->getForwardToken());
-        $this->assertEquals(true, $image->getStreamingLogs());
+        $this->assertEquals(true, $image->isStreamingLogs());
     }
 
 

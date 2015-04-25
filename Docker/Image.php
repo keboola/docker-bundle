@@ -184,9 +184,9 @@ class Image
     }
 
     /**
-     * @return bool
+     * @return boolean
      */
-    public function getStreamingLogs()
+    public function isStreamingLogs()
     {
         return $this->streamingLogs;
     }
