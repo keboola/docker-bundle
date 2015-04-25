@@ -43,7 +43,7 @@ class Image
     /**
      * @var bool
      */
-    private $streamingLogs = false;
+    private $streamingLogs = true;
 
     /**
      *
