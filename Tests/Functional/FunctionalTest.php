@@ -461,6 +461,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $data = [
             'params' => [
                 'component' => 'docker-r',
+                'mode' => 'run',
                 'configData' => [
                     'storage' => [
                         'input' => [
