@@ -23,7 +23,7 @@ class Manifest extends Configuration
                 ->arrayNode("tags")->prototype("scalar")->end()->end()
                 ->booleanNode("is_public")->defaultValue(false)->end()
                 ->booleanNode("is_permanent")->defaultValue(false)->end()
-                ->booleanNode("is_encrypted")->defaultValue(false)->end()
+                ->booleanNode("is_encrypted")->defaultValue(true)->end()
                 ->booleanNode("notify")->defaultValue(false)->end()
             ;
     }

@@ -7,6 +7,9 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
+use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
@@ -34,7 +37,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container->setDataDir($dataDir);
@@ -56,7 +61,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php this would be a parse error');
         $container->setDataDir($dataDir);
@@ -82,7 +89,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
         $container->setDataDir($dataDir);
@@ -108,7 +117,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
         $container->setDataDir($dataDir);
@@ -133,7 +144,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
         $container->setDataDir($dataDir);
@@ -156,7 +169,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($imageConfiguration);
         $image->setProcessTimeout(1);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
         $container->setDataDir($dataDir);
@@ -181,7 +196,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
         $image = Image::factory($imageConfiguration);
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         try {
             $container->run(uniqid());
             $this->fail("Must raise an exception when data directory is not set.");
@@ -206,7 +223,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($imageConfiguration);
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
 
-        $container = new Container($image);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
         $container->setDataDir($dataDir);
         try {
             $container->run(uniqid());
@@ -214,5 +233,91 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
         }
+    }
+
+    public function testLogStreamingOn()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-php-test"
+            ],
+            "streaming_logs" => true
+        ];
+        $image = Image::factory($imageConfiguration);
+
+        $log = new Logger("null");
+        $handler = new TestHandler();
+        $log->pushHandler($handler);
+        $container = new Container($image, $log);
+        $container->setId("odinuv/docker-php-test");
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+            echo "first message to stdout\n";
+            file_put_contents("php://stderr", "first message to stderr\n");
+            sleep(5);
+            error_log("second message to stderr\n");
+            print "second message to stdout\n";'
+        );
+        $container->setDataDir($dataDir);
+        $container->setEnvironmentVariables(['command' => '/data/test.php']);
+
+        $process = $container->run();
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
+        $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
+        $this->assertTrue($handler->hasErrorRecords());
+        $this->assertTrue($handler->hasInfoRecords());
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(4, count($records));
+        $this->assertTrue($handler->hasInfo("first message to stdout\n"));
+        $this->assertTrue($handler->hasInfo("second message to stdout\n"));
+        $this->assertTrue($handler->hasError("first message to stderr\n"));
+        $this->assertTrue($handler->hasError("second message to stderr\n\n"));
+    }
+
+    public function testLogStreamingOff()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-php-test"
+            ],
+            "streaming_logs" => false
+        ];
+        $image = Image::factory($imageConfiguration);
+
+        $log = new Logger("null");
+        $handler = new TestHandler();
+        $log->pushHandler($handler);
+        $container = new Container($image, $log);
+        $container->setId("odinuv/docker-php-test");
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+            echo "first message to stdout\n";
+            file_put_contents("php://stderr", "first message to stderr\n");
+            sleep(5);
+            error_log("second message to stderr\n");
+            print "second message to stdout\n";'
+        );
+        $container->setDataDir($dataDir);
+        $container->setEnvironmentVariables(['command' => '/data/test.php']);
+
+        $process = $container->run();
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
+        $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
+        $this->assertFalse($handler->hasErrorRecords());
+        $this->assertFalse($handler->hasInfoRecords());
+        $this->assertFalse($handler->hasInfo('first message to stdout'));
+        $this->assertFalse($handler->hasInfo('second message to stdout'));
+        $this->assertFalse($handler->hasInfo('first message to stderr'));
+        $this->assertFalse($handler->hasInfo('second message to stderr'));
     }
 }

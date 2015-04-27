@@ -104,7 +104,7 @@ class Executor extends BaseExecutor
                 $image = Image::factory([]);
                 $image->setConfigFormat($params["format"]);
 
-                $container = new Container($image);
+                $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
@@ -117,7 +117,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Preparing image configuration.", $configData);
 
                 $image = Image::factory($component["data"]);
-                $container = new Container($image);
+                $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
@@ -128,7 +128,7 @@ class Executor extends BaseExecutor
                 return ["message" => $message];
             case 'dry-run':
                 $image = Image::factory($component["data"]);
-                $container = new Container($image);
+                $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
@@ -146,7 +146,7 @@ class Executor extends BaseExecutor
                 return ["message" => $message];
             case 'run':
                 $image = Image::factory($component["data"]);
-                $container = new Container($image);
+                $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());

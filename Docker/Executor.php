@@ -179,7 +179,7 @@ class Executor
 
         // run the container
         $process = $container->run($this->getStorageApiClient()->getRunId());
-        if ($process->getOutput()) {
+        if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
             $this->getLog()->info($process->getOutput());
         } else {
             $this->getLog()->info("Docker container processing finished.");
@@ -220,6 +220,12 @@ class Executor
             }
         } catch (ClientException $e) {
             throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
+        }
+
+        if (isset($config["storage"]["input"]["files"])) {
+            // tag input files
+            $reader = new Reader($this->getStorageApiClient());
+            $reader->tagFiles($config["storage"]["input"]["files"]);
         }
 
         $container->dropDataDir();

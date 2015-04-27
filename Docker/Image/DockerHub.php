@@ -44,7 +44,7 @@ class DockerHub extends Image
 
         try {
             if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $process = new Process("plink -load docker sudo docker pull " . escapeshellarg($tag));
+                $process = new Process("docker pull " . escapeshellarg($tag));
             } else {
                 $process = new Process("sudo docker pull " . escapeshellarg($tag));
             }

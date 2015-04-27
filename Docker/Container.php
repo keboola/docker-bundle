@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -38,6 +39,11 @@ class Container
      * @var array
      */
     protected $environmentVariables = array();
+
+    /**
+     * @var Logger
+     */
+    private $log;
 
     /**
      * @return string
@@ -95,9 +101,11 @@ class Container
 
     /**
      * @param Image $image
+     * @param Logger $logger
      */
-    public function __construct(Image $image)
+    public function __construct(Image $image, Logger $logger)
     {
+        $this->log = $logger;
         $this->setImage($image);
     }
 
@@ -153,13 +161,27 @@ class Container
 
         $process = new Process($this->getRunCommand($containerName));
         $process->setTimeout($this->getImage()->getProcessTimeout());
+
         try {
-            $process->run();
+            $this->log->debug("Executing docker process.");
+            if ($this->getImage()->isStreamingLogs()) {
+                $process->run(function ($type, $buffer) {
+                    if ($type === Process::ERR) {
+                        $this->log->error($buffer);
+                    } else {
+                        $this->log->info($buffer);
+                    }
+                });
+            } else {
+                $process->run();
+            }
+            $this->log->debug("Docker process finished.");
         } catch (ProcessTimedOutException $e) {
             throw new UserException(
                 "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
             );
         }
+
         if (!$process->isSuccessful()) {
             $message = substr($process->getErrorOutput(), 0, 8192);
             if (!$message) {

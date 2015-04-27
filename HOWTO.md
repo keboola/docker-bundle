@@ -105,6 +105,18 @@ Once the business logic was working, I started to build the Docker image in the 
 All we need to do is to clone the repository (to get the `/src` folder), run `composer install` and call the `php ./src/script.php --data=/data` command. The last line with **ENTRYPOINT** is actually the command that 
 will get executed when the docker image is run. Docker bundle automatically provides all files (tables, file uploads and configuration) to the `/data` directory in the container, so you do not need to worry about any input or output mapping. 
 
+## Logging and results
+
+All components have `streamed_logs` turned on by default - that means that all outputs in STDOUT and STDERR are immediately forwarded to Events in Storage API (`info` and `error` log levels). Turning off `streamed_logs` will result in all STDOUT and STDERR messages to be collected at the end of the execution. 
+
+When the script inside the container is finished, Docker bundle automatically collects the exit code and the content of STDOUT and STDERR.
+
+  - `exit code = 0` the execution is considered successful (when `streamed_logs` is turned off the content of STDOUT will be sent to a Storage API Event)
+  - `exit code = 1` the execution fails with an user exception and content of both STDOUT and STDERR will be sent to a Storage API Event
+  - `exit code > 1` the execution fails with an application exception and content of both STDOUT and STDERR will be sent to our internal logs
+  
+You can leverage this to communicate any errors or significant events in your component. We're working on a best practice to handle application errors.
+
 ## Deploy
 
 To deploy the Docker image to Keboola connection you need to publish your image to Dockerhub. You can do that manually (if you do not have a public GitHub repo), or you can set up an automated build on Dockerhub, if the GitHub repository is public.

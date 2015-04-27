@@ -5,9 +5,12 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
+use Monolog\Handler\NullHandler;
+use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
@@ -119,16 +122,19 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
-        $log->pushHandler(new \Monolog\Handler\NullHandler());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
 
         $image = Image::factory($imageConfig);
 
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+        $container = new MockContainer($image, $log);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() . "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
             $process = new Process('echo "Processed 1 rows."');
             $process->run();
             return $process;
@@ -168,16 +174,19 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
-        $log->pushHandler(new \Monolog\Handler\NullHandler());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
 
         $image = Image::factory($imageConfig);
 
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+        $container = new MockContainer($image, $log);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() . "/out/tables/sliced.csv", "id,text,row_number\n1,test,1\n1,test,2\n1,test,3");
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
             $process = new Process('sleep 2 && echo "Processed 1 rows."');
             $process->setTimeout($container->getImage()->getProcessTimeout());
             $process->run();
@@ -221,12 +230,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
-        $log->pushHandler(new \Monolog\Handler\NullHandler());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
 
         $image = Image::factory($imageConfig);
 
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+        $container = new MockContainer($image, $log);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -283,12 +292,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $log = new \Symfony\Bridge\Monolog\Logger("null");
-        $log->pushHandler(new \Monolog\Handler\NullHandler());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
 
         $image = Image::factory($imageConfig);
 
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image);
+        $container = new MockContainer($image, $log);
 
         $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);

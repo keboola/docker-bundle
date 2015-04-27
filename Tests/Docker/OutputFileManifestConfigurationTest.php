@@ -15,7 +15,7 @@ class OutputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
         $expectedResponse = array(
             "is_public" => false,
             "is_permanent" => false,
-            "is_encrypted" => false,
+            "is_encrypted" => true,
             "notify" => false,
             "tags" => array("tag1", "tag2")
         );
