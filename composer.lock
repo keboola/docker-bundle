@@ -1333,16 +1333,16 @@
         },
         {
             "name": "keboola/php-temp",
-            "version": "0.1.0",
+            "version": "0.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-temp.git",
-                "reference": "ba7951bc813228d4b580872be966a39262c4f933"
+                "reference": "5549b524b3b4da27c8c26cfc06ab14d31bc547af"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-temp/zipball/ba7951bc813228d4b580872be966a39262c4f933",
-                "reference": "ba7951bc813228d4b580872be966a39262c4f933",
+                "url": "https://api.github.com/repos/keboola/php-temp/zipball/5549b524b3b4da27c8c26cfc06ab14d31bc547af",
+                "reference": "5549b524b3b4da27c8c26cfc06ab14d31bc547af",
                 "shasum": ""
             },
             "require": {
@@ -1377,7 +1377,7 @@
                 "filesystem",
                 "temp"
             ],
-            "time": "2014-09-30 02:21:07"
+            "time": "2015-04-24 12:20:55"
         },
         {
             "name": "keboola/storage-api-client",
@@ -2830,16 +2830,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "2.3.0",
+            "version": "2.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "5046b0e01c416fc2b06df961d0673c85bcdc896c"
+                "reference": "f3100143e94bbeeaa4f1cd7c6389c3733d3d1ce1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/5046b0e01c416fc2b06df961d0673c85bcdc896c",
-                "reference": "5046b0e01c416fc2b06df961d0673c85bcdc896c",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/f3100143e94bbeeaa4f1cd7c6389c3733d3d1ce1",
+                "reference": "f3100143e94bbeeaa4f1cd7c6389c3733d3d1ce1",
                 "shasum": ""
             },
             "require": {
@@ -2900,7 +2900,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2015-03-04 02:07:03"
+            "time": "2015-04-23 03:40:59"
         }
     ],
     "aliases": [],
