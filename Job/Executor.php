@@ -13,6 +13,7 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
+use Symfony\Component\Process\Process;
 
 class Executor extends BaseExecutor
 {
@@ -35,7 +36,24 @@ class Executor extends BaseExecutor
     {
         $this->log = $log;
         $this->temp = $temp;
+    }
 
+    /**
+     * @param $id
+     */
+    protected function getComponent($id)
+    {
+        // Check list of components
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $id) {
+                $component = $c;
+            }
+        }
+        if (!isset($component)) {
+            throw new UserException("Component '{$id}' not found.");
+        }
+        return $component;
     }
 
     /**
@@ -46,6 +64,7 @@ class Executor extends BaseExecutor
     public function execute(Job $job)
     {
         $params = $job->getParams();
+        $this->temp->setId($job->getId());
 
         if ($params['mode'] == 'sandbox') {
             if (!isset($params["configData"]) || empty($params["configData"])) {
@@ -64,18 +83,7 @@ class Executor extends BaseExecutor
             }
             $component = null;
         } else {
-            // Check list of components
-            $components = $this->storageApi->indexAction();
-            foreach ($components["components"] as $c) {
-                if ($c["id"] == $params["component"]) {
-                    $component = $c;
-                }
-            }
-
-            if (!isset($component)) {
-                throw new UserException("Component '{$params["component"]}' not found.");
-            }
-
+            $component = $this->getComponent($params["component"]);
             $processor = new DockerProcessor($component['id']);
             // attach the processor to all handlers and channels
             $this->log->pushProcessor([$processor, 'processRecord']);
@@ -95,6 +103,7 @@ class Executor extends BaseExecutor
         }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
+        $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
 
         switch ($params['mode']) {
             case 'sandbox':
@@ -133,7 +142,7 @@ class Executor extends BaseExecutor
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
-                $process = $executor->run($container);
+                $process = $executor->run($container, $containerId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker']);
 
                 if ($process->getOutput()) {
@@ -151,7 +160,7 @@ class Executor extends BaseExecutor
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
-                $process = $executor->run($container);
+                $process = $executor->run($container, $containerId);
                 $executor->storeOutput($container, $configData);
 
                 if ($process->getOutput()) {
@@ -165,5 +174,29 @@ class Executor extends BaseExecutor
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
+    }
+
+    /**
+     *
+     */
+    public function cleanup()
+    {
+        $params = $this->job->getParams();
+        if (isset($params["component"])) {
+            $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
+            $this->log->info("Terminating process");
+            try {
+                $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
+                $process->run();
+                if (trim($process->getOutput()) !== '0') {
+                    (new Process('sudo docker kill ' . escapeshellarg($containerId)))->run();
+                }
+                $this->log->info("Process terminated");
+            } catch (\Exception $e) {
+                $this->log->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
+            }
+
+        }
+
     }
 }

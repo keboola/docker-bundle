@@ -13,6 +13,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Process\Process;
 
 class Executor
 {
@@ -155,14 +156,30 @@ class Executor
     }
 
 
+
     /**
-     * Run a container.
-     *
      * @param Container $container
+     * @param $id
      * @return \Symfony\Component\Process\Process
+     * @throws \Exception
      */
-    public function run(Container $container)
+    public function run(Container $container, $id)
     {
+
+        // Check if container not running
+        $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
+        $process->run();
+        if (trim($process->getOutput()) !== '0') {
+            throw new UserException("Container '{$id}' already running.");
+        }
+
+        // Check old containers, delete if found
+        $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($id) . ' | wc -l');
+        $process->run();
+        if (trim($process->getOutput()) !== '0') {
+            (new Process('sudo docker rm ' . escapeshellarg($id)))->run();
+        }
+
         // set environment variables
         $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [

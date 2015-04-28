@@ -325,7 +325,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
-        $this->assertGreaterThan(6000, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(3900, $files[0]['sizeBytes']);
     }
 
 
@@ -412,6 +412,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
         $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
+
     }
 
 
