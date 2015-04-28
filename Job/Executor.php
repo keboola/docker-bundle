@@ -65,6 +65,7 @@ class Executor extends BaseExecutor
     {
         $params = $job->getParams();
         $this->temp->setId($job->getId());
+        $containerId = null;
 
         if ($params['mode'] == 'sandbox') {
             if (!isset($params["configData"]) || empty($params["configData"])) {
@@ -84,6 +85,10 @@ class Executor extends BaseExecutor
             $component = null;
         } else {
             $component = $this->getComponent($params["component"]);
+            if (!$this->storageApi->getRunId()) {
+                $this->storageApi->generateRunId();
+            }
+            $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
             $processor = new DockerProcessor($component['id']);
             // attach the processor to all handlers and channels
             $this->log->pushProcessor([$processor, 'processRecord']);
@@ -103,7 +108,6 @@ class Executor extends BaseExecutor
         }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
-        $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
 
         switch ($params['mode']) {
             case 'sandbox':
@@ -130,7 +134,7 @@ class Executor extends BaseExecutor
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
-                $executor->storeDataArchive($container, ['input', 'docker']);
+                $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
 
                 $message = 'Image configuration prepared.';
                 $this->log->info($message);
@@ -143,7 +147,7 @@ class Executor extends BaseExecutor
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
                 $process = $executor->run($container, $containerId);
-                $executor->storeDataArchive($container, ['dry-run', 'docker']);
+                $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
                 if ($process->getOutput()) {
                     $message = $process->getOutput();
