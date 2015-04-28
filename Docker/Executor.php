@@ -257,7 +257,7 @@ class Executor
     public function storeDataArchive(Container $container, array $tags)
     {
         $zip = new \ZipArchive();
-        $zipFileName = 'dataDirectory.zip';
+        $zipFileName = 'data.zip';
         $zipDir = $this->currentTmpDir . DIRECTORY_SEPARATOR . 'zip';
         $fs = new Filesystem();
         $fs->mkdir($zipDir);

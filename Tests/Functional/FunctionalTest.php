@@ -228,7 +228,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $listOptions->setTags(['sandbox']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
+        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
         $this->assertLessThan(4000, $files[0]['sizeBytes']);
     }
 
@@ -314,7 +314,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $listOptions->setTags(['input']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
+        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
         $this->assertGreaterThan(3900, $files[0]['sizeBytes']);
     }
 
@@ -400,7 +400,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $listOptions->setTags(['dry-run']);
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('datadirectory.zip', $files[0]['name']));
+        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
         $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
 
     }

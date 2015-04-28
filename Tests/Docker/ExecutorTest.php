@@ -304,13 +304,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
         $this->assertFileExists(
-            $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'dataDirectory.zip'
+            $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'data.zip'
         );
         $listFiles = new ListFilesOptions();
         $listFiles->setTags(['sandbox']);
         $listFiles->setRunId($this->client->getRunId());
         $files = $this->client->listFiles($listFiles);
         $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('dataDirectory.zip', $files[0]['name']));
+        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
     }
 }
