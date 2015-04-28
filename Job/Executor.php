@@ -142,7 +142,7 @@ class Executor extends BaseExecutor
             case 'dry-run':
                 $image = Image::factory($component["data"]);
                 $container = new Container($image, $this->log);
-                $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+                $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
