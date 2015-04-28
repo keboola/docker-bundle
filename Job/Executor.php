@@ -155,12 +155,12 @@ class Executor extends BaseExecutor
                     $message = "Container finished successfully.";
                 }
 
-                $this->log->info("Docker container for '{$component['id']}' finished.");
+                $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             case 'run':
                 $image = Image::factory($component["data"]);
                 $container = new Container($image, $this->log);
-                $this->log->info("Running Docker container for '{$component['id']}'.", $configData);
+                $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData);
@@ -173,7 +173,7 @@ class Executor extends BaseExecutor
                     $message = "Container finished successfully.";
                 }
 
-                $this->log->info("Docker container for '{$component['id']}' finished.");
+                $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
