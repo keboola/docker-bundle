@@ -15,8 +15,12 @@ Docker bundle's functionality can be described in few simple steps:
 
 ###[HOWTO.md](HOWTO.md) 
 
-Describes how to start developing a new Docker image and what are requirements for the Docker image.
+Start developing a new app
+
+###[HOWTO-DOCKERFILE.md](HOWTO-DOCKERFILE.md)
+
+Encapsualte your app into an Docker image
 
 ###[ENVIRONMENT.md](ENVIRONMENT.md)
 
-Defines the interface between KBC and your docker image
+Defines the interface between KBC and your Docker image
