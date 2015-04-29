@@ -181,6 +181,18 @@ All files that will match the fulltext search will be downloaded to the `/data/i
     description: "ondrej.hlavacek@keboola.com"
 ```
 
+You can also use `processed_tags` option to define which tags will be applied to source files after they have been successfully processed. This allows you to set up incremental file processing pipeline. 
+
+```
+storage: 
+  input:
+    files:
+      0:
+        query: "tags: my-files AND NOT tags: downloaded",
+        processed_tags: ["downloaded"]
+```
+
+This configuration adds `downloaded` tag to all processed files and the query will exclude them on the next run. 
 
 ### Output Mapping
 
@@ -339,7 +351,7 @@ Docker containers may be used to process unknown files incrementally. This means
                 "files": [
                     {
                         "query": "tags: toprocess AND NOT tags: downloaded",
-				        "processed_tags": [
+				         "processed_tags": [
                             "downloaded", "my-image"
                         ]
                     }
