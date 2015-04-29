@@ -120,13 +120,13 @@ Docker bundle listens to `stdout` and `stderr` of the app and forwards any conte
 
 You can leverage Events to inform user of any progress, notices or troubleshooting information.
 
-You can turn off live forwarding by setting `streamed_logs` to `false` in the image configuration (you need to ask us to set it).
+You can turn off live forwarding by setting `streaming_logs` to `false` in the image configuration (you need to ask us to set it).
 
 #### Exit codes
 
 When the app execution is finished, Docker bundle automatically collects the exit code and the content of STDOUT and STDERR.
 
-  - `exit code = 0` the execution is considered successful (when `streamed_logs` is turned off the content of STDOUT will be sent to a Storage API Event)
+  - `exit code = 0` the execution is considered successful (when `streaming_logs` is turned off the content of STDOUT will be sent to a Storage API Event)
   - `exit code = 1` the execution fails with an user exception and content of both STDOUT and STDERR will be sent to a Storage API Event
   - `exit code > 1` the execution fails with an application exception and content of both STDOUT and STDERR will be sent to our internal logs
   
