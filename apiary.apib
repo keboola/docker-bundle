@@ -9,74 +9,14 @@ Run a configuration in an image.
 
 ## Create a job [/{image}/run]
 
-Create a job on a specified docker image.
+Create an execution job on a specified docker image.
 
 + Parameters
     + image (string) ... ID of the image (KBC component name)
 
-### Custom configuration [POST]
-+ Request (application/json)
-    + Headers
+### Create a Run job [POST]
 
-            X-StorageApi-Token: 123456
-
-    + Body
-
-        {
-            "configData": {
-                "storage": {
-                    "input": {
-                        "files": [
-                            {
-                                "query": "name: testfile.png"
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "in.c-redshift.table1",
-                                "destination": "table1.csv"
-                            },
-                            {
-                                "source": "in.c-redshift.some-table",
-                                "destination": "table2.csv"
-                            }
-                        ]
-                    },
-                    "output": {
-                        "files": [
-                            {
-                                "source": "file.csv",
-                                "tags": [
-                                    "processed-file",
-                                    "csv"
-                                ]
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "sliced.csv",
-                                "destination": "out.c-main.data"
-                            }
-                        ]
-                    }
-                },
-                "parameters": {
-                    "foo": "bar",
-                    "script": null
-                }
-            }
-        }
-
-+ Response 202 (application/json)
-
-        {
-            "id": "67121676",
-            "url": "https://syrup.keboola.com/queue/job/67121676",
-            "status": "waiting"
-        }
-
-### Stored configuration [POST]
-+ Request (application/json)
++ Request Stored configuration (application/json)
     + Headers
 
             X-StorageApi-Token: 123456
@@ -87,6 +27,58 @@ Create a job on a specified docker image.
                 "config": "next-order-1"
             }
 
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
+                    }
+                }
+            }
+
 + Response 202 (application/json)
 
         {
@@ -95,68 +87,77 @@ Create a job on a specified docker image.
             "status": "waiting"
         }
 
+# Group Sandbox
 
-## Create sandbox [/sandbox?format={format}]
+Sandbox call are handy when developing or troubleshooting Docker images. 
+They can dump the `data` folder for you before running the image, before uploading the results back to Storage or event without even having the image configured.
 
-This job will prepare the `\data\` folder including serialized configuration file in the given format. Then it will put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. This call is useful when developing new docker component to obtain a sample of the development environment.
+## Sandbox [/sandbox?format={format}]
+
+This job will prepare the `data` folder including serialized configuration file in the given format. 
+Then it will compress the `data` folder and upload it to your project's File Uploads in Storage. 
+This call is useful when developing new docker component to obtain a sample of the development environment.
+
+Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder.
 
 Note: only 50 first rows of each table will be exported.
 
 + Parameters
     + format (string) ... format of configuration file and file/table manifests `json` or `yaml`
 
-### Custom configuration [POST]
-+ Request (application/json)
+### Create a Sandbox job [POST]
+
++ Request Custom configuration (application/json)
     + Headers
 
             X-StorageApi-Token: 123456
 
     + Body
 
-        {
-            "configData": {
-                "storage": {
-                    "input": {
-                        "files": [
-                            {
-                                "query": "name: testfile.png"
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "in.c-redshift.table1",
-                                "destination": "table1.csv"
-                            },
-                            {
-                                "source": "in.c-redshift.some-table",
-                                "destination": "table2.csv"
-                            }
-                        ]
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
                     },
-                    "output": {
-                        "files": [
-                            {
-                                "source": "file.csv",
-                                "tags": [
-                                    "processed-file",
-                                    "csv"
-                                ]
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "sliced.csv",
-                                "destination": "out.c-main.data"
-                            }
-                        ]
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
                     }
-                },
-                "parameters": {
-                    "foo": "bar",
-                    "script": null
                 }
             }
-        }
 
 + Response 202 (application/json)
 
@@ -167,65 +168,82 @@ Note: only 50 first rows of each table will be exported.
         }
 
 
-## Prepare input data[/{image}/input]
+## Input data [/{image}/input]
 
-This job will prepare the `\data\` folder including serialized configuration file in format set in the image configuration. Then it will put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. The image itself will not be downloaded nor executed. This API call is useful for verifying that a given input mapping and image configuration are working correctly.
+This job will prepare the `data` folder including serialized configuration file in format set in the image configuration. 
+Then it will compress the `data` folder and upload it to your project's File Uploads in Storage. 
+**The image itself will not be downloaded nor executed.** 
+
+
+This API call is useful for verifying that a given input mapping and image configuration are working correctly and as a simple dumping tool for troubleshooting Docker apps.
 
 + Parameters
     + image (string) ... ID of the image (KBC component name)
 
-### Custom configuration [POST]
-+ Request (application/json)
+### Create an Input job [POST]
+
++ Request Storad configuration (application/json)
     + Headers
 
             X-StorageApi-Token: 123456
 
     + Body
 
-        {
-            "configData": {
-                "storage": {
-                    "input": {
-                        "files": [
-                            {
-                                "query": "name: testfile.png"
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "in.c-redshift.table1",
-                                "destination": "table1.csv"
-                            },
-                            {
-                                "source": "in.c-redshift.some-table",
-                                "destination": "table2.csv"
-                            }
-                        ]
+            {
+                "config": "next-order-1"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
                     },
-                    "output": {
-                        "files": [
-                            {
-                                "source": "file.csv",
-                                "tags": [
-                                    "processed-file",
-                                    "csv"
-                                ]
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "sliced.csv",
-                                "destination": "out.c-main.data"
-                            }
-                        ]
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
                     }
-                },
-                "parameters": {
-                    "foo": "bar",
-                    "script": null
                 }
             }
-        }
 
 + Response 202 (application/json)
 
@@ -236,67 +254,82 @@ This job will prepare the `\data\` folder including serialized configuration fil
         }
 
 
-## Prepare input data[/{image}/dry-run]
+## Dry Run [/{image}/dry-run]
 
-This job will prepare the `\data\` folder including serialized configuration file in format set in the image configuration. Then it will execute the docker image and put the `\data\` folder in a ZIP archive and upload it to your project in KBC Storage. This API call is useful for verifying that a given image is producing the correct output without altering the real data in your KBC project. 
+This job will prepare the `data` folder including serialized configuration file in format set in the image configuration. 
+Then it will execute the docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage. 
+
+This API call is useful for verifying that the given image is producing the correct output without altering the real data in your KBC project. 
  
- Note that the archive will contain all files in the `/data/` folder including any temporary files produced be the docker image.  
+Note that the archive will contain all files in the `data` folder including any temporary files produced be the Docker image. 
 
 + Parameters
     + image (string) ... ID of the image (KBC component name)
 
-### Custom configuration [POST]
-+ Request (application/json)
+### Create a Dry Run job [POST]
+
++ Request Stored configuration (application/json)
     + Headers
 
             X-StorageApi-Token: 123456
 
     + Body
 
-        {
-            "configData": {
-                "storage": {
-                    "input": {
-                        "files": [
-                            {
-                                "query": "name: testfile.png"
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "in.c-redshift.table1",
-                                "destination": "table1.csv"
-                            },
-                            {
-                                "source": "in.c-redshift.some-table",
-                                "destination": "table2.csv"
-                            }
-                        ]
+            {
+                "config": "next-order-1"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
                     },
-                    "output": {
-                        "files": [
-                            {
-                                "source": "file.csv",
-                                "tags": [
-                                    "processed-file",
-                                    "csv"
-                                ]
-                            }
-                        ],
-                        "tables": [
-                            {
-                                "source": "sliced.csv",
-                                "destination": "out.c-main.data"
-                            }
-                        ]
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
                     }
-                },
-                "parameters": {
-                    "foo": "bar",
-                    "script": null
                 }
             }
-        }
 
 + Response 202 (application/json)
 
