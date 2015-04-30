@@ -195,7 +195,7 @@ class Executor
         $container->setEnvironmentVariables($envs);
 
         // run the container
-        $process = $container->run($this->getStorageApiClient()->getRunId());
+        $process = $container->run($id);
         if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
             $this->getLog()->info($process->getOutput());
         } else {
