@@ -12,7 +12,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
         $this->assertEquals(1024, $image->getCpuShares());
-
+        $this->assertEquals('yaml', $image->getConfigFormat());
+        $this->assertEquals(false, $image->getForwardToken());
 
         $configuration = array(
             "definition" => array(
@@ -23,7 +24,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "memory" => "128m",
             "process_timeout" => 7200,
             "forward_token" => true,
-            'streaming_logs' => true
+            'streaming_logs' => true,
+            'configuration_format' => 'json'
         );
         $image = Image::factory($configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
@@ -32,6 +34,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(7200, $image->getProcessTimeout());
         $this->assertEquals(true, $image->getForwardToken());
         $this->assertEquals(true, $image->isStreamingLogs());
+        $this->assertEquals('json', $image->getConfigFormat());
     }
 
 

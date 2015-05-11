@@ -206,6 +206,9 @@ class Image
         if (isset($config["id"])) {
             $instance->setId($config["id"]);
         }
+        if (isset($config["configuration_format"])) {
+            $instance->setConfigFormat($config["configuration_format"]);
+        }
         if (isset($config["cpu_shares"])) {
             $instance->setCpuShares($config["cpu_shares"]);
         }
