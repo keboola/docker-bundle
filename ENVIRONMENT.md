@@ -1,5 +1,33 @@
 # Environment
 
+## Overview
+
+The application has several methods of integration with Keboola Connection
+
+ - `/data` folder - table, file and configuration exchange
+ - environment variables
+ - `stdout`, `stderr` and `exit status` of the application script
+
+### Data Folder
+
+Data folder is a two way exchange of tables and files and a storage for configuration. The data folder is created in `/data` and has this structure
+ 
+    /data
+    /data/in
+    /data/in/tables
+    /data/in/files
+    /data/out
+    /data/out/tables
+    /data/out/files
+
+#### Serialized configuration  
+  
+Configuration is stored in `/data/config.yml` or `/data/config.json` depending on the preferred format. The configuration file will contain all information passed to the job in the API call. 
+  
+#### Tables & Files
+
+Tables defined in the input mapping (source tables/files for the app) are stored in `/data/in/tables` and `/data/in/files`. Results of the application are retrieved from `/data/out/tables` and `/data/out/files`.
+
 ## Docker image
 
 Docker image must be able to run as executable, `Dockerfile` must contain `ENTRYPOINT` or `CMD`.
