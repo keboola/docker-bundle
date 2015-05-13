@@ -230,7 +230,7 @@ Basically manifests allow you to process files in `/data/out` folder without def
 
 #### Tables
 
-In the simplest format, output mapping processes CSV files in the `/data/out/tables` folder and uploads them into tables. The name of the file may be equal to the name of the table (after removing `.csv` suffix).
+In the simplest format, output mapping processes CSV files in the `/data/out/tables` folder and uploads them into tables. The name of the file may be equal to the name of the table (after removing `.csv` suffix if present).
 
 Output mapping parameters are similar to [Transformation API output mapping ](http://wiki.keboola.com/home/keboola-connection/devel-space/transformations/intro#TOC-Output-mapping). If `source` is not set, the CSV file is expected to have the same name as the `destination` table.
 

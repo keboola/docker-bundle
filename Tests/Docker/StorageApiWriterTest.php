@@ -278,6 +278,32 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
     }
 
+
+    /**
+     *
+     */
+    public function testWriteTableOutputMappingWithoutCsv()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/table1", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+
+        $configs = array(
+            array(
+                "source" => "table1",
+                "destination" => "out.c-docker-test.table1"
+            )
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload", $configs);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
+    }
+
+
     /**
      *
      */
@@ -375,6 +401,27 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $tableInfo = $this->client->getTable('out.c-docker-test.table4');
         $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
     }
+
+    /**
+     *
+     */
+    public function testWriteTableBareWithoutSuffix()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/out.c-docker-test.table4", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload");
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+
+        $this->assertEquals('out.c-docker-test.table4', $tables[0]["id"]);
+        $tableInfo = $this->client->getTable('out.c-docker-test.table4');
+        $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
+    }
+
 
     /**
      *

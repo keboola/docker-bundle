@@ -198,7 +198,7 @@ class Writer
         $finder = new Finder();
 
         /** @var SplFileInfo[] $files */
-        $files = $finder->files()->name("*.csv")->in($source);
+        $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingTables = array();
         foreach ($configurations as $config) {
@@ -242,13 +242,18 @@ class Writer
                 $configFromManifest = $this->readTableManifest($file->getPathname() . ".manifest");
                 unset($manifestNames[$manifestKey]);
             } else {
-                // If no manifest found and no output mapping, use filename (without .csv) as table id
+                // If no manifest found and no output mapping, use filename (without .csv if present) as table id
                 if (!isset($configFromMapping["destination"])) {
-                    $configFromMapping["destination"] = substr(
-                        $file->getFilename(),
-                        0,
-                        strlen($file->getFilename()) - 4
-                    );
+                    // Check for .csv suffix
+                    if (substr($file->getFilename(), -4) == '.csv') {
+                        $configFromMapping["destination"] = substr(
+                            $file->getFilename(),
+                            0,
+                            strlen($file->getFilename()) - 4
+                        );
+                    } else {
+                        $configFromMapping["destination"] = $file->getFilename();
+                    }
                 }
             }
 
