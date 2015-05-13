@@ -269,11 +269,11 @@ class Executor
                 continue;
             }
             if ($item->isDir()) {
-                if (!$zip->addEmptyDir(DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
+                if (!$zip->addEmptyDir($item->getRelativePathname())) {
                     throw new ApplicationException("Failed to add directory: ".$item->getFilename());
                 }
             } else {
-                if (!$zip->addFile($item->getPathname(), DIRECTORY_SEPARATOR . $item->getRelativePathname())) {
+                if (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
                     throw new ApplicationException("Failed to add file: ".$item->getFilename());
                 }
             }
