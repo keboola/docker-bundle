@@ -1,7 +1,6 @@
 # HOWTO
 
-This guide will show you how you can create your own Docker image that can run in Keboola Connection. To see it in action see `docker-demo` image on [GitHub](https://github.com/keboola/docker-demo) and [Dockerhub](https://registry.hub.docker.com/u/keboola/docker-demo/).
-
+This guide will show you how you can create your own Docker image that can run in Keboola Connection. To see it in action see `docker-demo` image on [Dockerhub](https://registry.hub.docker.com/u/keboola/docker-demo/) and the two source repositories on GitHub: [keboola/docker-demo-app](https://github.com/keboola/docker-demo-app) and [keboola/docker-demo-docker](https://github.com/keboola/docker-demo-docker).
 
 ## Architecture
 
@@ -9,21 +8,19 @@ You can encapsulate any app into an Docker image following a set of simple rules
 
 There is a predefined interface with the Docker bundle consisting of a folder structure and a serialized configuration file. The app usually grabs some data (tables or files) from Storage, processes them using parameters from the configuration and then stores the data back to Storage. Docker bundle abstracts from the Keboola Connection Storage and communicates with your app using the simple directory structure - before starting your app, it downloads all required tables and files and after your app is done, it grabs all the results and uploads them back to Storage.
 
-### Demo app
+### Demo App
 
-The [docker-demo repository on GitHub](https://github.com/keboola/docker-demo) contains an example application. The repository contains both the docker image application and the docker image definition in **Dockerfile**. Docker image definition prepares the docker environment including the application itself. Both - the docker image definition and the app itself are in a single repository, but you may choose to work with two separate repositories, one for the image definition and one for the application itself. A hook from Dockerhub builds the docker image automatically on every commit.  
+The [keboola/docker-demo-app](https://github.com/keboola/docker-demo-app) repository contains an example application. The demo application itself is represented by a single script `/src/run.php` (that would be the endpoint for the image). The application can exist independently (without Docker), contains unit and functional tests.
 
-The demo application itself is represented by a single script `/src/script.php`. Which is a PHP script, that performs the actual logic of the Docker image.
-
+The [keboola/docker-demo-docker](https://github.com/keboola/docker-demo-docker) repository contains the Docker image definition in **Dockerfile**. Docker image definition prepares the docker environment including the application (the previous repository). A hook from Dockerhub builds the docker image automatically on every commit.  
 
 ## Creating an app
 
-
-For developing the application logic of an image you can use any language and tool available in your chosen system. For the demo app we chose PHP and wrote a simple script in `/scr/script.php`. We also used `composer` to add some libraries to the application.
+For developing the application logic of an image you can use any language and tool available in your chosen system. For the demo app we chose PHP and wrote a simple script in `/scr/run.php`. We also used `composer` to add some libraries to the application.
 
 To run the demo app locally you can use the following command line:
 
-	php ./src/script.php --data=/data
+	php ./src/run.php --data=/data
 
 Make sure that 
 
