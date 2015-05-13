@@ -66,14 +66,14 @@ Keboola Connection will inject configuration and (optionally) an input mapping i
 
 ### Environment variables
 
-A couple of environment variables are injected in the container:
+These environment variables are injected in the container:
 
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
  - `KBC_PROJECTID` - Id of the project in KBC
  - `KBC_PROJECTNAME` - Name of the project in KBC
  - `KBC_TOKENID` - Id of token running the container
  - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container
- - `KBC_TOKEN` - Actual token running the container. Note that this environment is available only if enabled in component configuration. 
+ - `KBC_TOKEN` - Actual token running the container. Note: this environment is available only if enabled in component configuration. 
 
 ### Configuration
 
@@ -94,7 +94,7 @@ Configuration file may contain these sections:
 
 ### Input Mapping
 
-As a part of container configuration you can specify tables and files that will be downloaded and provided to the container.
+As a part of configuration you can specify tables and files that will be downloaded and provided to the container.
 
 #### Tables
 
@@ -367,7 +367,7 @@ tags:
   - pie-chart
 ```
 
-### Configuration for incremental processing
+### Configuration for incremental file processing
 
 Docker containers may be used to process unknown files incrementally. This means that when a container is run, it will download any files not yet downloaded, and process them. To achieve this behavior, it is necessary to select only the files which have not been processed yet and to tag processed files somehow. The former can be achieved by using proper [ElasticSerch query](http://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html#query-string-syntax) and the latter is achieved using the `processed_tags` setting. `processed_tags` setting is an array of tags which will be added to the *input* files once they are downloaded. A sample API request:  
 
