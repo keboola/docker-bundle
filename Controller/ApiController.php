@@ -182,6 +182,20 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
 
     /**
+     * Run docker component with the provided configuration.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function disabledAction(Request $request)
+    {
+        throw new UserException(
+            "Run without component name is not supported, perhaps you wanted to call /docker/{compoment}/run"
+        );
+    }
+
+
+    /**
      *
      * Add component property to JSON
      *

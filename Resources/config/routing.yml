@@ -13,6 +13,12 @@ keboola_docker_component_run:
     defaults: { _controller: KeboolaDockerBundle:Api:run }
     methods:  [POST]
 
+# override default syrup action run
+keboola_docker_disabled_run:
+    path:     /run
+    defaults: { _controller: KeboolaDockerBundle:Api:disabled }
+    methods:  [POST]
+
 keboola_docker_component_dry_run:
     path:     /{component}/dry-run
     defaults: { _controller: KeboolaDockerBundle:Api:dryRun }
