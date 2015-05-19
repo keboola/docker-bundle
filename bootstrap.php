@@ -21,3 +21,16 @@ require_once ROOT_PATH . '/vendor/autoload.php';
 
 defined('STORAGE_API_TOKEN')
     || define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ? getenv('STORAGE_API_TOKEN') : 'your_token');
+
+
+defined('DOCKERHUB_PRIVATE_USERNAME')
+    || define('DOCKERHUB_PRIVATE_USERNAME', getenv('DOCKERHUB_PRIVATE_USERNAME') ? getenv('DOCKERHUB_PRIVATE_USERNAME') : 'username');
+
+defined('DOCKERHUB_PRIVATE_EMAIL')
+    || define('DOCKERHUB_PRIVATE_EMAIL', getenv('DOCKERHUB_PRIVATE_EMAIL') ? getenv('DOCKERHUB_PRIVATE_EMAIL') : 'email');
+
+defined('DOCKERHUB_PRIVATE_PASSWORD')
+    || define('DOCKERHUB_PRIVATE_PASSWORD', getenv('DOCKERHUB_PRIVATE_PASSWORD') ? getenv('DOCKERHUB_PRIVATE_PASSWORD') : 'password');
+
+defined('DOCKERHUB_PRIVATE_SERVER')
+    || define('DOCKERHUB_PRIVATE_SERVER', getenv('DOCKERHUB_PRIVATE_SERVER') ? getenv('DOCKERHUB_PRIVATE_SERVER') : 'server');

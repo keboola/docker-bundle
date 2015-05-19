@@ -49,6 +49,7 @@ class DockerHub extends Image
                 $process = new Process("sudo docker pull " . escapeshellarg($tag));
             }
             $process->setTimeout(3600);
+            
             $process->run();
         } catch (Exception $e) {
             throw new ApplicationException("Failed to prepare container {$tag}, error: ".$e->getMessage(), $e);
