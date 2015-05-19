@@ -172,5 +172,4 @@ class PrivateRepository extends Image\DockerHub
         }
         return $this;
     }
-
 }

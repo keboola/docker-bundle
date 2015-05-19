@@ -78,5 +78,4 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         (new Process("sudo docker rmi keboolaprivatetest/docker-demo-docker"))->run();
     }
-
 }
