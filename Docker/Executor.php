@@ -227,16 +227,12 @@ class Executor
             $outputFilesConfig = $config["storage"]["output"]["files"];
         }
 
+        $this->getLog()->debug("Uploading output tables and files.");
+        $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
         try {
-            $this->getLog()->debug("Uploading output tables and files.");
-            $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
-            try {
-                $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
-            } catch (ManifestMismatchException $e) {
-                $this->getLog()->warn($e->getMessage());
-            }
-        } catch (ClientException $e) {
-            throw new UserException("Cannot export data to Storage API: " . $e->getMessage(), $e);
+            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
+        } catch (ManifestMismatchException $e) {
+            $this->getLog()->warn($e->getMessage());
         }
 
         if (isset($config["storage"]["input"]["files"])) {

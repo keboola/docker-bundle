@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
@@ -144,8 +145,11 @@ class Writer
             } catch (InvalidConfigurationException $e) {
                 throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
             }
-
-            $this->uploadFile($file->getPathname(), $storageConfig);
+            try {
+                $this->uploadFile($file->getPathname(), $storageConfig);
+            } catch (ClientException $e) {
+                throw new UserException("Cannot upload file '{$file->getFilename()}' to Storage API: " . $e->getMessage(), $e);
+            }
         }
 
         $processedOutputMappingFiles = array_unique($processedOutputMappingFiles);
@@ -272,7 +276,11 @@ class Writer
                 throw new UserException("'{$config["destination"]}' does not seem to be a table identifier.");
             }
 
-            $this->uploadTable($file->getPathname(), $config);
+            try {
+                $this->uploadTable($file->getPathname(), $config);
+            } catch (ClientException $e) {
+                throw new UserException("Cannot upload file '{$file->getFilename()}' to table '{$config["destination"]}' in Storage API: " . $e->getMessage(), $e);
+            }
         }
 
         $processedOutputMappingTables = array_unique($processedOutputMappingTables);
