@@ -2,8 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\Image\DockerHub;
-
 class Image
 {
     /**
@@ -192,39 +190,52 @@ class Image
     }
 
     /**
+     * @param array $config
+     * @return Image
+     * @throws \Exception
+     */
+    public function fromArray($config = [])
+    {
+        if (isset($config["id"])) {
+            $this->setId($config["id"]);
+        }
+        if (isset($config["configuration_format"])) {
+            $this->setConfigFormat($config["configuration_format"]);
+        }
+        if (isset($config["cpu_shares"])) {
+            $this->setCpuShares($config["cpu_shares"]);
+        }
+        if (isset($config["memory"])) {
+            $this->setMemory($config["memory"]);
+        }
+        if (isset($config["process_timeout"])) {
+            $this->setProcessTimeout($config["process_timeout"]);
+        }
+        if (isset($config["forward_token"])) {
+            $this->setForwardToken($config["forward_token"]);
+        }
+        if (isset($config["streaming_logs"])) {
+            $this->setStreamingLogs($config["streaming_logs"]);
+        }
+        return $this;
+    }
+
+    /**
      * @param array $config Docker image configuration.
      * @return Image|DockerHub
      */
     public static function factory($config = [])
     {
         if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub") {
-            $instance = new DockerHub();
+            $instance = new Image\DockerHub();
+            $instance->setDockerHubImageId($config["definition"]["uri"]);
+        } else if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub-private") {
+            $instance = new Image\DockerHub\PrivateRepository();
             $instance->setDockerHubImageId($config["definition"]["uri"]);
         } else {
             $instance = new self();
         }
-        if (isset($config["id"])) {
-            $instance->setId($config["id"]);
-        }
-        if (isset($config["configuration_format"])) {
-            $instance->setConfigFormat($config["configuration_format"]);
-        }
-        if (isset($config["cpu_shares"])) {
-            $instance->setCpuShares($config["cpu_shares"]);
-        }
-        if (isset($config["memory"])) {
-            $instance->setMemory($config["memory"]);
-        }
-        if (isset($config["process_timeout"])) {
-            $instance->setProcessTimeout($config["process_timeout"]);
-        }
-        if (isset($config["forward_token"])) {
-            $instance->setForwardToken($config["forward_token"]);
-        }
-        if (isset($config["streaming_logs"])) {
-            $instance->setStreamingLogs($config["streaming_logs"]);
-        }
-
+        $instance->fromArray($config);
         return $instance;
     }
 
