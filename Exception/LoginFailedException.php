@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Image\DockerHub\PrivateRepository;
+namespace Keboola\DockerBundle\Exception;
 
 /**
  * Class LoginFailedException

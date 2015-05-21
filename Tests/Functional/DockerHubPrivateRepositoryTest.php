@@ -17,7 +17,7 @@ use Symfony\Component\Process\Process;
 class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @expectedException \Keboola\DockerBundle\Docker\Image\DockerHub\PrivateRepository\LoginFailedException
+     * @expectedException \Keboola\DockerBundle\Exception\LoginFailedException
      */
     public function testMissingCredentials()
     {

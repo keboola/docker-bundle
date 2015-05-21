@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Docker\Image\DockerHub;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\LoginFailedException;
 use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\DockerHub
@@ -137,7 +137,7 @@ class PrivateRepository extends Image\DockerHub
             $process->run();
             if ($process->getExitCode() != 0) {
                 $message = "Login failed (code: {$process->getExitCode()}): {$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new Image\DockerHub\PrivateRepository\LoginFailedException($message);
+                throw new LoginFailedException($message);
             }
             $tag = parent::prepare($container);
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
