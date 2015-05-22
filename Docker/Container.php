@@ -184,16 +184,20 @@ class Container
         }
 
         if (!$process->isSuccessful()) {
-            $message = substr($process->getErrorOutput(), 0, 8192);
+
+            $message = $process->getErrorOutput();
             if (!$message) {
-                $message = substr($process->getOutput(), 0, 8192);
+                $message = $process->getOutput();
             }
             if (!$message) {
                 $message = "No error message.";
             }
+            if (strlen($message) > 255) {
+                $message = substr($message, 0, 125) . " ... " . substr($message, -125);
+            }
             $data = [
-                "output" => substr($process->getOutput(), 0, 8192),
-                "errorOutput" => substr($process->getErrorOutput(), 0, 8192)
+                "output" => substr($process->getOutput(), -1048576),
+                "errorOutput" => substr($process->getErrorOutput(), -1048576)
             ];
 
             if ($process->getExitCode() == 1) {
