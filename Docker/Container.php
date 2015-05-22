@@ -184,7 +184,6 @@ class Container
         }
 
         if (!$process->isSuccessful()) {
-
             $message = $process->getErrorOutput();
             if (!$message) {
                 $message = $process->getOutput();
