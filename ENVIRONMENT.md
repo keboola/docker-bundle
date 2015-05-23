@@ -69,11 +69,14 @@ Keboola Connection will inject configuration and (optionally) an input mapping i
 These environment variables are injected in the container:
 
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
- - `KBC_PROJECTID` - Id of the project in KBC
- - `KBC_PROJECTNAME` - Name of the project in KBC
- - `KBC_TOKENID` - Id of token running the container
- - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container
- - `KBC_TOKEN` - Actual token running the container. Note: this environment is available only if enabled in component configuration. 
+ 
+ The following are available only if enabled in component configuration:
+ 
+ - `KBC_PROJECTID` - Id of the project in KBC. 
+ - `KBC_PROJECTNAME` - Name of the project in KBC.
+ - `KBC_TOKENID` - Id of token running the container.
+ - `KBC_TOKENDESC` - Description (user name or token name) of the token running the container. 
+ - `KBC_TOKEN` - Actual token running the container.  
 
 ### Configuration
 

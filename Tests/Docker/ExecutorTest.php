@@ -206,6 +206,55 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testExecutorEnvs()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "process_timeout" => 1
+        );
+
+        $config = array(
+            "storage" => array(),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $executor->run($container, "testsuite");
+        $ret = $container->getRunCommand('test');
+        $this->assertNotContains('KBC_TOKEN=', $ret);
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
+        $this->assertNotContains('KBC_PROJECTID=', $ret);
+        $this->assertNotContains('KBC_PROJECTNAME=', $ret);
+        $this->assertNotContains('KBC_TOKENID=', $ret);
+        $this->assertNotContains('KBC_TOKENDESC=', $ret);
+    }
 
     public function testExecutorForwardToken()
     {
@@ -250,8 +299,68 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
         $ret = $container->getRunCommand('test');
-        $this->assertContains('KBC_TOKEN', $ret);
+        $this->assertContains('KBC_TOKEN=', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
+        $this->assertNotContains('KBC_PROJECTID=', $ret);
+        $this->assertNotContains('KBC_PROJECTNAME=', $ret);
+        $this->assertNotContains('KBC_TOKENID=', $ret);
+        $this->assertNotContains('KBC_TOKENDESC=', $ret);
+    }
+
+    public function testExecutorForwardTokenDetails()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "process_timeout" => 1,
+            "forward_token_details" => true
+        );
+
+        $config = array(
+            "storage" => array(),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $executor->run($container, "testsuite");
+        $ret = $container->getRunCommand('test');
+        $this->assertNotContains('KBC_TOKEN=', $ret);
+        $this->assertContains('KBC_PROJECTID=', $ret);
+        $this->assertContains('KBC_PROJECTNAME=', $ret);
+        $this->assertContains('KBC_TOKENID=', $ret);
+        $this->assertContains('KBC_TOKENDESC=', $ret);
+
+        $tokenInfo = $this->client->getLogData();
+        $this->assertContains(strval($tokenInfo["owner"]["id"]), $ret);
+        $this->assertContains(str_replace('"', '\"', $tokenInfo["owner"]["name"]), $ret);
+        $this->assertContains(strval($tokenInfo["id"]), $ret);
+        $this->assertContains(str_replace('"', '\"', $tokenInfo["description"]), $ret);
     }
 
 

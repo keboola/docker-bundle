@@ -14,6 +14,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(1024, $image->getCpuShares());
         $this->assertEquals('yaml', $image->getConfigFormat());
         $this->assertEquals(false, $image->getForwardToken());
+        $this->assertEquals(false, $image->getForwardTokenDetails());
 
         $configuration = array(
             "definition" => array(
@@ -24,6 +25,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "memory" => "128m",
             "process_timeout" => 7200,
             "forward_token" => true,
+            "forward_token_details" => true,
             "streaming_logs" => true,
             "configuration_format" => 'json'
         );
@@ -33,6 +35,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(2048, $image->getCpuShares());
         $this->assertEquals(7200, $image->getProcessTimeout());
         $this->assertEquals(true, $image->getForwardToken());
+        $this->assertEquals(true, $image->getForwardTokenDetails());
         $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals('json', $image->getConfigFormat());
     }

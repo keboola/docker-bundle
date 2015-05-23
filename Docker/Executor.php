@@ -184,14 +184,17 @@ class Executor
         $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
-            "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
-            "KBC_PROJECTNAME" => $tokenInfo["owner"]["name"],
-            "KBC_TOKENID" => $tokenInfo["id"],
-            "KBC_TOKENDESC" => $tokenInfo["description"]
         ];
         if ($container->getImage()->getForwardToken()) {
             $envs["KBC_TOKEN"] = $this->getStorageApiClient()->getTokenString();
         }
+        if ($container->getImage()->getForwardTokenDetails()) {
+            $envs["KBC_PROJECTID"] = $tokenInfo["owner"]["id"];
+            $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
+            $envs["KBC_TOKENID"] = $tokenInfo["id"];
+            $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
+        }
+
         $container->setEnvironmentVariables($envs);
 
         // run the container

@@ -41,6 +41,11 @@ class Image
     /**
      * @var bool
      */
+    protected $forwardTokenDetails = false;
+
+    /**
+     * @var bool
+     */
     private $streamingLogs = true;
 
     /**
@@ -172,6 +177,24 @@ class Image
     }
 
     /**
+     * @param $forwardTokenDetails
+     * @return $this
+     */
+    public function setForwardTokenDetails($forwardTokenDetails)
+    {
+        $this->forwardTokenDetails = $forwardTokenDetails;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getForwardTokenDetails()
+    {
+        return $this->forwardTokenDetails;
+    }
+
+    /**
      * @param $streamingLogs
      * @return $this
      */
@@ -213,6 +236,9 @@ class Image
         }
         if (isset($config["forward_token"])) {
             $this->setForwardToken($config["forward_token"]);
+        }
+        if (isset($config["forward_token_details"])) {
+            $this->setForwardTokenDetails($config["forward_token_details"]);
         }
         if (isset($config["streaming_logs"])) {
             $this->setStreamingLogs($config["streaming_logs"]);

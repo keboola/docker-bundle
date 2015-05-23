@@ -28,6 +28,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
             "process_timeout" => 3600,
             "forward_token" => false,
+            "forward_token_details" => false,
             "streaming_logs" => true
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
