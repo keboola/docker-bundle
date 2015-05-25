@@ -473,7 +473,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $executor->initialize($container, $config);
             $this->fail("Invalid configuration must raise UserException.");
         } catch (UserException $e) {
-
         }
     }
 
@@ -525,7 +524,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $executor->initialize($container, $config);
             $this->fail("Invalid configuration must raise UserException.");
         } catch (UserException $e) {
-
         }
     }
 }
