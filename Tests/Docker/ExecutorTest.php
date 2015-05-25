@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -421,5 +422,110 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($listFiles);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
+    }
+
+
+    public function testExecutorInvalidOutputMapping()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test"
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out",
+                            // erroneous lines
+                            "primary_key" => "col1",
+                            "incremental" => 1
+                        )
+                    )
+                )
+            ),
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        try {
+            $executor->initialize($container, $config);
+            $this->fail("Invalid configuration must raise UserException.");
+        } catch (UserException $e) {
+
+        }
+    }
+
+
+    public function testExecutorInvalidInputMapping()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test",
+                            // erroneous lines
+                            "foo" => "bar"
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        )
+                    )
+                )
+            ),
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        try {
+            $executor->initialize($container, $config);
+            $this->fail("Invalid configuration must raise UserException.");
+        } catch (UserException $e) {
+
+        }
     }
 }

@@ -9,6 +9,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -150,7 +151,11 @@ class Executor
 
         // create configuration file injected into docker
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
-        $adapter->setConfig($config);
+        try {
+            $adapter->setConfig($config);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
+        }
         $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
         $adapter->writeToFile($this->currentConfigFile);
     }
