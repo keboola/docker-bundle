@@ -421,7 +421,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $container = new Container($image, $log);
         $container->setId("hello-world");
         $container->setDataDir("/tmp");
-        $process = $container->run();
+        $process = $container->run("testsuite");
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
     }
@@ -443,7 +443,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $container = new Container($image, $log);
-        $container->run();
+        $container->run("testsuite");
     }
 
 

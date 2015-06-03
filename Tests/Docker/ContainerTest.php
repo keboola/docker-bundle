@@ -116,7 +116,41 @@ EOF;
         $container->setId("keboola/demo:latest");
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
-        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --rm --name='name' 'keboola/demo:latest'";
+        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/demo:latest'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
+    }
+
+    public function testInspectCommand()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
+        $container->setId("keboola/demo:latest");
+        $expected = "sudo docker inspect 'name'";
+        $this->assertEquals($expected, $container->getInspectCommand("name"));
+    }
+
+    public function testRemoveCommand()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            )
+        );
+        $image = Image::factory($imageConfiguration);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $container = new Container($image, $log);
+        $container->setId("keboola/demo:latest");
+        $expected = "sudo docker rm 'name'";
+        $this->assertEquals($expected, $container->getRemoveCommand("name"));
     }
 }

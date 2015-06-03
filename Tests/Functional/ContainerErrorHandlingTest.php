@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -243,6 +244,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-php-test"
             ],
+            "memory" => "64m",
             "streaming_logs" => true
         ];
         $image = Image::factory($imageConfiguration);
@@ -264,7 +266,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
-        $process = $container->run();
+        $process = $container->run("testsuite");
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
@@ -308,7 +310,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
-        $process = $container->run();
+        $process = $container->run("testsuite");
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
@@ -319,5 +321,40 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($handler->hasInfo('second message to stdout'));
         $this->assertFalse($handler->hasInfo('first message to stderr'));
         $this->assertFalse($handler->hasInfo('second message to stderr'));
+    }
+
+    /**
+     * @expectedException \Keboola\DockerBundle\Exception\OutOfMemoryException
+     * @expectedExceptionMessage Container 'keboola/docker-php-test:latest' failed: Out of memory
+     */
+    public function testOutOfMemory()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-php-test"
+            ],
+            "memory" => "10m"
+        ];
+        $image = Image::factory($imageConfiguration);
+
+        $log = new Logger("null");
+        $handler = new TestHandler();
+        $log->pushHandler($handler);
+        $container = new Container($image, $log);
+        $container->setId("odinuv/docker-php-test");
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+            $array = [];
+            for($i = 0; $i < 100000; $i++) {
+                $array[] = "0123456789";
+            }
+            print "finished";'
+        );
+        $container->setDataDir($dataDir);
+        $container->setEnvironmentVariables(['command' => '/data/test.php']);
+        $container->run("testsuite");
     }
 }

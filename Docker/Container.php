@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -9,6 +10,7 @@ use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Container
 {
@@ -150,7 +152,7 @@ class Container
      * @return Process
      * @throws ApplicationException
      */
-    public function run($containerId = "")
+    public function run($containerId)
     {
         if (!$this->getDataDir()) {
             throw new ApplicationException("Data directory not set.");
@@ -178,12 +180,20 @@ class Container
             }
             $this->log->debug("Docker process finished.");
         } catch (ProcessTimedOutException $e) {
+            $this->removeContainer($containerId);
             throw new UserException(
                 "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
             );
         }
 
         if (!$process->isSuccessful()) {
+            $inspect = $this->inspectContainer($containerId);
+            $this->removeContainer($containerId);
+
+            if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+                throw new OutOfMemoryException("Container '{$this->getId()}' failed: Out of memory");
+            }
+
             $message = $process->getErrorOutput();
             if (!$message) {
                 $message = $process->getOutput();
@@ -210,6 +220,7 @@ class Container
                 );
             }
         }
+        $this->removeContainer($containerId);
         return $process;
     }
 
@@ -260,7 +271,7 @@ class Container
      * @param string $containerId
      * @return string
      */
-    public function getRunCommand($containerId = "")
+    public function getRunCommand($containerId)
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
@@ -282,9 +293,62 @@ class Container
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . $envs
-            . " --rm"
             . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getId());
         return $command;
+    }
+
+    /**
+     * @param string $containerId
+     * @return string
+     */
+    public function getRemoveCommand($containerId)
+    {
+        setlocale(LC_CTYPE, "en_US.UTF-8");
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $command = "docker rm ";
+        } else {
+            $command = "sudo docker rm ";
+        }
+
+        $command .= escapeshellarg($containerId);
+        return $command;
+    }
+
+    /**
+     * @param string $containerId
+     * @return string
+     */
+    public function getInspectCommand($containerId)
+    {
+        setlocale(LC_CTYPE, "en_US.UTF-8");
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $command = "docker inspect ";
+        } else {
+            $command = "sudo docker inspect ";
+        }
+
+        $command .= escapeshellarg($containerId);
+        return $command;
+    }
+
+    /**
+     * @param $containerId
+     */
+    public function removeContainer($containerId)
+    {
+        $process = new Process($this->getRemoveCommand($containerId));
+        $process->run();
+    }
+
+    /**
+     * @param $containerId
+     * @return mixed
+     */
+    public function inspectContainer($containerId)
+    {
+        $process = new Process($this->getInspectCommand($containerId));
+        $process->run();
+        return array_pop(json_decode($process->getOutput(), true));
     }
 }
