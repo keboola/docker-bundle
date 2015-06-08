@@ -126,6 +126,16 @@ class Executor
         $fs->mkdir($this->currentTmpDir);
         $container->createDataDir($this->currentTmpDir);
 
+        // create configuration file injected into docker
+        $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
+        try {
+            $adapter->setConfig($config);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
+        }
+        $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
+        $adapter->writeToFile($this->currentConfigFile);
+
         // download source files
         $reader = new Reader($this->getStorageApiClient());
         $reader->setFormat($container->getImage()->getConfigFormat());
@@ -148,16 +158,6 @@ class Executor
         } catch (ClientException $e) {
             throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
         }
-
-        // create configuration file injected into docker
-        $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
-        try {
-            $adapter->setConfig($config);
-        } catch (InvalidConfigurationException $e) {
-            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
-        }
-        $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
-        $adapter->writeToFile($this->currentConfigFile);
     }
 
 

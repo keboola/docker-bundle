@@ -526,4 +526,64 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         } catch (UserException $e) {
         }
     }
+
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage User error: Error in configuration: Invalid type for path
+     */
+    public function testExecutorInvalidInputMapping2()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test",
+                            // erroneous lines
+                            "columns" => array(
+                                array(
+                                    "value" => "id",
+                                    "label" => "id"
+                                ),
+                                array(
+                                    "value" => "col1",
+                                    "label" => "col1"
+                                )
+                            )
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        )
+                    )
+                )
+            ),
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+    }
 }
