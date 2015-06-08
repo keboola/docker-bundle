@@ -191,7 +191,9 @@ class Container
             $this->removeContainer($containerId);
 
             if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
-                throw new OutOfMemoryException("Container '{$this->getId()}' failed: Out of memory");
+                throw new OutOfMemoryException(
+                    "Container '{$this->getId()}' failed: Out of memory (exceeded {$this->getImage()->getMemory()})"
+                );
             }
 
             $message = $process->getErrorOutput();
