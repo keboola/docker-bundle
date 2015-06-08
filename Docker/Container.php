@@ -349,6 +349,7 @@ class Container
     {
         $process = new Process($this->getInspectCommand($containerId));
         $process->run();
-        return array_pop(json_decode($process->getOutput(), true));
+        $inspect = json_decode($process->getOutput(), true);
+        return array_pop($inspect);
     }
 }
