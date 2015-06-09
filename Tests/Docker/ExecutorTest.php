@@ -249,9 +249,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
         $ret = $container->getRunCommand('test');
+        $this->assertContains('KBC_PROJECTID=', $ret);
         $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
-        $this->assertNotContains('KBC_PROJECTID=', $ret);
         $this->assertNotContains('KBC_PROJECTNAME=', $ret);
         $this->assertNotContains('KBC_TOKENID=', $ret);
         $this->assertNotContains('KBC_TOKENDESC=', $ret);
@@ -302,7 +302,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_TOKEN=', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
-        $this->assertNotContains('KBC_PROJECTID=', $ret);
+        $this->assertContains('KBC_PROJECTID=', $ret);
         $this->assertNotContains('KBC_PROJECTNAME=', $ret);
         $this->assertNotContains('KBC_TOKENID=', $ret);
         $this->assertNotContains('KBC_TOKENDESC=', $ret);
