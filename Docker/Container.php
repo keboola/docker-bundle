@@ -10,7 +10,6 @@ use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 class Container
 {
