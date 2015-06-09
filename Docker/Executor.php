@@ -189,12 +189,12 @@ class Executor
         $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
+            "KBC_PROJECTID" => $tokenInfo["owner"]["id"]
         ];
         if ($container->getImage()->getForwardToken()) {
             $envs["KBC_TOKEN"] = $this->getStorageApiClient()->getTokenString();
         }
         if ($container->getImage()->getForwardTokenDetails()) {
-            $envs["KBC_PROJECTID"] = $tokenInfo["owner"]["id"];
             $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
             $envs["KBC_TOKENID"] = $tokenInfo["id"];
             $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
