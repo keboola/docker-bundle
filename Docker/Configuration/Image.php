@@ -14,11 +14,12 @@ class Image extends Configuration
         $root
             ->children()
                 ->arrayNode("definition")
+                    ->isRequired()
                     ->children()
                         ->scalarNode("type")
                             ->isRequired()
                             ->validate()
-                            ->ifNotInArray(array("dockerhub", "dockerhub-private"))
+                            ->ifNotInArray(array("dockerhub", "dockerhub-private", "dummy"))
                                 ->thenInvalid("Invalid image type %s.")
                             ->end()
                         ->end()
@@ -26,8 +27,8 @@ class Image extends Configuration
                         ->variableNode("repository")->end()
                     ->end()
                 ->end()
-            ->integerNode("cpu_shares")->isRequired()->min(0)->defaultValue(1024)->end()
-            ->scalarNode("memory")->isRequired()->end()
+            ->integerNode("cpu_shares")->min(0)->defaultValue(1024)->end()
+            ->scalarNode("memory")->defaultValue("64m")->end()
             ->scalarNode("configuration_format")
                 ->defaultValue("yaml")
                 ->validate()
@@ -39,6 +40,7 @@ class Image extends Configuration
             ->booleanNode("forward_token")->defaultValue(false)->end()
             ->booleanNode("forward_token_details")->defaultValue(false)->end()
             ->booleanNode("streaming_logs")->defaultValue(true)->end()
+            ->variableNode("vendor")->end()
         ;
 
         return $treeBuilder;

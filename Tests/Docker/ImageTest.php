@@ -8,7 +8,13 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 {
     public function testFactory()
     {
-        $image = Image::factory();
+        $dummyConfig = array(
+            "definition" => array(
+                "type" => "dummy",
+                "uri" => "dummy"
+            )
+        );
+        $image = Image::factory($dummyConfig);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
         $this->assertEquals(1024, $image->getCpuShares());
@@ -70,7 +76,13 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testFormat()
     {
-        $image = Image::factory();
+        $dummyConfig = array(
+            "definition" => array(
+                "type" => "dummy",
+                "uri" => "dummy"
+            )
+        );
+        $image = Image::factory($dummyConfig);
         $image->setConfigFormat('yaml');
         $this->assertEquals('yaml', $image->getConfigFormat());
         try {

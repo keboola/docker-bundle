@@ -252,16 +252,17 @@ class Image
      */
     public static function factory($config = [])
     {
-        if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub") {
+        $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
+        if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
             $instance = new Image\DockerHub();
             $instance->setDockerHubImageId($config["definition"]["uri"]);
-        } else if (isset($config["definition"]["type"]) && $config["definition"]["type"] == "dockerhub-private") {
+        } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
             $instance = new Image\DockerHub\PrivateRepository();
-            $instance->setDockerHubImageId($config["definition"]["uri"]);
+            $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
         } else {
             $instance = new self();
         }
-        $instance->fromArray($config);
+        $instance->fromArray($processedConfig);
         return $instance;
     }
 

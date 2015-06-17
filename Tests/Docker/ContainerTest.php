@@ -16,7 +16,13 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $container = new Container(Image::factory(), $log);
+        $dummyConfig = array(
+            "definition" => array(
+                "type" => "dummy",
+                "uri" => "dummy"
+            )
+        );
+        $container = new Container(Image::factory($dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);

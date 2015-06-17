@@ -114,7 +114,13 @@ class Executor extends BaseExecutor
                 $this->log->info("Preparing configuration.", $configData);
 
                 // Dummy image and container
-                $image = Image::factory([]);
+                $dummyConfig = array(
+                    "definition" => array(
+                        "type" => "dummy",
+                        "uri" => "dummy"
+                    )
+                );
+                $image = Image::factory($dummyConfig);
                 $image->setConfigFormat($params["format"]);
 
                 $container = new Container($image, $this->log);

@@ -16,7 +16,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             ),
             "cpu_shares" => 1024,
-            "memory" => "64m"
+            "memory" => "64m",
+            "vendor" => array("a" => "b")
         );
         $expectedConfiguration = array(
             "definition" => array(
@@ -29,7 +30,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "process_timeout" => 3600,
             "forward_token" => false,
             "forward_token_details" => false,
-            "streaming_logs" => true
+            "streaming_logs" => true,
+            "vendor" => array("a" => "b")
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
@@ -76,6 +78,24 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "fail"
+        );
+        $expectedConfiguration  = $config;
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Unrecognized option "unknown" under "image"
+     */
+    public function testExtraConfigurationField()
+    {
+        $config = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "unknown" => array()
         );
         $expectedConfiguration  = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
