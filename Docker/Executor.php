@@ -274,8 +274,9 @@ class Executor
      * Store results of last executed container (perform output mapping)
      * @param Container $container
      * @param array $config
+     * @param mixed $state
      */
-    public function storeOutput(Container $container, array $config, array $state)
+    public function storeOutput(Container $container, array $config, $state = null)
     {
         $this->getLog()->debug("Storing results.");
 
