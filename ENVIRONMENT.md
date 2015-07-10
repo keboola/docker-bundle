@@ -95,6 +95,20 @@ Configuration file may contain these sections:
  - `system` - copy of system configuration (eg. image tag)
  - `parameters` - variable parameters for the container
 
+### State file
+
+State file is used to store component's state for the next run. It provides a two-way communication between Keboola Connection configuration state storage and the application. State file only works if the API call references a stored configuration (`config` not `configData`).
+ 
+ - `/data/in/state.yml` or `/data/in/state.json` loaded from configuration state storage
+ - `/data/out/state.yml` or `/data/out/state.json` saved to configuration state storage
+
+The application can write any content to the output state file (valid JSON or YAML) and that will be available to the next API call. Missing or empty file will remove the state value.
+ 
+State object is is saved to configuration storage only when running the app (not in sandbox API calls).  
+
+Note: state file must contain valid JSON or YAML objects. 
+
+
 ### Input Mapping
 
 As a part of configuration you can specify tables and files that will be downloaded and provided to the container.

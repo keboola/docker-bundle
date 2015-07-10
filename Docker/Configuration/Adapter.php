@@ -138,6 +138,9 @@ class Adapter
         if ($this->getFormat() == 'yaml') {
             $yaml = new Yaml();
             $serialized = $yaml->dump($this->getConfig(), 10);
+            if ($serialized == 'null') {
+                $serialized = '{}';
+            }
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
             $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);

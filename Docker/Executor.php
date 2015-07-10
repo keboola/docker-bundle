@@ -47,6 +47,15 @@ class Executor
      */
     private $currentConfigFile;
 
+    /**
+     * @var
+     */
+    protected $componentId;
+
+    /**
+     * @var
+     */
+    protected $configurationId;
 
     /**
      * @return string
@@ -103,6 +112,45 @@ class Executor
     }
 
     /**
+     * @return mixed
+     */
+    public function getComponentId()
+    {
+        return $this->componentId;
+    }
+
+    /**
+     * @param mixed $componentId
+     * @return $this
+     */
+    public function setComponentId($componentId)
+    {
+        $this->componentId = $componentId;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConfigurationId()
+    {
+        return $this->configurationId;
+    }
+
+    /**
+     * @param mixed $configurationId
+     * @return $this
+     */
+    public function setConfigurationId($configurationId)
+    {
+        $this->configurationId = $configurationId;
+
+        return $this;
+    }
+
+
+    /**
      * @param Client $storageApi
      * @param Logger $log
      */
@@ -117,8 +165,9 @@ class Executor
      * Initialize container environment.
      * @param Container $container Docker container.
      * @param array $config Configuration injected into docker image.
+     * @param array $state Configuration state
      */
-    public function initialize(Container $container, array $config)
+    public function initialize(Container $container, array $config, array $state = null)
     {
         // create temporary working folder and all of its sub-folders
         $fs = new Filesystem();
@@ -135,6 +184,12 @@ class Executor
         }
         $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
         $adapter->writeToFile($this->currentConfigFile);
+
+        // Store state
+        $stateAdapter = new Configuration\State\Adapter($container->getImage()->getConfigFormat());
+        $stateAdapter->setConfig($state);
+        $stateFile = $this->currentTmpDir . "/data/in/state" . $stateAdapter->getFileExtension();
+        $stateAdapter->writeToFile($stateFile);
 
         // download source files
         $reader = new Reader($this->getStorageApiClient());
@@ -158,6 +213,8 @@ class Executor
         } catch (ClientException $e) {
             throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
         }
+
+
     }
 
 
@@ -216,9 +273,9 @@ class Executor
     /**
      * Store results of last executed container (perform output mapping)
      * @param Container $container
-     * @param $config
+     * @param array $config
      */
-    public function storeOutput(Container $container, $config)
+    public function storeOutput(Container $container, array $config, array $state)
     {
         $this->getLog()->debug("Storing results.");
 
@@ -245,8 +302,16 @@ class Executor
 
         if (isset($config["storage"]["input"]["files"])) {
             // tag input files
-            $reader = new Reader($this->getStorageApiClient());
-            $reader->tagFiles($config["storage"]["input"]["files"]);
+            //$reader = new Reader($this->getStorageApiClient());
+            $writer->tagFiles($config["storage"]["input"]["files"]);
+        }
+
+        if ($this->getComponentId() && $this->getConfigurationId()) {
+            // Store state
+            if (!$state) {
+                $state = (object) array();
+            }
+            $writer->updateState($this->getComponentId(), $this->getConfigurationId(), $this->currentTmpDir . "/data/out/state", $state);
         }
 
         $container->dropDataDir();

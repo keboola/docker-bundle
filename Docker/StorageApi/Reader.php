@@ -88,28 +88,10 @@ class Reader
     }
 
     /**
-     * Add tags to processed input files.
-     * @param $configuration array
-     */
-    public function tagFiles(array $configuration)
-    {
-        foreach ($configuration as $fileConfiguration) {
-            if (!empty($fileConfiguration['processed_tags'])) {
-                $files = $this->getFiles($fileConfiguration);
-                foreach ($files as $file) {
-                    foreach ($fileConfiguration['processed_tags'] as $tag) {
-                        $this->getClient()->addFileTag($file["id"], $tag);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * @param $fileConfiguration
      * @return array
      */
-    private function getFiles($fileConfiguration)
+    public function getFiles($fileConfiguration)
     {
         $options = new ListFilesOptions();
         if (empty($fileConfiguration['tags']) && empty($fileConfiguration['query'])) {
