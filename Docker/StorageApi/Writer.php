@@ -412,7 +412,7 @@ class Writer
         if ($fs->exists($fileName)) {
             $currentState = $adapter->readFromFile($fileName);
         } else {
-            $currentState = null;
+            $currentState = array();
         }
         if (serialize($currentState) != serialize($previousState)) {
             $components = new Components($this->getClient());
