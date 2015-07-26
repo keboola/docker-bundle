@@ -1,6 +1,6 @@
 # Building a Docker image
 
-Once the business logic of the app is working, you can build the Docker image using a Dockerfile. Example from [docker-demo repository](https://github.com/keboola/docker-demo):
+Once the business logic of the app is working, you can build the Docker image using a Dockerfile. Example from [docker-demo-docker repository](https://github.com/keboola/docker-demo-docker):
 
 	FROM keboola:base-php
 	MAINTAINER Ondrej Hlavacek <ondrej.hlavacek@keboola.com>
@@ -25,5 +25,9 @@ To deploy the Docker image to Keboola Connection you need to publish your image 
 ## Application registration in Keboola Connection
 
 Once you have the image available in Dockerhub, let us know on [support@keboola.com](mailto:support@keboola.com) and we'll integrate it into our list of components.
+
+### Private repository
+
+If your image cannot be public, you can use private Dockerhub repository and in that case you would need to provide us with `email`, `username`, `password` and `server` properties from the login credentials.  
 
 The components usually require a UI to configure the input and output mapping and the parameters. Users could probably configure your image using a documentation, but using a UI is just much better. Talk to us.
