@@ -168,6 +168,9 @@ class Container
             $this->log->debug("Executing docker process.");
             if ($this->getImage()->isStreamingLogs()) {
                 $process->run(function ($type, $buffer) {
+                    if (strlen($buffer) > 65536) {
+                        $buffer = substr($buffer, 0, 65536) . " [trimmed]";
+                    }
                     if ($type === Process::ERR) {
                         $this->log->error($buffer);
                     } else {
