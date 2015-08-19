@@ -14,4 +14,4 @@ test:
   override:
     - phpunit --coverage-clover build/logs/clover.xml
   post:
-    - CODECLIMATE_REPO_TOKEN=$CodeClimateToken ./vendor/bin/test-reporter
+    - ./vendor/bin/test-reporter
