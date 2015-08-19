@@ -16,7 +16,6 @@
 
 	<testsuite name="API Test Suite">
         <directory>Tests/Docker</directory>
-		<directory>Tests/Functional</directory>
 	</testsuite>
 
     <filter>
