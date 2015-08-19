@@ -4,13 +4,6 @@ machine:
   services:
     - docker
 
-  environment:
-    STORAGE_API_TOKEN: 572-30680-1829b74662f82c77925275914285668456525e6b
-    DOCKERHUB_PRIVATE_USERNAME: keboolaprivatetest
-    DOCKERHUB_PRIVATE_EMAIL: devel@keboola.com
-    DOCKERHUB_PRIVATE_PASSWORD: 123456
-    DOCKERHUB_PRIVATE_SERVER: https://index.docker.io/v1/
-
 dependencies:
   override:
   - composer install --prefer-source --no-interaction --no-scripts
@@ -21,5 +14,4 @@ test:
   override:
     - phpunit --coverage-clover build/logs/clover.xml
   post:
-    - ./vendor/bin/test-reporter --stdout > codeclimate.json
-    - "curl -X POST -d @codeclimate.json -H 'Content-Type: application/json' -H 'User-Agent: Code Climate (PHP Test Reporter v0.1.1)' https://codeclimate.com/test_reports"
+    - CODECLIMATE_REPO_TOKEN=$CodeClimateToken ./vendor/bin/test-reporter
