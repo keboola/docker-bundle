@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -451,5 +452,75 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer->uploadTables($root . "/upload", $configs);
         $this->client->exportTable("out.c-docker-test.table1", $root . "/download.csv");
         $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n", file_get_contents($root . "/download.csv"));
+    }
+
+    public function testTagFiles()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/test", "test");
+
+        $id1 = $this->client->uploadFile($root . "/upload/test", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+        $id2 = $this->client->uploadFile($root . "/upload/test", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+
+        $writer = new Writer($this->client);
+        $configuration = [["tags" => ["docker-bundle-test"], "processed_tags" => ['downloaded']]];
+        $writer->tagFiles($configuration);
+
+        $file = $this->client->getFile($id1);
+        $this->assertTrue(in_array('downloaded', $file['tags']));
+        $file = $this->client->getFile($id2);
+        $this->assertTrue(in_array('downloaded', $file['tags']));
+    }
+
+    public function testUpdateStateNoChange()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/test.json", '{"state": "aabb"}');
+
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->never())
+            ->method("apiPut")
+            ;
+        $writer = new Writer($sapiStub);
+        $writer->setFormat("json");
+        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
+    }
+
+    public function testUpdateStateChange()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/test.json", '{"state": "aabbcc"}');
+
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("apiPut")
+            ->with($this->equalTo("storage/components/test/configs/test"), $this->equalTo(["state" => '{"state":"aabbcc"}']))
+            ;
+
+        $writer = new Writer($sapiStub);
+        $writer->setFormat("json");
+        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
+    }
+
+    public function testUpdateStateChangeToEmpty()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/test.json", '{}');
+
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("apiPut")
+            ->with($this->equalTo("storage/components/test/configs/test"), $this->equalTo(["state" => '{}']))
+            ;
+
+        $writer = new Writer($sapiStub);
+        $writer->setFormat("json");
+        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
     }
 }

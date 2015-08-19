@@ -586,4 +586,94 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
     }
+
+    public function testExecutorStoreEmptyStateFile()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "process_timeout" => 1,
+            "forward_token_details" => true
+        );
+
+        $config = array(
+            "storage" => array(),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $this->assertFileExists($this->tmpDir . "/data/in/state.json");
+        $this->assertEquals("{}", file_get_contents($this->tmpDir . "/data/in/state.json"));
+    }
+
+    public function testExecutorStoreNonEmptyStateFile()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "process_timeout" => 1,
+            "forward_token_details" => true
+        );
+
+        $config = array(
+            "storage" => array(),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config, array("lastUpdate" => "today"));
+        $this->assertFileExists($this->tmpDir . "/data/in/state.json");
+        $this->assertEquals("{\n    \"lastUpdate\": \"today\"\n}", file_get_contents($this->tmpDir . "/data/in/state.json"));
+    }
 }

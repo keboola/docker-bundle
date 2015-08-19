@@ -168,6 +168,9 @@ class Container
             $this->log->debug("Executing docker process.");
             if ($this->getImage()->isStreamingLogs()) {
                 $process->run(function ($type, $buffer) {
+                    if (strlen($buffer) > 65536) {
+                        $buffer = substr($buffer, 0, 65536) . " [trimmed]";
+                    }
                     if ($type === Process::ERR) {
                         $this->log->error($buffer);
                     } else {
@@ -237,6 +240,7 @@ class Container
             $root . "/data/in",
             $root . "/data/in/tables",
             $root . "/data/in/files",
+            $root . "/data/in/user",
             $root . "/data/out",
             $root . "/data/out/tables",
             $root . "/data/out/files"
@@ -256,6 +260,7 @@ class Container
         $structure = array(
             $this->getDataDir() . "/in/tables",
             $this->getDataDir() . "/in/files",
+            $this->getDataDir() . "/in/user",
             $this->getDataDir() . "/in",
             $this->getDataDir() . "/out/files",
             $this->getDataDir() . "/out/tables",

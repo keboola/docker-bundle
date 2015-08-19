@@ -66,6 +66,8 @@ class Executor extends BaseExecutor
         $params = $job->getParams();
         $this->temp->setId($job->getId());
         $containerId = null;
+        $state = null;
+        $configId = null;
 
         if ($params['mode'] == 'sandbox') {
             if (!isset($params["configData"]) || empty($params["configData"])) {
@@ -100,14 +102,23 @@ class Executor extends BaseExecutor
                 // Read config from storage
                 try {
                     $components = new Components($this->storageApi);
-                    $configData = $components->getConfiguration($component["id"], $params["config"])["configuration"];
+                    $configuration = $components->getConfiguration($component["id"], $params["config"]);
+                    $configId = $params["config"];
+                    $configData = $configuration["configuration"];
+                    $state = $configuration["state"];
                 } catch (ClientException $e) {
                     throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
                 }
             }
         }
 
-        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
+        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log, $component["id"], $configId);
+        if ($component && isset($component["id"])) {
+            $executor->setComponentId($component["id"]);
+        }
+        if ($params && isset($params["config"])) {
+            $executor->setConfigurationId($params["config"]);
+        }
 
         switch ($params['mode']) {
             case 'sandbox':
@@ -126,7 +137,7 @@ class Executor extends BaseExecutor
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData);
+                $executor->initialize($container, $configData, $state);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
 
                 $message = 'Configuration prepared.';
@@ -139,7 +150,7 @@ class Executor extends BaseExecutor
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData);
+                $executor->initialize($container, $configData, $state);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
 
                 $message = 'Image configuration prepared.';
@@ -151,7 +162,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData);
+                $executor->initialize($container, $configData, $state);
                 $process = $executor->run($container, $containerId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
@@ -169,10 +180,9 @@ class Executor extends BaseExecutor
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData);
+                $executor->initialize($container, $configData, $state);
                 $process = $executor->run($container, $containerId);
-                $executor->storeOutput($container, $configData);
-
+                $executor->storeOutput($container, $configData, $state);
                 if ($process->getOutput()) {
                     $message = $process->getOutput();
                 } else {
