@@ -6,11 +6,16 @@ machine:
 
 dependencies:
   override:
-  - composer install --prefer-source --no-interaction --no-scripts
+    - mkdir -p build/logs
+    - composer install --prefer-source --no-interaction --no-scripts
+    - pecl install xdebug  
+    - cat ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini | sed -e "s/;//" > xdebug.ini
+    - mv xdebug.ini ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/xdebug.ini
 
 test:
   pre:
     - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
+
   override:
-    - phpunit --coverage-clover /home/ubuntu/docker-bundle/build/logs/clover.xml
+    - phpunit --coverage-clover build/logs/clover.xml
     - ./vendor/bin/test-reporter
