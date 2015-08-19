@@ -12,5 +12,5 @@ test:
   pre:
     - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
   override:
-    - phpunit --coverage-clover build/logs/clover.xml
+    - phpunit --coverage-clover /home/ubuntu/docker-bundle/build/logs/clover.xml
     - ./vendor/bin/test-reporter
