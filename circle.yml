@@ -13,5 +13,4 @@ test:
     - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
   override:
     - phpunit --coverage-clover build/logs/clover.xml
-  post:
     - ./vendor/bin/test-reporter
