@@ -22,8 +22,4 @@
             </exclude>
         </whitelist>
     </filter>
-
-    <logging>
-        <log type="coverage-clover" target="/home/ubuntu/docker-bundle/build/logs/clover.xml"/>
-    </logging>
 </phpunit>
