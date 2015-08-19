@@ -4,9 +4,16 @@ machine:
   services:
     - docker
 
+  environment:
+    STORAGE_API_TOKEN: 572-30680-1829b74662f82c77925275914285668456525e6b
+    DOCKERHUB_PRIVATE_USERNAME: keboolaprivatetest
+    DOCKERHUB_PRIVATE_EMAIL: devel@keboola.com
+    DOCKERHUB_PRIVATE_PASSWORD: 123456
+    DOCKERHUB_PRIVATE_SERVER: https://index.docker.io/v1/
+
 dependencies:
   override:
-  - composer install --dev --no-scripts
+  - composer install --prefer-source --no-interaction --no-scripts
 
 test:
   pre:
