@@ -14,11 +14,6 @@
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
 
-	<testsuite name="API Test Suite">
-        <!-- intentionally exclude Controller and Functional tests until Travis CI is able to run them. -->
-		<directory>Tests/Docker</directory>
-	</testsuite>
-
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src/*</directory>
