@@ -1,9 +1,9 @@
 language: php
-php:
-  - 5.5
+
 sudo: required
 services:
   - docker
+
 notifications:
   email: false
 install:
