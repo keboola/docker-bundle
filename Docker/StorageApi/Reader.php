@@ -106,7 +106,7 @@ class Reader
         }
         if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
             if (!empty($fileConfiguration['filterByRunId'])) {
-                array_push($fileConfiguration["tags"], 'runId-' . $this->getParentRunId());
+                $options->setQuery('tags: runId-' . $this->getParentRunId());
                 $options->setTags($fileConfiguration["tags"]);
             } else {
                 $options->setTags($fileConfiguration["tags"]);
