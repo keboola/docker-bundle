@@ -9,9 +9,6 @@ before_install:
   - sudo apt-get install -y php5-cli
   - sudo apt-get install -y php5-common
   - sudo apt-get install -y php5-curl
-  - sudo apt-get install -y php5-mbstring
-  - sudo apt-get install -y php5-pdo
-  - sudo apt-get install -y php5-xml
 
 install:
   - composer install --dev --no-scripts
