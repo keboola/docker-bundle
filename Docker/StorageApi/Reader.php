@@ -105,10 +105,18 @@ class Reader
             throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
         }
         if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
-            $options->setTags($fileConfiguration["tags"]);
+            if (!empty($fileConfiguration['filterByRunId'])) {
+                $options->setTags(array_merge($fileConfiguration["tags"], 'runId-' . $this->getParentRunId()));
+            } else {
+                $options->setTags($fileConfiguration["tags"]);
+            }
         }
         if (isset($fileConfiguration["query"])) {
-            $options->setQuery($fileConfiguration["query"]);
+            if (!empty($fileConfiguration['filterByRunId'])) {
+                $options->setQuery($fileConfiguration["query"] . ' tags: runId-' . $this->getParentRunId());
+            } else {
+                $options->setQuery($fileConfiguration["query"]);
+            }
         }
         $files = $this->getClient()->listFiles($options);
 
@@ -259,5 +267,21 @@ class Reader
                 $e
             );
         }
+    }
+
+    /**
+     * Get parent runId to the current runId (defined by SAPI client)
+     * @return string Parent part of hierarchical Id.
+     */
+    public function getParentRunId()
+    {
+        $runId = $this->client->getRunId();
+        if (($pos = strrpos($runId, '.')) === false) {
+            // there is no parent
+            $parentRunId = $runId;
+        } else {
+            $parentRunId = substr($runId, 0, $pos);
+        }
+        return $parentRunId;
     }
 }

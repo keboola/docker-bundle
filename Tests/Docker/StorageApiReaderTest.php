@@ -98,6 +98,85 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($id2, $manifest2["id"]);
     }
 
+
+    public function testParentId()
+    {
+        $reader = new Reader($this->client);
+        $this->client->setRunId('123456789');
+        $this->assertEquals('123456789', $reader->getParentRunId());
+        $this->client->setRunId('123456789.98765432');
+        $this->assertEquals('123456789', $reader->getParentRunId());
+        $this->client->setRunId('123456789.98765432.4563456');
+        $this->assertEquals('123456789.98765432', $reader->getParentRunId());
+    }
+
+
+    public function testReadFilesTagsFilterRunId()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload", "test");
+        $reader = new Reader($this->client);
+
+        $id1 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $this->client->getRunId()])
+        );
+        $id2 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
+        );
+        $id3 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
+        );
+        $id4 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test"])
+        );
+
+        $configuration = [["tags" => ["docker-bundle-test"], "filterByRunId" => true]];
+        $reader->downloadFiles($configuration, $root . "/download");
+
+        $this->assertTrue(file_exists($root . "/download/" . $id2));
+        $this->assertTrue(file_exists($root . "/download/" . $id3));
+        $this->assertFalse(file_exists($root . "/download/" . $id1));
+        $this->assertFalse(file_exists($root . "/download/" . $id4));
+    }
+
+
+    public function testReadFilesEsQueryFilterRunId()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload", "test");
+        $reader = new Reader($this->client);
+
+        $id1 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $this->client->getRunId()])
+        );
+        $id2 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
+        );
+        $id3 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
+        );
+        $id4 = $this->client->uploadFile(
+            $root . "/upload",
+            (new FileUploadOptions())->setTags(["docker-bundle-test"])
+        );
+
+        $configuration = [["query" => "tags: docker-bundle-test", "filterByRunId" => true]];
+        $reader->downloadFiles($configuration, $root . "/download");
+
+        $this->assertTrue(file_exists($root . "/download/" . $id2));
+        $this->assertTrue(file_exists($root . "/download/" . $id3));
+        $this->assertFalse(file_exists($root . "/download/" . $id1));
+        $this->assertFalse(file_exists($root . "/download/" . $id4));
+    }
+
+
     public function testReadFilesErrors()
     {
         $root = $this->tmpDir;
