@@ -106,7 +106,8 @@ class Reader
         }
         if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
             if (!empty($fileConfiguration['filterByRunId'])) {
-                $options->setTags(array_merge($fileConfiguration["tags"], 'runId-' . $this->getParentRunId()));
+                array_push($fileConfiguration["tags"], 'runId-' . $this->getParentRunId());
+                $options->setTags($fileConfiguration["tags"]);
             } else {
                 $options->setTags($fileConfiguration["tags"]);
             }
@@ -276,11 +277,16 @@ class Reader
     public function getParentRunId()
     {
         $runId = $this->client->getRunId();
-        if (($pos = strrpos($runId, '.')) === false) {
-            // there is no parent
-            $parentRunId = $runId;
+        if (!empty($runId)) {
+            if (($pos = strrpos($runId, '.')) === false) {
+                // there is no parent
+                $parentRunId = $runId;
+            } else {
+                $parentRunId = substr($runId, 0, $pos);
+            }
         } else {
-            $parentRunId = substr($runId, 0, $pos);
+            // there is no runId
+            $parentRunId = '';
         }
         return $parentRunId;
     }

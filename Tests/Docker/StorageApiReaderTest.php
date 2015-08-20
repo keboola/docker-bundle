@@ -108,6 +108,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('123456789', $reader->getParentRunId());
         $this->client->setRunId('123456789.98765432.4563456');
         $this->assertEquals('123456789.98765432', $reader->getParentRunId());
+        $this->client->setRunId(null);
+        $this->assertEquals('', $reader->getParentRunId());
     }
 
 
@@ -115,6 +117,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
+        $this->client->setRunId('1234567.8901234');
         $reader = new Reader($this->client);
 
         $id1 = $this->client->uploadFile(
@@ -148,6 +151,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
+        $this->client->setRunId('1234567.8901234');
         $reader = new Reader($this->client);
 
         $id1 = $this->client->uploadFile(
