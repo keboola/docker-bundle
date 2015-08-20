@@ -1,21 +1,35 @@
 language: php
 
 sudo: required
+
 services:
   - docker
 
-notifications:
-  email: false
+before_install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y php5
+  - sudo apt-get install -y php5-cli
+  - sudo apt-get install -y php5-common
+  - sudo apt-get install -y php5-curl
+  - sudo apt-get install -y php5-mbstring
+  - sudo apt-get install -y php5-pdo
+  - sudo apt-get install -y php5-xml
+
 install:
   - composer install --dev --no-scripts
+
 script:
   - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
   - phpunit --coverage-clover build/logs/clover.xml
+
 after_success:
   - ./vendor/bin/test-reporter --stdout > codeclimate.json
   - "curl -X POST -d @codeclimate.json -H 'Content-Type: application/json' -H 'User-Agent: Code Climate (PHP Test Reporter v0.1.1)' https://codeclimate.com/test_reports"
+
 env:
   global:
     secure: KMjTyndS3OXhGR3XQlmonIgnJI1p1Xl1NcRK9oZzoGyyjpCmD8eAhI4UHUS4aki/iveMaokuSxdmDkt0E5AmbDD5rmMzyMo7UMd/tDAH9rVI5IZVbkLcEwB8cntgrg7eBZqzFyzgqze4kKB6me/XjGP0BcON3+kEWjI4Hj1hZHY=
+
 notifications:
+  email: false
   slack: keboola:r0kMBhPydXbzz4F9j0aCzUaZ
