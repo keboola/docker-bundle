@@ -15,7 +15,8 @@ class InputFileConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
                 "tags" => array("tag1", "tag2"),
                 "query" => "esquery",
-                "processed_tags" => array("tag3")
+                "processed_tags" => array("tag3"),
+                "filterByRunId" => true
             );
         $expectedResponse = $config;
         $processedConfiguration = (new File())->parse(array("config" => $config));
