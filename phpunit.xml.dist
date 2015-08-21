@@ -14,10 +14,9 @@
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
 
-	<testsuite name="API Test Suite">
-        <directory>Tests/Docker</directory>
-        <directory>Tests/Functional</directory>
-	</testsuite>
+    <testsuite name="API Test Suite">
+        <directory>Tests</directory>
+    </testsuite>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
