@@ -629,7 +629,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
-        $this->assertEquals("{}", file_get_contents($this->tmpDir . "/data/in/state.json"));
+        $this->assertEquals(
+            new \stdclass(),
+            \GuzzleHttp\json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), true)
+        );
     }
 
     public function testExecutorStoreNonEmptyStateFile()
