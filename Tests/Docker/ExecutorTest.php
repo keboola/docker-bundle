@@ -631,7 +631,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
             new \stdclass(),
-            \GuzzleHttp\json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), true)
+            \GuzzleHttp\json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), false)
         );
     }
 
