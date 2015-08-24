@@ -15,6 +15,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      * Validate request body configuration.
      *
      * @param array $body Configuration parameters
+     * @return array Validated configuration parameters.
      * @throws UserException In case of error.
      */
     private function validateParams($body)
@@ -24,8 +25,10 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         }
 
         if (isset($body["config"]) && isset($body["configData"])) {
-            throw new UserException("Cannot specify both 'config' and 'configData'.");
+            $this->logger->info("Both config and configData specified, 'config' ignored.");
+            unset($body["config"]);
         }
+        return $body;
     }
 
 
@@ -113,7 +116,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     {
         // Get params from request
         $params = $this->getPostJson($request);
-        $this->validateParams($params);
+        $params = $this->validateParams($params);
         $params['mode'] = 'sandbox';
 
         $params["format"] = $request->get("format", "yaml");
@@ -138,7 +141,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
-        $this->validateParams($params);
+        $params = $this->validateParams($params);
         $params['mode'] = 'input';
 
         return $this->createJobFromParams($params);
@@ -156,7 +159,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
-        $this->validateParams($params);
+        $params = $this->validateParams($params);
         $params['mode'] = 'dry-run';
 
         return $this->createJobFromParams($params);
