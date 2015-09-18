@@ -9,6 +9,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -24,14 +25,20 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
      */
     protected $tmpDir;
 
+    /**
+     * @var Temp
+     */
+    private $temp;
+
     public function setUp()
     {
         // Create folders
-        $root = "/tmp/docker/" . uniqid("", true);
+        $temp = new Temp('docker');
+        $temp->initRunFolder();
+        $this->temp = $temp;
+        $this->tmpDir = $temp->getTmpFolder();
         $fs = new Filesystem();
-        $fs->mkdir($root);
-        $fs->mkdir($root . "/download");
-        $this->tmpDir = $root;
+        $fs->mkdir($this->tmpDir . "/download");
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
     }
@@ -87,12 +94,12 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $configuration = [["tags" => ["docker-bundle-test"]]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id1));
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id2));
+        $this->assertEquals("test", file_get_contents($root . "/download/" . $id1 . '_upload'));
+        $this->assertEquals("test", file_get_contents($root . "/download/" . $id2 . '_upload'));
 
         $adapter = new Configuration\Input\File\Manifest\Adapter();
-        $manifest1 = $adapter->readFromFile($root . "/download/" . $id1 . ".manifest");
-        $manifest2 = $adapter->readFromFile($root . "/download/" . $id2 . ".manifest");
+        $manifest1 = $adapter->readFromFile($root . "/download/" . $id1 . "_upload.manifest");
+        $manifest2 = $adapter->readFromFile($root . "/download/" . $id2 . "_upload.manifest");
 
         $this->assertEquals($id1, $manifest1["id"]);
         $this->assertEquals($id2, $manifest2["id"]);
@@ -131,10 +138,10 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $configuration = [["tags" => ["docker-bundle-test"], "filterByRunId" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id3));
-        $this->assertTrue(file_exists($root . "/download/" . $id4));
-        $this->assertFalse(file_exists($root . "/download/" . $id1));
-        $this->assertFalse(file_exists($root . "/download/" . $id2));
+        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
+        $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));
+        $this->assertFalse(file_exists($root . "/download/" . $id2 . '_upload'));
     }
 
 
@@ -156,10 +163,10 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $configuration = [["query" => "tags: docker-bundle-test", "filterByRunId" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id3));
-        $this->assertTrue(file_exists($root . "/download/" . $id4));
-        $this->assertFalse(file_exists($root . "/download/" . $id1));
-        $this->assertFalse(file_exists($root . "/download/" . $id2));
+        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
+        $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));
+        $this->assertFalse(file_exists($root . "/download/" . $id2 . '_upload'));
     }
 
 

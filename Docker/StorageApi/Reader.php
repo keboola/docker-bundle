@@ -82,8 +82,11 @@ class Reader
             foreach ($files as $file) {
                 $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
                 try {
-                    $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"]);
-                    $this->writeFileManifest($fileInfo, $destination . "/" . $fileInfo["id"] . ".manifest");
+                    $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"] . '_' . $fileInfo["name"]);
+                    $this->writeFileManifest(
+                        $fileInfo,
+                        $destination . "/" . $fileInfo["id"] . '_' . $fileInfo["name"] . ".manifest"
+                    );
                 } catch (\Exception $e) {
                     throw new ApplicationException(
                         "Failed to download file " . $fileInfo['name'] . $fileInfo['id'],
