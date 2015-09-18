@@ -43,13 +43,8 @@ class DockerHub extends Image
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
 
         try {
-            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                $process = new Process("docker pull " . escapeshellarg($tag));
-            } else {
-                $process = new Process("sudo docker pull " . escapeshellarg($tag));
-            }
+            $process = new Process("sudo docker pull " . escapeshellarg($tag));
             $process->setTimeout(3600);
-            
             $process->run();
         } catch (Exception $e) {
             throw new ApplicationException("Failed to prepare container {$tag}, error: ".$e->getMessage(), $e);

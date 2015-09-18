@@ -208,7 +208,7 @@ class ApiControllerTest extends WebTestCase
         }
     }
 
-    public function testInvalidBody2()
+    public function testBodyOverload()
     {
         $content = '
         {
@@ -227,11 +227,9 @@ class ApiControllerTest extends WebTestCase
         self::$container->set('request', $request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
-        try {
-            $ctrl->preExecute($request);
-            $ctrl->runAction($request);
-            $this->fail("Invalid body should raise exception.");
-        } catch (UserException $e) {
-        }
+        $ctrl->preExecute($request);
+        $ctrl->runAction($request);
+        $response = $ctrl->dryRunAction($request);
+        $this->assertEquals(202, $response->getStatusCode());
     }
 }

@@ -117,33 +117,24 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
-        $this->client->setRunId('1234567.8901234');
         $reader = new Reader($this->client);
+        $fo = new FileUploadOptions();
+        $fo->setTags(["docker-bundle-test"]);
 
-        $id1 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $this->client->getRunId()])
-        );
-        $id2 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
-        );
-        $id3 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
-        );
-        $id4 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test"])
-        );
+        $this->client->setRunId('xyz');
+        $id1 = $this->client->uploadFile($root . "/upload", $fo);
+        $id2 = $this->client->uploadFile($root . "/upload", $fo);
+        $this->client->setRunId('1234567.8901234');
+        $id3 = $this->client->uploadFile($root . "/upload", $fo);
+        $id4 = $this->client->uploadFile($root . "/upload", $fo);
 
         $configuration = [["tags" => ["docker-bundle-test"], "filterByRunId" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id2));
         $this->assertTrue(file_exists($root . "/download/" . $id3));
+        $this->assertTrue(file_exists($root . "/download/" . $id4));
         $this->assertFalse(file_exists($root . "/download/" . $id1));
-        $this->assertFalse(file_exists($root . "/download/" . $id4));
+        $this->assertFalse(file_exists($root . "/download/" . $id2));
     }
 
 
@@ -151,33 +142,24 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
-        $this->client->setRunId('1234567.8901234');
         $reader = new Reader($this->client);
+        $fo = new FileUploadOptions();
+        $fo->setTags(["docker-bundle-test"]);
 
-        $id1 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $this->client->getRunId()])
-        );
-        $id2 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
-        );
-        $id3 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test", "runId-" . $reader->getParentRunId()])
-        );
-        $id4 = $this->client->uploadFile(
-            $root . "/upload",
-            (new FileUploadOptions())->setTags(["docker-bundle-test"])
-        );
+        $this->client->setRunId('xyz');
+        $id1 = $this->client->uploadFile($root . "/upload", $fo);
+        $id2 = $this->client->uploadFile($root . "/upload", $fo);
+        $this->client->setRunId('1234567.8901234');
+        $id3 = $this->client->uploadFile($root . "/upload", $fo);
+        $id4 = $this->client->uploadFile($root . "/upload", $fo);
 
         $configuration = [["query" => "tags: docker-bundle-test", "filterByRunId" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id2));
         $this->assertTrue(file_exists($root . "/download/" . $id3));
+        $this->assertTrue(file_exists($root . "/download/" . $id4));
         $this->assertFalse(file_exists($root . "/download/" . $id1));
-        $this->assertFalse(file_exists($root . "/download/" . $id4));
+        $this->assertFalse(file_exists($root . "/download/" . $id2));
     }
 
 

@@ -311,12 +311,7 @@ class Container
     public function getRemoveCommand($containerId)
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $command = "docker rm ";
-        } else {
-            $command = "sudo docker rm ";
-        }
-
+        $command = "sudo docker rm ";
         $command .= escapeshellarg($containerId);
         return $command;
     }
@@ -328,12 +323,7 @@ class Container
     public function getInspectCommand($containerId)
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $command = "docker inspect ";
-        } else {
-            $command = "sudo docker inspect ";
-        }
-
+        $command = "sudo docker inspect ";
         $command .= escapeshellarg($containerId);
         return $command;
     }

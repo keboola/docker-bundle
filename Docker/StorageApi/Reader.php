@@ -104,20 +104,14 @@ class Reader
         if (empty($fileConfiguration['tags']) && empty($fileConfiguration['query'])) {
             throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
         }
+        if (!empty($fileConfiguration['filterByRunId'])) {
+            $options->setRunId($this->client->getRunId());
+        }
         if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
-            if (!empty($fileConfiguration['filterByRunId'])) {
-                $options->setQuery('tags: runId-' . $this->getParentRunId());
-                $options->setTags($fileConfiguration["tags"]);
-            } else {
-                $options->setTags($fileConfiguration["tags"]);
-            }
+            $options->setTags($fileConfiguration["tags"]);
         }
         if (isset($fileConfiguration["query"])) {
-            if (!empty($fileConfiguration['filterByRunId'])) {
-                $options->setQuery($fileConfiguration["query"] . ' tags: runId-' . $this->getParentRunId());
-            } else {
-                $options->setQuery($fileConfiguration["query"]);
-            }
+               $options->setQuery($fileConfiguration["query"]);
         }
         $files = $this->getClient()->listFiles($options);
 
