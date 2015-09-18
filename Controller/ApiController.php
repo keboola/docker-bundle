@@ -71,6 +71,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $jobFactory = $this->container->get('syrup.job_factory');
         $jobFactory->setStorageApiClient($this->storageApi);
         $job = $jobFactory->create('run', $params);
+        $job->setLockName($job->getLockName() . '-' . $params['component']);
 
         // Add job to Elasticsearch
         try {
