@@ -199,16 +199,16 @@ storage:
         query: name:.zip
 ```
 
-All files that will match the fulltext search will be downloaded to the `/data/in/files` folder. Each file will also contain a manifest with all information about the file in the chosen format.
+All files that will match the fulltext search will be downloaded to the `/data/in/files` folder. The name of each file has the format `fileId_fileName`. Each file will also contain a manifest with all information about the file in the chosen format.
 
 ```
-/data/in/files/75807542
-/data/in/files/75807542.manifest
-/data/in/files/75807657
-/data/in/files/75807657.manifest		
+/data/in/files/75807542_fooBar.jpg
+/data/in/files/75807542_fooBar.jpg.manifest
+/data/in/files/75807657_fooBarBaz.png
+/data/in/files/75807657_fooBarBaz.png.manifest		
 ```
 
-`/data/in/files/75807542.manifest`:
+`/data/in/files/75807542_fooBar.jpg.manifest`:
 
 ```
   id: 75807657
@@ -216,7 +216,7 @@ All files that will match the fulltext search will be downloaded to the `/data/i
   is_public: false
   is_sliced: false
   is_encrypted: false
-  name: "one_2015_01_05allkeys.json.zip"
+  name: "fooBar.jpg"
   size_bytes: 563416
   tags: 
     - "keboola/docker-demo"
