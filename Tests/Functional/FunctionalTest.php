@@ -10,7 +10,9 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Job\Metadata\Job;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -116,7 +118,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
-        $job = new Job($data);
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -186,7 +189,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $job = new Job($data);
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -275,7 +279,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $job = new Job($data);
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -361,7 +366,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $job = new Job($data);
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -479,7 +485,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
-        $job = new Job($data);
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {

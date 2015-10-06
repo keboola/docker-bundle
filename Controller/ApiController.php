@@ -193,8 +193,9 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function disabledAction(Request $request)
     {
+        $apiMethod = substr($request->getPathInfo(), strrpos($request->getPathInfo(), '/') + 1);
         throw new UserException(
-            "Run without component name is not supported, perhaps you wanted to call /docker/{compoment}/run"
+            "This api call without component name is not supported, perhaps you wanted to call /{compoment}/" . $apiMethod
         );
     }
 
@@ -209,7 +210,14 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     protected function getPostJson(Request $request)
     {
         $json = parent::getPostJson($request);
-        $json["component"] = $request->get("component");
+        if (!$request->get("concealComponent")) {
+            $json["component"] = $request->get("component");
+        }
         return $json;
+    }
+
+    public function encryptAction(Request $request)
+    {
+        return parent::encryptAction($request);
     }
 }

@@ -232,4 +232,32 @@ class ApiControllerTest extends WebTestCase
         $response = $ctrl->dryRunAction($request);
         $this->assertEquals(202, $response->getStatusCode());
     }
+
+    public function testEncrypt()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+            "component" => "docker-demo",
+            "concealComponent" => true
+        ];
+        $request = Request::create("/docker/docker-demo/encrypt", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+        $this->assertCount(2, $result);
+    }
 }
