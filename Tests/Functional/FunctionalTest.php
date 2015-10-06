@@ -468,7 +468,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                         'script' => [
                             "inDirectory <- '/data/in/files/'",
                             "outDirectory <- '/data/out/files/'",
-                            "files <- list.files(inDirectory, pattern = '^[0-9]+$', full.names = FALSE)",
+                            "files <- list.files(inDirectory, pattern = '^[0-9]+_upload$', full.names = FALSE)",
                             "for (file in files) {",
                             "    fn <- paste0(outDirectory, file, '.csv');",
                             "    file.copy(paste0(inDirectory, file), fn);",
