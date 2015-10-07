@@ -111,7 +111,7 @@ class Executor extends BaseExecutor
                     $components = new Components($this->storageApi);
                     $configuration = $components->getConfiguration($component["id"], $params["config"]);
                     $configId = $params["config"];
-                    $configData = $configuration["configuration"];
+                    $configData = $this->encryptor->decrypt($configuration["configuration"]);
                     $state = $configuration["state"];
                 } catch (ClientException $e) {
                     throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
