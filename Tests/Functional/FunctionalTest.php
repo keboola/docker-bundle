@@ -142,7 +142,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -215,7 +215,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp);
+
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -302,7 +303,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -389,7 +390,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -420,7 +421,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 "uri" => "hello-world"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -444,7 +446,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 "uri" => "hello-world"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -515,7 +518,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 

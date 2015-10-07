@@ -5,8 +5,10 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
@@ -36,7 +38,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -60,7 +63,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -88,7 +92,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -116,7 +121,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -143,7 +149,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -167,7 +174,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
         $image->setProcessTimeout(1);
 
         $log = new Logger("null");
@@ -195,7 +203,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -221,7 +230,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
 
         $log = new Logger("null");
@@ -247,7 +257,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "streaming_logs" => true
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -291,7 +302,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ],
             "streaming_logs" => false
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -337,7 +349,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ],
             "memory" => "10m"
         ];
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $handler = new TestHandler();

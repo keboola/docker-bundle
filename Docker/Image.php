@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Syrup\Service\ObjectEncryptor;
+
 class Image
 {
     /**
@@ -247,17 +249,18 @@ class Image
     }
 
     /**
+     * @param ObjectEncryptor $encryptor
      * @param array $config Docker image configuration.
      * @return Image|DockerHub
      */
-    public static function factory($config = [])
+    public static function factory(ObjectEncryptor $encryptor, $config = [])
     {
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
             $instance = new Image\DockerHub();
             $instance->setDockerHubImageId($config["definition"]["uri"]);
         } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
-            $instance = new Image\DockerHub\PrivateRepository();
+            $instance = new Image\DockerHub\PrivateRepository($encryptor);
             $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
         } else {
             $instance = new self();

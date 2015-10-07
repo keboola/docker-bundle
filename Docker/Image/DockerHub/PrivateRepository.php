@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\DockerHub
@@ -14,6 +15,35 @@ class PrivateRepository extends Image\DockerHub
     protected $loginUsername;
     protected $loginPassword;
     protected $loginServer;
+
+    /**
+     * @var ObjectEncryptor
+     */
+    protected $encryptor;
+
+    public function __construct(ObjectEncryptor $encryptor)
+    {
+        $this->setEncryptor($encryptor);
+    }
+
+    /**
+     * @return ObjectEncryptor
+     */
+    public function getEncryptor()
+    {
+        return $this->encryptor;
+    }
+
+    /**
+     * @param ObjectEncryptor $encryptor
+     * @return $this
+     */
+    public function setEncryptor($encryptor)
+    {
+        $this->encryptor = $encryptor;
+
+        return $this;
+    }
 
     /**
      * @return mixed
@@ -165,6 +195,9 @@ class PrivateRepository extends Image\DockerHub
             }
             if (isset($config["definition"]["repository"]["password"])) {
                 $this->setLoginPassword($config["definition"]["repository"]["password"]);
+            }
+            if (isset($config["definition"]["repository"]["#password"])) {
+                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
             }
             if (isset($config["definition"]["repository"]["server"])) {
                 $this->setLoginServer($config["definition"]["repository"]["server"]);

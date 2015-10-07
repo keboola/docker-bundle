@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -29,13 +30,19 @@ class Executor extends BaseExecutor
     protected $temp;
 
     /**
+     * @var ObjectEncryptor
+     */
+    protected $encryptor;
+
+    /**
      * @param Logger $log
      * @param Temp $temp
      */
-    public function __construct(Logger $log, Temp $temp)
+    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor)
     {
         $this->log = $log;
         $this->temp = $temp;
+        $this->encryptor = $encryptor;
     }
 
     /**
@@ -131,7 +138,7 @@ class Executor extends BaseExecutor
                         "uri" => "dummy"
                     )
                 );
-                $image = Image::factory($dummyConfig);
+                $image = Image::factory($this->encryptor, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
 
                 $container = new Container($image, $this->log);
@@ -146,7 +153,7 @@ class Executor extends BaseExecutor
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
-                $image = Image::factory($component["data"]);
+                $image = Image::factory($this->encryptor, $component["data"]);
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
@@ -157,7 +164,7 @@ class Executor extends BaseExecutor
                 $this->log->info($message);
                 return ["message" => $message];
             case 'dry-run':
-                $image = Image::factory($component["data"]);
+                $image = Image::factory($this->encryptor, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
@@ -175,7 +182,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             case 'run':
-                $image = Image::factory($component["data"]);
+                $image = Image::factory($this->encryptor, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 

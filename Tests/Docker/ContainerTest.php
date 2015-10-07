@@ -4,6 +4,8 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\Syrup\Encryption\CryptoWrapper;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -22,7 +24,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $container = new Container(Image::factory($dummyConfig), $log);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $container = new Container(Image::factory($encryptor, $dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);
@@ -53,7 +56,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -114,7 +118,8 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -134,7 +139,8 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $container = new Container($image, $log);
@@ -151,7 +157,8 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $image = Image::factory($imageConfiguration);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $container = new Container($image, $log);

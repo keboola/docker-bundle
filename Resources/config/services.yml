@@ -1,4 +1,4 @@
 services:
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
-        arguments: [@logger, @syrup.temp]
+        arguments: [@logger, @syrup.temp, @syrup.object_encryptor]

@@ -8,7 +8,9 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -126,7 +128,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -143,7 +146,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $process = $executor->run($container, "testsuite");
@@ -178,7 +181,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -196,7 +200,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -232,7 +236,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -244,7 +249,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -283,7 +288,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -295,7 +301,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -334,7 +340,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -346,7 +353,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -405,11 +412,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
@@ -463,11 +471,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -514,11 +523,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -578,11 +588,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
     }
@@ -613,7 +624,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -625,7 +637,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
@@ -661,7 +673,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($imageConfig);
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -673,7 +686,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
+        $executor = new Executor($this->client, $log, $encryptor);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config, array("lastUpdate" => "today"));
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
