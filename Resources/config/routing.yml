@@ -24,12 +24,6 @@ keboola_docker_component_dry_run:
     defaults: { _controller: KeboolaDockerBundle:Api:dryRun }
     methods:  [POST]
 
-# override default syrup action encrypt
-keboola_docker_disabled_encrypt:
-    path:     /encrypt
-    defaults: { _controller: KeboolaDockerBundle:Api:disabled }
-    methods:  [POST]
-
 keboola_docker_encrypt:
     path:     /{component}/encrypt
     defaults:
