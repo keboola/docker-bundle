@@ -4,6 +4,90 @@ HOST: https://syrup.keboola.com/docker/
 # Docker
 Docker is a Keboola service, that runs Docker images.
 
+# Group Encrypt
+
+Encrypts a string or a JSON
+
+## Base encryption [/encrypt]
+
+Used for encrypting image definition.
+
+### Encrypt data [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            abcd
+
++ Response 200 (text/plain)
+
+        KBC::Encoded==ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": 1,
+                "#test": "aabb"
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::Encoded==ENCODEDSTRING=="
+            }
+
+## Configuration encryption [/{image}/encrypt]
+
+Used for encrypting configuration.
+
+
++ Parameters
+    + image (string) ... ID of the image (KBC component name)
+
+### Encrypt data [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            abcd
+
++ Response 200 (text/plain)
+
+        KBC::Encoded==ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": 1,
+                "#test": "aabb"
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::Encoded==ENCODEDSTRING=="
+            }
+
 # Group Run
 
 Run a configuration in an image.
