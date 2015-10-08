@@ -4,7 +4,7 @@
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "42c78c9049abb28a1d09986457e48c2f",
+    "hash": "f921685437dfdfdc84f139c388179b7b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1594,16 +1594,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "2.4.3",
+            "version": "2.4.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "490190f36831f99ceccf64bef2cb965058df4f23"
+                "reference": "a61cea4251452272624aa3296637ff5b3f617d3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/490190f36831f99ceccf64bef2cb965058df4f23",
-                "reference": "490190f36831f99ceccf64bef2cb965058df4f23",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/a61cea4251452272624aa3296637ff5b3f617d3c",
+                "reference": "a61cea4251452272624aa3296637ff5b3f617d3c",
                 "shasum": ""
             },
             "require": {
@@ -1657,7 +1657,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-10-06 05:15:04"
+            "time": "2015-10-08 02:23:16"
         },
         {
             "name": "kriswallsmith/assetic",
