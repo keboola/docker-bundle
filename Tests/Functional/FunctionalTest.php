@@ -570,7 +570,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                     "#key2" => $configEncryptor->encrypt("value2"),
                 ]
             ],
-            "state" => []];
+            "state" => []
+        ];
         $componentsStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Components")
             ->disableOriginalConstructor()
             ->getMock();
@@ -578,7 +579,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->method("getConfiguration")
             ->with("docker-config-dump", 1)
             ->will($this->returnValue($configData))
-            ;
+        ;
 
         $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsStub);
 
@@ -592,38 +593,34 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
                             'description' => 'Testing Docker',
-                            'longDescription' => NULL,
+                            'longDescription' => null,
                             'hasUI' => false,
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' =>
-                                array (
-                                    'definition' =>
-                                        array (
-                                            'type' => 'dockerhub',
-                                            'uri' => 'keboola/config-dump',
-                                        ),
-                                ),
-                            'flags' =>
-                                array (
-                                ),
+                            'data' => array (
+                                'definition' =>
+                                    array (
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/config-dump',
+                                    ),
+                            ),
+                            'flags' => array (),
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
                         )
                 )
-            );
+        );
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects($this->once())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue))
-            ;
+        ;
         $jobExecutor->setStorageApi($sapiStub);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
     }
-
 }
