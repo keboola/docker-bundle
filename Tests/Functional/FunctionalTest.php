@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -17,6 +18,7 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Yaml\Yaml;
 
 class FunctionalTests extends \PHPUnit_Framework_TestCase
 {
@@ -142,7 +144,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
+        $components = new Components($this->client);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -216,7 +219,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
+        $components = new Components($this->client);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -303,7 +307,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
+        $components = new Components($this->client);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -390,7 +395,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
+        $components = new Components($this->client);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -518,7 +524,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor);
+        $components = new Components($this->client);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -538,4 +545,85 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($listFileOptions);
         $this->assertEquals(2, count($files));
     }
+
+
+    public function testStoredConfigDecrypt()
+    {
+        $data = [
+            'params' => [
+                'component' => 'docker-config-dump',
+                'mode' => 'run',
+                'config' => 1
+            ]
+        ];
+        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $job = new Job($configEncryptor, $data);
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        // mock components
+        $configData = [
+            "configuration" => [
+                "parameters" => [
+                    "key1" => "value1",
+                    "#key2" => $configEncryptor->encrypt("value2"),
+                ]
+            ],
+            "state" => []];
+        $componentsStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Components")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $componentsStub->expects($this->once())
+            ->method("getConfiguration")
+            ->with("docker-config-dump", 1)
+            ->will($this->returnValue($configData))
+            ;
+
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsStub);
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array (
+                    0 =>
+                        array (
+                            'id' => 'docker-config-dump',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => NULL,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' =>
+                                array (
+                                    'definition' =>
+                                        array (
+                                            'type' => 'dockerhub',
+                                            'uri' => 'keboola/config-dump',
+                                        ),
+                                ),
+                            'flags' =>
+                                array (
+                                ),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
+                        )
+                )
+            );
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue))
+            ;
+        $jobExecutor->setStorageApi($sapiStub);
+
+        $response = $jobExecutor->execute($job);
+        $config = Yaml::parse($response["message"]);
+        $this->assertEquals("value2", $config["parameters"]["#key2"]);
+    }
+
 }
