@@ -213,10 +213,7 @@ class Executor
         } catch (ClientException $e) {
             throw new UserException("Cannot import data from Storage API: " . $e->getMessage(), $e);
         }
-
-
     }
-
 
 
     /**

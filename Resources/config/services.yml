@@ -1,4 +1,7 @@
 services:
+    syrup.components:
+        class: Keboola\StorageApi\Components
+        arguments: [@syrup.storage_api]
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
-        arguments: [@logger, @syrup.temp, @syrup.object_encryptor]
+        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.components]

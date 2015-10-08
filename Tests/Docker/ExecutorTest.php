@@ -146,7 +146,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $process = $executor->run($container, "testsuite");
@@ -200,7 +200,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -249,7 +249,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -301,7 +301,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -353,7 +353,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->run($container, "testsuite");
@@ -417,7 +417,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
@@ -476,7 +476,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -528,7 +528,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         try {
             $executor->initialize($container, $config);
@@ -593,7 +593,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
     }
@@ -637,7 +637,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
@@ -686,7 +686,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $encryptor);
+        $executor = new Executor($this->client, $log);
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config, array("lastUpdate" => "today"));
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");

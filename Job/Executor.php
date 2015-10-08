@@ -35,14 +35,22 @@ class Executor extends BaseExecutor
     protected $encryptor;
 
     /**
+     * @var Components
+     */
+    protected $components;
+
+    /**
      * @param Logger $log
      * @param Temp $temp
+     * @param ObjectEncryptor $encryptor
+     * @param Components $components
      */
-    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor)
+    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, Components $components)
     {
         $this->log = $log;
         $this->temp = $temp;
         $this->encryptor = $encryptor;
+        $this->components = $components;
     }
 
     /**
@@ -108,10 +116,9 @@ class Executor extends BaseExecutor
             } else {
                 // Read config from storage
                 try {
-                    $components = new Components($this->storageApi);
-                    $configuration = $components->getConfiguration($component["id"], $params["config"]);
+                    $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     $configId = $params["config"];
-                    $configData = $configuration["configuration"];
+                    $configData = $this->encryptor->decrypt($configuration["configuration"]);
                     $state = $configuration["state"];
                 } catch (ClientException $e) {
                     throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
