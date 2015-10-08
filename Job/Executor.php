@@ -1,6 +1,7 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
+use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -43,14 +44,14 @@ class Executor extends BaseExecutor
      * @param Logger $log
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
-     * @param Components $components
+     * @param ComponentsService $components
      */
-    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, Components $components)
+    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, ComponentsService $components)
     {
         $this->log = $log;
         $this->temp = $temp;
         $this->encryptor = $encryptor;
-        $this->components = $components;
+        $this->components = $components->getComponents();
     }
 
     /**

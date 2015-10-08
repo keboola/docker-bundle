@@ -3,17 +3,18 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -144,8 +145,10 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $components = new Components($this->client);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
+        $sapiService = new StorageApiService();
+        $sapiService->setClient($this->client);
+        $componentsService = new ComponentsService($sapiService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -219,8 +222,10 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $components = new Components($this->client);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
+        $sapiService = new StorageApiService();
+        $sapiService->setClient($this->client);
+        $componentsService = new ComponentsService($sapiService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -307,8 +312,10 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $components = new Components($this->client);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
+        $sapiService = new StorageApiService();
+        $sapiService->setClient($this->client);
+        $componentsService = new ComponentsService($sapiService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -395,8 +402,10 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $components = new Components($this->client);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
+        $sapiService = new StorageApiService();
+        $sapiService->setClient($this->client);
+        $componentsService = new ComponentsService($sapiService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -524,8 +533,10 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $components = new Components($this->client);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $components);
+        $sapiService = new StorageApiService();
+        $sapiService->setClient($this->client);
+        $componentsService = new ComponentsService($sapiService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -572,16 +583,23 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ],
             "state" => []
         ];
+
         $componentsStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Components")
             ->disableOriginalConstructor()
             ->getMock();
         $componentsStub->expects($this->once())
             ->method("getConfiguration")
             ->with("docker-config-dump", 1)
-            ->will($this->returnValue($configData))
-        ;
+            ->will($this->returnValue($configData));
 
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsStub);
+        $componentsServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\ComponentsService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $componentsServiceStub->expects($this->once())
+            ->method("getComponents")
+            ->will($this->returnValue($componentsStub));
+
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub);
 
         // mock client to return image data
         $indexActionValue = array(
