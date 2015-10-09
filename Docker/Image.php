@@ -262,6 +262,9 @@ class Image
         } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
             $instance = new Image\DockerHub\PrivateRepository($encryptor);
             $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
+        } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
+            $instance = new Image\Builder\ImageBuilder($encryptor);
+            $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
         } else {
             $instance = new self();
         }
