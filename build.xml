@@ -2,37 +2,54 @@
 
 <project name="api-tests" default="build">
 
-	<property name="storage-api-token" value="your_token"/>
+    <property name="storage-api-token" value="your_token"/>
 
-	<target name="build" depends="prepare,api-tests-ci"/>
+    <target name="build" depends="prepare,api-tests-ci"/>
+    <target name="build-full" depends="prepare,api-tests-ci-full"/>
 
-	<target name="clean" description="Cleanup build artifacts">
-		<delete dir="${basedir}/build/results/api"/>
-		<delete dir="${basedir}/build/results/code-browser"/>
-		<delete dir="${basedir}/build/results/coverage"/>
-		<delete dir="${basedir}/build/results/logs"/>
-		<delete dir="${basedir}/build/results/pdepend"/>
-		<delete dir="${basedir}/build/results/apigen"/>
-	</target>
+    <target name="clean" description="Cleanup build artifacts">
+        <delete dir="${basedir}/build/results/api"/>
+        <delete dir="${basedir}/build/results/code-browser"/>
+        <delete dir="${basedir}/build/results/coverage"/>
+        <delete dir="${basedir}/build/results/logs"/>
+        <delete dir="${basedir}/build/results/pdepend"/>
+        <delete dir="${basedir}/build/results/apigen"/>
+    </target>
 
-	<target name="prepare" depends="clean"
-			description="Prepare for build">
-		<mkdir dir="${basedir}/build/results/api"/>
-		<mkdir dir="${basedir}/build/results/code-browser"/>
-		<mkdir dir="${basedir}/build/results/coverage"/>
-		<mkdir dir="${basedir}/build/results/logs"/>
-		<mkdir dir="${basedir}/build/results/pdepend"/>
-		<mkdir dir="${basedir}/build/results/apigen"/>
-		<exec executable="/usr/local/bin/composer">
-			<arg value="install" />
- 		</exec>
-	</target>
+    <target name="prepare" depends="clean"
+            description="Prepare for build">
+        <mkdir dir="${basedir}/build/results/api"/>
+        <mkdir dir="${basedir}/build/results/code-browser"/>
+        <mkdir dir="${basedir}/build/results/coverage"/>
+        <mkdir dir="${basedir}/build/results/logs"/>
+        <mkdir dir="${basedir}/build/results/pdepend"/>
+        <mkdir dir="${basedir}/build/results/apigen"/>
+        <exec executable="/usr/local/bin/composer">
+            <arg value="install" />
+        </exec>
+    </target>
 
-	<target name="api-tests-ci" depends="prepare" description="Run unit tests with PHPUnit">
+    <target name="api-tests-ci" depends="prepare" description="Run unit tests with PHPUnit">
         <exec executable="phpunit" failonerror="true">
-			<env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
+            <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
+            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
+            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
+            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
+            <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
             <arg value="--configuration"/>
             <arg path="phpunit.xml.dist"/>
+        </exec>
+    </target>
+
+    <target name="api-tests-ci-full" depends="prepare" description="Run unit tests with PHPUnit">
+        <exec executable="phpunit" failonerror="true">
+            <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
+            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
+            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
+            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
+            <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
+            <arg value="--configuration"/>
+            <arg path="phpunit-full.xml.dist"/>
         </exec>
     </target>
 
