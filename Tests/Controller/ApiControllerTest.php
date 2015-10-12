@@ -247,18 +247,187 @@ class ApiControllerTest extends WebTestCase
 
         ];
         $parameters = [
-            "component" => "docker-demo",
-            "concealComponent" => true
+            "component" => "docker-dummy-test"
         ];
-        $request = Request::create("/docker/docker-demo/encrypt", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
         self::$container->set('request', $request);
         $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
+
+        $container = self::$container;
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array (
+                    0 =>
+                        array (
+                            'id' => 'docker-dummy-test',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array (
+                                'definition' =>
+                                    array (
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/docker-dummy-test',
+                                    ),
+                            ),
+                            'flags' => array ('encrypt'),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
+                        )
+                )
+        );
+
+        $storageClientStub->expects($this->atLeastOnce())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+
         $ctrl->preExecute($request);
         $response = $ctrl->encryptAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
         $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+        $this->assertEquals(self::$container->get("syrup.object-encryptor")->encrypt("value2"), $result["#key2"]);
+        $this->assertCount(2, $result);
+    }
+
+    public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test"
+        ];
+
+        $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array (
+                    0 =>
+                        array (
+                            'id' => 'docker-dummy-test',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array (
+                                'definition' =>
+                                    array (
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/docker-dummy-test',
+                                    ),
+                            ),
+                            'flags' => array (),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
+                        )
+                )
+        );
+
+        $storageClientStub->expects($this->atLeastOnce())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $this->assertEquals(400, $response->getStatusCode());
+        $responseData = json_decode($response->getContent(), true);
+        $this->assertEquals("error", $responseData["status"]);
+        $this->assertEquals("This API call is only supported for components that use the 'encrypt' flag.", $responseData["message"]);
+    }
+
+
+    public function testEncryptWithoutComponent()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+        ];
+
+        $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+        $this->assertEquals(self::$container->get("syrup.object-encryptor")->encrypt("value2"), $result["#key2"]);
         $this->assertCount(2, $result);
     }
 

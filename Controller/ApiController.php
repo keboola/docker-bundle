@@ -143,18 +143,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $component) {
-                if (in_array('encrypt', $c['flags'])) {
-                    // Response with link to job resource
-                    return $this->createJsonResponse([
-                        'status'    => 'error',
-                        'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
-                    ], 400);
-
-                }
-            }
+        if ($this->hasComponentEncryptFlag($component)) {
+            return $this->createJsonResponse([
+                'status'    => 'error',
+                'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
+            ], 400);
         }
 
         $params = $this->validateParams($params);
@@ -176,20 +169,13 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $component) {
-                if (in_array('encrypt', $c['flags'])) {
-                    // Response with link to job resource
-                    return $this->createJsonResponse([
-                        'status'    => 'error',
-                        'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
-                    ], 400);
-
-                }
-            }
+        if ($this->hasComponentEncryptFlag($component)) {
+            return $this->createJsonResponse([
+                'status'    => 'error',
+                'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
+            ], 400);
         }
-        
+
         $params = $this->validateParams($params);
         $params['mode'] = 'dry-run';
 
@@ -240,14 +226,61 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     protected function getPostJson(Request $request)
     {
         $json = parent::getPostJson($request);
-        if (!$request->get("concealComponent")) {
-            $json["component"] = $request->get("component");
-        }
+        $json["component"] = $request->get("component");
         return $json;
     }
 
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function encryptAction(Request $request)
     {
+        $component = $request->get("component");
+        if (!$component) {
+            return parent::encryptAction($request);
+        }
+        if (!$this->hasComponentEncryptFlag($component)) {
+            return $this->createJsonResponse([
+                'status'    => 'error',
+                'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
+            ], 400);
+        }
         return parent::encryptAction($request);
+
+    }
+
+    /**
+     * @param $componentId
+     * @return bool
+     */
+    public function hasComponentEncryptFlag($componentId)
+    {
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $componentId) {
+                if (in_array('encrypt', $c['flags'])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     *
+     * hide component param from response
+     *
+     * @param null $data
+     * @param string $status
+     * @param array $headers
+     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     */
+    public function createJsonResponse($data = null, $status = '200', $headers = array())
+    {
+        if (array_key_exists("component", $data)) {
+            unset($data["component"]);
+        }
+        return parent::createJsonResponse($data, $status, $headers);
     }
 }

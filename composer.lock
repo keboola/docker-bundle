@@ -1,10 +1,11 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f921685437dfdfdc84f139c388179b7b",
+    "hash": "065c8b9b11945d6628cec34338275345",
+    "content-hash": "270f1925e31b7f5ab92303f6bf6b12d0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1594,16 +1595,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "2.4.4",
+            "version": "2.4.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "a61cea4251452272624aa3296637ff5b3f617d3c"
+                "reference": "65244f889a749271ff5f323bd6d422325a327f03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/a61cea4251452272624aa3296637ff5b3f617d3c",
-                "reference": "a61cea4251452272624aa3296637ff5b3f617d3c",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/65244f889a749271ff5f323bd6d422325a327f03",
+                "reference": "65244f889a749271ff5f323bd6d422325a327f03",
                 "shasum": ""
             },
             "require": {
@@ -1657,7 +1658,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-10-08 02:23:16"
+            "time": "2015-10-08 11:51:36"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -2291,12 +2292,12 @@
             "version": "v2.3.8",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/SwiftmailerBundle.git",
+                "url": "https://github.com/symfony/swiftmailer-bundle.git",
                 "reference": "970b13d01871207e81d17b17ddda025e7e21e797"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/SwiftmailerBundle/zipball/970b13d01871207e81d17b17ddda025e7e21e797",
+                "url": "https://api.github.com/repos/symfony/swiftmailer-bundle/zipball/970b13d01871207e81d17b17ddda025e7e21e797",
                 "reference": "970b13d01871207e81d17b17ddda025e7e21e797",
                 "shasum": ""
             },
