@@ -401,5 +401,4 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals("error", $responseData["status"]);
         $this->assertEquals("This API call is not supported for components that use the 'encrypt' flag.", $responseData["message"]);
     }
-
 }
