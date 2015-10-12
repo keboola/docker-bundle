@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Image\Builder;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
@@ -153,6 +154,7 @@ class ImageBuilder extends Image\DockerHub
         $credentials .= "username={$this->getLoginUsername()}\n";
         $credentials .= "password={$this->getLoginPassword()}\n\n";
         file_put_contents($fileName, $credentials);
+        return $fileName;
     }
 
     /**
