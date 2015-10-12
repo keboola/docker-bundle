@@ -142,6 +142,21 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
+
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $component) {
+                if (in_array('encrypt', $c['flags'])) {
+                    // Response with link to job resource
+                    return $this->createJsonResponse([
+                        'status'    => 'error',
+                        'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
+                    ], 400);
+
+                }
+            }
+        }
+
         $params = $this->validateParams($params);
         $params['mode'] = 'input';
 
@@ -160,6 +175,21 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
+
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $component) {
+                if (in_array('encrypt', $c['flags'])) {
+                    // Response with link to job resource
+                    return $this->createJsonResponse([
+                        'status'    => 'error',
+                        'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
+                    ], 400);
+
+                }
+            }
+        }
+        
         $params = $this->validateParams($params);
         $params['mode'] = 'dry-run';
 
