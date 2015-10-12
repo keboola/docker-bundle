@@ -108,7 +108,7 @@ class Reader
             throw new UserException("Invalid file mapping, both 'tags' and 'query' are empty.");
         }
         if (!empty($fileConfiguration['filterByRunId'])) {
-            $options->setRunId($this->client->getRunId());
+            $options->setRunId($this->getParentRunId());
         }
         if (isset($fileConfiguration["tags"]) && count($fileConfiguration["tags"])) {
             $options->setTags($fileConfiguration["tags"]);
