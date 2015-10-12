@@ -307,7 +307,8 @@ class ApiControllerTest extends WebTestCase
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
         $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $this->assertEquals(self::$container->get("syrup.object-encryptor")->encrypt("value2"), $result["#key2"]);
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
 
@@ -427,7 +428,8 @@ class ApiControllerTest extends WebTestCase
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
         $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $this->assertEquals(self::$container->get("syrup.object-encryptor")->encrypt("value2"), $result["#key2"]);
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
 
