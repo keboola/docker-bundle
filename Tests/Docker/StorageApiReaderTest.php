@@ -138,7 +138,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $id5 = $this->client->uploadFile($root . "/upload", $fo);
         $id6 = $this->client->uploadFile($root . "/upload", $fo);
 
-        $configuration = [["tags" => ["docker-bundle-test"], "filterByRunId" => true]];
+        $configuration = [["tags" => ["docker-bundle-test"], "filter_by_run_id" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
         $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));
@@ -168,7 +168,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $id5 = $this->client->uploadFile($root . "/upload", $fo);
         $id6 = $this->client->uploadFile($root . "/upload", $fo);
 
-        $configuration = [["query" => "tags: docker-bundle-test", "filterByRunId" => true]];
+        $configuration = [["query" => "tags: docker-bundle-test", "filter_by_run_id" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
         $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));

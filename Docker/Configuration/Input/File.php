@@ -23,7 +23,7 @@ class File extends Configuration
                     ->prototype("scalar")->end()
                 ->end()
                 ->scalarNode("query")->end()
-                ->booleanNode("filterByRunId")->end()
+                ->booleanNode("filter_by_run_id")->end()
                 ->arrayNode("processed_tags")
                     ->prototype("scalar")->end()
                 ->end()
