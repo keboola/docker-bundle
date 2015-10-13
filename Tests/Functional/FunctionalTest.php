@@ -11,8 +11,8 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Encryption\CryptoWrapper;
-use Keboola\Syrup\Job\Metadata\Job;
+use Keboola\DockerBundle\Encryption\JobCryptoWrapper;
+use Keboola\DockerBundle\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
@@ -121,7 +121,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-r');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         // Create buckets
@@ -148,7 +154,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -195,7 +201,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-r');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         // Create buckets
@@ -225,7 +236,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -289,7 +300,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-r');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         // Create buckets
@@ -315,7 +331,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -379,7 +395,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-r');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         // Create buckets
@@ -405,7 +426,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -436,7 +457,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 "uri" => "hello-world"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-test');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
@@ -461,7 +488,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 "uri" => "hello-world"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-test');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
@@ -503,7 +536,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-r');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         // Create buckets
@@ -536,7 +575,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -558,7 +597,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testStoredConfigDecrypt()
+    public function testStoredConfigDecryptNonEncryptComponent()
     {
         $data = [
             'params' => [
@@ -567,7 +606,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'config' => 1
             ]
         ];
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-config-dump');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
         $job = new Job($configEncryptor, $data);
 
         $log = new Logger("null");
@@ -599,7 +644,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub);
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
 
         // mock client to return image data
         $indexActionValue = array(
@@ -635,6 +680,99 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue))
         ;
+        $jobExecutor->setStorageApi($sapiStub);
+
+        $response = $jobExecutor->execute($job);
+        $config = Yaml::parse($response["message"]);
+        $this->assertEquals("KBC::Encrypted==", substr($config["parameters"]["#key2"], 0, 16));
+    }
+
+    public function testStoredConfigDecryptEncryptComponent()
+    {
+        $data = [
+            'params' => [
+                'component' => 'docker-config-dump',
+                'mode' => 'run',
+                'config' => 1
+            ]
+        ];
+
+        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper->setComponentId('docker-config-dump');
+        $tokenInfo = $this->client->verifyToken();
+        $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+
+        $job = new Job($configEncryptor, $data);
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        // mock components
+        $configData = [
+            "configuration" => [
+                "parameters" => [
+                    "key1" => "value1",
+                    "#key2" => $configEncryptor->encrypt("value2"),
+                ]
+            ],
+            "state" => []
+        ];
+
+        $componentsStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Components")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $componentsStub->expects($this->once())
+            ->method("getConfiguration")
+            ->with("docker-config-dump", 1)
+            ->will($this->returnValue($configData));
+
+        $componentsServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\ComponentsService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $componentsServiceStub->expects($this->once())
+            ->method("getComponents")
+            ->will($this->returnValue($componentsStub));
+
+        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array (
+                    0 =>
+                        array (
+                            'id' => 'docker-config-dump',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array (
+                                'definition' =>
+                                    array (
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/config-dump',
+                                    ),
+                            ),
+                            'flags' => array ('encrypt'),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
+                        )
+                )
+        );
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+        $sapiStub->expects($this->once())
+            ->method("verifyToken")
+            ->will($this->returnValue($tokenInfo));
+
         $jobExecutor->setStorageApi($sapiStub);
 
         $response = $jobExecutor->execute($job);

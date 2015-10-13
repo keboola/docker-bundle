@@ -246,8 +246,23 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
             ], 400);
         }
-        return parent::encryptAction($request);
 
+        $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper->setComponentId($request->get("component"));
+        $tokenInfo = $this->storageApi->verifyToken();
+        $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = $this->container->get("syrup.job_object_encryptor");
+
+        if ($request->headers->contains("Content-Type", "text/plain")) {
+            $encryptedValue = $encryptor->encrypt($request->getContent());
+            return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
+        } elseif ($request->headers->contains("Content-Type", "application/json")) {
+            $params = $this->getPostJson($request);
+            $encryptedValue = $encryptor->encrypt($params);
+            return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
+        } else {
+            throw new UserException("Incorrect Content-Type.");
+        }
     }
 
     /**

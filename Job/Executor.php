@@ -1,6 +1,7 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
+use Keboola\DockerBundle\Encryption\JobCryptoWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
@@ -8,6 +9,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
@@ -41,17 +43,23 @@ class Executor extends BaseExecutor
     protected $components;
 
     /**
+     * @var JobCryptoWrapper
+     */
+    protected $cryptoWrapper;
+
+    /**
      * @param Logger $log
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param ComponentsService $components
      */
-    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, ComponentsService $components)
+    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, ComponentsService $components, JobCryptoWrapper $cryptoWrapper)
     {
         $this->log = $log;
         $this->temp = $temp;
         $this->encryptor = $encryptor;
         $this->components = $components->getComponents();
+        $this->cryptoWrapper = $cryptoWrapper;
     }
 
     /**
@@ -79,7 +87,13 @@ class Executor extends BaseExecutor
      */
     public function execute(Job $job)
     {
+        $tokenInfo = $this->storageApi->verifyToken();
+
+        $this->cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $this->cryptoWrapper->setComponentId($job->getComponentId());
+
         $params = $job->getParams();
+
         $this->temp->setId($job->getId());
         $containerId = null;
         $state = null;
@@ -119,7 +133,11 @@ class Executor extends BaseExecutor
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     $configId = $params["config"];
-                    $configData = $this->encryptor->decrypt($configuration["configuration"]);
+                    if (in_array("encrypt", $component["flags"])) {
+                        $configData = $this->encryptor->decrypt($configuration["configuration"]);
+                    } else {
+                        $configData = $configuration["configuration"];
+                    }
                     $state = $configuration["state"];
                 } catch (ClientException $e) {
                     throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
@@ -127,7 +145,7 @@ class Executor extends BaseExecutor
             }
         }
 
-        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log, $component["id"], $configId);
+        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
         if ($component && isset($component["id"])) {
             $executor->setComponentId($component["id"]);
         }

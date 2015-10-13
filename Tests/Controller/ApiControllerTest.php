@@ -16,9 +16,9 @@ class ApiControllerTest extends WebTestCase
      */
     private static $container;
 
-    public static function setUpBeforeClass()
+    public function setUp()
     {
-        parent::setUpBeforeClass();
+        parent::setUp();
 
         //start the symfony kernel
         $kernel = static::createKernel();
@@ -27,7 +27,6 @@ class ApiControllerTest extends WebTestCase
         //get the DI container
         self::$container = $kernel->getContainer();
     }
-
 
     public function testRun()
     {
@@ -268,9 +267,9 @@ class ApiControllerTest extends WebTestCase
         // mock client to return image data
         $indexActionValue = array(
             'components' =>
-                array (
+                array(
                     0 =>
-                        array (
+                        array(
                             'id' => 'docker-dummy-test',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -280,14 +279,14 @@ class ApiControllerTest extends WebTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => array(
                                 'definition' =>
-                                    array (
+                                    array(
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/docker-dummy-test',
                                     ),
                             ),
-                            'flags' => array ('encrypt'),
+                            'flags' => array('encrypt'),
                             'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
                         )
                 )
@@ -296,6 +295,9 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
+        $storageClientStub->expects($this->once())
+            ->method("verifyToken")
+            ->will($this->returnValue(["owner" => ["id" => "123"]]));
 
         $container->set("syrup.storage_api", $storageServiceStub);
 
@@ -307,7 +309,8 @@ class ApiControllerTest extends WebTestCase
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
         $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $encryptor = self::$container->get("syrup.object_encryptor");
+        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $cryptoWrapper = self::$container->get("syrup.job_crypto_wrapper");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
@@ -347,9 +350,9 @@ class ApiControllerTest extends WebTestCase
         // mock client to return image data
         $indexActionValue = array(
             'components' =>
-                array (
+                array(
                     0 =>
-                        array (
+                        array(
                             'id' => 'docker-dummy-test',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -359,14 +362,14 @@ class ApiControllerTest extends WebTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => array(
                                 'definition' =>
-                                    array (
+                                    array(
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/docker-dummy-test',
                                     ),
                             ),
-                            'flags' => array (),
+                            'flags' => array(),
                             'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
                         )
                 )
@@ -386,7 +389,6 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals("error", $responseData["status"]);
         $this->assertEquals("This API call is only supported for components that use the 'encrypt' flag.", $responseData["message"]);
     }
-
 
     public function testEncryptWithoutComponent()
     {
@@ -463,9 +465,9 @@ class ApiControllerTest extends WebTestCase
         // mock client to return image data
         $indexActionValue = array(
             'components' =>
-                array (
+                array(
                     0 =>
-                        array (
+                        array(
                             'id' => 'docker-dummy-test',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -475,14 +477,14 @@ class ApiControllerTest extends WebTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => array(
                                 'definition' =>
-                                    array (
+                                    array(
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/docker-dummy-test',
                                     ),
                             ),
-                            'flags' => array ('encrypt'),
+                            'flags' => array('encrypt'),
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
                         )
                 )
@@ -533,9 +535,9 @@ class ApiControllerTest extends WebTestCase
         // mock client to return image data
         $indexActionValue = array(
             'components' =>
-                array (
+                array(
                     0 =>
-                        array (
+                        array(
                             'id' => 'docker-dummy-test',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -545,14 +547,14 @@ class ApiControllerTest extends WebTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => array(
                                 'definition' =>
-                                    array (
+                                    array(
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/docker-dummy-test',
                                     ),
                             ),
-                            'flags' => array ('encrypt'),
+                            'flags' => array('encrypt'),
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
                         )
                 )
@@ -571,5 +573,148 @@ class ApiControllerTest extends WebTestCase
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals("error", $responseData["status"]);
         $this->assertEquals("This API call is not supported for components that use the 'encrypt' flag.", $responseData["message"]);
+    }
+
+    /**
+     * @expectedException Keboola\Syrup\Exception\ApplicationException
+     * @expectedExceptionMessage Application error: Decryption failed:
+     */
+    public function testEncryptGenericDecryptComponentSpecific()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+        ];
+
+        $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
+        $this->assertCount(2, $result);
+
+        $componentEncryptor = self::$container->get("syrup.job_object_encryptor");
+        $componentEncryptor->decrypt($result["#key2"]);
+    }
+
+    /**
+     * @expectedException Keboola\Syrup\Exception\ApplicationException
+     * @expectedExceptionMessage Application error: Decryption failed:
+     */
+    public function testEncryptComponentSpecificDecryptGeneric()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test"
+        ];
+        $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array(
+                    0 =>
+                        array(
+                            'id' => 'docker-dummy-test',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array(
+                                'definition' =>
+                                    array(
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/docker-dummy-test',
+                                    ),
+                            ),
+                            'flags' => array('encrypt'),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
+                        )
+                )
+        );
+
+        $storageClientStub->expects($this->atLeastOnce())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+        $storageClientStub->expects($this->once())
+            ->method("verifyToken")
+            ->will($this->returnValue(["owner" => ["id" => "123"]]));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
+        $this->assertCount(2, $result);
+
+
+        $genericEncryptor = self::$container->get("syrup.object_encryptor");
+        $genericEncryptor->decrypt($result["#key2"]);
     }
 }
