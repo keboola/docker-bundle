@@ -12,7 +12,6 @@ use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Elasticsearch\Client;
 use Keboola\Syrup\Service\ObjectEncryptor;
 
-
 class JobMapper extends \Keboola\Syrup\Elasticsearch\JobMapper
 {
 

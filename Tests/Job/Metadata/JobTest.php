@@ -16,7 +16,7 @@ class JobTest extends \PHPUnit_Framework_TestCase
      * @param bool $encrypt
      * @return StorageApiService
      */
-    protected function getSapiServiceStub($encrypt=true)
+    protected function getSapiServiceStub($encrypt = true)
     {
         $flags = [];
         if ($encrypt) {
@@ -174,5 +174,4 @@ class JobTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("KBC::Encrypted==", substr($job->getData()["params"]["configData"]["#key2"], 0, 16));
         $this->assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
     }
-
 }
