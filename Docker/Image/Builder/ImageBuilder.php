@@ -280,14 +280,15 @@ class ImageBuilder extends Image\DockerHub
     {
         parent::fromArray($config);
         if (isset($config["definition"]["build_options"])) {
-            if (isset($config["definition"]["build_options"]["email"])) {
-                $this->setLoginEmail($config["definition"]["build_options"]["email"]);
+            if (isset($config["definition"]["repository"]["email"])) {
+                $this->setLoginEmail($config["definition"]["repository"]["email"]);
             }
-            if (isset($config["definition"]["build_options"]["username"])) {
-                $this->setLoginUsername($config["definition"]["build_options"]["username"]);
+            if (isset($config["definition"]["repository"]["username"])) {
+                $this->setLoginUsername($config["definition"]["repository"]["username"]);
             }
-            if (isset($config["definition"]["build_options"]["#password"])) {
-                $this->setLoginPassword($config["definition"]["build_options"]["#password"]);
+            if (isset($config["definition"]["repository"]["#password"])) {
+                $this->setLoginPassword($config["definition"]["repository"]["#password"]);
+                //$this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
             }
             if (isset($config["definition"]["build_options"]["repository"])) {
                 $this->setRepository($config["definition"]["build_options"]["repository"]);
@@ -304,6 +305,4 @@ class ImageBuilder extends Image\DockerHub
         }
         return $this;
     }
-
-
 }
