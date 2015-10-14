@@ -66,6 +66,16 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         // check params against ES mapping
         $this->checkMappingParams($params);
 
+        // Encrypt configData for encrypt flagged components
+        if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+            $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+            $cryptoWrapper->setComponentId($params["component"]);
+            $tokenInfo = $this->storageApi->verifyToken();
+            $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+            $encryptor = $this->container->get("syrup.job_object_encryptor");
+            $params["configData"] = $encryptor->encrypt($params["configData"]);
+        }
+
         // Create new job
         /** @var JobFactory $jobFactory */
         $jobFactory = $this->container->get('syrup.job_factory');
