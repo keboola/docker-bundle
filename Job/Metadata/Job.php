@@ -6,12 +6,55 @@
 
 namespace Keboola\DockerBundle\Job\Metadata;
 
+use Keboola\StorageApi\Client;
+use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
+
 /**
  * Class Job, added functionality
  * @package Keboola\DockerBundle\Job\Metadata
  */
 class Job extends \Keboola\Syrup\Job\Metadata\Job
 {
+
+    /**
+     * @var Client
+     */
+    protected $storageClient;
+
+    /**
+     * @param ObjectEncryptor $encryptor
+     * @param Client $sapiClient
+     * @param array $data
+     * @param null $index
+     * @param null $type
+     * @param null $version
+     */
+    public function __construct(ObjectEncryptor $encryptor, Client $sapiClient, array $data = [], $index = null, $type = null, $version = null)
+    {
+        $this->setStorageClient($sapiClient);
+        parent::__construct($encryptor, $data, $index, $type, $version);
+    }
+
+    /**
+     * @return Client
+     */
+    public function getStorageClient()
+    {
+        return $this->storageClient;
+    }
+
+    /**
+     * @param Client $storageClient
+     * @return $this
+     */
+    public function setStorageClient($storageClient)
+    {
+        $this->storageClient = $storageClient;
+
+        return $this;
+    }
+
     /**
      *
      * return componentId
@@ -29,7 +72,7 @@ class Job extends \Keboola\Syrup\Job\Metadata\Job
     /**
      *
      * Do not decrypt /sandbox job
-     * TODO Do not decrypt jobs where component specifically not set with encryp flag
+     * Do not decrypt jobs where component specifically not set with encrypt flag
      *
      * @return string
      */
@@ -39,6 +82,32 @@ class Job extends \Keboola\Syrup\Job\Metadata\Job
         if (isset($params["mode"]) && $params["mode"] == "sandbox") {
             return $params;
         }
-        return $this->getEncryptor()->decrypt($this->getProperty('params'));
+
+        $component = $this->getComponentConfiguration($params["component"]);
+        if (in_array("encrypt", $component["flags"])) {
+            return $this->getEncryptor()->decrypt($this->getProperty('params'));
+        }
+
+        return $params;
+    }
+
+    /**
+     * @param $id
+     * @return mixed
+     * @throws UserException
+     */
+    protected function getComponentConfiguration($id)
+    {
+        // Check list of components
+        $components = $this->getStorageClient()->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $id) {
+                $component = $c;
+            }
+        }
+        if (!isset($component)) {
+            throw new UserException("Component '{$id}' not found.");
+        }
+        return $component;
     }
 }

@@ -25,7 +25,50 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $key = md5(uniqid());
         $encryptor = new Encryptor($key);
         $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
+
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array (
+                    0 =>
+                        array (
+                            'id' => 'docker-config-dump',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array (
+                                'definition' =>
+                                    array (
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/config-dump',
+                                    ),
+                            ),
+                            'flags' => array ('encrypt'),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
+                        )
+                )
+        );
+        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->any())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($sapiStub));
+
+        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor, $storageServiceStub);
         $jobFactory->setStorageApiClient($storageApiClient);
 
         $command = uniqid();
@@ -33,11 +76,11 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $lock = uniqid();
         $tokenData = $storageApiClient->verifyToken();
 
-        $job = $jobFactory->create($command, ['param' => $param], $lock);
+        $job = $jobFactory->create($command, ['configData' => $param, 'component' => 'docker-config-dump'], $lock);
 
         $this->assertEquals($command, $job->getCommand());
         $this->assertEquals($lock, $job->getLockName());
-        $this->assertEquals(['param' => $param], $job->getParams());
+        $this->assertEquals(['configData' => $param, 'component' => 'docker-config-dump'], $job->getParams());
         $this->assertArrayHasKey('id', $job->getProject());
         $this->assertEquals($tokenData['owner']['id'], $job->getProject()['id']);
         $this->assertArrayHasKey('name', $job->getProject());

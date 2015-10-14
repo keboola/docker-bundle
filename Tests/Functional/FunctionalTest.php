@@ -129,7 +129,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
+        $job = new Job($configEncryptor, $this->client, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -209,7 +209,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
+        $job = new Job($configEncryptor, $this->client, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -309,7 +309,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
+        $job = new Job($configEncryptor, $this->client, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -405,7 +405,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
+        $job = new Job($configEncryptor, $this->client, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -548,7 +548,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
+        $job = new Job($configEncryptor, $this->client, $data);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -619,8 +619,6 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $data);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -682,11 +680,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects($this->any())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue))
         ;
         $jobExecutor->setStorageApi($sapiStub);
+
+        $job = new Job($configEncryptor, $sapiStub, $data);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
@@ -709,8 +709,6 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
-
-        $job = new Job($configEncryptor, $data);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -773,7 +771,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects($this->any())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
         $sapiStub->expects($this->once())
@@ -781,6 +779,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($tokenInfo));
 
         $jobExecutor->setStorageApi($sapiStub);
+
+        $job = new Job($configEncryptor, $sapiStub, $data);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);

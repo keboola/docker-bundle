@@ -9,6 +9,7 @@ namespace Keboola\DockerBundle\Job\Metadata;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
 class JobFactory
 {
@@ -22,6 +23,11 @@ class JobFactory
      */
     protected $configEncryptor;
 
+    /**
+     * @var StorageApiService
+     */
+    protected $sapiService;
+
     protected $componentName;
 
     /**
@@ -29,11 +35,12 @@ class JobFactory
      */
     protected $storageApiClient;
 
-    public function __construct($componentName, Encryptor $encryptor, ObjectEncryptor $configEncryptor)
+    public function __construct($componentName, Encryptor $encryptor, ObjectEncryptor $configEncryptor, StorageApiService $sapiService)
     {
         $this->encryptor = $encryptor;
         $this->configEncryptor = $configEncryptor;
         $this->componentName = $componentName;
+        $this->sapiService = $sapiService;
     }
 
     public function setStorageApiClient(Client $storageApiClient)
@@ -48,7 +55,7 @@ class JobFactory
         }
 
         $tokenData = $this->storageApiClient->verifyToken();
-        $job = new Job($this->configEncryptor, [
+        $job = new Job($this->configEncryptor, $this->sapiService->getClient(),[
                 'id' => $this->storageApiClient->generateId(),
                 'runId' => $this->storageApiClient->getRunId(),
                 'project' => [
