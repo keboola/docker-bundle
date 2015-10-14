@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\Temp\Temp;
 use Symfony\Component\Process\Process;
 
 class ImageBuilder extends Image\DockerHub
@@ -32,9 +33,20 @@ class ImageBuilder extends Image\DockerHub
     protected $repository;
 
     /**
+     * @var string
+     */
+    protected $repositoryType;
+
+    /**
+     * @var string
+     */
+    private $entryPoint;
+
+    /**
      * @var array
      */
     protected $commands;
+
 
     /**
      * @return string
@@ -108,9 +120,46 @@ class ImageBuilder extends Image\DockerHub
     public function setRepository($repository)
     {
         $this->repository = $repository;
-
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getRepositoryType()
+    {
+        return $this->repositoryType;
+    }
+
+    /**
+     * @param string $repositoryType
+     * @return $this
+     */
+    public function setRepositoryType($repositoryType)
+    {
+        $this->repositoryType = $repositoryType;
+        return $this;
+    }
+
+
+    /**
+     * @return string
+     */
+    public function getEntryPoint()
+    {
+        return $this->entryPoint;
+    }
+
+    /**
+     * @param string $entryPoint
+     * @return $this
+     */
+    public function setEntryPoint($entryPoint)
+    {
+        $this->entryPoint = $entryPoint;
+        return $this;
+    }
+
 
     /**
      * @return array
@@ -147,15 +196,34 @@ class ImageBuilder extends Image\DockerHub
     }
 
 
-    private function getGitCredentialFile()
+    /**
+     * Inject git credentials to git repository into the image so that they don't need to be
+     *  passed in URL or command line.
+     * @param string $path Working directory path.
+     * @return array Docker build commands which need to be executed.
+     */
+    private function handleGitCredentials($path)
     {
+        // https://git-scm.com/docs/git-credential-store
         $fileName = '.git-credentials';
-        $credentials = "url={$this->getRepository()}\n";
-        $credentials .= "username={$this->getLoginUsername()}\n";
-        $credentials .= "password={$this->getLoginPassword()}\n\n";
-        file_put_contents($fileName, $credentials);
-        return $fileName;
+        $parts = parse_url($this->getRepository());
+        $credentials =
+            $parts['scheme'] . '://' .
+            urlencode($this->getLoginUsername()) . ':' . urlencode($this->getLoginPassword()) . '@' .
+            $parts['host'] .
+            (!empty($parts['port']) ? ':' . $parts['port'] : '') .
+            (!empty($parts['path']) ? $parts['path'] : '') .
+            (!empty($parts['query']) ? '?' . $parts['query'] : '');
+        $credentials .= "\n\n";
+        file_put_contents($path . DIRECTORY_SEPARATOR . $fileName, $credentials);
+
+        // https://git-scm.com/docs/gitcredentials
+        // COPY source is from Dockerfile context, so no path should be added to the source
+        $ret[] = "COPY " . $fileName . " /tmp/" . $fileName;
+        $ret[] = "RUN git config --global credential.helper 'store --file=/tmp/.git-credentials'";
+        return $ret;
     }
+
 
     /**
      * @param Container $container
@@ -165,19 +233,35 @@ class ImageBuilder extends Image\DockerHub
     public function prepare(Container $container)
     {
         try {
+            $temp = new Temp('docker');
+            $temp->initRunFolder();
+            $workingFolder = $temp->getTmpFolder();
             $dockerFile = '';
-            $dockerFile .= $this->getDockerHubImageId() . "\n";
-            $credentials = $this->getGitCredentialFile();
-            $dockerFile .= 'COPY ' . $credentials . ' ~' . $credentials;
-            foreach ($this->getCommands() as $command) {
-                $dockerFile .= 'RUN ' . $this->replacePlaceholders($command) . "\n";
+            $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
+            $dockerFile .= "WORKDIR /home\n";
+
+            $dockerFile .= "\n# Repository initialisation\n";
+            if ($this->getRepositoryType() == 'git') {
+                $repositoryCommands = $this->handleGitCredentials($workingFolder);
+            } else {
+                throw new BuildException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
             }
-            file_put_contents('Dockerfile', $dockerFile);
-            $tag = escapeshellarg(uniqid('builder-'));
-            $process = new Process("sudo docker --tag=$tag build .");
+            foreach ($repositoryCommands as $command) {
+                $dockerFile .= $command . "\n";
+            }
+
+            $dockerFile .= "\n# Image definition commands\n";
+            foreach ($this->getCommands() as $command) {
+                $dockerFile .= "RUN " . $this->replacePlaceholders($command) . "\n";
+            }
+            $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
+            file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
+            $tag = uniqid('builder-');
+            $process = new Process("sudo docker build --tag=" . escapeshellarg($tag) . " " . $workingFolder);
             $process->run();
             if ($process->getExitCode() != 0) {
-                $message = "Build failed (code: {$process->getExitCode()}): {$process->getOutput()} / {$process->getErrorOutput()}";
+                $message = "Build failed (code: {$process->getExitCode()}): " .
+                    " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
             return $tag;
@@ -207,6 +291,12 @@ class ImageBuilder extends Image\DockerHub
             }
             if (isset($config["definition"]["build_options"]["repository"])) {
                 $this->setRepository($config["definition"]["build_options"]["repository"]);
+            }
+            if (isset($config["definition"]["build_options"]["repository_type"])) {
+                $this->setRepositoryType($config["definition"]["build_options"]["repository_type"]);
+            }
+            if (isset($config["definition"]["build_options"]["entry_point"])) {
+                $this->setEntryPoint($config["definition"]["build_options"]["entry_point"]);
             }
             if (isset($config["definition"]["build_options"]["commands"])) {
                 $this->setCommands($config["definition"]["build_options"]["commands"]);
