@@ -35,7 +35,12 @@ class Executor extends BaseExecutor
     /**
      * @var ObjectEncryptor
      */
-    protected $encryptor;
+    protected $genericEncryptor;
+
+    /**
+     * @var ObjectEncryptor
+     */
+    protected $jobEncryptor;
 
     /**
      * @var Components
@@ -50,14 +55,16 @@ class Executor extends BaseExecutor
     /**
      * @param Logger $log
      * @param Temp $temp
-     * @param ObjectEncryptor $encryptor
+     * @param ObjectEncryptor $genericEncryptor
+     * @param ObjectEncryptor $jobEncryptor
      * @param ComponentsService $components
      */
-    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $encryptor, ComponentsService $components, JobCryptoWrapper $cryptoWrapper)
+    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $genericEncryptor, ObjectEncryptor $jobEncryptor, ComponentsService $components, JobCryptoWrapper $cryptoWrapper)
     {
         $this->log = $log;
         $this->temp = $temp;
-        $this->encryptor = $encryptor;
+        $this->genericEncryptor = $genericEncryptor;
+        $this->jobEncryptor = $jobEncryptor;
         $this->components = $components->getComponents();
         $this->cryptoWrapper = $cryptoWrapper;
     }
@@ -134,7 +141,7 @@ class Executor extends BaseExecutor
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     $configId = $params["config"];
                     if (in_array("encrypt", $component["flags"])) {
-                        $configData = $this->encryptor->decrypt($configuration["configuration"]);
+                        $configData = $this->jobEncryptor->decrypt($configuration["configuration"]);
                     } else {
                         $configData = $configuration["configuration"];
                     }
@@ -164,7 +171,7 @@ class Executor extends BaseExecutor
                         "uri" => "dummy"
                     )
                 );
-                $image = Image::factory($this->encryptor, $dummyConfig);
+                $image = Image::factory($this->genericEncryptor, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
 
                 $container = new Container($image, $this->log);
@@ -179,7 +186,7 @@ class Executor extends BaseExecutor
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
-                $image = Image::factory($this->encryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $component["data"]);
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
@@ -190,7 +197,7 @@ class Executor extends BaseExecutor
                 $this->log->info($message);
                 return ["message" => $message];
             case 'dry-run':
-                $image = Image::factory($this->encryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
@@ -208,7 +215,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             case 'run':
-                $image = Image::factory($this->encryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 

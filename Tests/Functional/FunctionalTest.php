@@ -127,6 +127,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -154,7 +155,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -206,6 +207,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -236,7 +238,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -305,6 +307,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -331,7 +334,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -400,6 +403,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -426,7 +430,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -542,6 +546,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -575,7 +580,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $sapiService = new StorageApiService();
         $sapiService->setClient($this->client);
         $componentsService = new ComponentsService($sapiService);
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsService, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsService, $jobCryptoWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -612,6 +617,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -644,7 +650,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
 
         // mock client to return image data
         $indexActionValue = array(
@@ -702,6 +708,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
+        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
         $job = new Job($configEncryptor, $data);
 
@@ -734,7 +741,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
-        $jobExecutor = new Executor($log, $this->temp, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
+        $jobExecutor = new Executor($log, $this->temp, $genericEncryptor, $configEncryptor, $componentsServiceStub, $jobCryptoWrapper);
 
         // mock client to return image data
         $indexActionValue = array(

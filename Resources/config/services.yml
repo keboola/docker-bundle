@@ -14,7 +14,7 @@ services:
 
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
-        arguments: [@logger, @syrup.temp, @syrup.job_object_encryptor, @syrup.components, @syrup.job_crypto_wrapper]
+        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.job_object_encryptor, @syrup.components, @syrup.job_crypto_wrapper]
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
