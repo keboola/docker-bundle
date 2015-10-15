@@ -794,7 +794,7 @@ class ApiControllerTest extends WebTestCase
 
         $storageClientStub->expects($this->once())
             ->method("apiPut")
-            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function($body) use ($encryptor) {
+            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) use ($encryptor) {
                 $params = json_decode($body["configuration"], true);
                 if ($encryptor->decrypt($params["parameters"]["#encrypted"]) == 'test') {
                     return true;
@@ -878,7 +878,7 @@ class ApiControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->once())
             ->method("apiPut")
-            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function($body) {
+            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
                 $params = json_decode($body["configuration"], true);
                 if (substr($params["parameters"]["#encrypted"], 0, 16) != 'KBC::Encrypted==') {
                     return true;
@@ -893,5 +893,4 @@ class ApiControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->saveConfigAction($request);
     }
-
 }
