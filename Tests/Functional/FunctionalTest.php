@@ -129,7 +129,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $this->client, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -209,7 +210,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $this->client, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -309,7 +311,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $this->client, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -405,7 +408,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $this->client, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -548,7 +552,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
         $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
 
-        $job = new Job($configEncryptor, $this->client, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -686,7 +691,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         ;
         $jobExecutor->setStorageApi($sapiStub);
 
-        $job = new Job($configEncryptor, $sapiStub, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($sapiStub);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
@@ -780,7 +786,8 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
 
         $jobExecutor->setStorageApi($sapiStub);
 
-        $job = new Job($configEncryptor, $sapiStub, $data);
+        $job = new Job($configEncryptor, $data);
+        $job->setStorageClient($sapiStub);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);

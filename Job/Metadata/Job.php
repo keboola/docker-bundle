@@ -24,16 +24,14 @@ class Job extends \Keboola\Syrup\Job\Metadata\Job
 
     /**
      * @param ObjectEncryptor $encryptor
-     * @param Client $sapiClient
      * @param array $data
      * @param null $index
      * @param null $type
      * @param null $version
      */
-    public function __construct(ObjectEncryptor $encryptor, Client $sapiClient, array $data = [], $index = null, $type = null, $version = null)
+    public function __construct(ObjectEncryptor $encryptor, array $data = [], $index = null, $type = null, $version = null)
     {
-        $this->setStorageClient($sapiClient);
-        parent::__construct($encryptor, $data, $index, $type, $version);
+        return parent::__construct($encryptor, $data, $index, $type, $version);
     }
 
     /**

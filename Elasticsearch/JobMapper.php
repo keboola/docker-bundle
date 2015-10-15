@@ -8,6 +8,8 @@ namespace Keboola\DockerBundle\Elasticsearch;
 
 use Keboola\DockerBundle\Job\Metadata\Job;
 use Keboola\Syrup\Elasticsearch\ComponentIndex;
+use Keboola\Syrup\Encryption\Encryptor;
+use Keboola\Syrup\Exception\NoRequestException;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Elasticsearch\Client;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -20,9 +22,15 @@ class JobMapper extends \Keboola\Syrup\Elasticsearch\JobMapper
      */
     protected $sapiService;
 
-    public function __construct(Client $client, ComponentIndex $index, ObjectEncryptor $configEncryptor, StorageApiService $sapiService, $logger = null, $rootDir = null)
+    /**
+     * @var Encryptor
+     */
+    protected $encryptor;
+
+    public function __construct(Client $client, ComponentIndex $index, ObjectEncryptor $configEncryptor, StorageApiService $sapiService, Encryptor $encryptor, $logger = null, $rootDir = null)
     {
         $this->sapiService = $sapiService;
+        $this->encryptor = $encryptor;
         parent::__construct($client, $index, $configEncryptor, $logger, $rootDir);
     }
 
@@ -35,14 +43,24 @@ class JobMapper extends \Keboola\Syrup\Elasticsearch\JobMapper
     {
         $job = parent::get($jobId);
         if ($job) {
-            return new Job(
+            $job = new Job(
                 $this->configEncryptor,
-                $this->sapiService->getClient(),
                 $job->getData(),
                 $job->getIndex(),
                 $job->getType(),
                 $job->getVersion()
             );
+            try {
+                $client = $this->sapiService->getClient();
+            } catch (NoRequestException $e) {
+                // When called from CLI request is missing
+                $client = new \Keboola\StorageApi\Client([
+                    'token' => $this->encryptor->decrypt($job->getToken()['token'])
+                ]);
+                $client->setRunId($job->getRunId());
+            }
+            $job->setStorageClient($client);
+            return $job;
         }
         return null;
     }

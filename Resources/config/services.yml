@@ -22,4 +22,4 @@ services:
 
     syrup.elasticsearch.current_component_job_mapper:
         class: Keboola\DockerBundle\Elasticsearch\JobMapper
-        arguments: [@syrup.elasticsearch.client, @syrup.elasticsearch.current_component_index, @syrup.job_object_encryptor, @syrup.storage_api, @logger, %kernel.root_dir%]
+        arguments: [@syrup.elasticsearch.client, @syrup.elasticsearch.current_component_index, @syrup.job_object_encryptor, @syrup.storage_api, @syrup.encryptor, @logger, %kernel.root_dir%]
