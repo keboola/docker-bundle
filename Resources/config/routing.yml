@@ -28,5 +28,4 @@ keboola_docker_encrypt:
     path:     /{component}/encrypt
     defaults:
       _controller: KeboolaDockerBundle:Api:encrypt
-      concealComponent: true
     methods:  [POST]

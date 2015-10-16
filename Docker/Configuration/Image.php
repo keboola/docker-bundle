@@ -41,6 +41,8 @@ class Image extends Configuration
                                         ->thenInvalid("Invalid repository_type %s.")
                                     ->end()
                                 ->end()
+                                ->scalarNode("username")->end()
+                                ->scalarNode("#password")->end()
                                 ->scalarNode("entry_point")->isRequired()->end()
                                 ->variableNode("commands")->end()
                             ->end()

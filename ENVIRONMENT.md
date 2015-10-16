@@ -239,6 +239,20 @@ storage:
 
 This configuration adds `downloaded` tag to all processed files and the query will exclude them on the next run. 
 
+You can also use `filter_by_run_id` option to select only files which are related to the job currently beeing executed. If `filter_by_run_id` is specified, we will download only files which satisfy the filter (either `tags` or `query`) *and* were uploaded by a parent job (a job with same or parent runId). This allows you to further limit downloaded files only to thoose related to a current chain of jobs.
+
+```
+storage: 
+  input:
+    files:
+      0:
+        tags: 
+          - "fooBar"
+        filter_by_run_id: true          
+```
+
+This will download only file which have the tag `fooBar` and were produced by a parent job to the currently running docker.
+
 ### Output Mapping
 
 Output mapping can be defined at multiple places - in configuration file or in manifests, for both tables and files.

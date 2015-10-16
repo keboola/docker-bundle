@@ -131,17 +131,22 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->client->setRunId('xyz');
         $id1 = $this->client->uploadFile($root . "/upload", $fo);
         $id2 = $this->client->uploadFile($root . "/upload", $fo);
-        $this->client->setRunId('1234567.8901234');
+        $this->client->setRunId('1234567');
         $id3 = $this->client->uploadFile($root . "/upload", $fo);
         $id4 = $this->client->uploadFile($root . "/upload", $fo);
+        $this->client->setRunId('1234567.8901234');
+        $id5 = $this->client->uploadFile($root . "/upload", $fo);
+        $id6 = $this->client->uploadFile($root . "/upload", $fo);
 
-        $configuration = [["tags" => ["docker-bundle-test"], "filterByRunId" => true]];
+        $configuration = [["tags" => ["docker-bundle-test"], "filter_by_run_id" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
-        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
         $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));
         $this->assertFalse(file_exists($root . "/download/" . $id2 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id5 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id6 . '_upload'));
     }
 
 
@@ -156,17 +161,22 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->client->setRunId('xyz');
         $id1 = $this->client->uploadFile($root . "/upload", $fo);
         $id2 = $this->client->uploadFile($root . "/upload", $fo);
-        $this->client->setRunId('1234567.8901234');
+        $this->client->setRunId('1234567');
         $id3 = $this->client->uploadFile($root . "/upload", $fo);
         $id4 = $this->client->uploadFile($root . "/upload", $fo);
+        $this->client->setRunId('1234567.8901234');
+        $id5 = $this->client->uploadFile($root . "/upload", $fo);
+        $id6 = $this->client->uploadFile($root . "/upload", $fo);
 
-        $configuration = [["query" => "tags: docker-bundle-test", "filterByRunId" => true]];
+        $configuration = [["query" => "tags: docker-bundle-test", "filter_by_run_id" => true]];
         $reader->downloadFiles($configuration, $root . "/download");
 
-        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
-        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
         $this->assertFalse(file_exists($root . "/download/" . $id1 . '_upload'));
         $this->assertFalse(file_exists($root . "/download/" . $id2 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id3 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id4 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id5 . '_upload'));
+        $this->assertTrue(file_exists($root . "/download/" . $id6 . '_upload'));
     }
 
 

@@ -30,4 +30,4 @@ after_success:
 
 notifications:
   email: false
-  slack: keboola:r0kMBhPydXbzz4F9j0aCzUaZ
+  slack: keboola:fym2t4112jahUATYBYFS3oBS

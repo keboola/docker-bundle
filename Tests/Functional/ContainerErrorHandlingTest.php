@@ -361,7 +361,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $temp,
             '<?php
             $array = [];
-            for($i = 0; $i < 100000; $i++) {
+            for($i = 0; $i < 1000000; $i++) {
                 $array[] = "0123456789";
             }
             print "finished";'

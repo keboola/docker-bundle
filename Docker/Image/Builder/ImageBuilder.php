@@ -240,7 +240,7 @@ class ImageBuilder extends Image\DockerHub
             $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
             $dockerFile .= "WORKDIR /home\n";
 
-            $dockerFile .= "\n# Repository initialisation\n";
+            $dockerFile .= "\n# Repository initialization\n";
             if ($this->getRepositoryType() == 'git') {
                 $repositoryCommands = $this->handleGitCredentials($workingFolder);
             } else {
@@ -254,6 +254,8 @@ class ImageBuilder extends Image\DockerHub
             foreach ($this->getCommands() as $command) {
                 $dockerFile .= "RUN " . $this->replacePlaceholders($command) . "\n";
             }
+
+            $dockerFile .= "WORKDIR /data\n";
             $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
             file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
             $tag = uniqid('builder-');
@@ -280,15 +282,15 @@ class ImageBuilder extends Image\DockerHub
     {
         parent::fromArray($config);
         if (isset($config["definition"]["build_options"])) {
-            if (isset($config["definition"]["repository"]["email"])) {
-                $this->setLoginEmail($config["definition"]["repository"]["email"]);
+            if (isset($config["definition"]["build_options"]["email"])) {
+                $this->setLoginEmail($config["definition"]["build_options"]["email"]);
             }
-            if (isset($config["definition"]["repository"]["username"])) {
-                $this->setLoginUsername($config["definition"]["repository"]["username"]);
+            if (isset($config["definition"]["build_options"]["username"])) {
+                $this->setLoginUsername($config["definition"]["build_options"]["username"]);
             }
-            if (isset($config["definition"]["repository"]["#password"])) {
-                $this->setLoginPassword($config["definition"]["repository"]["#password"]);
-                //$this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
+            if (isset($config["definition"]["build_options"]["#password"])) {
+                $this->setLoginPassword($config["definition"]["build_options"]["#password"]);
+                //$this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"]));
             }
             if (isset($config["definition"]["build_options"]["repository"])) {
                 $this->setRepository($config["definition"]["build_options"]["repository"]);

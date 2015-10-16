@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9ff014a03ed89abd8b77c1cc235ce5ee",
-    "content-hash": "ce8127b77c330940e9708b843883e211",
+    "hash": "065c8b9b11945d6628cec34338275345",
+    "content-hash": "270f1925e31b7f5ab92303f6bf6b12d0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1501,7 +1501,6 @@
                 "mcrypt",
                 "security"
             ],
-            "abandoned": "defuse/php-encryption",
             "time": "2013-07-15 12:02:24"
         },
         {

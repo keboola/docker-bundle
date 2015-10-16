@@ -108,18 +108,28 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "https://github.com/odinuv/tm-docker.git",
+                "uri" => "keboola/docker-base-r",
                 "build_options" => [
-                    "credentials" => [
-                        "user_name" => "foo",
-                        "#password" => "bar"
+                    "user_name" => "foo",
+                    "#password" => "bar",
+                    "repository" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
+                    "repository_type" => "git",
+                    "commands" => [
+                        "git clone {{repository}} /home/"
                     ],
-                    "entry_point" => "script.R"
+                    "entry_point" => "Rscript /home/script.R"
                 ]
             ]
         ];
+
         $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $this->assertNotContains(
+            'Keboola::encrypted',
+            $processedConfiguration['definition']['build_options']['#password']
+        );
+        unset($processedConfiguration['definition']['build_options']['#password']);
+        unset($config['definition']['build_options']['#password']);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
