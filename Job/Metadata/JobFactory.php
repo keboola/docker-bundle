@@ -11,24 +11,12 @@ use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
-class JobFactory
+class JobFactory extends \Keboola\Syrup\Job\Metadata\JobFactory
 {
-    /**
-     * @var Encryptor
-     */
-    protected $encryptor;
-
-    /**
-     * @var ObjectEncryptor
-     */
-    protected $configEncryptor;
-
     /**
      * @var StorageApiService
      */
     protected $sapiService;
-
-    protected $componentName;
 
     /**
      * @var Client
@@ -37,9 +25,7 @@ class JobFactory
 
     public function __construct($componentName, Encryptor $encryptor, ObjectEncryptor $configEncryptor, StorageApiService $sapiService)
     {
-        $this->encryptor = $encryptor;
-        $this->configEncryptor = $configEncryptor;
-        $this->componentName = $componentName;
+        parent::__construct($componentName, $encryptor, $configEncryptor);
         $this->sapiService = $sapiService;
     }
 
@@ -50,36 +36,15 @@ class JobFactory
 
     public function create($command, array $params = [], $lockName = null)
     {
-        if (!$this->storageApiClient) {
-            throw new \Exception('Storage API client must be set');
-        }
+        $originalJob = parent::create($command, $params, $lockName);
+        $job = new Job(
+            $this->configEncryptor,
+            $originalJob->getData(),
+            $originalJob->getIndex(),
+            $originalJob->getType(),
+            $originalJob->getVersion()
+        );
 
-        $tokenData = $this->storageApiClient->verifyToken();
-        $job = new Job($this->configEncryptor, [
-                'id' => $this->storageApiClient->generateId(),
-                'runId' => $this->storageApiClient->getRunId(),
-                'project' => [
-                    'id' => $tokenData['owner']['id'],
-                    'name' => $tokenData['owner']['name']
-                ],
-                'token' => [
-                    'id' => $tokenData['id'],
-                    'description' => $tokenData['description'],
-                    'token' => $this->encryptor->encrypt($this->storageApiClient->getTokenString())
-                ],
-                'component' => $this->componentName,
-                'command' => $command,
-                'params' => $params,
-                'process' => [
-                    'host' => gethostname(),
-                    'pid' => getmypid()
-                ],
-                'nestingLevel' => 0,
-                'createdTime' => date('c')
-            ], null, null, null);
-        if ($lockName) {
-            $job->setLockName($lockName);
-        }
         $job->setStorageClient($this->sapiService->getClient());
         return $job;
     }
