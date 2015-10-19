@@ -35,6 +35,7 @@ class Image extends Configuration
                         ->end()
                         ->arrayNode("build_options")
                             ->children()
+                                ->scalarNode("repository")->end()
                                 ->scalarNode("repository_type")
                                     ->validate()
                                         ->ifNotInArray(array("git"))

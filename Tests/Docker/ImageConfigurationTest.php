@@ -110,8 +110,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboola/docker-base-r",
                 "build_options" => [
-                    "user_name" => "foo",
-                    "#password" => "bar",
+                    "username" => "foo",
+                    "#password" => "KBC::Encrypted==abc==",
                     "repository" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
                     "repository_type" => "git",
                     "commands" => [
@@ -119,48 +119,18 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                     ],
                     "entry_point" => "Rscript /home/script.R"
                 ]
-            ]
+            ],
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "process_timeout" => 3600,
+            "forward_token" => false,
+            "forward_token_details" => false,
+            "streaming_logs" => true,
         ];
 
         $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $this->assertNotContains(
-            'Keboola::encrypted',
-            $processedConfiguration['definition']['build_options']['#password']
-        );
-        unset($processedConfiguration['definition']['build_options']['#password']);
-        unset($config['definition']['build_options']['#password']);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
-    }
-
-
-    public function testDecrypt()
-    {
-        $config = array(
-            "definition" => array(
-                "type" => "dockerhub-private",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => array(
-                    "email" => DOCKERHUB_PRIVATE_EMAIL,
-                    "#password" => DOCKERHUB_PRIVATE_PASSWORD,
-                    "username" => DOCKERHUB_PRIVATE_USERNAME,
-                    "server" => DOCKERHUB_PRIVATE_SERVER
-                )
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml"
-        );
-
-        $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $this->assertNotContains(
-            'Keboola::encrypted',
-            $processedConfiguration['definition']['repository']['#password']
-        );
-        unset($processedConfiguration['definition']['repository']['#password']);
-        unset($config['definition']['repository']['#password']);
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
-
     }
 }

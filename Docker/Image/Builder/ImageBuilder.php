@@ -2,11 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker\Image\Builder;
 
-use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
-use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Temp\Temp;
 use Symfony\Component\Process\Process;
 
@@ -289,8 +287,7 @@ class ImageBuilder extends Image\DockerHub
                 $this->setLoginUsername($config["definition"]["build_options"]["username"]);
             }
             if (isset($config["definition"]["build_options"]["#password"])) {
-                $this->setLoginPassword($config["definition"]["build_options"]["#password"]);
-                //$this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"]));
+                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"]));
             }
             if (isset($config["definition"]["build_options"]["repository"])) {
                 $this->setRepository($config["definition"]["build_options"]["repository"]);
