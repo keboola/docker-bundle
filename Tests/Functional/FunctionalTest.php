@@ -122,12 +122,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $job = new Job($configEncryptor, $data);
         $job->setStorageClient($this->client);
@@ -203,12 +203,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $job = new Job($configEncryptor, $data);
         $job->setStorageClient($this->client);
@@ -304,12 +304,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $job = new Job($configEncryptor, $data);
         $job->setStorageClient($this->client);
@@ -401,12 +401,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $job = new Job($configEncryptor, $data);
         $job->setStorageClient($this->client);
@@ -466,7 +466,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-test');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
@@ -497,7 +497,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-test');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
@@ -545,12 +545,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $job = new Job($configEncryptor, $data);
         $job->setStorageClient($this->client);
@@ -617,12 +617,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-config-dump');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -709,12 +709,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(md5(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
         $jobCryptoWrapper->setComponentId('docker-config-dump');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(md5(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());

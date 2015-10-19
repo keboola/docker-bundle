@@ -17,7 +17,7 @@ class JobCryptoWrapperTest extends WebTestCase
 
     public function testJobCryptoWrapperConstructor()
     {
-        $secret = substr(md5(uniqid()), 0, 16);
+        $secret = substr(sha1(uniqid()), 0, 16);
 
         $client = static::createClient();
         $container = $client->getContainer();
@@ -36,7 +36,7 @@ class JobCryptoWrapperTest extends WebTestCase
 
         // Verify that the key was successfully generated
         $fullKey = 'docker-dummy-test-' . $tokenInfo["owner"]["id"] . "-" . $secret;
-        $cryptoWrapper = new CryptoWrapper(substr(md5($fullKey), 0, 16));
+        $cryptoWrapper = new CryptoWrapper(substr(sha1($fullKey), 0, 16));
         $this->assertEquals('secret', $cryptoWrapper->decrypt($encrypted));
     }
 

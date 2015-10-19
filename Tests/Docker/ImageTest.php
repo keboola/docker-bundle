@@ -16,7 +16,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
         $image = Image::factory($encryptor, $dummyConfig);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
@@ -38,7 +38,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => true,
             "configuration_format" => 'json'
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
         $image = Image::factory($encryptor, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
         $this->assertEquals("128m", $image->getMemory());
@@ -52,7 +52,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testDockerHubPrivateRepository()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub-private",
@@ -87,7 +87,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
         $image = Image::factory($encryptor, $dummyConfig);
         $image->setConfigFormat('yaml');
         $this->assertEquals('yaml', $image->getConfigFormat());

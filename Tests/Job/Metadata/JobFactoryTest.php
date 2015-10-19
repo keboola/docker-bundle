@@ -22,8 +22,8 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
             'userAgent' => 'docker-bundle',
         ]);
 
-        $key = md5(uniqid());
-        $encryptor = new Encryptor($key);
+        $key = sha1(uniqid());
+        $encryptor = new Encryptor(substr($key, 0, 32));
         $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
 
 

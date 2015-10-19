@@ -80,8 +80,8 @@ class JobTest extends \PHPUnit_Framework_TestCase
             'userAgent' => 'docker-bundle',
         ]);
 
-        $key = md5(uniqid());
-        $encryptor = new Encryptor($key);
+        $key = sha1(uniqid());
+        $encryptor = new Encryptor(substr($key, 0, 32));
         $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor, $this->getSapiServiceStub(true));
         $jobFactory->setStorageApiClient($storageApiClient);
@@ -115,8 +115,8 @@ class JobTest extends \PHPUnit_Framework_TestCase
             'userAgent' => 'docker-bundle',
         ]);
 
-        $key = md5(uniqid());
-        $encryptor = new Encryptor($key);
+        $key = sha1(uniqid());
+        $encryptor = new Encryptor(substr($key, 0, 32));
         $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor, $this->getSapiServiceStub(true));
         $jobFactory->setStorageApiClient($storageApiClient);
@@ -150,8 +150,8 @@ class JobTest extends \PHPUnit_Framework_TestCase
             'userAgent' => 'docker-bundle',
         ]);
 
-        $key = md5(uniqid());
-        $encryptor = new Encryptor($key);
+        $key = sha1(uniqid());
+        $encryptor = new Encryptor(substr($key, 0, 32));
         $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
 
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor, $this->getSapiServiceStub(false));
