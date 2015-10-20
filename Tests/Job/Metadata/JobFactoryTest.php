@@ -76,7 +76,6 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
-     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::setStorageApiClient
      */
     public function testJobFactory()
     {
@@ -116,7 +115,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\Job::getParams
+     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
      */
     public function testJobEncryptFlagSandbox()
     {
@@ -147,7 +146,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\Job::getParams
+     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
      */
     public function testJobEncryptFlagNonEncryptComponent()
     {
@@ -177,7 +176,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\Job::getParams
+     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
      */
     public function testJobEncryptFlagEncryptComponent()
     {
