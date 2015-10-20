@@ -73,7 +73,7 @@ class JobCryptoWrapper extends CryptoWrapper
             throw new ApplicationException("ProjectId not set");
         }
         $fullKey = $this->getComponentId() . "-" . $this->getProjectId() . "-" . parent::getKey();
-        $key = substr(sha1($fullKey), 0, 16);
+        $key = substr(hash('sha256', $fullKey), 0, 16);
         return $key;
     }
 }

@@ -97,7 +97,9 @@ class Executor extends BaseExecutor
         $tokenInfo = $this->storageApi->verifyToken();
 
         $this->cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-        $this->cryptoWrapper->setComponentId($job->getComponentId());
+        if (isset($job->getRawParams()["component"])) {
+            $this->cryptoWrapper->setComponentId($job->getRawParams()["component"]);
+        }
 
         $params = $job->getParams();
 

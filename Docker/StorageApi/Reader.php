@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Docker\StorageApi;
 
 use Keboola\DockerBundle\Docker\Configuration\Input;
-use Keboola\StorageApi\Aws\S3\S3Client;
+use Aws\S3\S3Client;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -163,15 +163,15 @@ class Reader
     protected function downloadFile($fileInfo, $destination)
     {
         // Initialize S3Client with credentials from Storage API
-        $s3Client = S3Client::factory(array(
-            "key" => $fileInfo["credentials"]["AccessKeyId"],
-            "secret" => $fileInfo["credentials"]["SecretAccessKey"],
-            "token" => $fileInfo["credentials"]["SessionToken"]
-        ));
+        $s3Client = new S3Client(array(
+            "credentials" => [
+                "key" => $fileInfo["credentials"]["AccessKeyId"],
+                "secret" => $fileInfo["credentials"]["SecretAccessKey"],
+                "token" => $fileInfo["credentials"]["SessionToken"]
+            ],
+            "region" => 'us-east-1',
+            'version' => 'latest',
 
-        // CURL options
-        $s3Client->getConfig()->set('curl.options', array(
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_0
         ));
 
         $fs = new Filesystem();

@@ -128,7 +128,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -181,7 +181,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -236,7 +236,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -288,7 +288,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -340,7 +340,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -412,7 +412,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -471,7 +471,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -523,7 +523,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -588,7 +588,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -624,7 +624,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -643,7 +643,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
             new \stdclass(),
-            \GuzzleHttp\json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), false)
+            json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), false)
         );
     }
 
@@ -673,7 +673,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(sha1(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
 
         $container = new MockContainer($image, $log);

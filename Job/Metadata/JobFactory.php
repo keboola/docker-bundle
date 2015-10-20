@@ -6,46 +6,65 @@
 
 namespace Keboola\DockerBundle\Job\Metadata;
 
-use Keboola\StorageApi\Client;
-use Keboola\Syrup\Encryption\Encryptor;
-use Keboola\Syrup\Service\ObjectEncryptor;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Job\Metadata\Job;
 
 class JobFactory extends \Keboola\Syrup\Job\Metadata\JobFactory
 {
-    /**
-     * @var StorageApiService
-     */
-    protected $sapiService;
 
     /**
-     * @var Client
+     *
+     * Temporary storage used in `create` method to pass parameters to `getComponentConfiguration` method
+     *
+     * @var array
      */
-    protected $storageApiClient;
+    private $tmpParams = [];
 
-    public function __construct($componentName, Encryptor $encryptor, ObjectEncryptor $configEncryptor, StorageApiService $sapiService)
-    {
-        parent::__construct($componentName, $encryptor, $configEncryptor);
-        $this->sapiService = $sapiService;
-    }
-
-    public function setStorageApiClient(Client $storageApiClient)
-    {
-        $this->storageApiClient = $storageApiClient;
-    }
-
+    /**
+     * @param $command
+     * @param array $params
+     * @param null $lockName
+     * @return Job
+     * @throws UserException
+     * @throws \Exception
+     */
     public function create($command, array $params = [], $lockName = null)
     {
-        $originalJob = parent::create($command, $params, $lockName);
-        $job = new Job(
-            $this->configEncryptor,
-            $originalJob->getData(),
-            $originalJob->getIndex(),
-            $originalJob->getType(),
-            $originalJob->getVersion()
-        );
-
-        $job->setStorageClient($this->sapiService->getClient());
+        $this->tmpParams = $params;
+        $job = parent::create($command, $params, $lockName);
+        $params = $job->getRawParams();
+        if (isset($params["mode"]) && $params["mode"] == "sandbox") {
+            $job->setEncrypted(false);
+        }
         return $job;
+    }
+
+    /**
+     * @return mixed
+     * @throws UserException
+     */
+    protected function getComponentConfiguration()
+    {
+        if (!isset($this->tmpParams["component"]) && $this->tmpParams["mode"] != "sandbox") {
+            throw new ApplicationException('Component not set.');
+        }
+
+        if (!isset($this->tmpParams["component"]) && $this->tmpParams["mode"] == "sandbox") {
+            $id = $this->componentName;
+        } else {
+            $id = $this->tmpParams["component"];
+        }
+
+        // Check list of components
+        $components = $this->storageApiClient->indexAction();
+
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $id) {
+                return $c;
+            }
+        }
+
+        throw new UserException("Component '{$id}' not found.");
     }
 }

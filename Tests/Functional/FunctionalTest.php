@@ -12,7 +12,7 @@ use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\DockerBundle\Encryption\JobCryptoWrapper;
-use Keboola\DockerBundle\Job\Metadata\Job;
+use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
@@ -122,15 +122,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -203,15 +202,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -304,15 +302,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -401,15 +398,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
                 'format' => 'yaml'
             ]
         ];
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -466,7 +462,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-test');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
@@ -497,7 +493,7 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-test');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
@@ -545,15 +541,14 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-r');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($this->client);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -617,12 +612,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-config-dump');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -692,7 +687,6 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($sapiStub);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
@@ -709,12 +703,12 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jobCryptoWrapper = new JobCryptoWrapper(sha1(uniqid()));
+        $jobCryptoWrapper = new JobCryptoWrapper(hash('sha256', uniqid()));
         $jobCryptoWrapper->setComponentId('docker-config-dump');
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $configEncryptor = new ObjectEncryptor($jobCryptoWrapper);
-        $genericEncryptor = new ObjectEncryptor(sha1(uniqid()));
+        $genericEncryptor = new ObjectEncryptor(hash('sha256', uniqid()));
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -787,7 +781,6 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($configEncryptor, $data);
-        $job->setStorageClient($sapiStub);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
