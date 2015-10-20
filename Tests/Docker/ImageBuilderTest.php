@@ -20,8 +20,10 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "build_options" => [
-                    "repository_type" => "git",
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd /home/",
@@ -66,10 +68,12 @@ ENTRYPOINT php /home/run.php --data=/data';
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "build_options" => [
-                    "repository_type" => "git",
-                    "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
-                    "username" => GIT_PRIVATE_USERNAME,
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                        "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                        "username" => GIT_PRIVATE_USERNAME,
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd /home/",
@@ -120,8 +124,10 @@ ENTRYPOINT php /home/run.php --data=/data';
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "build_options" => [
-                    "repository_type" => "fooBar",
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "fooBar",
+                    ],
                     "commands" => [
                         "composer install"
                     ],

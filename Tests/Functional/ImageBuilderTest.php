@@ -28,10 +28,12 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboola/base-php",
                 "build_options" => [
-                    "repository_type" => "git",
-                    "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
-                    "username" => GIT_PRIVATE_USERNAME,
-                    "repository" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
+                    "repository" => [
+                        "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
+                        "type" => "git",
+                        "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                        "username" => GIT_PRIVATE_USERNAME,
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd /home/",
@@ -69,8 +71,10 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboola/base-php",
                 "build_options" => [
-                    "repository_type" => "git",
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd /home/",
@@ -107,22 +111,24 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "definition" => [
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => array(
+                "repository" => [
                     "email" => DOCKERHUB_PRIVATE_EMAIL,
                     "password" => DOCKERHUB_PRIVATE_PASSWORD,
                     "username" => DOCKERHUB_PRIVATE_USERNAME,
-                    "server" => DOCKERHUB_PRIVATE_SERVER
-                ),
+                    "server" => DOCKERHUB_PRIVATE_SERVER,
+                ],
                 "build_options" => [
-                    "repository_type" => "git",
-                    "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
-                    "username" => GIT_PRIVATE_USERNAME,
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                        "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                        "username" => GIT_PRIVATE_USERNAME,
+                    ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
                         "git clone {{repository}} /home/src2/",
                         "cd /home/src2/",
-                        "composer install"
+                        "composer install",
                     ],
                     "entry_point" => "php /home/src2/run.php --data=/data"
                 ]
@@ -157,18 +163,20 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "repository" => array(
                     "email" => DOCKERHUB_PRIVATE_EMAIL,
-                    "server" => DOCKERHUB_PRIVATE_SERVER
+                    "server" => DOCKERHUB_PRIVATE_SERVER,
                 ),
                 "build_options" => [
-                    "repository_type" => "git",
-                    "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
-                    "username" => GIT_PRIVATE_USERNAME,
-                    "repository" => "https://github.com/keboola/docker-demo-app",
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                        "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                        "username" => GIT_PRIVATE_USERNAME,
+                    ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
                         "git clone {{repository}} /home/src2/",
                         "cd /home/src2/",
-                        "composer install"
+                        "composer install",
                     ],
                     "entry_point" => "php /home/src2/run.php --data=/data"
                 ]
@@ -187,7 +195,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testCreatePrivateRepoMissingCredentials()
+    public function testCreatePrivateRepoMissingPasssword()
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -198,12 +206,15 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboola/base-php",
                 "build_options" => [
-                    "repository_type" => "git",
-                    "repository" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
+                    "repository" => [
+                        "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
+                        "type" => "git",
+                        "username" => GIT_PRIVATE_USERNAME,
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd /home/",
-                        "composer install"
+                        "composer install",
                     ],
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
@@ -218,6 +229,43 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             $this->fail("Building from private repository without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('Authentication failed', $e->getMessage());
+        }
+    }
+
+
+    public function testCreatePrivateRepoMissingCredentials()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd /home/",
+                        "composer install",
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data"
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+
+        $image = Image::factory($encryptor, $imageConfig);
+        $container = new Container($image, $log);
+        try {
+            $image->prepare($container);
+            $this->fail("Building from private repository without login should fail");
+        } catch (BuildException $e) {
+            $this->assertContains('could not read Username', $e->getMessage());
         }
     }
 }

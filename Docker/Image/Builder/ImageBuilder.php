@@ -299,26 +299,17 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         parent::fromArray($config);
         if (isset($config["definition"]["build_options"])) {
-            if (isset($config["definition"]["build_options"]["email"])) {
-                $this->setLoginEmail($config["definition"]["build_options"]["email"]);
+            if (isset($config["definition"]["build_options"]["repository"]["username"])) {
+                $this->setRepoUsername($config["definition"]["build_options"]["repository"]["username"]);
             }
-            if (isset($config["definition"]["build_options"]["username"])) {
-                $this->setRepoUsername($config["definition"]["build_options"]["username"]);
-            }
-            if (isset($config["definition"]["build_options"]["#password"])) {
+            if (isset($config["definition"]["build_options"]["repository"]["#password"])) {
                 $this->setRepoPassword(
-                    $this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"])
+                    $this->getEncryptor()->decrypt($config["definition"]["build_options"]["repository"]["#password"])
                 );
             }
-            if (isset($config["definition"]["build_options"]["repository"])) {
-                $this->setRepository($config["definition"]["build_options"]["repository"]);
-            }
-            if (isset($config["definition"]["build_options"]["repository_type"])) {
-                $this->setRepositoryType($config["definition"]["build_options"]["repository_type"]);
-            }
-            if (isset($config["definition"]["build_options"]["entry_point"])) {
-                $this->setEntryPoint($config["definition"]["build_options"]["entry_point"]);
-            }
+            $this->setRepository($config["definition"]["build_options"]["repository"]["uri"]);
+            $this->setRepositoryType($config["definition"]["build_options"]["repository"]["type"]);
+            $this->setEntryPoint($config["definition"]["build_options"]["entry_point"]);
             if (isset($config["definition"]["build_options"]["commands"])) {
                 $this->setCommands($config["definition"]["build_options"]["commands"]);
             }
