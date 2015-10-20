@@ -187,23 +187,26 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private function handleGitCredentials($path)
     {
-        // https://git-scm.com/docs/git-credential-store
-        $fileName = '.git-credentials';
-        $parts = parse_url($this->getRepository());
-        $credentials =
-            $parts['scheme'] . '://' .
-            urlencode($this->getLoginUsername()) . ':' . urlencode($this->getLoginPassword()) . '@' .
-            $parts['host'] .
-            (!empty($parts['port']) ? ':' . $parts['port'] : '') .
-            (!empty($parts['path']) ? $parts['path'] : '') .
-            (!empty($parts['query']) ? '?' . $parts['query'] : '');
-        $credentials .= "\n\n";
-        file_put_contents($path . DIRECTORY_SEPARATOR . $fileName, $credentials);
+        $ret = [];
+        if ($this->getRepoUsername()) {
+            // https://git-scm.com/docs/git-credential-store
+            $fileName = '.git-credentials';
+            $parts = parse_url($this->getRepository());
+            $credentials =
+                $parts['scheme'] . '://' .
+                urlencode($this->getRepoUsername()) . ':' . urlencode($this->getRepoPassword()) . '@' .
+                $parts['host'] .
+                (!empty($parts['port']) ? ':' . $parts['port'] : '') .
+                (!empty($parts['path']) ? $parts['path'] : '') .
+                (!empty($parts['query']) ? '?' . $parts['query'] : '');
+            $credentials .= "\n\n";
+            file_put_contents($path . DIRECTORY_SEPARATOR . $fileName, $credentials);
 
-        // https://git-scm.com/docs/gitcredentials
-        // COPY source is from Dockerfile context, so no path should be added to the source
-        $ret[] = "COPY " . $fileName . " /tmp/" . $fileName;
-        $ret[] = "RUN git config --global credential.helper 'store --file=/tmp/.git-credentials'";
+            // https://git-scm.com/docs/gitcredentials
+            // COPY source is from Dockerfile context, so no path should be added to the source
+            $ret[] = "COPY " . $fileName . " /tmp/" . $fileName;
+            $ret[] = "RUN git config --global credential.helper 'store --file=/tmp/.git-credentials'";
+        }
         return $ret;
     }
 
@@ -247,7 +250,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     public function prepare(Container $container)
     {
         try {
-            if ($this->$this->getLoginUsername()) {
+            if ($this->getLoginUsername()) {
                 // Login to docker repository
                 $process = new Process("sudo docker login {$this->getLoginParams()}");
                 $process->run();
@@ -272,9 +275,13 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
+            if ($this->getLoginUsername()) {
+                // Logout from docker repository
+                (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
+            }
             return $tag;
         } catch (\Exception $e) {
-            if ($this->$this->getLoginUsername()) {
+            if ($this->getLoginUsername()) {
                 // Logout from docker repository on error
                 (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
             }
