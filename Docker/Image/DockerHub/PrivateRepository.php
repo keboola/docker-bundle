@@ -138,7 +138,7 @@ class PrivateRepository extends Image\DockerHub
             $loginParams[] = "--password=" . escapeshellarg($this->getLoginPassword());
         }
         if ($this->getLoginServer()) {
-            $loginParams[] =  escapeshellarg($this->getLoginServer());
+            $loginParams[] = escapeshellarg($this->getLoginServer());
         }
         return join(" ", $loginParams);
     }
@@ -166,7 +166,8 @@ class PrivateRepository extends Image\DockerHub
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();
             if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): {$process->getOutput()} / {$process->getErrorOutput()}";
+                $message = "Login failed (code: {$process->getExitCode()}): " .
+                    "{$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new LoginFailedException($message);
             }
             $tag = parent::prepare($container);

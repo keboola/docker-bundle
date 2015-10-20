@@ -5,25 +5,22 @@ namespace Keboola\DockerBundle\Docker\Image\Builder;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
+use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Symfony\Component\Process\Process;
 
-class ImageBuilder extends Image\DockerHub
+class ImageBuilder extends Image\DockerHub\PrivateRepository
 {
     /**
      * @var string
      */
-    protected $loginEmail;
+    protected $repoUsername;
 
     /**
      * @var string
      */
-    protected $loginUsername;
-
-    /**
-     * @var string
-     */
-    protected $loginPassword;
+    protected $repoPassword;
 
     /**
      * @var string
@@ -47,59 +44,47 @@ class ImageBuilder extends Image\DockerHub
 
 
     /**
-     * @return string
+     * Constructor
+     * @param ObjectEncryptor $encryptor
      */
-    public function getLoginEmail()
+    public function __construct(ObjectEncryptor $encryptor)
     {
-        return $this->loginEmail;
+        parent::__construct($encryptor);
     }
 
     /**
-     * @param string $loginEmail
+     * @return string
+     */
+    public function getRepoUsername()
+    {
+        return $this->repoUsername;
+    }
+
+    /**
+     * @param string $repoUsername
      * @return $this
      */
-    public function setLoginEmail($loginEmail)
+    public function setRepoUsername($repoUsername)
     {
-        $this->loginEmail = $loginEmail;
-
+        $this->repoUsername = $repoUsername;
         return $this;
     }
 
     /**
      * @return string
      */
-    public function getLoginUsername()
+    public function getRepoPassword()
     {
-        return $this->loginUsername;
+        return $this->repoPassword;
     }
 
     /**
-     * @param string $loginUsername
+     * @param mixed $repoPassword
      * @return $this
      */
-    public function setLoginUsername($loginUsername)
+    public function setRepoPassword($repoPassword)
     {
-        $this->loginUsername = $loginUsername;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLoginPassword()
-    {
-        return $this->loginPassword;
-    }
-
-    /**
-     * @param mixed $loginPassword
-     * @return $this
-     */
-    public function setLoginPassword($loginPassword)
-    {
-        $this->loginPassword = $loginPassword;
-
+        $this->repoPassword = $repoPassword;
         return $this;
     }
 
@@ -224,6 +209,37 @@ class ImageBuilder extends Image\DockerHub
 
 
     /**
+     * Create DockerFile file with the build instructions in the working folder.
+     * @param string $workingFolder Working folder.
+     */
+    private function createDockerFile($workingFolder)
+    {
+        $dockerFile = '';
+        $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
+        $dockerFile .= "WORKDIR /home\n";
+
+        $dockerFile .= "\n# Repository initialization\n";
+        if ($this->getRepositoryType() == 'git') {
+            $repositoryCommands = $this->handleGitCredentials($workingFolder);
+        } else {
+            throw new BuildException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
+        }
+        foreach ($repositoryCommands as $command) {
+            $dockerFile .= $command . "\n";
+        }
+
+        $dockerFile .= "\n# Image definition commands\n";
+        foreach ($this->getCommands() as $command) {
+            $dockerFile .= "RUN " . $this->replacePlaceholders($command) . "\n";
+        }
+
+        $dockerFile .= "WORKDIR /data\n";
+        $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
+        file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
+    }
+
+
+    /**
      * @param Container $container
      * @return string
      * @throws BuildException
@@ -231,33 +247,25 @@ class ImageBuilder extends Image\DockerHub
     public function prepare(Container $container)
     {
         try {
+            if ($this->$this->getLoginUsername()) {
+                // Login to docker repository
+                $process = new Process("sudo docker login {$this->getLoginParams()}");
+                $process->run();
+                if ($process->getExitCode() != 0) {
+                    $message = "Login failed (code: {$process->getExitCode()}): " .
+                        "{$process->getOutput()} / {$process->getErrorOutput()}";
+                    throw new LoginFailedException($message);
+                }
+            }
+
             $temp = new Temp('docker');
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
-            $dockerFile = '';
-            $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
-            $dockerFile .= "WORKDIR /home\n";
-
-            $dockerFile .= "\n# Repository initialization\n";
-            if ($this->getRepositoryType() == 'git') {
-                $repositoryCommands = $this->handleGitCredentials($workingFolder);
-            } else {
-                throw new BuildException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
-            }
-            foreach ($repositoryCommands as $command) {
-                $dockerFile .= $command . "\n";
-            }
-
-            $dockerFile .= "\n# Image definition commands\n";
-            foreach ($this->getCommands() as $command) {
-                $dockerFile .= "RUN " . $this->replacePlaceholders($command) . "\n";
-            }
-
-            $dockerFile .= "WORKDIR /data\n";
-            $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
-            file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
+            $this->createDockerFile($workingFolder);
             $tag = uniqid('builder-');
             $process = new Process("sudo docker build --tag=" . escapeshellarg($tag) . " " . $workingFolder);
+            // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
+            $process->setTimeout(3600);
             $process->run();
             if ($process->getExitCode() != 0) {
                 $message = "Build failed (code: {$process->getExitCode()}): " .
@@ -266,6 +274,10 @@ class ImageBuilder extends Image\DockerHub
             }
             return $tag;
         } catch (\Exception $e) {
+            if ($this->$this->getLoginUsername()) {
+                // Logout from docker repository on error
+                (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
+            }
             throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
         }
     }
@@ -284,10 +296,12 @@ class ImageBuilder extends Image\DockerHub
                 $this->setLoginEmail($config["definition"]["build_options"]["email"]);
             }
             if (isset($config["definition"]["build_options"]["username"])) {
-                $this->setLoginUsername($config["definition"]["build_options"]["username"]);
+                $this->setRepoUsername($config["definition"]["build_options"]["username"]);
             }
             if (isset($config["definition"]["build_options"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"]));
+                $this->setRepoPassword(
+                    $this->getEncryptor()->decrypt($config["definition"]["build_options"]["#password"])
+                );
             }
             if (isset($config["definition"]["build_options"]["repository"])) {
                 $this->setRepository($config["definition"]["build_options"]["repository"]);
