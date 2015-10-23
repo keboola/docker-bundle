@@ -425,3 +425,27 @@ Docker containers may be used to process unknown files incrementally. This means
 ```
 
 The above request causes docker bundle to download every file with tag `toprocess` except for files which have tag `downloaded`. It will mark each such file with tags `downloaded` and `my-image`. 
+
+## Encryption
+
+Docker provides encryption methods to store sensitive data in image definition, stored configurations or jobs. When running a job or saving a configuration all sensitive data will be encrypted and the decrypted state will be only available in the serialized configuration file inside the container. There are no other means of accessing encrypted data. To enable this behavior the component has to have the `encrypt` flag (contact us for enabling). Note that only attributes prefixed with `#` will be encrypted.
+
+To encrypt strings or JSON structures use the [Encrypt data](http://docs.kebooladocker.apiary.io/#reference/encrypt/configuration-encryption/encrypt-data) API call. Storing the configuration in the UI will automatically encrypt the data.
+
+### Encryption keys
+
+The compound encryption key consists of 3 parts
+
+ - general encryption key (stored in a secure location within VPC)
+ - project id
+ - component id
+ 
+This mechanism ensures that the encrypted data will be accessible only for the specified component and project.
+
+### Decryption
+
+Decryption is only executed when serializing configuration to the configuration file for the Docker container. The decrypted data will be stored on the Docker host drive and will be deleted after the container finishes. Your application will always read the decrypted data.   
+
+### Sandboxes
+
+Sandbox calls are disabled for components with `encrypt` flag. This prevents decrypted data from leaking into sandbox archive files stored in file uploads. 

@@ -2,9 +2,12 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Job\Metadata\JobFactory;
+use Keboola\DockerBundle\Job\Metadata\JobFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -65,6 +68,16 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     {
         // check params against ES mapping
         $this->checkMappingParams($params);
+
+        // Encrypt configData for encrypt flagged components
+        if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+            $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+            $cryptoWrapper->setComponentId($params["component"]);
+            $tokenInfo = $this->storageApi->verifyToken();
+            $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+            $encryptor = $this->container->get("syrup.job_object_encryptor");
+            $params["configData"] = $encryptor->encrypt($params["configData"]);
+        }
 
         // Create new job
         /** @var JobFactory $jobFactory */
@@ -246,8 +259,69 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
             ], 400);
         }
-        return parent::encryptAction($request);
 
+        $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper->setComponentId($request->get("component"));
+        $tokenInfo = $this->storageApi->verifyToken();
+        $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = $this->container->get("syrup.job_object_encryptor");
+
+        $contentTypeHeader = $request->headers->get("Content-Type");
+        if (!is_string($contentTypeHeader)) {
+            throw new UserException("Incorrect Content-Type header.");
+        }
+
+        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
+            $encryptedValue = $encryptor->encrypt($request->getContent());
+            return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
+        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
+            $params = $this->getPostJson($request);
+            $encryptedValue = $encryptor->encrypt($params);
+            return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
+        } else {
+            throw new UserException("Incorrect Content-Type header.");
+        }
+    }
+
+    public function saveConfigAction(Request $request)
+    {
+        $components = new Components($this->storageApi);
+        $options = new Configuration();
+        $options->setComponentId($request->get("component"));
+        $options->setConfigurationId($request->get("configId"));
+
+        if ($request->get("configuration")) {
+            $configuration = json_decode($request->get("configuration"), true);
+            if ($this->hasComponentEncryptFlag($request->get("component"))) {
+                $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+                $cryptoWrapper->setComponentId($request->get("component"));
+                $tokenInfo = $this->storageApi->verifyToken();
+                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+                $encryptor = $this->container->get("syrup.job_object_encryptor");
+                $configuration = $encryptor->encrypt($configuration);
+            }
+            $options->setConfiguration($configuration);
+        }
+
+        if ($request->get("name")) {
+            $options->setName($request->get("name"));
+        }
+
+        if ($request->get("description")) {
+            $options->setDescription($request->get("description"));
+        }
+
+        if ($request->get("state")) {
+            $options->setState($request->get("state"));
+        }
+
+        try {
+            $response = $components->updateConfiguration($options);
+        } catch (ClientException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
+
+        return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
     }
 
     /**

@@ -24,7 +24,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $container = new Container(Image::factory($encryptor, $dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
@@ -56,7 +56,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
@@ -118,7 +118,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfiguration);
 
         $log = new Logger("null");
@@ -139,7 +139,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -157,7 +157,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
