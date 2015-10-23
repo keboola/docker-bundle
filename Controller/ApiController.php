@@ -266,15 +266,20 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor = $this->container->get("syrup.job_object_encryptor");
 
-        if ($request->headers->contains("Content-Type", "text/plain")) {
+        $contentTypeHeader = $request->headers->get("Content-Type");
+        if (!is_string($contentTypeHeader)) {
+            throw new UserException("Incorrect Content-Type header.");
+        }
+
+        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
             $encryptedValue = $encryptor->encrypt($request->getContent());
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
-        } elseif ($request->headers->contains("Content-Type", "application/json")) {
+        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request);
             $encryptedValue = $encryptor->encrypt($params);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
-            throw new UserException("Incorrect Content-Type.");
+            throw new UserException("Incorrect Content-Type header.");
         }
     }
 
