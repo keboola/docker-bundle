@@ -2,7 +2,7 @@ FORMAT: 1A
 HOST: https://syrup.keboola.com/docker/
 
 # Docker
-Docker is a Keboola service, that runs Docker images.
+Docker is a Keboola service, that runs Docker containers as workers in Keboola Connection jobs.
 
 # Group Encrypt
 
@@ -87,6 +87,87 @@ Used for encrypting configuration.
                 "config": 1,
                 "#test": "KBC::Encoded==ENCODEDSTRING=="
             }
+
+## Encrypt and store configuration [/{image}/configs/{configId}]
+
+Wrapper for a native Storage API call, that encrypts values before saving them. 1:1 compatible with http://docs.keboola.apiary.io/#put-%2Fv2%2Fstorage%2Fcomponents%2F%7Bcomponent_id%7D%2Fconfigs%2F%7Bid%7D
+
+
++ Parameters
+    + image (string) ... ID of the image (KBC component name)
+    + configId (string) ... Configuration ID
+
+### Save configuration [PUT]
+
++ Request Save configuration (multipart/form-data; boundary=----WebKitFormBoundaryfIBRqd05C6Na2Lvl)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            ------WebKitFormBoundaryfIBRqd05C6Na2Lvl
+            Content-Disposition: form-data; name="name"
+            testing-encrypt
+            ------WebKitFormBoundaryfIBRqd05C6Na2Lvl
+            Content-Disposition: form-data; name="description"
+            Test
+            ------WebKitFormBoundaryfIBRqd05C6Na2Lvl
+            Content-Disposition: form-data; name="configuration"
+            {   
+                "parameters": {
+                    "plain": "test",
+                    "#encrypted": "test"
+                }
+            }
+            ------WebKitFormBoundaryfIBRqd05C6Na2Lvl
+            Content-Disposition: form-data; name="state"
+            []
+            ------WebKitFormBoundaryfIBRqd05C6Na2Lvl--
+            
+
++ Response 200 (application/json)
+
+            {
+              "id": "1",
+              "name": "testing-encrypt",
+              "description": "Test",
+              "created": "2015-10-15T07:52:15+0200",
+              "creatorToken": {
+                "id": 11024,
+                "description": "ondrej.hlavacek@keboola.com"
+              },
+              "version": 5,
+              "changeDescription": null,
+              "configuration": {
+                "parameters": {
+                  "plain": "test",
+                  "#encrypted": "KBC::Encrypted==VDeKlsVo8+eqg5afhZd/zDBun9Al1jUoynx7QrBpMZiZbI3vcLNjpLRXMyT4oTFSMj9Irb2ipXVmI0wJr4O1/A=="
+                }
+              },
+              "state": []
+            }        
+
++ Request Encrypt JSON structure (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": 1,
+                "#test": "aabb"
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::Encoded==ENCODEDSTRING=="
+            }
+
+
 
 # Group Run
 
