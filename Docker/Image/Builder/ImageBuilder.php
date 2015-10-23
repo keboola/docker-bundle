@@ -35,12 +35,17 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     /**
      * @var string
      */
-    private $entryPoint;
+    protected $entryPoint;
 
     /**
      * @var array
      */
     protected $commands;
+
+    /**
+     * @var BuilderParameter[]
+     */
+    protected $parameters;
 
 
     /**
@@ -52,6 +57,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         parent::__construct($encryptor);
     }
 
+
     /**
      * @return string
      */
@@ -59,6 +65,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repoUsername;
     }
+
 
     /**
      * @param string $repoUsername
@@ -70,6 +77,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this;
     }
 
+
     /**
      * @return string
      */
@@ -77,6 +85,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repoPassword;
     }
+
 
     /**
      * @param mixed $repoPassword
@@ -88,6 +97,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this;
     }
 
+
     /**
      * @return string
      */
@@ -95,6 +105,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repository;
     }
+
 
     /**
      * @param string $repository
@@ -106,6 +117,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this;
     }
 
+
     /**
      * @return string
      */
@@ -113,6 +125,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repositoryType;
     }
+
 
     /**
      * @param string $repositoryType
@@ -133,6 +146,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->entryPoint;
     }
 
+
     /**
      * @param string $entryPoint
      * @return $this
@@ -152,6 +166,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->commands;
     }
 
+
     /**
      * @param array $commands
      * @return $this
@@ -161,6 +176,24 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $this->commands = [];
         foreach ($commands as $command) {
             $this->commands[] = $command;
+        }
+
+        return $this;
+    }
+
+
+    /**
+     * @param array $parameters
+     * @return $this
+     */
+    public function setParameters(array $parameters)
+    {
+        $this->parameters = [];
+        foreach ($parameters as $parameter) {
+            if (empty($parameter['name']) || empty($parameter['type'])) {
+                throw new BuildException("Invalid parameter definition: " . var_export($parameter, true));
+            }
+            $this->parameters[] = new BuilderParameter($parameter['name'], $parameter['type']);
         }
 
         return $this;
@@ -243,11 +276,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
 
     /**
-     * @param Container $container
-     * @return string
-     * @throws BuildException
+     * @inheritdoc
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData)
     {
         try {
             if ($this->getLoginUsername()) {
@@ -312,6 +343,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $this->setEntryPoint($config["definition"]["build_options"]["entry_point"]);
             if (isset($config["definition"]["build_options"]["commands"])) {
                 $this->setCommands($config["definition"]["build_options"]["commands"]);
+            }
+            if (isset($config["definition"]["build_options"]["parameters"])) {
+                $this->setParameters($config["definition"]["build_options"]["parameters"]);
             }
         }
         return $this;

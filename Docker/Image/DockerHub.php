@@ -34,11 +34,9 @@ class DockerHub extends Image
     }
 
     /**
-     * @param Container $container
-     * @return string Image tag name.
-     * @throws ApplicationException
+     * @inheritdoc
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData)
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
 

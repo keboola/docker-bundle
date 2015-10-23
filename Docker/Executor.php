@@ -48,6 +48,13 @@ class Executor
     private $currentConfigFile;
 
     /**
+     * Component configuration which will be passed to the container.
+     *
+     * @var array
+     */
+    private $configData;
+
+    /**
      * @var
      */
     protected $componentId;
@@ -169,6 +176,7 @@ class Executor
      */
     public function initialize(Container $container, array $config, array $state = null)
     {
+        $this->configData = $config;
         // create temporary working folder and all of its sub-folders
         $fs = new Filesystem();
         $this->currentTmpDir = $this->getTmpFolder();
@@ -178,7 +186,7 @@ class Executor
         // create configuration file injected into docker
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
         try {
-            $adapter->setConfig($config);
+            $adapter->setConfig($this->configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
         }
@@ -196,17 +204,21 @@ class Executor
         $reader->setFormat($container->getImage()->getConfigFormat());
 
         try {
-            if (isset($config["storage"]["input"]["tables"]) && count($config["storage"]["input"]["tables"])) {
+            if (isset($this->configData["storage"]["input"]["tables"]) &&
+                count($this->configData["storage"]["input"]["tables"])
+            ) {
                 $this->getLog()->debug("Downloading source tables.");
                 $reader->downloadTables(
-                    $config["storage"]["input"]["tables"],
+                    $this->configData["storage"]["input"]["tables"],
                     $this->currentTmpDir . "/data/in/tables"
                 );
             }
-            if (isset($config["storage"]["input"]["files"]) && count($config["storage"]["input"]["files"])) {
+            if (isset($this->configData["storage"]["input"]["files"]) &&
+                count($this->configData["storage"]["input"]["files"])
+            ) {
                 $this->getLog()->debug("Downloading source files.");
                 $reader->downloadFiles(
-                    $config["storage"]["input"]["files"],
+                    $this->configData["storage"]["input"]["files"],
                     $this->currentTmpDir . "/data/in/files"
                 );
             }
@@ -224,7 +236,6 @@ class Executor
      */
     public function run(Container $container, $id)
     {
-
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
         $process->run();
@@ -257,7 +268,7 @@ class Executor
         $container->setEnvironmentVariables($envs);
 
         // run the container
-        $process = $container->run($id);
+        $process = $container->run($id, $this->configData);
         if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
             $this->getLog()->info($process->getOutput());
         } else {
@@ -270,10 +281,9 @@ class Executor
     /**
      * Store results of last executed container (perform output mapping)
      * @param Container $container
-     * @param array $config
      * @param mixed $state
      */
-    public function storeOutput(Container $container, array $config, $state = null)
+    public function storeOutput(Container $container, $state = null)
     {
         $this->getLog()->debug("Storing results.");
 
@@ -283,11 +293,15 @@ class Executor
         $outputTablesConfig = [];
         $outputFilesConfig = [];
 
-        if (isset($config["storage"]["output"]["tables"]) && count($config["storage"]["output"]["tables"])) {
-            $outputTablesConfig = $config["storage"]["output"]["tables"];
+        if (isset($this->configData["storage"]["output"]["tables"]) &&
+            count($this->configData["storage"]["output"]["tables"])
+        ) {
+            $outputTablesConfig = $this->configData["storage"]["output"]["tables"];
         }
-        if (isset($config["storage"]["output"]["files"]) && count($config["storage"]["output"]["files"])) {
-            $outputFilesConfig = $config["storage"]["output"]["files"];
+        if (isset($this->configData["storage"]["output"]["files"]) &&
+            count($this->configData["storage"]["output"]["files"])
+        ) {
+            $outputFilesConfig = $this->configData["storage"]["output"]["files"];
         }
 
         $this->getLog()->debug("Uploading output tables and files.");
@@ -298,10 +312,9 @@ class Executor
             $this->getLog()->warn($e->getMessage());
         }
 
-        if (isset($config["storage"]["input"]["files"])) {
+        if (isset($this->configData["storage"]["input"]["files"])) {
             // tag input files
-            //$reader = new Reader($this->getStorageApiClient());
-            $writer->tagFiles($config["storage"]["input"]["files"]);
+            $writer->tagFiles($this->configData["storage"]["input"]["files"]);
         }
 
         if ($this->getComponentId() && $this->getConfigurationId()) {
@@ -309,7 +322,12 @@ class Executor
             if (!$state) {
                 $state = (object) array();
             }
-            $writer->updateState($this->getComponentId(), $this->getConfigurationId(), $this->currentTmpDir . "/data/out/state", $state);
+            $writer->updateState(
+                $this->getComponentId(),
+                $this->getConfigurationId(),
+                $this->currentTmpDir . "/data/out/state",
+                $state
+            );
         }
 
         $container->dropDataDir();

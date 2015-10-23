@@ -223,7 +223,7 @@ class Executor extends BaseExecutor
                 $executor->setTmpFolder($this->temp->getTmpFolder());
                 $executor->initialize($container, $configData, $state);
                 $process = $executor->run($container, $containerId);
-                $executor->storeOutput($container, $configData, $state);
+                $executor->storeOutput($container, $state);
                 if ($process->getOutput()) {
                     $message = $process->getOutput();
                 } else {

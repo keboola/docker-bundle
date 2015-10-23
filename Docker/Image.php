@@ -273,11 +273,14 @@ class Image
     }
 
     /**
+     * Prepare the container image so that it can be run.
+     *
      * @param Container $container
+     * @param array $configData Configuration (same as the one stored in data config file)
      * @return string Image tag name.
      * @throws \Exception
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData)
     {
         throw new \Exception("Not implemented");
     }

@@ -156,11 +156,9 @@ class PrivateRepository extends Image\DockerHub
     }
 
     /**
-     * @param Container $container
-     * @return string
-     * @throws \Exception
+     * @inheritdoc
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData)
     {
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
