@@ -35,7 +35,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
         $container = new Container($image, $log);
         $image->prepare($container);
@@ -69,7 +69,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container);
@@ -94,7 +94,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub-private",

@@ -1,7 +1,25 @@
 services:
+
     syrup.components:
         class: Keboola\DockerBundle\Service\ComponentsService
         arguments: [@syrup.storage_api]
+
+    syrup.job_crypto_wrapper:
+        class: Keboola\DockerBundle\Encryption\JobCryptoWrapper
+        arguments: [%encryption_key%]
+
+    syrup.job_object_encryptor:
+        class: Keboola\Syrup\Service\ObjectEncryptor
+        arguments: [@syrup.job_crypto_wrapper]
+
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
-        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.components]
+        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.job_object_encryptor, @syrup.components, @syrup.job_crypto_wrapper]
+
+    syrup.job_factory:
+        class: Keboola\DockerBundle\Job\Metadata\JobFactory
+        arguments: [%app_name%, @syrup.encryptor, @syrup.job_object_encryptor]
+
+    syrup.elasticsearch.current_component_job_mapper:
+        class: Keboola\Syrup\Elasticsearch\JobMapper
+        arguments: [@syrup.elasticsearch.client, @syrup.elasticsearch.current_component_index, @syrup.job_object_encryptor, @logger, %kernel.root_dir%]
