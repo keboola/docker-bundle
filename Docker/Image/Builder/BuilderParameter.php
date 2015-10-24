@@ -19,21 +19,29 @@ class BuilderParameter
     private $type;
 
     /**
+     * Is the parameter required (both in dockerfile and in configuration)
+     * @var bool
+     */
+    private $required;
+
+    /**
      * Arbitrary parameter value.
      * @var mixed
      */
-    private $value;
+    private $value = null;
 
 
     /**
      * Constructor
      * @param string $name Parameter name.
      * @param string $type Parameter type.
+     * @param bool $required
      */
-    public function __construct($name, $type)
+    public function __construct($name, $type, $required)
     {
         $this->name = $name;
         $this->type = $type;
+        $this->required = $required;
     }
 
     /**
@@ -66,13 +74,33 @@ class BuilderParameter
         }
     }
 
-
     /**
+     * Get value.
      *
      * @return mixed
      */
     public function getValue()
     {
         return $this->value;
+    }
+
+    /**
+     * Get parameter name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Return true if parameter is required both in Dockerfile and in configdata.
+     *
+     * @return bool
+     */
+    public function isRequired()
+    {
+        return $this->required;
     }
 }

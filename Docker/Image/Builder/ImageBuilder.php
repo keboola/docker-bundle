@@ -33,20 +33,25 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     protected $repositoryType;
 
     /**
+     * Dockerfile entrypoint.
+     *
      * @var string
      */
     protected $entryPoint;
 
     /**
+     * Dockerfile commands.
+     *
      * @var array
      */
     protected $commands;
 
     /**
+     * Parameters from component configuration which are used when generating Dockerfile.
+     *
      * @var BuilderParameter[]
      */
     protected $parameters;
-
 
     /**
      * Constructor
@@ -190,10 +195,14 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         $this->parameters = [];
         foreach ($parameters as $parameter) {
-            if (empty($parameter['name']) || empty($parameter['type'])) {
+            if (empty($parameter['name']) || empty($parameter['type']) || !isset($parameter['required'])) {
                 throw new BuildException("Invalid parameter definition: " . var_export($parameter, true));
             }
-            $this->parameters[] = new BuilderParameter($parameter['name'], $parameter['type']);
+            $this->parameters[$parameter['name']] = new BuilderParameter(
+                $parameter['name'],
+                $parameter['type'],
+                $parameter['required']
+            );
         }
 
         return $this;
@@ -207,8 +216,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private function replacePlaceholders($string)
     {
-        $string = preg_replace('#{{repository}}#', $this->getRepository(), $string);
-        return $string;
+        $result = $string;
+        foreach ($this->parameters as $name => $parameter) {
+            $result = preg_replace("#{{" . preg_quote($name, "#") . "}}#", $parameter->getValue(), $result);
+        }
+        return $result;
     }
 
 
@@ -271,15 +283,46 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
         $dockerFile .= "WORKDIR /data\n";
         $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
+
+        // verify that no placeholders remained in Dockerfile
+        if (preg_match_all('#{{[a-z0-9_-]+}}#i', $dockerFile, $matches)) {
+            throw new BuildException("Orphaned parameters remaining in build commands " . implode(",", $matches[0]));
+        }
         file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
     }
 
+
+    /**
+     * @param array $configData
+     */
+    private function initParameters(array $configData)
+    {
+        // set parameter values
+        foreach ($configData['parameters'] as $key => $value) {
+            // use only root elements of configData
+            if (isset($this->parameters[$key])) {
+                $this->parameters[$key]->setValue($value);
+            }
+        }
+
+        // predefined parameters
+        $this->parameters['repository'] = new BuilderParameter('repository', 'string', false);
+        $this->parameters['repository']->setValue($this->getRepository());
+
+        // verify required parameters
+        foreach ($this->parameters as $parameter) {
+            if (($parameter->getValue() === null) && $parameter->isRequired()) {
+                throw new BuildException("Parameter " . $parameter->getName() . " is required, but has no value.");
+            }
+        }
+    }
 
     /**
      * @inheritdoc
      */
     public function prepare(Container $container, array $configData)
     {
+        $this->initParameters($configData);
         try {
             if ($this->getLoginUsername()) {
                 // Login to docker repository
