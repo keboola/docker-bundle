@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
+use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
@@ -59,6 +60,163 @@ ENTRYPOINT php /home/run.php --data=/data';
     }
 
 
+    public function testDockerFileParameters()
+    {
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd {{foo}} {{bar}}",
+                        "composer install"
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data",
+                    "parameters" => [
+                        [
+                            "name" => "foo",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "bar",
+                            "type" => "plain_string"
+                        ]
+                    ]
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+        $tempDir = new Temp('docker-test');
+        $tempDir->initRunFolder();
+        $image = Image::factory($encryptor, $imageConfig);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, $tempDir->getTmpFolder());
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $expectedFile =
+            'FROM keboolaprivatetest/docker-demo-docker
+WORKDIR /home
+
+# Repository initialization
+
+# Image definition commands
+RUN git clone https://github.com/keboola/docker-demo-app /home/
+RUN cd fooBar baz
+RUN composer install
+WORKDIR /data
+ENTRYPOINT php /home/run.php --data=/data';
+        $this->assertEquals($expectedFile, trim($dockerFile));
+    }
+
+
+    public function testDockerFileUndefParameters()
+    {
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd {{foo}} {{bar}}",
+                        "composer install"
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data",
+                    "parameters" => [
+                        [
+                            "name" => "foo",
+                            "type" => "string"
+                        ]
+                    ]
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+        $tempDir = new Temp('docker-test');
+        $tempDir->initRunFolder();
+        $image = Image::factory($encryptor, $imageConfig);
+        try {
+            $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+            $reflection->setAccessible(true);
+            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
+            $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+            $reflection->setAccessible(true);
+            $reflection->invoke($image, $tempDir->getTmpFolder());
+            $this->fail("Missing parameter definition must raise exception.");
+        } catch (BuildParameterException $e) {
+            $this->assertContains('Orphaned parameter', $e->getMessage());
+        }
+    }
+
+
+    public function testDockerFileParametersMissingValue()
+    {
+        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd {{foo}} {{bar}}",
+                        "composer install"
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data",
+                    "parameters" => [
+                        [
+                            "name" => "foo",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "bar",
+                            "type" => "plain_string"
+                        ]
+                    ]
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+        $tempDir = new Temp('docker-test');
+        $tempDir->initRunFolder();
+        $image = Image::factory($encryptor, $imageConfig);
+        try {
+            $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+            $reflection->setAccessible(true);
+            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar']]);
+            $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+            $reflection->setAccessible(true);
+            $reflection->invoke($image, $tempDir->getTmpFolder());
+            $this->fail("Missing value of parameter must raise exception");
+        } catch (BuildParameterException $e) {
+            $this->assertContains('has no value', $e->getMessage());
+        }
+    }
+
+
     public function testGitCredentials()
     {
         $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
@@ -111,7 +269,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $credentials = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $this->assertEquals(
             'https://keboolaprivatetest:uH11KyDFnG1G8gPHHzmn@github.com/keboola/docker-demo-app',
-             trim($credentials)
+            trim($credentials)
         );
     }
 
@@ -139,7 +297,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         try {
-            $image = Image::factory($encryptor, $imageConfig);
+            Image::factory($encryptor, $imageConfig);
             $this->fail("Invalid repository should fail.");
         } catch (InvalidConfigurationException $e) {
             $this->assertContains('Invalid repository_type', $e->getMessage());

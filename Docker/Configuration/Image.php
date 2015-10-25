@@ -62,7 +62,7 @@ class Image extends Configuration
                                             ->scalarNode("type")
                                                 ->isRequired()
                                                 ->validate()
-                                                    ->ifNotInArray(["int", "string", "argument"])
+                                                    ->ifNotInArray(["int", "string", "argument", "plain_string"])
                                                     ->thenInvalid("Invalid image type %s.")
                                                 ->end()
                                             ->end()

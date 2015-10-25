@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Image\Builder;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
+use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
@@ -286,7 +287,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
         // verify that no placeholders remained in Dockerfile
         if (preg_match_all('#{{[a-z0-9_-]+}}#i', $dockerFile, $matches)) {
-            throw new BuildException("Orphaned parameters remaining in build commands " . implode(",", $matches[0]));
+            throw new BuildParameterException(
+                "Orphaned parameters remaining in build commands " . implode(",", $matches[0])
+            );
         }
         file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
     }
@@ -298,10 +301,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     private function initParameters(array $configData)
     {
         // set parameter values
-        foreach ($configData['parameters'] as $key => $value) {
-            // use only root elements of configData
-            if (isset($this->parameters[$key])) {
-                $this->parameters[$key]->setValue($value);
+        if (isset($configData['parameters']) && is_array($configData['parameters'])) {
+            foreach ($configData['parameters'] as $key => $value) {
+                // use only root elements of configData
+                if (isset($this->parameters[$key])) {
+                    $this->parameters[$key]->setValue($value);
+                }
             }
         }
 
@@ -312,7 +317,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         // verify required parameters
         foreach ($this->parameters as $parameter) {
             if (($parameter->getValue() === null) && $parameter->isRequired()) {
-                throw new BuildException("Parameter " . $parameter->getName() . " is required, but has no value.");
+                throw new BuildParameterException(
+                    "Parameter " . $parameter->getName() . " is required, but has no value."
+                );
             }
         }
     }

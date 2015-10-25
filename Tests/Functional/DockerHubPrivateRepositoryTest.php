@@ -38,7 +38,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container);
+        $image->prepare($container, []);
     }
 
     /**
@@ -72,7 +72,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
         $image = Image::factory($encryptor, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container);
+        $tag = $image->prepare($container, []);
 
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $tag);
 
@@ -116,7 +116,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $image = Image::factory($encryptor, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container);
+        $tag = $image->prepare($container, []);
 
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $tag);
 

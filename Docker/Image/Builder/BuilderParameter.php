@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Image\Builder;
 
 use Keboola\DockerBundle\Exception\BuildException;
+use Keboola\DockerBundle\Exception\BuildParameterException;
 
 class BuilderParameter
 {
@@ -53,21 +54,27 @@ class BuilderParameter
         switch ($this->type) {
             case 'integer':
                 if (!is_scalar($value)) {
-                    throw new BuildException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
                 }
                 $this->value = intval($value);
                 break;
             case 'string':
                 if (!is_scalar($value)) {
-                    throw new BuildException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
                 }
                 $this->value = $value;
                 break;
             case 'argument':
                 if (!is_scalar($value)) {
-                    throw new BuildException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
                 }
                 $this->value = escapeshellarg($value);
+                break;
+            case 'plain_string':
+                if (!is_scalar($value) || !preg_match('#^[a-z0-9_.-]+$#i', $value)) {
+                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                }
+                $this->value = $value;
                 break;
             default:
                 throw new BuildException("Invalid type " . $this->type . " for parameter " . $this->name);
