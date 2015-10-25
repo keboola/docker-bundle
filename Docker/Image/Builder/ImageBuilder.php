@@ -349,17 +349,14 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
+            return $tag;
+        } catch (\Exception $e) {
+            throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
+        } finally {
             if ($this->getLoginUsername()) {
                 // Logout from docker repository
                 (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
             }
-            return $tag;
-        } catch (\Exception $e) {
-            if ($this->getLoginUsername()) {
-                // Logout from docker repository on error
-                (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
-            }
-            throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
         }
     }
 
