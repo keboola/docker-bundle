@@ -242,7 +242,7 @@ class Executor extends BaseExecutor
      */
     public function cleanup()
     {
-        $params = $this->job->getParams();
+        $params = $this->job->getRawParams();
         if (isset($params["component"])) {
             $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
             $this->log->info("Terminating process");
