@@ -55,6 +55,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     protected $parameters;
 
     /**
+     * @var string Manually specified version of the image.
+     */
+    protected $version;
+
+    /**
+     * @var bool True if the application docker build is cached, false if it is not cached.
+     */
+    protected $cache = true;
+
+    /**
      * Constructor
      * @param ObjectEncryptor $encryptor
      */
@@ -189,6 +199,15 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
 
     /**
+     * @return BuilderParameter[]
+     */
+    public function getParameters()
+    {
+        return $this->parameters;
+    }
+
+
+    /**
      * @param array $parameters
      * @return $this
      */
@@ -209,6 +228,45 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this;
     }
 
+
+    /**
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+
+    /**
+     * @param string $version
+     * @return $this
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+
+    /**
+     * @param bool $cache
+     * @return $this
+     */
+    public function setCache($cache)
+    {
+        $this->cache = $cache;
+        return $this;
+    }
 
     /**
      * Replace placeholders in a string.
@@ -268,6 +326,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $dockerFile .= "WORKDIR /home\n";
 
         $dockerFile .= "\n# Repository initialization\n";
+        if ($this->getVersion()) {
+            $dockerFile .= "\n# Version " . $this->getVersion();
+        }
         if ($this->getRepositoryType() == 'git') {
             $repositoryCommands = $this->handleGitCredentials($workingFolder);
         } else {
@@ -347,7 +408,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $workingFolder = $temp->getTmpFolder();
             $this->createDockerFile($workingFolder);
             $tag = uniqid('builder-');
-            $process = new Process("sudo docker build --tag=" . escapeshellarg($tag) . " " . $workingFolder);
+            if (!$this->getCache()) {
+                $noCache = ' --no-cache';
+            } else {
+                $noCache = '';
+            }
+            $process = new Process("sudo docker build$noCache --tag=" . escapeshellarg($tag) . " " . $workingFolder);
             // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
             $process->setTimeout(3600);
             $process->run();
@@ -393,6 +459,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
             if (isset($config["definition"]["build_options"]["parameters"])) {
                 $this->setParameters($config["definition"]["build_options"]["parameters"]);
+            }
+            if (isset($config["definition"]["build_options"]["version"])) {
+                $this->setVersion($config["definition"]["build_options"]["version"]);
+            }
+            if (isset($config["definition"]["build_options"]["cache"])) {
+                $this->setCache($config["definition"]["build_options"]["cache"]);
             }
         }
         return $this;

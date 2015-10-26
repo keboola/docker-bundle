@@ -69,6 +69,8 @@ class Image extends Configuration
                                         ->end()
                                     ->end()
                                 ->end()
+                                ->scalarNode("version")->end()
+                                ->booleanNode("cache")->defaultValue(true)->end()
                             ->end()
                         ->end()
                     ->end()
