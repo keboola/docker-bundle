@@ -51,7 +51,7 @@ class BuilderParameter
         $this->type = $type;
         $this->required = $required;
         $this->allowedValues = $values;
-        if (($this->type = 'enumeration') && (count($this->allowedValues) == 0)) {
+        if (($this->type == 'enumeration') && (count($this->allowedValues) == 0)) {
             throw new BuildException("Enumeration $name contains no valid values.");
         }
     }
