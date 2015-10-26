@@ -370,6 +370,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 "Orphaned parameters remaining in build commands " . implode(",", $matches[0])
             );
         }
+        $this->logger->debug("Created dockerfile " . $dockerFile);
         file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
     }
 
