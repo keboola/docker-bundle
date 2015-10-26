@@ -20,10 +20,16 @@ class BuilderParameter
     private $type;
 
     /**
-     * Is the parameter required (both in dockerfile and in configuration)
+     * Is the parameter required (both in dockerfile and in configuration).
      * @var bool
      */
     private $required;
+
+    /**
+     * Array of allowed parameter values (for enumeration parameters).
+     * @var array
+     */
+    private $allowedValues;
 
     /**
      * Arbitrary parameter value.
@@ -37,12 +43,17 @@ class BuilderParameter
      * @param string $name Parameter name.
      * @param string $type Parameter type.
      * @param bool $required
+     * @param array $values Allowed values of the parameter
      */
-    public function __construct($name, $type, $required)
+    public function __construct($name, $type, $required, $values = [])
     {
         $this->name = $name;
         $this->type = $type;
         $this->required = $required;
+        $this->allowedValues = $values;
+        if (($this->type = 'enumeration') && (count($this->allowedValues) == 0)) {
+            throw new BuildException("Enumeration $name contains no valid values.");
+        }
     }
 
     /**
@@ -72,6 +83,12 @@ class BuilderParameter
                 break;
             case 'plain_string':
                 if (!is_scalar($value) || !preg_match('#^[a-z0-9_.-]+$#i', $value)) {
+                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                }
+                $this->value = $value;
+                break;
+            case 'enumeration':
+                if (!is_scalar($value) || !in_array($value, $this->allowedValues)) {
                     throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
                 }
                 $this->value = $value;
