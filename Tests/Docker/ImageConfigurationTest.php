@@ -110,10 +110,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "builder",
                 "uri" => "keboola/docker-base-r",
                 "build_options" => [
-                    "username" => "foo",
-                    "#password" => "KBC::Encrypted==abc==",
-                    "repository" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
-                    "repository_type" => "git",
+                    "repository" => [
+                        "type" => "git",
+                        "uri" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
+                        "username" => "foo",
+                        "#password" => "KBC::Encrypted==abc==",
+                    ],
                     "commands" => [
                         "git clone {{repository}} /home/"
                     ],
