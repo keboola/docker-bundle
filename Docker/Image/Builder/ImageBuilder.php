@@ -326,7 +326,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
         $dockerFile .= "WORKDIR /home\n";
 
-        $dockerFile .= "\n# Repository initialization\n";
         if ($this->getVersion()) {
             $dockerFile .= "\n# Version " . $this->getVersion();
         }
@@ -334,6 +333,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $repositoryCommands = $this->handleGitCredentials($workingFolder);
         } else {
             throw new BuildException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
+        }
+        if ($repositoryCommands) {
+            $dockerFile .= "\n# Repository initialization\n";
         }
         foreach ($repositoryCommands as $command) {
             $dockerFile .= $command . "\n";
