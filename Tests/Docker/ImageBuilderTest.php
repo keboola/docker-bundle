@@ -311,7 +311,7 @@ WORKDIR /home
 
 # Repository initialization
 COPY .git-credentials /tmp/.git-credentials
-RUN git config --global credential.helper \'store --file=/tmp/.git-credentials\'
+RUN git config --global credential.helper 'store --file=/tmp/.git-credentials'
 
 # Image definition commands
 RUN git clone https://github.com/keboola/docker-demo-app /home/
