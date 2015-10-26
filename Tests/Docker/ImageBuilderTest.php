@@ -47,8 +47,8 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
-        $expectedFile =
-'FROM keboolaprivatetest/docker-demo-docker
+        $expectedFile = <<<DOCKERFILE
+FROM keboolaprivatetest/docker-demo-docker
 WORKDIR /home
 
 # Image definition commands
@@ -56,7 +56,8 @@ RUN git clone https://github.com/keboola/docker-demo-app /home/
 RUN cd /home/
 RUN composer install
 WORKDIR /data
-ENTRYPOINT php /home/run.php --data=/data';
+ENTRYPOINT php /home/run.php --data=/data
+DOCKERFILE;
         $this->assertEquals($expectedFile, trim($dockerFile));
     }
 
@@ -304,8 +305,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        $expectedFile =
-'FROM keboolaprivatetest/docker-demo-docker
+        $expectedFile = <<<DOCKERFILE
+FROM keboolaprivatetest/docker-demo-docker
 WORKDIR /home
 
 # Repository initialization
@@ -317,7 +318,8 @@ RUN git clone https://github.com/keboola/docker-demo-app /home/
 RUN cd /home/
 RUN composer install
 WORKDIR /data
-ENTRYPOINT php /home/run.php --data=/data';
+ENTRYPOINT php /home/run.php --data=/data
+DOCKERFILE;
         $this->assertEquals($expectedFile, trim($dockerFile));
         $credentials = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $this->assertEquals(
