@@ -36,6 +36,8 @@
             <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
             <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
             <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
+            <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
+            <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
             <arg value="--configuration"/>
             <arg path="phpunit.xml.dist"/>
         </exec>
@@ -48,6 +50,8 @@
             <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
             <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
             <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
+            <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
+            <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
             <arg value="--configuration"/>
             <arg path="phpunit-full.xml.dist"/>
         </exec>
