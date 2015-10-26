@@ -65,31 +65,46 @@ class BuilderParameter
         switch ($this->type) {
             case 'integer':
                 if (!is_scalar($value)) {
-                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException(
+                        "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
+                        ", it cannot be converted to number."
+                    );
                 }
                 $this->value = intval($value);
                 break;
             case 'string':
                 if (!is_scalar($value)) {
-                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException(
+                        "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
+                        ", it cannot be converted to text."
+                    );
                 }
                 $this->value = $value;
                 break;
             case 'argument':
                 if (!is_scalar($value)) {
-                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException(
+                        "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
+                        ", it cannot be converted to string."
+                    );
                 }
                 $this->value = escapeshellarg($value);
                 break;
             case 'plain_string':
                 if (!is_scalar($value) || !preg_match('#^[a-z0-9_.-]+$#i', $value)) {
-                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException(
+                        "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
+                        ", it must not contain special characters (a-z 0-9 _ . allowed)."
+                    );
                 }
                 $this->value = $value;
                 break;
             case 'enumeration':
                 if (!is_scalar($value) || !in_array($value, $this->allowedValues)) {
-                    throw new BuildParameterException("Invalid value $value for parameter " . $this->name);
+                    throw new BuildParameterException(
+                        "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
+                        ", it must be any of " . print_r($this->allowedValues, true) . "."
+                    );
                 }
                 $this->value = $value;
                 break;

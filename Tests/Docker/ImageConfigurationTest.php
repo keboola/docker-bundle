@@ -119,7 +119,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                     "commands" => [
                         "git clone {{repository}} /home/"
                     ],
-                    "entry_point" => "Rscript /home/script.R"
+                    "entry_point" => "Rscript /home/script.R",
+                    "parameters" => [],
+                    "cache" => true
                 ]
             ],
             "cpu_shares" => 1024,
