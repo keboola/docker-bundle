@@ -8,6 +8,8 @@ use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ImageBuilderTest extends \PHPUnit_Framework_TestCase
@@ -37,7 +39,10 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -88,7 +93,10 @@ DOCKERFILE;
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -148,7 +156,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
@@ -203,7 +214,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -253,7 +267,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -295,7 +312,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $image = Image::factory($encryptor, $imageConfig);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -351,8 +371,11 @@ DOCKERFILE;
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
         try {
-            Image::factory($encryptor, $imageConfig);
+            Image::factory($encryptor, $log, $imageConfig);
             $this->fail("Invalid repository should fail.");
         } catch (InvalidConfigurationException $e) {
             $this->assertContains('Invalid repository_type', $e->getMessage());

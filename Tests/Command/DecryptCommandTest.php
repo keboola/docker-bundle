@@ -30,7 +30,7 @@ class DecryptCommandTest extends CommandTestCase
         ]);
 
         $this->assertEquals(0, $commandTester->getStatusCode());
-        $this->assertEquals("test\n", $commandTester->getDisplay());
+        $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
     /**
@@ -64,7 +64,7 @@ class DecryptCommandTest extends CommandTestCase
         ]);
 
         $this->assertEquals(0, $commandTester->getStatusCode());
-        $this->assertEquals("test\n", $commandTester->getDisplay());
+        $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
     /**

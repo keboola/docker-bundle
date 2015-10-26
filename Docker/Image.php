@@ -2,7 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Monolog\Logger;
 
 class Image
 {
@@ -249,11 +251,12 @@ class Image
     }
 
     /**
-     * @param ObjectEncryptor $encryptor
-     * @param array $config Docker image configuration.
+     * @param ObjectEncryptor $encryptor Encryptor for image definition.
+     * @param Logger $logger Logger instance.
+     * @param array $config Docker image runtime configuration.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, $config = [])
+    public static function factory(ObjectEncryptor $encryptor, Logger $logger, $config = [])
     {
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
@@ -265,6 +268,7 @@ class Image
         } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
             $instance = new Image\Builder\ImageBuilder($encryptor);
             $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
+            $instance->setLogger($logger);
         } else {
             $instance = new self();
         }

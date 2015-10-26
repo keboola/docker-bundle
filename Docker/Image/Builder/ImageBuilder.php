@@ -9,10 +9,16 @@ use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
+use Monolog\Logger;
 use Symfony\Component\Process\Process;
 
 class ImageBuilder extends Image\DockerHub\PrivateRepository
 {
+    /**
+     * @var Logger
+     */
+    protected $logger;
+
     /**
      * @var string
      */
@@ -71,6 +77,15 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     public function __construct(ObjectEncryptor $encryptor)
     {
         parent::__construct($encryptor);
+    }
+
+
+    /**
+     * @param Logger $log
+     */
+    public function setLogger(Logger $log)
+    {
+        $this->logger = $log;
     }
 
 

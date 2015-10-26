@@ -25,7 +25,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             )
         );
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $container = new Container(Image::factory($encryptor, $dummyConfig), $log);
+        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);
@@ -57,11 +57,11 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             )
         );
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image, $log);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Docker\Mock\Container($image, $log);
 
         $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
@@ -119,10 +119,10 @@ EOF;
             )
         );
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $container->setDataDir("/tmp");
@@ -140,9 +140,10 @@ EOF;
             )
         );
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $expected = "sudo docker inspect 'name'";
@@ -158,9 +159,10 @@ EOF;
             )
         );
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $expected = "sudo docker rm 'name'";

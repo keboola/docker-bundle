@@ -3,17 +3,11 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Encryption\CryptoWrapper;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
-use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
 class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
@@ -36,7 +30,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $image->prepare($container, []);
     }
@@ -70,7 +64,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
 
@@ -114,7 +108,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
 

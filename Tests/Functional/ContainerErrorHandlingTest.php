@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -39,16 +38,16 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
-        $process = $container->run(uniqid());
+        $process = $container->run(uniqid(), []);
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Keboola Space Program", trim($process->getOutput()));
@@ -64,10 +63,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php this would be a parse error');
@@ -75,7 +74,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('Parse error', $e->getMessage());
@@ -93,10 +92,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
@@ -104,7 +103,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -122,10 +121,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
@@ -133,7 +132,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -150,10 +149,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
@@ -161,7 +160,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $value = '123 ščř =-\'"321';
         $container->setEnvironmentVariables(['command' => '/data/test.php', 'KBC_TOKENID' => $value]);
 
-        $process = $container->run(uniqid());
+        $process = $container->run(uniqid(), []);
         $this->assertEquals($value, $process->getOutput());
     }
 
@@ -175,11 +174,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-        $image->setProcessTimeout(1);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $image->setProcessTimeout(1);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
@@ -187,7 +186,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('timeout', $e->getMessage());
@@ -204,13 +203,13 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception when data directory is not set.");
         } catch (ApplicationException $e) {
             $this->assertContains('directory', $e->getMessage());
@@ -231,15 +230,15 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-        $dataDir = $this->createScript($temp, '<?php sleep(10);');
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $dataDir = $this->createScript($temp, '<?php sleep(10);');
         $container = new Container($image, $log);
         $container->setDataDir($dataDir);
         try {
-            $container->run(uniqid());
+            $container->run(uniqid(), []);
             $this->fail("Must raise an exception for invalid immage");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
@@ -258,11 +257,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => true
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript(
@@ -277,7 +276,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
-        $process = $container->run("testsuite");
+        $process = $container->run("testsuite", []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
@@ -303,11 +302,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => false
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript(
@@ -322,7 +321,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
-        $process = $container->run("testsuite");
+        $process = $container->run("testsuite", []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
@@ -350,11 +349,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "memory" => "10m"
         ];
         $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript(
@@ -368,6 +367,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         );
         $container->setDataDir($dataDir);
         $container->setEnvironmentVariables(['command' => '/data/test.php']);
-        $container->run("testsuite");
+        $container->run("testsuite", []);
     }
 }

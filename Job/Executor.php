@@ -9,7 +9,6 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
@@ -172,7 +171,7 @@ class Executor extends BaseExecutor
                         "uri" => "dummy"
                     )
                 );
-                $image = Image::factory($this->genericEncryptor, $dummyConfig);
+                $image = Image::factory($this->genericEncryptor, $this->log, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
 
                 $container = new Container($image, $this->log);
@@ -187,7 +186,7 @@ class Executor extends BaseExecutor
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
-                $image = Image::factory($this->genericEncryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
@@ -198,7 +197,7 @@ class Executor extends BaseExecutor
                 $this->log->info($message);
                 return ["message" => $message];
             case 'dry-run':
-                $image = Image::factory($this->genericEncryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
@@ -216,7 +215,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             case 'run':
-                $image = Image::factory($this->genericEncryptor, $component["data"]);
+                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 

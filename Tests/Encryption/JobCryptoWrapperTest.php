@@ -41,8 +41,8 @@ class JobCryptoWrapperTest extends WebTestCase
     }
 
     /**
-     * @covers \Keboola\DockerBundle\Encryption\ComponentCryptoWrapper::encrypt
-     * @covers \Keboola\DockerBundle\Encryption\ComponentCryptoWrapper::decrypt
+     * @covers \Keboola\DockerBundle\Encryption\JobCryptoWrapper::encrypt
+     * @covers \Keboola\DockerBundle\Encryption\JobCryptoWrapper::decrypt
      */
     public function testEncryptor()
     {

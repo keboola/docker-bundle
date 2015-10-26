@@ -467,15 +467,15 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor = new ObjectEncryptor($jobCryptoWrapper);
-
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+
         $container = new Container($image, $log);
         $container->setId("hello-world");
         $container->setDataDir("/tmp");
-        $process = $container->run("testsuite");
+        $process = $container->run("testsuite", []);
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
     }
@@ -498,13 +498,13 @@ class FunctionalTests extends \PHPUnit_Framework_TestCase
         $tokenInfo = $this->client->verifyToken();
         $jobCryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor = new ObjectEncryptor($jobCryptoWrapper);
-
-        $image = Image::factory($encryptor, $imageConfiguration);
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+
         $container = new Container($image, $log);
-        $container->run("testsuite");
+        $container->run("testsuite", []);
     }
 
 

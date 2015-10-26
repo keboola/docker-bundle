@@ -45,7 +45,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
         $this->assertContains("builder-", $tag);
@@ -86,7 +86,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
         $this->assertContains("builder-", $tag);
@@ -136,7 +136,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
         $this->assertContains("builder-", $tag);
@@ -184,7 +184,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
             $image->prepare($container, []);
@@ -222,7 +222,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
             $image->prepare($container, []);
@@ -259,7 +259,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
             $image->prepare($container, []);
