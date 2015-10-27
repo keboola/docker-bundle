@@ -353,9 +353,7 @@ class Writer
             );
             $this->client->writeTableAsync($config["destination"], $csvFile, $options);
         } else {
-            $options = array(
-                "primaryKey" => join(",", array_unique($config["primary_key"]))
-            );
+            $options = [];
             $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
         }
     }

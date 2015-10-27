@@ -21,6 +21,7 @@ class Manifest extends Configuration
             ->children()
                 ->scalarNode("destination")->isRequired()->end()
                 ->booleanNode("incremental")->defaultValue(false)->end()
+                // leave here for backward compatibility
                 ->arrayNode("primary_key")->prototype("scalar")->end()->end()
                 ->scalarNode("delete_where_column")->end()
                 ->arrayNode("delete_where_values")->prototype("scalar")->end()->end()
