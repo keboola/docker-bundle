@@ -460,7 +460,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out",
                             // erroneous lines
-                            "primary_key" => "col1",
                             "incremental" => 1
                         )
                     )

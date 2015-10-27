@@ -312,7 +312,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload/table2.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-        file_put_contents($root . "/upload/table2.csv.manifest", "destination: out.c-docker-test.table2\nprimary_key: [\"Id\"]");
+        file_put_contents($root . "/upload/table2.csv.manifest", "destination: out.c-docker-test.table2");
 
         $configs = array(
             array(
@@ -328,8 +328,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
-        $this->assertEquals(array(), $tables[0]["primaryKey"]);
-
     }
 
 
@@ -340,7 +338,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmpDir;
         file_put_contents($root . "/upload/out.c-docker-test.table3.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-        file_put_contents($root . "/upload/out.c-docker-test.table3.csv.manifest", "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]");
+        file_put_contents($root . "/upload/out.c-docker-test.table3.csv.manifest", "destination: out.c-docker-test.table3");
 
         $writer = new Writer($this->client);
 
@@ -349,7 +347,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
-        $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
     }
 
     /**
@@ -359,7 +356,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteTableOrphanedManifest()
     {
         $root = $this->tmpDir;
-        file_put_contents($root . "/upload/table.csv.manifest", "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]");
+        file_put_contents($root . "/upload/table.csv.manifest", "destination: out.c-docker-test.table3");
         $writer = new Writer($this->client);
         $writer->uploadTables($root . "/upload");
     }

@@ -270,7 +270,6 @@ The tables element in configuration is an array and supports these attributes:
   - `source`
   - `destination`
   - `incremental`
-  - `primary_key`
   - `delete_where_column`
   - `delete_where_column`
   - `delete_where_operator`
@@ -288,8 +287,7 @@ storage:
         destination: out.c-main.data
 ```
 
-Upload `/data/out/tables/data.csv` to `out.c-main.data`.
-with a primary key and incrementally.
+Upload `/data/out/tables/data.csv` to `out.c-main.data` incrementally (behavior depends on whether the primary key on the target table is set or not).
 
 ```
 storage: 
@@ -299,7 +297,6 @@ storage:
         source: data.csv
         destination: out.c-main.data
         incremental: 1
-        primary_key: ["id"]
 ```
 
 Delete data from `destination` table before uploading the CSV file (only makes sense with `incremental: 1`).

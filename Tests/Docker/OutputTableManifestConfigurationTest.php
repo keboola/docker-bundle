@@ -36,7 +36,7 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "destination" => "in.c-main.test",
             "incremental" => true,
-            "primary_key" => array("Id", "Name"),
+            "primary_key" => array(),
             "delete_where_column" => "status",
             "delete_where_values" => array("val1", "val2"),
             "delete_where_operator" => "ne"
