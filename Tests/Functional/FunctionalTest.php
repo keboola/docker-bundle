@@ -132,6 +132,8 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('docker-r');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
 
         // Create buckets
@@ -213,6 +215,8 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('docker-r');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
 
         // Create buckets
@@ -314,6 +318,8 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('docker-r');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
 
         // Create buckets
@@ -411,6 +417,8 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('docker-r');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
 
         // Create buckets
@@ -468,11 +476,7 @@ class FunctionalTests extends KernelTestCase
             )
         );
 
-        $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-test');
-        $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -499,11 +503,7 @@ class FunctionalTests extends KernelTestCase
             )
         );
 
-        $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-test');
-        $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -554,6 +554,8 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('docker-r');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
 
         // Create buckets
@@ -619,10 +621,13 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
-        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $ecWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_wrapper');
+        /** @var ComponentWrapper $ecWrapper */
         $ecWrapper->setComponentId('docker-config-dump');
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        $ecpWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_project_wrapper');
         $ecpWrapper->setComponentId('docker-config-dump');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
 
@@ -701,7 +706,7 @@ class FunctionalTests extends KernelTestCase
         $config = Yaml::parse($response["message"]);
         $this->assertEquals("KBC::Encrypted==", substr($config["parameters"]["#key2"], 0, 16));
         $this->assertEquals(
-            $ecpWrapper->getPrefix(),
+            $ecWrapper->getPrefix(),
             substr($config["parameters"]["#key3"], 0, strlen($ecWrapper->getPrefix()))
         );
         $this->assertEquals(
@@ -721,10 +726,14 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
-        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $ecWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_wrapper');
+        /** @var ComponentWrapper $ecWrapper */
         $ecWrapper->setComponentId('docker-config-dump');
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        $ecpWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_project_wrapper');
         $ecpWrapper->setComponentId('docker-config-dump');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
 
@@ -805,7 +814,7 @@ class FunctionalTests extends KernelTestCase
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
-        $this->assertEquals("value3", $config["parameters"]["#key2"]);
-        $this->assertEquals("value4", $config["parameters"]["#key2"]);
+        $this->assertEquals("value3", $config["parameters"]["#key3"]);
+        $this->assertEquals("value4", $config["parameters"]["#key4"]);
     }
 }

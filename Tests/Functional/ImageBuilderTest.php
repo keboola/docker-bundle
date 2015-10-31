@@ -27,7 +27,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -70,7 +71,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -111,7 +113,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -161,7 +164,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -205,7 +209,8 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -243,7 +248,8 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
