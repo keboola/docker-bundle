@@ -5,18 +5,23 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class ImageBuilderTest extends \PHPUnit_Framework_TestCase
+class ImageBuilderTest extends KernelTestCase
 {
+    public function setUp()
+    {
+        self::bootKernel();
+    }
+
     public function testDockerFile()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -69,7 +74,7 @@ DOCKERFILE;
 
     public function testDockerFileVersion()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -123,7 +128,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParameters()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -185,7 +190,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileUndefParameters()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -234,7 +239,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParametersMissingValue()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -287,7 +292,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testGitCredentials()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -350,7 +355,7 @@ DOCKERFILE;
 
     public function testInvalidRepository()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [

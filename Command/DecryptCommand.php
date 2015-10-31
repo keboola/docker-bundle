@@ -31,13 +31,15 @@ class DecryptCommand extends ContainerAwareCommand
     {
         $stringToDecrypt = $input->getArgument('string');
 
-        if ($input->getOption("projectId") && !$input->getOption("componentId") || !$input->getOption("projectId") && $input->getOption("componentId")) {
+        if ($input->getOption("projectId") && !$input->getOption("componentId") ||
+            !$input->getOption("projectId") && $input->getOption("componentId")
+        ) {
             throw new UserException("Both projectId and componentId options have to be set.");
         }
 
         if ($input->getOption("projectId") && $input->getOption("componentId")) {
-            $encryptor = $this->getContainer()->get("syrup.job_object_encryptor");
-            $cryptoWrapper = $this->getContainer()->get("syrup.job_crypto_wrapper");
+            $encryptor = $this->getContainer()->get("syrup.object_encryptor");
+            $cryptoWrapper = $this->getContainer()->get("syrup.encryption.component_project_wrapper");
             $cryptoWrapper->setComponentId($input->getOption("componentId"));
             $cryptoWrapper->setProjectId($input->getOption("projectId"));
         } else {

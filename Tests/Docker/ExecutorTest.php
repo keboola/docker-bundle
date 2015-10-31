@@ -8,17 +8,17 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
-class ExecutorTest extends \PHPUnit_Framework_TestCase
+class ExecutorTest extends KernelTestCase
 {
 
     /**
@@ -38,6 +38,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+        self::bootKernel();
+
         // Create folders
         $this->temp = new Temp('docker');
         $this->temp->initRunFolder();
@@ -128,7 +130,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -181,7 +183,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -236,7 +238,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -288,7 +290,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -340,7 +342,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -412,7 +414,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -471,7 +473,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -523,7 +525,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -588,7 +590,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -624,7 +626,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
@@ -673,7 +675,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);

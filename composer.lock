@@ -1,23 +1,24 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "ca035d081e0b93179da7c59cfb4f0f66",
+    "hash": "61a3ff0dccddfe644df32d58895a3062",
+    "content-hash": "0756a7ae511c25a7d16b3915f8b7f116",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.8.1",
+            "version": "3.9.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "5de9bee69024457be14d125b2ad1598d17968e11"
+                "reference": "a06a225abbaf465d1640305c85f7c830e3c43ecf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5de9bee69024457be14d125b2ad1598d17968e11",
-                "reference": "5de9bee69024457be14d125b2ad1598d17968e11",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a06a225abbaf465d1640305c85f7c830e3c43ecf",
+                "reference": "a06a225abbaf465d1640305c85f7c830e3c43ecf",
                 "shasum": ""
             },
             "require": {
@@ -37,6 +38,7 @@
                 "ext-pcre": "*",
                 "ext-simplexml": "*",
                 "ext-spl": "*",
+                "nette/neon": "^2.3",
                 "phpunit/phpunit": "~4.0"
             },
             "suggest": {
@@ -80,7 +82,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-10-15 21:40:56"
+            "time": "2015-10-29 20:17:13"
         },
         {
             "name": "defuse/php-encryption",
@@ -197,16 +199,16 @@
         },
         {
             "name": "doctrine/cache",
-            "version": "v1.4.2",
+            "version": "v1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/cache.git",
-                "reference": "8c434000f420ade76a07c64cbe08ca47e5c101ca"
+                "reference": "eb8a73619af4f1c8711e2ce482f5de3643258a1f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/cache/zipball/8c434000f420ade76a07c64cbe08ca47e5c101ca",
-                "reference": "8c434000f420ade76a07c64cbe08ca47e5c101ca",
+                "url": "https://api.github.com/repos/doctrine/cache/zipball/eb8a73619af4f1c8711e2ce482f5de3643258a1f",
+                "reference": "eb8a73619af4f1c8711e2ce482f5de3643258a1f",
                 "shasum": ""
             },
             "require": {
@@ -227,8 +229,8 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Doctrine\\Common\\Cache\\": "lib/"
+                "psr-4": {
+                    "Doctrine\\Common\\Cache\\": "lib/Doctrine/Common/Cache"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -263,7 +265,7 @@
                 "cache",
                 "caching"
             ],
-            "time": "2015-08-31 12:36:41"
+            "time": "2015-10-28 11:27:45"
         },
         {
             "name": "doctrine/collections",
@@ -1461,6 +1463,7 @@
                 "mcrypt",
                 "security"
             ],
+            "abandoned": "defuse/php-encryption",
             "time": "2013-07-15 12:02:24"
         },
         {
@@ -1513,16 +1516,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "2.14.5",
+            "version": "2.14.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "a7c53ea0dfe53e39aa5a746efece93d3609f4d1e"
+                "reference": "b69a6d0e05a1d31f56ed2e755951f44b7ed7cf82"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/a7c53ea0dfe53e39aa5a746efece93d3609f4d1e",
-                "reference": "a7c53ea0dfe53e39aa5a746efece93d3609f4d1e",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/b69a6d0e05a1d31f56ed2e755951f44b7ed7cf82",
+                "reference": "b69a6d0e05a1d31f56ed2e755951f44b7ed7cf82",
                 "shasum": ""
             },
             "require": {
@@ -1550,20 +1553,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2015-10-13 07:04:24"
+            "time": "2015-10-26 13:08:52"
         },
         {
             "name": "keboola/syrup",
-            "version": "2.5.6",
+            "version": "dev-encryption2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "36601ada207938b1bac85fc75db0c0adc23da98d"
+                "reference": "4c65a1999bf02c2fca8a7aa699a0fb4074087abb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/36601ada207938b1bac85fc75db0c0adc23da98d",
-                "reference": "36601ada207938b1bac85fc75db0c0adc23da98d",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/4c65a1999bf02c2fca8a7aa699a0fb4074087abb",
+                "reference": "4c65a1999bf02c2fca8a7aa699a0fb4074087abb",
                 "shasum": ""
             },
             "require": {
@@ -1617,7 +1620,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-10-20 08:49:42"
+            "time": "2015-10-31 11:32:38"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -1964,17 +1967,17 @@
         },
         {
             "name": "sensio/distribution-bundle",
-            "version": "v3.0.32",
+            "version": "v3.0.33",
             "target-dir": "Sensio/Bundle/DistributionBundle",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sensiolabs/SensioDistributionBundle.git",
-                "reference": "e46293aa6dd94f054c500ef990538d822c763ebd"
+                "reference": "63245e12c948bf50278383e70fd5d6841af17e17"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/e46293aa6dd94f054c500ef990538d822c763ebd",
-                "reference": "e46293aa6dd94f054c500ef990538d822c763ebd",
+                "url": "https://api.github.com/repos/sensiolabs/SensioDistributionBundle/zipball/63245e12c948bf50278383e70fd5d6841af17e17",
+                "reference": "63245e12c948bf50278383e70fd5d6841af17e17",
                 "shasum": ""
             },
             "require": {
@@ -2020,7 +2023,7 @@
                 "configuration",
                 "distribution"
             ],
-            "time": "2015-10-20 06:53:22"
+            "time": "2015-10-27 18:46:42"
         },
         {
             "name": "sensio/framework-extra-bundle",
@@ -2532,16 +2535,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "v1.22.3",
+            "version": "v1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "ebfc36b7e77b0c1175afe30459cf943010245540"
+                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/ebfc36b7e77b0c1175afe30459cf943010245540",
-                "reference": "ebfc36b7e77b0c1175afe30459cf943010245540",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/5868cd822fd6cf626d5f805439575f9c323cee2a",
+                "reference": "5868cd822fd6cf626d5f805439575f9c323cee2a",
                 "shasum": ""
             },
             "require": {
@@ -2554,7 +2557,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.22-dev"
+                    "dev-master": "1.23-dev"
                 }
             },
             "autoload": {
@@ -2589,7 +2592,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2015-10-13 07:07:02"
+            "time": "2015-10-29 23:29:01"
         }
     ],
     "packages-dev": [
@@ -3159,6 +3162,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "keboola/syrup": 20,
         "codeclimate/php-test-reporter": 20
     },
     "prefer-stable": false,

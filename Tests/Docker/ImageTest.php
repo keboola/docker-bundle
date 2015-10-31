@@ -3,13 +3,18 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class ImageTest extends \PHPUnit_Framework_TestCase
+class ImageTest extends KernelTestCase
 {
+    public function setUp()
+    {
+        self::bootKernel();
+    }
+
     public function testFactory()
     {
         $dummyConfig = array(
@@ -18,7 +23,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $dummyConfig);
@@ -42,7 +47,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => true,
             "configuration_format" => 'json'
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $image = Image::factory($encryptor, $log, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
@@ -57,7 +62,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testDockerHubPrivateRepository()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub-private",
@@ -95,7 +100,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $dummyConfig);

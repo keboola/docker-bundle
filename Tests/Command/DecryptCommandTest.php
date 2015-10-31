@@ -51,10 +51,10 @@ class DecryptCommandTest extends CommandTestCase
 
     public function testDecryptComponentSpecific()
     {
-        $cryptoWrapper = self::$kernel->getContainer()->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper = self::$kernel->getContainer()->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setProjectId("123");
         $cryptoWrapper->setComponentId("dummy");
-        $encryptor = self::$kernel->getContainer()->get("syrup.job_object_encryptor");
+        $encryptor = self::$kernel->getContainer()->get("syrup.object_encryptor");
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
         $commandTester->execute([

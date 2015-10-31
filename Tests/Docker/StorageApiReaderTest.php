@@ -285,7 +285,10 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         $reader->downloadTables($configuration, $root . "/download");
 
-        $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test\"\n", file_get_contents($root . "/download/test-redshift.csv"));
+        $this->assertEquals(
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n",
+            file_get_contents($root . "/download/test-redshift.csv")
+        );
 
         $adapter = new Configuration\Input\Table\Manifest\Adapter();
 

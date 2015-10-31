@@ -4,14 +4,19 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
+class DockerHubPrivateRepositoryTest extends KernelTestCase
 {
+    public function setUp()
+    {
+        self::bootKernel();
+    }
+
     /**
      * @expectedException \Keboola\DockerBundle\Exception\LoginFailedException
      */
@@ -29,7 +34,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $image->prepare($container, []);
@@ -63,7 +68,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $tag = $image->prepare($container, []);
@@ -88,7 +93,7 @@ class DockerHubPrivateRepositoryTest extends \PHPUnit_Framework_TestCase
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub-private",

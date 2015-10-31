@@ -5,14 +5,20 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class ImageBuilderTest extends \PHPUnit_Framework_TestCase
+class ImageBuilderTest extends KernelTestCase
 {
+
+    public function setUp()
+    {
+        self::bootKernel();
+    }
+
     public function testCreatePrivateRepo()
     {
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -21,7 +27,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -64,7 +70,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -105,7 +111,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -155,7 +161,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -199,7 +205,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [
@@ -237,7 +243,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(md5(uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
 
         $imageConfig = [
             "definition" => [

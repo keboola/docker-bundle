@@ -6,41 +6,14 @@
 
 namespace Keboola\DockerBundle\Encryption;
 
-use Keboola\StorageApi\Client;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
-class JobCryptoWrapper extends CryptoWrapper
+class ComponentProjectWrapper extends ComponentWrapper
 {
     /**
      * @var string
      */
-    protected $componentId;
-
-    /**
-     * @var string
-     */
     protected $projectId;
-
-    /**
-     * @return mixed
-     */
-    public function getComponentId()
-    {
-        return $this->componentId;
-    }
-
-    /**
-     * @param mixed $componentId
-     * @return $this
-     */
-    public function setComponentId($componentId)
-    {
-        $this->componentId = $componentId;
-
-        return $this;
-    }
 
     /**
      * @return string
@@ -75,5 +48,13 @@ class JobCryptoWrapper extends CryptoWrapper
         $fullKey = $this->getComponentId() . "-" . $this->getProjectId() . "-" . parent::getKey();
         $key = substr(hash('sha256', $fullKey), 0, 16);
         return $key;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPrefix()
+    {
+        return "KBC::ComponentProjectEncrypted==";
     }
 }

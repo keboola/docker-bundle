@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -12,10 +11,16 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
+class ContainerErrorHandlingTest extends KernelTestCase
 {
+    public function setUp()
+    {
+        self::bootKernel();
+    }
+
     private function createScript(Temp $temp, $contents)
     {
         $temp->initRunFolder();
@@ -37,7 +42,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -62,7 +67,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -91,7 +96,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -120,7 +125,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -148,7 +153,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -173,7 +178,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-php-test"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -202,7 +207,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -229,7 +234,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -256,7 +261,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "streaming_logs" => true
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
@@ -301,7 +306,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ],
             "streaming_logs" => false
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
@@ -348,7 +353,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             ],
             "memory" => "10m"
         ];
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);

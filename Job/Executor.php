@@ -1,7 +1,8 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
-use Keboola\DockerBundle\Encryption\JobCryptoWrapper;
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
@@ -34,12 +35,7 @@ class Executor extends BaseExecutor
     /**
      * @var ObjectEncryptor
      */
-    protected $genericEncryptor;
-
-    /**
-     * @var ObjectEncryptor
-     */
-    protected $jobEncryptor;
+    protected $encryptor;
 
     /**
      * @var Components
@@ -47,25 +43,37 @@ class Executor extends BaseExecutor
     protected $components;
 
     /**
-     * @var JobCryptoWrapper
+     * @var ComponentWrapper
      */
-    protected $cryptoWrapper;
+    protected $encryptionComponent;
+
+    /**
+     * @var ComponentProjectWrapper
+     */
+    protected $encryptionComponentProject;
 
     /**
      * @param Logger $log
      * @param Temp $temp
-     * @param ObjectEncryptor $genericEncryptor
-     * @param ObjectEncryptor $jobEncryptor
+     * @param ObjectEncryptor $encryptor
      * @param ComponentsService $components
+     * @param ComponentWrapper $componentWrapper
+     * @param ComponentProjectWrapper $componentProjectWrapper
      */
-    public function __construct(Logger $log, Temp $temp, ObjectEncryptor $genericEncryptor, ObjectEncryptor $jobEncryptor, ComponentsService $components, JobCryptoWrapper $cryptoWrapper)
-    {
+    public function __construct(
+        Logger $log,
+        Temp $temp,
+        ObjectEncryptor $encryptor,
+        ComponentsService $components,
+        ComponentWrapper $componentWrapper,
+        ComponentProjectWrapper $componentProjectWrapper
+    ) {
         $this->log = $log;
         $this->temp = $temp;
-        $this->genericEncryptor = $genericEncryptor;
-        $this->jobEncryptor = $jobEncryptor;
+        $this->encryptor = $encryptor;
         $this->components = $components->getComponents();
-        $this->cryptoWrapper = $cryptoWrapper;
+        $this->encryptionComponent = $componentWrapper;
+        $this->encryptionComponentProject = $componentProjectWrapper;
     }
 
     /**
@@ -95,11 +103,11 @@ class Executor extends BaseExecutor
     {
         $tokenInfo = $this->storageApi->verifyToken();
 
-        $this->cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $this->encryptionComponentProject->setProjectId($tokenInfo["owner"]["id"]);
         if (isset($job->getRawParams()["component"])) {
-            $this->cryptoWrapper->setComponentId($job->getRawParams()["component"]);
+            $this->encryptionComponent->setComponentId($job->getRawParams()["component"]);
+            $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
         }
-
         $params = $job->getParams();
 
         $this->temp->setId($job->getId());
@@ -141,13 +149,16 @@ class Executor extends BaseExecutor
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     if (in_array("encrypt", $component["flags"])) {
-                        $configData = $this->jobEncryptor->decrypt($configuration["configuration"]);
+                        $configData = $this->encryptor->decrypt($configuration["configuration"]);
                     } else {
                         $configData = $configuration["configuration"];
                     }
                     $state = $configuration["state"];
                 } catch (ClientException $e) {
-                    throw new UserException("Error reading configuration '{$params["config"]}': " . $e->getMessage(), $e);
+                    throw new UserException(
+                        "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
+                        $e
+                    );
                 }
             }
         }
@@ -171,7 +182,7 @@ class Executor extends BaseExecutor
                         "uri" => "dummy"
                     )
                 );
-                $image = Image::factory($this->genericEncryptor, $this->log, $dummyConfig);
+                $image = Image::factory($this->encryptor, $this->log, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
 
                 $container = new Container($image, $this->log);
@@ -186,7 +197,7 @@ class Executor extends BaseExecutor
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
-                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
+                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
@@ -197,7 +208,7 @@ class Executor extends BaseExecutor
                 $this->log->info($message);
                 return ["message" => $message];
             case 'dry-run':
-                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
+                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
@@ -215,7 +226,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 return ["message" => $message];
             case 'run':
-                $image = Image::factory($this->genericEncryptor, $this->log, $component["data"]);
+                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 

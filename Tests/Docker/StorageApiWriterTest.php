@@ -99,7 +99,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file2", "test");
-        file_put_contents($root . "/upload/file2.manifest", "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: false");
+        file_put_contents(
+            $root . "/upload/file2.manifest",
+            "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: false"
+        );
         file_put_contents($root . "/upload/file3", "test");
         file_put_contents($root . "/upload/file3.manifest", "tags: [\"docker-bundle-test\"]\nis_public: true");
 
@@ -451,7 +454,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         // And again, check first incremental table
         $writer->uploadTables($root . "/upload", $configs);
         $this->client->exportTable("out.c-docker-test.table1", $root . "/download.csv");
-        $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n", file_get_contents($root . "/download.csv"));
+        $this->assertEquals(
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n",
+            file_get_contents($root . "/download.csv")
+        );
     }
 
     public function testTagFiles()
@@ -459,8 +465,14 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
         file_put_contents($root . "/upload/test", "test");
 
-        $id1 = $this->client->uploadFile($root . "/upload/test", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
-        $id2 = $this->client->uploadFile($root . "/upload/test", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+        $id1 = $this->client->uploadFile(
+            $root . "/upload/test",
+            (new FileUploadOptions())->setTags(array("docker-bundle-test"))
+        );
+        $id2 = $this->client->uploadFile(
+            $root . "/upload/test",
+            (new FileUploadOptions())->setTags(array("docker-bundle-test"))
+        );
 
         $writer = new Writer($this->client);
         $configuration = [["tags" => ["docker-bundle-test"], "processed_tags" => ['downloaded']]];

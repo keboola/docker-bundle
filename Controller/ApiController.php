@@ -71,11 +71,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
         // Encrypt configData for encrypt flagged components
         if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
-            $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+            $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
             $cryptoWrapper->setComponentId($params["component"]);
             $tokenInfo = $this->storageApi->verifyToken();
             $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-            $encryptor = $this->container->get("syrup.job_object_encryptor");
+            $encryptor = $this->container->get("syrup.object_encryptor");
             $params["configData"] = $encryptor->encrypt($params["configData"]);
         }
 
@@ -260,11 +260,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             ], 400);
         }
 
-        $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
         $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-        $encryptor = $this->container->get("syrup.job_object_encryptor");
+        $encryptor = $this->container->get("syrup.object_encryptor");
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
@@ -272,11 +272,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptor->encrypt($request->getContent());
+            $encryptedValue = $encryptor->encrypt($request->getContent(), 'syrup.encryption.component_project_wrapper');
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
         } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request);
-            $encryptedValue = $encryptor->encrypt($params);
+            $encryptedValue = $encryptor->encrypt($params, 'syrup.encryption.component_project_wrapper');
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
             throw new UserException("Incorrect Content-Type header.");
@@ -293,12 +293,12 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         if ($request->get("configuration")) {
             $configuration = json_decode($request->get("configuration"), true);
             if ($this->hasComponentEncryptFlag($request->get("component"))) {
-                $cryptoWrapper = $this->container->get("syrup.job_crypto_wrapper");
+                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($request->get("component"));
                 $tokenInfo = $this->storageApi->verifyToken();
                 $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-                $encryptor = $this->container->get("syrup.job_object_encryptor");
-                $configuration = $encryptor->encrypt($configuration);
+                $encryptor = $this->container->get("syrup.object_encryptor");
+                $configuration = $encryptor->encrypt($configuration, 'syrup.encryption.component_project_wrapper');
             }
             $options->setConfiguration($configuration);
         }
