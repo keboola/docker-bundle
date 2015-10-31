@@ -21,7 +21,8 @@ class ImageBuilderTest extends KernelTestCase
 
     public function testDockerFile()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -74,7 +75,8 @@ DOCKERFILE;
 
     public function testDockerFileVersion()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -128,7 +130,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParameters()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -190,7 +193,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileUndefParameters()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -239,7 +243,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParametersMissingValue()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -292,7 +297,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testGitCredentials()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [
@@ -355,7 +361,8 @@ DOCKERFILE;
 
     public function testInvalidRepository()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
         $imageConfig = [
             "definition" => [

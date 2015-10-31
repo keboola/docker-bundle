@@ -93,7 +93,8 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub-private",

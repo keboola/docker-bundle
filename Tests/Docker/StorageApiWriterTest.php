@@ -7,8 +7,8 @@ use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
 class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 {
@@ -18,9 +18,9 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     protected $client;
 
     /**
-     * @var string
+     * @var Temp
      */
-    protected $tmpDir;
+    private $tmp;
 
     /**
      * @throws \Exception
@@ -59,12 +59,12 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         // Create folders
-        $root = "/tmp/docker/" . uniqid("", true);
+        $this->tmp = new Temp();
+        $this->tmp->initRunFolder();
+        $root = $this->tmp->getTmpFolder();
         $fs = new Filesystem();
-        $fs->mkdir($root);
-        $fs->mkdir($root . "/upload");
-        $fs->mkdir($root . "/download");
-        $this->tmpDir = $root;
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . "upload");
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . "download");
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
         $this->clearBucket();
@@ -77,14 +77,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     public function tearDown()
     {
         // Delete local files
-        $finder = new Finder();
-        $fs = new Filesystem();
-        $fs->remove($finder->files()->in($this->tmpDir . "/upload"));
-        $fs->remove($finder->files()->in($this->tmpDir . "/download"));
-        $fs->remove($finder->files()->in($this->tmpDir));
-        $fs->remove($this->tmpDir . "/upload");
-        $fs->remove($this->tmpDir . "/download");
-        $fs->remove($this->tmpDir);
+        $this->tmp = null;
 
         $this->clearBucket();
         $this->clearFileUploads();
@@ -96,7 +89,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteFiles()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file2", "test");
         file_put_contents(
@@ -157,7 +150,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteFilesOutputMapping()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
 
         $configs = array(
@@ -192,7 +185,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteFilesOutputMappingAndManifest()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: true");
 
@@ -231,7 +224,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteFilesOutputMappingMissing()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
 
@@ -252,7 +245,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteFilesOrphanedManifest()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
         $writer = new Writer($this->client);
         $writer->uploadFiles($root . "/upload");
@@ -263,7 +256,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableOutputMapping()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
         $configs = array(
@@ -288,7 +281,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableOutputMappingWithoutCsv()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table1", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
         $configs = array(
@@ -313,9 +306,15 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableOutputMappingAndManifest()
     {
-        $root = $this->tmpDir;
-        file_put_contents($root . "/upload/table2.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-        file_put_contents($root . "/upload/table2.csv.manifest", "destination: out.c-docker-test.table2\nprimary_key: [\"Id\"]");
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/table2.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/table2.csv.manifest",
+            "destination: out.c-docker-test.table2\nprimary_key: [\"Id\"]"
+        );
 
         $configs = array(
             array(
@@ -341,9 +340,15 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableManifest()
     {
-        $root = $this->tmpDir;
-        file_put_contents($root . "/upload/out.c-docker-test.table3.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-        file_put_contents($root . "/upload/out.c-docker-test.table3.csv.manifest", "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]");
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
+            "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]"
+        );
 
         $writer = new Writer($this->client);
 
@@ -361,8 +366,11 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableOrphanedManifest()
     {
-        $root = $this->tmpDir;
-        file_put_contents($root . "/upload/table.csv.manifest", "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]");
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/table.csv.manifest",
+            "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]"
+        );
         $writer = new Writer($this->client);
         $writer->uploadTables($root . "/upload");
     }
@@ -374,7 +382,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableOutputMappingMissing()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
 
         $configs = array(
             array(
@@ -391,7 +399,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableBare()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/out.c-docker-test.table4.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
 
         $writer = new Writer($this->client);
@@ -411,7 +419,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     public function testWriteTableBareWithoutSuffix()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/out.c-docker-test.table4", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
 
         $writer = new Writer($this->client);
@@ -433,7 +441,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteTableIncrementalWithDelete()
     {
 
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
         $configs = array(
@@ -462,7 +470,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testTagFiles()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/test", "test");
 
         $id1 = $this->client->uploadFile(
@@ -486,7 +494,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateNoChange()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/test.json", '{"state": "aabb"}');
 
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -502,7 +510,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateChange()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/test.json", '{"state": "aabbcc"}');
 
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -510,8 +518,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $sapiStub->expects($this->once())
             ->method("apiPut")
-            ->with($this->equalTo("storage/components/test/configs/test"), $this->equalTo(["state" => '{"state":"aabbcc"}']))
-            ;
+            ->with(
+                $this->equalTo("storage/components/test/configs/test"),
+                $this->equalTo(["state" => '{"state":"aabbcc"}'])
+            );
 
         $writer = new Writer($sapiStub);
         $writer->setFormat("json");
@@ -520,7 +530,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateChangeToEmpty()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/test.json", '{}');
 
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")

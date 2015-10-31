@@ -62,7 +62,8 @@ class ImageTest extends KernelTestCase
 
     public function testDockerHubPrivateRepository()
     {
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub-private",
