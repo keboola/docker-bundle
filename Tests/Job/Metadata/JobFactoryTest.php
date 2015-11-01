@@ -10,6 +10,10 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class JobFactoryTest extends KernelTestCase
 {
+    public function setUp()
+    {
+        self::bootKernel();
+    }
 
     /**
      * @param bool $encrypt

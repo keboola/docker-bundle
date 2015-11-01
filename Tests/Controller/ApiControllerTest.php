@@ -315,6 +315,48 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
+        $this->assertCount(2, $result);
+    }
+
+    public function testEncryptProject()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test"
+        ];
+        $request = Request::create(
+            "/docker/docker-dummy-test/configs/encrypt",
+            'POST',
+            $parameters,
+            [],
+            [],
+            $server,
+            $content
+        );
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
         $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
@@ -349,7 +391,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
@@ -378,7 +420,7 @@ class ApiControllerTest extends WebTestCase
         $response = $ctrl->encryptAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $result = $response->getContent();
-        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result, 0, 32));
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value", $encryptor->decrypt($result));
     }
