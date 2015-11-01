@@ -10,7 +10,7 @@ Encrypts a string or a JSON
 
 ## Base encryption [/encrypt]
 
-Used for encrypting image definition.
+Used for encrypting global values.
 
 ### Encrypt data [POST]
 
@@ -25,7 +25,7 @@ Used for encrypting image definition.
 
 + Response 200 (text/plain)
 
-        KBC::Encoded==ENCODEDSTRING==
+        KBC::Encrypted==ENCODEDSTRING==
 
 + Request Encrypt JSON structure (application/json)
     + Headers
@@ -43,12 +43,12 @@ Used for encrypting image definition.
 
             {
                 "config": 1,
-                "#test": "KBC::Encoded==ENCODEDSTRING=="
+                "#test": "KBC::Encrypted==ENCODEDSTRING=="
             }
 
-## Configuration encryption [/{image}/encrypt]
+## Image encryption [/{image}/encrypt]
 
-Used for encrypting configuration.
+Used for encrypting values in image specification. Cipher text can be decrypted only in the specified image.
 
 
 + Parameters
@@ -67,7 +67,7 @@ Used for encrypting configuration.
 
 + Response 200 (text/plain)
 
-        KBC::Encoded==ENCODEDSTRING==
+        KBC::ComponentEncrypted==ENCODEDSTRING==
 
 + Request Encrypt JSON structure (application/json)
     + Headers
@@ -85,12 +85,56 @@ Used for encrypting configuration.
 
             {
                 "config": 1,
-                "#test": "KBC::Encoded==ENCODEDSTRING=="
+                "#test": "KBC::ComponentEncrypted==ENCODEDSTRING=="
             }
 
+## Image configuration encryption [/{image}/configs/encrypt]
+
+Used for encrypting values in image configuration. Cipher text can be decrypted only in the specified image
+only in the specified project (project is specified in token).  
+
+
++ Parameters
+    + image (string) ... ID of the image (KBC component name)
+
+### Encrypt data [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            abcd
+
++ Response 200 (text/plain)
+
+        KBC::ComponentProjectEncrypted==ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": 1,
+                "#test": "aabb"
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
+            }
+            
 ## Encrypt and store configuration [/{image}/configs/{configId}]
 
-Wrapper for a native Storage API call, that encrypts values before saving them. 1:1 compatible with http://docs.keboola.apiary.io/#put-%2Fv2%2Fstorage%2Fcomponents%2F%7Bcomponent_id%7D%2Fconfigs%2F%7Bid%7D
+Wrapper for a native Storage API call, that encrypts (image configuration encryption is used) values before saving them. 
+1:1 compatible with http://docs.keboola.apiary.io/#put-%2Fv2%2Fstorage%2Fcomponents%2F%7Bcomponent_id%7D%2Fconfigs%2F%7Bid%7D
 
 
 + Parameters
@@ -142,7 +186,7 @@ Wrapper for a native Storage API call, that encrypts values before saving them. 
               "configuration": {
                 "parameters": {
                   "plain": "test",
-                  "#encrypted": "KBC::Encrypted==VDeKlsVo8+eqg5afhZd/zDBun9Al1jUoynx7QrBpMZiZbI3vcLNjpLRXMyT4oTFSMj9Irb2ipXVmI0wJr4O1/A=="
+                  "#encrypted": "KBC::ComponentProjectEncrypted==VDeKlsVo8+eqg5afhZd/zDBun9Al1jUoynx7QrBpMZiZbI3vcLNjpLRXMyT4oTFSMj9Irb2ipXVmI0wJr4O1/A=="
                 }
               },
               "state": []
@@ -164,7 +208,7 @@ Wrapper for a native Storage API call, that encrypts values before saving them. 
 
             {
                 "config": 1,
-                "#test": "KBC::Encoded==ENCODEDSTRING=="
+                "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
             }
 
 

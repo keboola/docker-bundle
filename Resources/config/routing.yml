@@ -30,7 +30,13 @@ keboola_docker_encrypt:
       _controller: KeboolaDockerBundle:Api:encrypt
     methods:  [POST]
 
-keboola_docker_save_configt:
+keboola_docker_encrypt_config:
+    path:     /{component}/configs/encrypt
+    defaults:
+      _controller: KeboolaDockerBundle:Api:encryptConfig
+    methods:  [POST]
+
+keboola_docker_save_config:
     path:     /{component}/configs/{configId}
     defaults:
       _controller: KeboolaDockerBundle:Api:saveConfig

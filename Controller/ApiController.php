@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -224,7 +226,8 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     {
         $apiMethod = substr($request->getPathInfo(), strrpos($request->getPathInfo(), '/') + 1);
         throw new UserException(
-            "This api call without component name is not supported, perhaps you wanted to call /{compoment}/" . $apiMethod
+            "This api call without component name is not supported, perhaps you wanted to call /{component}/" .
+            $apiMethod
         );
     }
 
@@ -260,6 +263,46 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             ], 400);
         }
 
+        /** @var ComponentWrapper $cryptoWrapper */
+        $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
+        $cryptoWrapper->setComponentId($request->get("component"));
+        $encryptor = $this->container->get("syrup.object_encryptor");
+
+        $contentTypeHeader = $request->headers->get("Content-Type");
+        if (!is_string($contentTypeHeader)) {
+            throw new UserException("Incorrect Content-Type header.");
+        }
+
+        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
+            $encryptedValue = $encryptor->encrypt($request->getContent(), 'syrup.encryption.component_wrapper');
+            return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
+        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
+            $params = $this->getPostJson($request);
+            $encryptedValue = $encryptor->encrypt($params, 'syrup.encryption.component_wrapper');
+            return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
+        } else {
+            throw new UserException("Incorrect Content-Type header.");
+        }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function encryptConfigAction(Request $request)
+    {
+        $component = $request->get("component");
+        if (!$component) {
+            return parent::encryptAction($request);
+        }
+        if (!$this->hasComponentEncryptFlag($component)) {
+            return $this->createJsonResponse([
+                'status'    => 'error',
+                'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
+            ], 400);
+        }
+
+        /** @var ComponentProjectWrapper $cryptoWrapper */
         $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
