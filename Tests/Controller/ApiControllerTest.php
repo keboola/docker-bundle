@@ -353,7 +353,7 @@ class ApiControllerTest extends WebTestCase
 
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
+        $response = $ctrl->encryptConfigAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
@@ -420,7 +420,7 @@ class ApiControllerTest extends WebTestCase
         $response = $ctrl->encryptAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $result = $response->getContent();
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25));
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25  ));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value", $encryptor->decrypt($result));
     }
@@ -648,7 +648,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
