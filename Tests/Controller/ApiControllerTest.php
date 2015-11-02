@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ApiController;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -420,7 +419,7 @@ class ApiControllerTest extends WebTestCase
         $response = $ctrl->encryptAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $result = $response->getContent();
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25  ));
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25));
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value", $encryptor->decrypt($result));
     }
