@@ -342,7 +342,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $dockerFile .= "WORKDIR /home\n";
 
         if ($this->getVersion()) {
-            $dockerFile .= "\n# Version " . $this->getVersion();
+            $dockerFile .= "\nENV APP_VERSION " . $this->getVersion();
         }
         if ($this->getRepositoryType() == 'git') {
             $repositoryCommands = $this->handleGitCredentials($workingFolder);
@@ -432,6 +432,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             } else {
                 $noCache = '';
             }
+            $this->logger->debug("Building image");
             $process = new Process("sudo docker build$noCache --tag=" . escapeshellarg($tag) . " " . $workingFolder);
             // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
             $process->setTimeout(3600);
