@@ -1,7 +1,6 @@
 <?php
-namespace Keboola\DockerBundle\Tests\Docker\Mock;
 
-use Symfony\Component\Process\Process;
+namespace Keboola\DockerBundle\Tests\Docker\Mock;
 
 /**
  * Class MockContainer

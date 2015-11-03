@@ -4,21 +4,14 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
-class ContainerTest extends KernelTestCase
+class ContainerTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
-
     public function testCreateAndDropDataDir()
     {
         $log = new Logger("null");
@@ -29,7 +22,7 @@ class ContainerTest extends KernelTestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
@@ -61,7 +54,7 @@ class ContainerTest extends KernelTestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -123,7 +116,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -144,7 +137,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -163,7 +156,7 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 

@@ -3,18 +3,13 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class ImageTest extends KernelTestCase
+class ImageTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
     public function testFactory()
     {
         $dummyConfig = array(
@@ -23,7 +18,7 @@ class ImageTest extends KernelTestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $dummyConfig);
@@ -47,7 +42,7 @@ class ImageTest extends KernelTestCase
             "streaming_logs" => true,
             "configuration_format" => 'json'
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
 
         $image = Image::factory($encryptor, $log, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
@@ -62,8 +57,11 @@ class ImageTest extends KernelTestCase
 
     public function testDockerHubPrivateRepository()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub-private",
@@ -101,7 +99,7 @@ class ImageTest extends KernelTestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $dummyConfig);

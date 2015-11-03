@@ -4,25 +4,20 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class ImageBuilderTest extends KernelTestCase
+class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
 
     public function testDockerFile()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
@@ -75,8 +70,7 @@ DOCKERFILE;
 
     public function testDockerFileVersion()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
@@ -130,8 +124,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParameters()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
@@ -193,8 +186,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileUndefParameters()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
@@ -243,8 +235,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParametersMissingValue()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
@@ -297,8 +288,10 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testGitCredentials()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
 
         $imageConfig = [
             "definition" => [
@@ -361,8 +354,7 @@ DOCKERFILE;
 
     public function testInvalidRepository()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = new ObjectEncryptor();
 
         $imageConfig = [
             "definition" => [
