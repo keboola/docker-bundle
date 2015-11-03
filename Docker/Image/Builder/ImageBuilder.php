@@ -422,6 +422,17 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 }
             }
 
+            try {
+                $process = new Process("sudo docker pull " . escapeshellarg($this->getDockerHubImageId()));
+                $process->setTimeout(3600);
+                $process->run();
+            } catch (\Exception $e) {
+                throw new BuildException(
+                    "Failed to get parent container {$this->getDockerHubImageId()}, error: " . $e->getMessage(),
+                    $e
+                );
+            }
+
             $temp = new Temp('docker');
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
