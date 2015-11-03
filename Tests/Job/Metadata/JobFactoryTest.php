@@ -2,19 +2,14 @@
 
 namespace Keboola\DockerBundle\Tests\Job\Metadata;
 
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class JobFactoryTest extends KernelTestCase
+class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
     /**
      * @param bool $encrypt
      * @return Client
@@ -86,8 +81,7 @@ class JobFactoryTest extends KernelTestCase
 
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        /** @var ObjectEncryptor $configEncryptor */
-        $configEncryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $configEncryptor = new ObjectEncryptor();
 
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
@@ -119,8 +113,9 @@ class JobFactoryTest extends KernelTestCase
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        /** @var ObjectEncryptor $configEncryptor */
-        $configEncryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);
@@ -148,8 +143,9 @@ class JobFactoryTest extends KernelTestCase
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        /** @var ObjectEncryptor $configEncryptor */
-        $configEncryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
         $sapiStub = $this->getSapiStub(false);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);
@@ -176,8 +172,10 @@ class JobFactoryTest extends KernelTestCase
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        /** @var ObjectEncryptor $configEncryptor */
-        $configEncryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
+
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);
