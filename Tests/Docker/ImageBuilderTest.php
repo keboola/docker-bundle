@@ -117,7 +117,7 @@ DOCKERFILE;
             'FROM keboolaprivatetest/docker-demo-docker
 WORKDIR /home
 
-# Version 1.0.2
+ENV APP_VERSION 1.0.2
 # Image definition commands
 RUN git clone https://github.com/keboola/docker-demo-app /home/
 RUN cd /home/

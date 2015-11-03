@@ -47,6 +47,15 @@ class ExecutorTest extends KernelTestCase
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
 
+        // Delete bucket
+        if ($this->client->bucketExists("in.c-docker-test")) {
+            // Delete tables
+            foreach ($this->client->listTables("in.c-docker-test") as $table) {
+                $this->client->dropTable($table["id"]);
+            }
+            $this->client->dropBucket("in.c-docker-test");
+        }
+
         // Create bucket
         if (!$this->client->bucketExists("in.c-docker-test")) {
             $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker Testsuite");
@@ -60,34 +69,12 @@ class ExecutorTest extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
         }
 
-        // delete test files
         $listFiles = new ListFilesOptions();
         $listFiles->setTags(['sandbox']);
         $listFiles->setRunId($this->client->getRunId());
         foreach ($this->client->listFiles($listFiles) as $file) {
             $this->client->deleteFile($file['id']);
         }
-    }
-
-    public function tearDown()
-    {
-        // Delete local files
-        $this->temp = null;
-
-        // Delete tables
-        foreach ($this->client->listTables("in.c-docker-test") as $table) {
-            $this->client->dropTable($table["id"]);
-        }
-
-        $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['sandbox']);
-        $listFiles->setRunId($this->client->getRunId());
-        foreach ($this->client->listFiles($listFiles) as $file) {
-            $this->client->deleteFile($file['id']);
-        }
-
-        // Delete bucket
-        $this->client->dropBucket("in.c-docker-test");
     }
 
     public function testExecutorRun()
