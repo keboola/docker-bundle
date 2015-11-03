@@ -7,6 +7,7 @@
 namespace Keboola\DockerBundle\Tests\Command;
 
 use Keboola\DockerBundle\Command\DecryptCommand;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Test\CommandTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -33,20 +34,20 @@ class DecryptCommandTest extends CommandTestCase
         $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage User error: 'test' is not an encrypted value.
-     */
     public function testDecryptGenericFail()
     {
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
-        $commandTester->execute([
-            'string' => "test",
-            '-p' => null,
-            '-c' => null,
-        ]);
-
+        try {
+            $commandTester->execute([
+                'string' => "test",
+                '-p' => null,
+                '-c' => null,
+            ]);
+            $this->fail("Attempting to decrypt invalid value must fail.");
+        } catch (UserException $e) {
+            $this->assertContains('is not an encrypted value', $e->getMessage());
+        }
     }
 
     public function testDecryptComponentSpecific()
@@ -67,19 +68,19 @@ class DecryptCommandTest extends CommandTestCase
         $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage User error: 'test' is not an encrypted value.
-     */
     public function testDecryptComponentSpecificFail()
     {
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
-        $commandTester->execute([
-            'string' => "test",
-            '-p' => "123",
-            '-c' => "dummy",
-        ]);
-
+        try {
+            $commandTester->execute([
+                'string' => "test",
+                '-p' => "123",
+                '-c' => "dummy",
+            ]);
+            $this->fail("Attempting to decrypt invalid value must fail.");
+        } catch (UserException $e) {
+            $this->assertContains('is not an encrypted value', $e->getMessage());
+        }
     }
 }
