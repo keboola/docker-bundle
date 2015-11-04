@@ -103,7 +103,7 @@ class BuilderParameter
                 if (!is_scalar($value) || !in_array($value, $this->allowedValues)) {
                     throw new BuildParameterException(
                         "Invalid value " . var_export($value, true) . " for parameter " . $this->name .
-                        ", it must be any of " . print_r($this->allowedValues, true) . "."
+                        ", it must be any of " . implode(", ", $this->allowedValues) . "."
                     );
                 }
                 $this->value = $value;
