@@ -184,6 +184,55 @@ ENTRYPOINT php /home/run.php --data=/data';
     }
 
 
+    public function testDockerFileInvalidParameters()
+    {
+        $encryptor = new ObjectEncryptor();
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd {{#password}}",
+                        "composer install"
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data",
+                    "parameters" => [
+                        [
+                            "name" => "#password",
+                            "type" => "string"
+                        ]
+                    ]
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+        $tempDir = new Temp('docker-test');
+        $tempDir->initRunFolder();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, ['parameters' => ['#password' => 'fooBar']]);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+        $reflection->setAccessible(true);
+        try {
+            $reflection->invoke($image, $tempDir->getTmpFolder());
+            $this->fail("Trying to use password in build commands must raise an exception.");
+        } catch (BuildParameterException $e) {
+            $this->assertContains('{{#password}}', $e->getMessage());
+        }
+    }
+
+
     public function testDockerFileUndefParameters()
     {
         $encryptor = new ObjectEncryptor();

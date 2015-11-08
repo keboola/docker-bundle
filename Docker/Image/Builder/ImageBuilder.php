@@ -365,7 +365,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $dockerFile .= "ENTRYPOINT " . $this->replacePlaceholders($this->getEntryPoint()) . "\n";
 
         // verify that no placeholders remained in Dockerfile
-        if (preg_match_all('#{{[a-z0-9_-]+}}#i', $dockerFile, $matches)) {
+        if (preg_match_all('#{{\#?[a-z0-9_-]+}}#i', $dockerFile, $matches)) {
             throw new BuildParameterException(
                 "Orphaned parameters remaining in build commands " . implode(",", $matches[0])
             );
@@ -380,12 +380,23 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private function initParameters(array $configData)
     {
+
         // set parameter values
         if (isset($configData['parameters']) && is_array($configData['parameters'])) {
             foreach ($configData['parameters'] as $key => $value) {
                 // use only root elements of configData
                 if (isset($this->parameters[$key])) {
                     $this->parameters[$key]->setValue($value);
+                    // handle special parameters
+                    if ($key === 'repository') {
+                        $this->setRepository($value);
+                    } elseif ($key === 'username') {
+                        $this->setRepoUsername($value);
+                        unset($this->parameters[$key]);
+                    } elseif ($key === '#password') {
+                        $this->setRepoPassword($value);
+                        unset($this->parameters[$key]);
+                    }
                 }
             }
         }
