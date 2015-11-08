@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
-use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -126,6 +125,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(3, $files);
 
+        $file1 = $file2 = $file3 = null;
         foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
@@ -175,6 +175,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(1, $files);
 
+        $file1 = null;
         foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
