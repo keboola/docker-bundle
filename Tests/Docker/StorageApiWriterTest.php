@@ -224,7 +224,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteFilesInvalidJson()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file1.manifest", "this is not at all a {valid} json");
 
@@ -248,7 +248,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function testWriteFilesInvalidYaml()
     {
-        $root = $this->tmpDir;
+        $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
         file_put_contents($root . "/upload/file1.manifest", "\tthis is not \n\t \tat all a {valid} yaml");
 
