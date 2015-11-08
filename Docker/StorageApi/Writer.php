@@ -170,13 +170,15 @@ class Writer
     /**
      * @param $source
      * @return array
-     * @throws \Exception
      */
     protected function readFileManifest($source)
     {
         $adapter = new File\Manifest\Adapter($this->getFormat());
-
-        return $adapter->readFromFile($source);
+        try {
+            return $adapter->readFromFile($source);
+        } catch (\Exception $e) {
+            throw new ManifestMismatchException("Failed to parse manifest file $source " . $e->getMessage(), $e);
+        }
     }
 
     /**
