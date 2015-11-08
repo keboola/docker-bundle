@@ -4,14 +4,8 @@
     "description": "Component for running Docker images in KBC",
     "keywords": [],
     "authors": [],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/keboola/docker-bundle"
-        }
-    ],    
     "require": {
-        "keboola/syrup": "dev-encryption2",
+        "keboola/syrup": "2.5.*",
         "symfony/symfony": "2.7.5"
     },
     "require-dev": {
