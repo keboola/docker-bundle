@@ -8,6 +8,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
+use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
@@ -120,6 +121,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(3, $files);
 
+        $file1 = $file2 = $file3 = null;
         foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
@@ -169,6 +171,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(1, $files);
 
+        $file1 = null;
         foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
@@ -206,6 +209,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $files = $this->client->listFiles($options);
         $this->assertCount(1, $files);
 
+        $file1 = null;
         foreach ($files as $file) {
             if ($file["name"] == 'file1') {
                 $file1 = $file;
@@ -216,6 +220,54 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(4, $file1["sizeBytes"]);
         $this->assertEquals(array("docker-bundle-test", "yyy"), $file1["tags"]);
         $this->assertFalse($file1["isPublic"]);
+    }
+
+    public function testWriteFilesInvalidJson()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1", "test");
+        file_put_contents($root . "/upload/file1.manifest", "this is not at all a {valid} json");
+
+        $configs = array(
+            array(
+                "source" => "file1",
+                "tags" => array("docker-bundle-test", "yyy"),
+                "is_public" => false
+            )
+        );
+
+        $writer = new Writer($this->client);
+        $writer->setFormat('json');
+        try {
+            $writer->uploadFiles($root . "/upload", $configs);
+            $this->fail("Invalid manifest must raise exception.");
+        } catch (UserException $e) {
+            $this->assertContains('json', $e->getMessage());
+        }
+    }
+
+    public function testWriteFilesInvalidYaml()
+    {
+        $root = $this->tmpDir;
+        file_put_contents($root . "/upload/file1", "test");
+        file_put_contents($root . "/upload/file1.manifest", "\tthis is not \n\t \tat all a {valid} yaml");
+
+        $configs = array(
+            array(
+                "source" => "file1",
+                "tags" => array("docker-bundle-test", "yyy"),
+                "is_public" => false
+            )
+        );
+
+        $writer = new Writer($this->client);
+        $writer->setFormat('yaml');
+        try {
+            $writer->uploadFiles($root . "/upload", $configs);
+            $this->fail("Invalid manifest must raise exception.");
+        } catch (UserException $e) {
+            $this->assertContains('yaml', $e->getMessage());
+        }
     }
 
     /**

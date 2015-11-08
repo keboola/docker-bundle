@@ -3,9 +3,9 @@
 namespace Keboola\DockerBundle\Docker\StorageApi;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Configuration\Adapter;
 use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Keboola\DockerBundle\Docker\Configuration\Output\Table;
+use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\StorageApi\Client;
@@ -18,7 +18,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 
 /**
  * Class Writer
@@ -153,7 +152,10 @@ class Writer
             try {
                 $this->uploadFile($file->getPathname(), $storageConfig);
             } catch (ClientException $e) {
-                throw new UserException("Cannot upload file '{$file->getFilename()}' to Storage API: " . $e->getMessage(), $e);
+                throw new UserException(
+                    "Cannot upload file '{$file->getFilename()}' to Storage API: " . $e->getMessage(),
+                    $e
+                );
             }
         }
 
@@ -170,13 +172,18 @@ class Writer
     /**
      * @param $source
      * @return array
-     * @throws \Exception
      */
     protected function readFileManifest($source)
     {
         $adapter = new File\Manifest\Adapter($this->getFormat());
-
-        return $adapter->readFromFile($source);
+        try {
+            return $adapter->readFromFile($source);
+        } catch (\Exception $e) {
+            throw new ManifestMismatchException(
+                "Failed to parse manifest file $source as " . $this->getFormat() . " " . $e->getMessage(),
+                $e
+            );
+        }
     }
 
     /**
@@ -284,7 +291,11 @@ class Writer
             try {
                 $this->uploadTable($file->getPathname(), $config);
             } catch (ClientException $e) {
-                throw new UserException("Cannot upload file '{$file->getFilename()}' to table '{$config["destination"]}' in Storage API: " . $e->getMessage(), $e);
+                throw new UserException(
+                    "Cannot upload file '{$file->getFilename()}' to table '{$config["destination"]}' in Storage API: "
+                    . $e->getMessage(),
+                    $e
+                );
             }
         }
 
@@ -406,7 +417,7 @@ class Writer
      */
     public function updateState($componentId, $configurationId, $file, $previousState)
     {
-        $adapter = new \Keboola\DockerBundle\Docker\Configuration\State\Adapter($this->getFormat());
+        $adapter = new Adapter($this->getFormat());
         $fileName = $file . $adapter->getFileExtension();
         $fs = new Filesystem();
         if ($fs->exists($fileName)) {
