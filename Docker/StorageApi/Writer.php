@@ -179,7 +179,10 @@ class Writer
         try {
             return $adapter->readFromFile($source);
         } catch (\Exception $e) {
-            throw new ManifestMismatchException("Failed to parse manifest file $source " . $e->getMessage(), $e);
+            throw new ManifestMismatchException(
+                "Failed to parse manifest file $source as " . $this->getFormat() . " " . $e->getMessage(),
+                $e
+            );
         }
     }
 

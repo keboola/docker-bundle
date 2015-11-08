@@ -246,6 +246,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $writer->uploadFiles($root . "/upload", $configs);
             $this->fail("Invalid manifest must raise exception.");
         } catch (UserException $e) {
+            $this->assertContains('json', $e->getMessage());
         }
     }
 
@@ -269,6 +270,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $writer->uploadFiles($root . "/upload", $configs);
             $this->fail("Invalid manifest must raise exception.");
         } catch (UserException $e) {
+            $this->assertContains('yaml', $e->getMessage());
         }
     }
 
