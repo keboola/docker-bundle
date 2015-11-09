@@ -35,7 +35,7 @@ class DockerHub extends Image
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
 

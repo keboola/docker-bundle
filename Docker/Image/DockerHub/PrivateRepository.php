@@ -158,7 +158,7 @@ class PrivateRepository extends Image\DockerHub
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
@@ -168,7 +168,7 @@ class PrivateRepository extends Image\DockerHub
                     "{$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new LoginFailedException($message);
             }
-            $tag = parent::prepare($container, $configData);
+            $tag = parent::prepare($container, $configData, $containerId);
             return $tag;
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();

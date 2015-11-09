@@ -37,7 +37,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, []);
+        $image->prepare($container, [], uniqid());
     }
 
     /**
@@ -71,7 +71,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, []);
+        $tag = $image->prepare($container, [], uniqid());
 
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $tag);
 
@@ -116,7 +116,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, []);
+        $tag = $image->prepare($container, [], uniqid());
 
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $tag);
 

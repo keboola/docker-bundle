@@ -159,7 +159,7 @@ class Container
             throw new ApplicationException("Data directory not set.");
         }
 
-        $id = $this->getImage()->prepare($this, $configData);
+        $id = $this->getImage()->prepare($this, $configData, $containerId);
         $this->setId($id);
 
         // Run container

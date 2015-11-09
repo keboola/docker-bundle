@@ -418,7 +418,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         $this->initParameters($configData);
         try {
@@ -448,7 +448,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
             $this->createDockerFile($workingFolder);
-            $tag = uniqid('builder-');
+            $tag = uniqid('builder-' . $containerId . "-");
             if (!$this->getCache()) {
                 $noCache = ' --no-cache';
             } else {
