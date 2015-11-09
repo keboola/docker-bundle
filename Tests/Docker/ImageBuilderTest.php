@@ -396,7 +396,7 @@ DOCKERFILE;
         $this->assertEquals($expectedFile, trim($dockerFile));
         $credentials = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $this->assertEquals(
-            'https://keboolaprivatetest:uH11KyDFnG1G8gPHHzmn@github.com/keboola/docker-demo-app',
+            'https://' . GIT_PRIVATE_USERNAME . ':' . GIT_PRIVATE_PASSWORD . '@github.com/keboola/docker-demo-app',
             trim($credentials)
         );
     }
