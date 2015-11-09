@@ -1,11 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f39a3271ed19e979b9044e8383605474",
-    "content-hash": "7acdc232d853f3b975365b6c5bed5a17",
+    "hash": "4a3d9fef0741028935dbcc8227e7d3e1",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1464,7 +1463,6 @@
                 "mcrypt",
                 "security"
             ],
-            "abandoned": "defuse/php-encryption",
             "time": "2013-07-15 12:02:24"
         },
         {
@@ -1558,16 +1556,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "2.5.8",
+            "version": "2.5.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "910beaab6fda8fab9d508a5cc3f073efca0790a7"
+                "reference": "1f312e6272fb50f7298d0b47efa9892ee559b86a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/910beaab6fda8fab9d508a5cc3f073efca0790a7",
-                "reference": "910beaab6fda8fab9d508a5cc3f073efca0790a7",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/1f312e6272fb50f7298d0b47efa9892ee559b86a",
+                "reference": "1f312e6272fb50f7298d0b47efa9892ee559b86a",
                 "shasum": ""
             },
             "require": {
@@ -1621,7 +1619,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-11-06 09:04:34"
+            "time": "2015-11-09 11:13:07"
         },
         {
             "name": "kriswallsmith/assetic",
