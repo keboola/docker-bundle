@@ -3,8 +3,10 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Encryption\CryptoWrapper;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Monolog\Handler\NullHandler;
+use Monolog\Logger;
 
 class ImageTest extends \PHPUnit_Framework_TestCase
 {
@@ -16,8 +18,10 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $dummyConfig);
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $dummyConfig);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
         $this->assertEquals(1024, $image->getCpuShares());
@@ -38,8 +42,9 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => true,
             "configuration_format" => 'json'
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $configuration);
+        $encryptor = new ObjectEncryptor();
+
+        $image = Image::factory($encryptor, $log, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub", get_class($image));
         $this->assertEquals("128m", $image->getMemory());
         $this->assertEquals(2048, $image->getCpuShares());
@@ -52,7 +57,11 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testDockerHubPrivateRepository()
     {
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub-private",
@@ -68,7 +77,10 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "memory" => "128m",
             "process_timeout" => 7200
         );
-        $image = Image::factory($encryptor, $configuration);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var Image\DockerHub\PrivateRepository $image */
+        $image = Image::factory($encryptor, $log, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub\\PrivateRepository", get_class($image));
         $this->assertEquals("aa", $image->getLoginEmail());
         $this->assertEquals("bb", $image->getLoginPassword());
@@ -87,8 +99,10 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $dummyConfig);
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $dummyConfig);
         $image->setConfigFormat('yaml');
         $this->assertEquals('yaml', $image->getConfigFormat());
         try {

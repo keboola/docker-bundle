@@ -146,18 +146,20 @@ class Container
         return $this;
     }
 
+
     /**
      * @param string $containerId container id
+     * @param array $configData Configuration (same as the one stored in data config file)
      * @return Process
      * @throws ApplicationException
      */
-    public function run($containerId)
+    public function run($containerId, array $configData)
     {
         if (!$this->getDataDir()) {
             throw new ApplicationException("Data directory not set.");
         }
 
-        $id = $this->getImage()->prepare($this);
+        $id = $this->getImage()->prepare($this, $configData, $containerId);
         $this->setId($id);
 
         // Run container

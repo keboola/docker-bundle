@@ -2,18 +2,17 @@
 
 namespace Keboola\DockerBundle\Tests\Job\Metadata;
 
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Encryption\CryptoWrapper;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
 
 class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {
-
     /**
      * @param bool $encrypt
-     * @return StorageApiService
+     * @return Client
      */
     protected function getSapiStub($encrypt = true)
     {
@@ -73,10 +72,6 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         return $storageClientStub;
     }
 
-
-    /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
-     */
     public function testJobFactory()
     {
         $storageApiClient = new Client([
@@ -86,7 +81,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
 
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
+        $configEncryptor = new ObjectEncryptor();
 
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
@@ -114,14 +109,13 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($tokenData['token'], $encryptor->decrypt($job->getToken()['token']));
     }
 
-    /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
-     */
     public function testJobEncryptFlagSandbox()
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);
@@ -145,14 +139,13 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
     }
 
-    /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
-     */
     public function testJobEncryptFlagNonEncryptComponent()
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
         $sapiStub = $this->getSapiStub(false);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);
@@ -175,14 +168,14 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
     }
 
-    /**
-     * @covers \Keboola\DockerBundle\Job\Metadata\JobFactory::create
-     */
     public function testJobEncryptFlagEncryptComponent()
     {
         $key = hash('sha256', uniqid());
         $encryptor = new Encryptor(substr($key, 0, 32));
-        $configEncryptor = new ObjectEncryptor(new CryptoWrapper($key));
+        $wrapper = new BaseWrapper(md5(uniqid()));
+        $configEncryptor = new ObjectEncryptor();
+        $configEncryptor->pushWrapper($wrapper);
+
         $sapiStub = $this->getSapiStub(true);
         $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
         $jobFactory->setStorageApiClient($sapiStub);

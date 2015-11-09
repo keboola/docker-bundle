@@ -6,11 +6,10 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Encryption\CryptoWrapper;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -45,6 +44,15 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
 
+        // Delete bucket
+        if ($this->client->bucketExists("in.c-docker-test")) {
+            // Delete tables
+            foreach ($this->client->listTables("in.c-docker-test") as $table) {
+                $this->client->dropTable($table["id"]);
+            }
+            $this->client->dropBucket("in.c-docker-test");
+        }
+
         // Create bucket
         if (!$this->client->bucketExists("in.c-docker-test")) {
             $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker Testsuite");
@@ -58,34 +66,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
         }
 
-        // delete test files
         $listFiles = new ListFilesOptions();
         $listFiles->setTags(['sandbox']);
         $listFiles->setRunId($this->client->getRunId());
         foreach ($this->client->listFiles($listFiles) as $file) {
             $this->client->deleteFile($file['id']);
         }
-    }
-
-    public function tearDown()
-    {
-        // Delete local files
-        $this->temp = null;
-
-        // Delete tables
-        foreach ($this->client->listTables("in.c-docker-test") as $table) {
-            $this->client->dropTable($table["id"]);
-        }
-
-        $listFiles = new ListFilesOptions();
-        $listFiles->setTags(['sandbox']);
-        $listFiles->setRunId($this->client->getRunId());
-        foreach ($this->client->listFiles($listFiles) as $file) {
-            $this->client->deleteFile($file['id']);
-        }
-
-        // Delete bucket
-        $this->client->dropBucket("in.c-docker-test");
     }
 
     public function testExecutorRun()
@@ -128,8 +114,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -181,8 +167,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -236,8 +222,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -288,8 +274,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -340,8 +326,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -412,8 +398,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -471,8 +457,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -523,8 +509,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -588,8 +574,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -624,8 +610,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -673,8 +659,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfig);
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new MockContainer($image, $log);
 
@@ -690,6 +676,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setTmpFolder($this->tmpDir);
         $executor->initialize($container, $config, array("lastUpdate" => "today"));
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
-        $this->assertEquals("{\n    \"lastUpdate\": \"today\"\n}", file_get_contents($this->tmpDir . "/data/in/state.json"));
+        $this->assertEquals(
+            "{\n    \"lastUpdate\": \"today\"\n}",
+            file_get_contents($this->tmpDir . "/data/in/state.json")
+        );
     }
 }

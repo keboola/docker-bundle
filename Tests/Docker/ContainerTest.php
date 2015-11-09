@@ -4,8 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Encryption\CryptoWrapper;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -13,7 +12,6 @@ use Symfony\Component\Process\Process;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testCreateAndDropDataDir()
     {
         $log = new Logger("null");
@@ -24,8 +22,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "dummy"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $container = new Container(Image::factory($encryptor, $dummyConfig), $log);
+        $encryptor = new ObjectEncryptor();
+        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);
@@ -56,12 +54,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $container = new \Keboola\DockerBundle\Tests\Docker\Mock\Container($image, $log);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Docker\Mock\Container($image, $log);
 
         $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
@@ -118,11 +116,11 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
-
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $container->setDataDir("/tmp");
@@ -139,10 +137,11 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $expected = "sudo docker inspect 'name'";
@@ -157,10 +156,11 @@ EOF;
                 "uri" => "keboola/docker-demo"
             )
         );
-        $encryptor = new ObjectEncryptor(new CryptoWrapper(hash('sha256', uniqid())));
-        $image = Image::factory($encryptor, $imageConfiguration);
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
         $expected = "sudo docker rm 'name'";

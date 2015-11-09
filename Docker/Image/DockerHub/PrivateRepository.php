@@ -138,7 +138,7 @@ class PrivateRepository extends Image\DockerHub
             $loginParams[] = "--password=" . escapeshellarg($this->getLoginPassword());
         }
         if ($this->getLoginServer()) {
-            $loginParams[] =  escapeshellarg($this->getLoginServer());
+            $loginParams[] = escapeshellarg($this->getLoginServer());
         }
         return join(" ", $loginParams);
     }
@@ -156,26 +156,22 @@ class PrivateRepository extends Image\DockerHub
     }
 
     /**
-     * @param Container $container
-     * @return string
-     * @throws \Exception
+     * @inheritdoc
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();
             if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): {$process->getOutput()} / {$process->getErrorOutput()}";
+                $message = "Login failed (code: {$process->getExitCode()}): " .
+                    "{$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new LoginFailedException($message);
             }
-            $tag = parent::prepare($container);
-            (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
+            $tag = parent::prepare($container, $configData, $containerId);
             return $tag;
-        } catch (\Exception $e) {
-            // Logout on error
+        } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
-            throw $e;
         }
     }
 

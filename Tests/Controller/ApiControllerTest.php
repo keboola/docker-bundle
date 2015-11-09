@@ -7,7 +7,6 @@ use Keboola\Syrup\Exception\UserException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Syrup\StorageApi\StorageApiServiceTest;
 
 class ApiControllerTest extends WebTestCase
 {
@@ -315,8 +314,50 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
+        $this->assertCount(2, $result);
+    }
+
+    public function testEncryptProject()
+    {
+        $content = '
+        {
+            "key1": "value1",
+            "#key2": "value2"
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'CONTENT_TYPE' => 'application/json'
+
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test"
+        ];
+        $request = Request::create(
+            "/docker/docker-dummy-test/configs/encrypt",
+            'POST',
+            $parameters,
+            [],
+            [],
+            $server,
+            $content
+        );
+        self::$container->set('request', $request);
+        $ctrl = new ApiController();
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->encryptConfigAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $result = json_decode($response->getContent(), true);
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
+        $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
@@ -349,8 +390,8 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
+        $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
@@ -378,8 +419,8 @@ class ApiControllerTest extends WebTestCase
         $response = $ctrl->encryptAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $result = $response->getContent();
-        $this->assertEquals("KBC::Encrypted==", substr($result, 0, 16));
-        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25));
+        $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value", $encryptor->decrypt($result));
     }
 
@@ -407,7 +448,7 @@ class ApiControllerTest extends WebTestCase
 
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
+        $ctrl->encryptAction($request);
     }
 
     public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
@@ -439,7 +480,10 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals("error", $responseData["status"]);
-        $this->assertEquals("This API call is only supported for components that use the 'encrypt' flag.", $responseData["message"]);
+        $this->assertEquals(
+            "This API call is only supported for components that use the 'encrypt' flag.",
+            $responseData["message"]
+        );
     }
 
     public function testEncryptWithoutComponent()
@@ -501,7 +545,10 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals("error", $responseData["status"]);
-        $this->assertEquals("This API call is not supported for components that use the 'encrypt' flag.", $responseData["message"]);
+        $this->assertEquals(
+            "This API call is not supported for components that use the 'encrypt' flag.",
+            $responseData["message"]
+        );
     }
 
     public function testDryRunDisabledByEncrypt()
@@ -529,13 +576,12 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(400, $response->getStatusCode());
         $responseData = json_decode($response->getContent(), true);
         $this->assertEquals("error", $responseData["status"]);
-        $this->assertEquals("This API call is not supported for components that use the 'encrypt' flag.", $responseData["message"]);
+        $this->assertEquals(
+            "This API call is not supported for components that use the 'encrypt' flag.",
+            $responseData["message"]
+        );
     }
 
-    /**
-     * @expectedException Keboola\Syrup\Exception\ApplicationException
-     * @expectedExceptionMessage Application error: Decryption failed:
-     */
     public function testEncryptGenericDecryptComponentSpecific()
     {
         $content = '
@@ -570,15 +616,8 @@ class ApiControllerTest extends WebTestCase
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
-
-        $componentEncryptor = self::$container->get("syrup.job_object_encryptor");
-        $componentEncryptor->decrypt($result["#key2"]);
     }
 
-    /**
-     * @expectedException Keboola\Syrup\Exception\ApplicationException
-     * @expectedExceptionMessage Application error: Decryption failed:
-     */
     public function testEncryptComponentSpecificDecryptGeneric()
     {
         $content = '
@@ -608,14 +647,10 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
         $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-        $encryptor = self::$container->get("syrup.job_object_encryptor");
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
+        $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
-
-
-        $genericEncryptor = self::$container->get("syrup.object_encryptor");
-        $genericEncryptor->decrypt($result["#key2"]);
     }
 
     public function testSaveEncryptedConfig()
@@ -687,10 +722,10 @@ class ApiControllerTest extends WebTestCase
             ->method("verifyToken")
             ->will($this->returnValue(["owner" => ["id" => "123"]]));
 
-        $cryptoWrapper = $container->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper = $container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId('docker-dummy-test');
         $cryptoWrapper->setProjectId('123');
-        $encryptor = $container->get("syrup.job_object_encryptor");
+        $encryptor = $container->get("syrup.object_encryptor");
 
         $storageClientStub->expects($this->once())
             ->method("apiPut")

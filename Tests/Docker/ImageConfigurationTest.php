@@ -59,7 +59,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m"
         );
-        $expectedConfiguration  = $config;
+        $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -79,7 +79,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "configuration_format" => "fail"
         );
-        $expectedConfiguration  = $config;
+        $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -97,7 +97,43 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "unknown" => array()
         );
-        $expectedConfiguration  = $config;
+        $expectedConfiguration = $config;
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+    }
+
+
+    public function testBuilderConfiguration()
+    {
+        $config = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/docker-base-r",
+                "build_options" => [
+                    "repository" => [
+                        "type" => "git",
+                        "uri" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
+                        "username" => "foo",
+                        "#password" => "KBC::Encrypted==abc==",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/"
+                    ],
+                    "entry_point" => "Rscript /home/script.R",
+                    "parameters" => [],
+                    "cache" => true
+                ]
+            ],
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "process_timeout" => 3600,
+            "forward_token" => false,
+            "forward_token_details" => false,
+            "streaming_logs" => true,
+        ];
+
+        $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }

@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
-use Aws\CloudFront\Exception\Exception;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -34,11 +33,9 @@ class DockerHub extends Image
     }
 
     /**
-     * @param Container $container
-     * @return string Image tag name.
-     * @throws ApplicationException
+     * @inheritdoc
      */
-    public function prepare(Container $container)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         $tag = $this->getDockerHubImageId() . ":" . $container->getVersion();
 
@@ -46,7 +43,7 @@ class DockerHub extends Image
             $process = new Process("sudo docker pull " . escapeshellarg($tag));
             $process->setTimeout(3600);
             $process->run();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new ApplicationException("Failed to prepare container {$tag}, error: ".$e->getMessage(), $e);
         }
 

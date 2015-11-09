@@ -7,6 +7,7 @@
 namespace Keboola\DockerBundle\Tests\Command;
 
 use Keboola\DockerBundle\Command\DecryptCommand;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Test\CommandTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -30,31 +31,31 @@ class DecryptCommandTest extends CommandTestCase
         ]);
 
         $this->assertEquals(0, $commandTester->getStatusCode());
-        $this->assertEquals("test\n", $commandTester->getDisplay());
+        $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage User error: 'test' is not an encrypted value.
-     */
     public function testDecryptGenericFail()
     {
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
-        $commandTester->execute([
-            'string' => "test",
-            '-p' => null,
-            '-c' => null,
-        ]);
-
+        try {
+            $commandTester->execute([
+                'string' => "test",
+                '-p' => null,
+                '-c' => null,
+            ]);
+            $this->fail("Attempting to decrypt invalid value must fail.");
+        } catch (UserException $e) {
+            $this->assertContains('is not an encrypted value', $e->getMessage());
+        }
     }
 
     public function testDecryptComponentSpecific()
     {
-        $cryptoWrapper = self::$kernel->getContainer()->get("syrup.job_crypto_wrapper");
+        $cryptoWrapper = self::$kernel->getContainer()->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setProjectId("123");
         $cryptoWrapper->setComponentId("dummy");
-        $encryptor = self::$kernel->getContainer()->get("syrup.job_object_encryptor");
+        $encryptor = self::$kernel->getContainer()->get("syrup.object_encryptor");
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
         $commandTester->execute([
@@ -64,22 +65,22 @@ class DecryptCommandTest extends CommandTestCase
         ]);
 
         $this->assertEquals(0, $commandTester->getStatusCode());
-        $this->assertEquals("test\n", $commandTester->getDisplay());
+        $this->assertEquals(trim("test"), trim($commandTester->getDisplay()));
     }
 
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage User error: 'test' is not an encrypted value.
-     */
     public function testDecryptComponentSpecificFail()
     {
         $command = $this->application->find('docker:decrypt');
         $commandTester = new CommandTester($command);
-        $commandTester->execute([
-            'string' => "test",
-            '-p' => "123",
-            '-c' => "dummy",
-        ]);
-
+        try {
+            $commandTester->execute([
+                'string' => "test",
+                '-p' => "123",
+                '-c' => "dummy",
+            ]);
+            $this->fail("Attempting to decrypt invalid value must fail.");
+        } catch (UserException $e) {
+            $this->assertContains('is not an encrypted value', $e->getMessage());
+        }
     }
 }

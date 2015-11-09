@@ -34,3 +34,9 @@ defined('DOCKERHUB_PRIVATE_PASSWORD')
 
 defined('DOCKERHUB_PRIVATE_SERVER')
     || define('DOCKERHUB_PRIVATE_SERVER', getenv('DOCKERHUB_PRIVATE_SERVER') ? getenv('DOCKERHUB_PRIVATE_SERVER') : 'server');
+
+defined('GIT_PRIVATE_USERNAME')
+    || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ? getenv('GIT_PRIVATE_USERNAME') : 'username');
+
+defined('GIT_PRIVATE_PASSWORD')
+    || define('GIT_PRIVATE_PASSWORD', getenv('GIT_PRIVATE_PASSWORD') ? getenv('GIT_PRIVATE_PASSWORD') : 'password');

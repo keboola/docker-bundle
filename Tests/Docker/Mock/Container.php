@@ -1,7 +1,6 @@
 <?php
-namespace Keboola\DockerBundle\Tests\Docker\Mock;
 
-use Symfony\Component\Process\Process;
+namespace Keboola\DockerBundle\Tests\Docker\Mock;
 
 /**
  * Class MockContainer
@@ -16,9 +15,10 @@ class Container extends \Keboola\DockerBundle\Docker\Container
 
     /**
      * @param string $containerName
+     * @param array $configData
      * @return mixed
      */
-    public function run($containerName = "")
+    public function run($containerName = "", array $configData = [])
     {
         return $this->runMethod($containerName);
     }
