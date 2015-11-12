@@ -341,7 +341,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
 
     /**
      * @expectedException \Keboola\DockerBundle\Exception\OutOfMemoryException
-     * @expectedExceptionMessage Container 'keboola/docker-php-test:latest' failed: Out of memory
+     * @expectedExceptionMessage Out of memory
      */
     public function testOutOfMemory()
     {

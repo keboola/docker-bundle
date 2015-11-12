@@ -195,8 +195,15 @@ class Container
             $this->removeContainer($containerId);
 
             if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+                $data = [
+                    "container" => [
+                        "id" => $this->getId()
+                    ]
+                ];
                 throw new OutOfMemoryException(
-                    "Container '{$this->getId()}' failed: Out of memory (exceeded {$this->getImage()->getMemory()})"
+                    "Out of memory (exceeded {$this->getImage()->getMemory()})",
+                    null,
+                    $data
                 );
             }
 
@@ -216,7 +223,10 @@ class Container
             ];
 
             if ($process->getExitCode() == 1) {
-                throw new UserException("Container '{$this->getId()}' failed: {$message}", null, $data);
+                $data["container"] = [
+                    "id" => $this->getId()
+                ];
+                throw new UserException($message, null, $data);
             } else {
                 // syrup will make sure that the actual exception message will be hidden to end-user
                 throw new ApplicationException(
