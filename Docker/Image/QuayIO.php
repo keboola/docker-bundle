@@ -7,14 +7,14 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Process\Process;
 
-class DockerHub extends Image
+class QuayIO extends Image
 {
     /**
      * @inheritdoc
      */
     public function prepare(Container $container, array $configData, $containerId)
     {
-        $tag = $this->getImageId() . ":" . $container->getVersion();
+        $tag = "quay.io/" . $this->getImageId() . ":" . $container->getVersion();
 
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($tag));

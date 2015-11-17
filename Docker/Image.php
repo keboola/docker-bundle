@@ -60,6 +60,11 @@ class Image
      */
     protected $processTimeout = 3600;
 
+    /**
+     * @var string
+     */
+    protected $imageId = "";
+
 
     /**
      * Constructor (use @see {factory()})
@@ -217,6 +222,25 @@ class Image
     }
 
     /**
+     * @return string
+     */
+    public function getImageId()
+    {
+        return $this->imageId;
+    }
+
+    /**
+     * @param string $imageId
+     * @return $this
+     */
+    public function setImageId($imageId)
+    {
+        $this->imageId = $imageId;
+
+        return $this;
+    }
+
+    /**
      * @param array $config
      * @return Image
      * @throws \Exception
@@ -261,17 +285,17 @@ class Image
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
             $instance = new Image\DockerHub();
-            $instance->setDockerHubImageId($config["definition"]["uri"]);
         } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
             $instance = new Image\DockerHub\PrivateRepository($encryptor);
-            $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
         } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
             $instance = new Image\Builder\ImageBuilder($encryptor);
-            $instance->setDockerHubImageId($processedConfig["definition"]["uri"]);
             $instance->setLogger($logger);
+        } elseif (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "quayio") {
+            $instance = new Image\QuayIO();
         } else {
             $instance = new self();
         }
+        $instance->setImageId($config["definition"]["uri"]);
         $instance->fromArray($processedConfig);
         return $instance;
     }

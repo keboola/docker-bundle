@@ -91,6 +91,51 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("'dd'", $image->getLogoutParams());
     }
 
+    public function testQuayIO()
+    {
+        $dummyConfig = array(
+            "definition" => array(
+                "type" => "quayio",
+                "uri" => "dummy"
+            )
+        );
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $dummyConfig);
+        $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\QuayIO", get_class($image));
+        $this->assertEquals("64m", $image->getMemory());
+        $this->assertEquals(1024, $image->getCpuShares());
+        $this->assertEquals('yaml', $image->getConfigFormat());
+        $this->assertEquals(false, $image->getForwardToken());
+        $this->assertEquals(false, $image->getForwardTokenDetails());
+
+        $configuration = array(
+            "definition" => array(
+                "type" => "quayio",
+                "uri" => "keboola/demo"
+            ),
+            "cpu_shares" => 2048,
+            "memory" => "128m",
+            "process_timeout" => 7200,
+            "forward_token" => true,
+            "forward_token_details" => true,
+            "streaming_logs" => true,
+            "configuration_format" => 'json'
+        );
+        $encryptor = new ObjectEncryptor();
+
+        $image = Image::factory($encryptor, $log, $configuration);
+        $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\QuayIO", get_class($image));
+        $this->assertEquals("128m", $image->getMemory());
+        $this->assertEquals(2048, $image->getCpuShares());
+        $this->assertEquals(7200, $image->getProcessTimeout());
+        $this->assertEquals(true, $image->getForwardToken());
+        $this->assertEquals(true, $image->getForwardTokenDetails());
+        $this->assertEquals(true, $image->isStreamingLogs());
+        $this->assertEquals('json', $image->getConfigFormat());
+    }
+
     public function testFormat()
     {
         $dummyConfig = array(

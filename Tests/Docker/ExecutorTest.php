@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
@@ -74,7 +75,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testExecutorRun()
+    public function testDockerHubExecutorRun()
     {
         $imageConfig = array(
             "definition" => array(
@@ -141,6 +142,154 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
     }
+
+
+    public function testQuayIOExecutorRun()
+    {
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "quayio",
+                "uri" => "keboola/demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test"
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        )
+                    )
+                )
+            ),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
+            $process = new Process('echo "Processed 1 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $process = $executor->run($container, "testsuite");
+        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $ret = $container->getRunCommand('test');
+        // make sure that the token is NOT forwarded by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
+    }
+
+
+    public function testDockerHubPrivateExecutorRun()
+    {
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor->pushWrapper($wrapper);
+
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub-private",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "repository" => array(
+                    "email" => DOCKERHUB_PRIVATE_EMAIL,
+                    "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
+                    "username" => DOCKERHUB_PRIVATE_USERNAME
+                )
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml"
+        );
+
+        $config = array(
+            "storage" => array(
+                "input" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "in.c-docker-test.test"
+                        )
+                    )
+                ),
+                "output" => array(
+                    "tables" => array(
+                        array(
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        )
+                    )
+                )
+            ),
+            "parameters" => array(
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            )
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
+            $process = new Process('echo "Processed 1 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $process = $executor->run($container, "testsuite");
+        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $ret = $container->getRunCommand('test');
+        // make sure that the token is NOT forwarded by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
+    }
+
 
     public function testExecutorRunTimeout()
     {

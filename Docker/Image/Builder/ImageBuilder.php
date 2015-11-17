@@ -338,7 +338,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     private function createDockerFile($workingFolder)
     {
         $dockerFile = '';
-        $dockerFile .= "FROM " . $this->getDockerHubImageId() . "\n";
+        $dockerFile .= "FROM " . $this->getImageId() . "\n";
         $dockerFile .= "WORKDIR /home\n";
 
         if ($this->getVersion()) {
@@ -434,12 +434,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
 
             try {
-                $process = new Process("sudo docker pull " . escapeshellarg($this->getDockerHubImageId()));
+                $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
                 $process->setTimeout(3600);
                 $process->run();
             } catch (\Exception $e) {
                 throw new BuildException(
-                    "Failed to get parent container {$this->getDockerHubImageId()}, error: " . $e->getMessage(),
+                    "Failed to get parent container {$this->getImageId()}, error: " . $e->getMessage(),
                     $e
                 );
             }

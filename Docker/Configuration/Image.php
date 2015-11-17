@@ -19,7 +19,7 @@ class Image extends Configuration
                         ->scalarNode("type")
                             ->isRequired()
                             ->validate()
-                            ->ifNotInArray(["dockerhub", "dockerhub-private", "dummy", "builder"])
+                            ->ifNotInArray(["dockerhub", "dockerhub-private", "dummy", "builder", "quayio"])
                                 ->thenInvalid("Invalid image type %s.")
                             ->end()
                         ->end()
