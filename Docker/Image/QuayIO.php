@@ -21,7 +21,7 @@ class QuayIO extends Image
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData)
+    public function prepare(Container $container, array $configData, $containerId)
     {
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
