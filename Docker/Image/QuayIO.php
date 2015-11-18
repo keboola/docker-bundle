@@ -9,27 +9,32 @@ use Symfony\Component\Process\Process;
 
 class QuayIO extends Image
 {
+
+    /**
+     * @return string
+     */
+    public function getFullImageId()
+    {
+        return "quay.io/" . $this->getImageId() . ":" . $this->getTag();
+    }
+
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(Container $container, array $configData)
     {
-        $tag = "quay.io/" . $this->getImageId() . ":" . $container->getVersion();
-
         try {
-            $process = new Process("sudo docker pull " . escapeshellarg($tag));
+            $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
             $process->setTimeout(3600);
             $process->run();
         } catch (\Exception $e) {
-            throw new ApplicationException("Failed to prepare container {$tag}, error: ".$e->getMessage(), $e);
+            throw new ApplicationException("Failed to prepare container {$this->getFullImageId()}, error: ".$e->getMessage(), $e);
         }
 
         if (!$process->isSuccessful()) {
             throw new ApplicationException(
-                "Cannot pull image '$tag': ({$process->getExitCode()}) {$process->getErrorOutput()}"
+                "Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}"
             );
         }
-
-        return $tag;
     }
 }

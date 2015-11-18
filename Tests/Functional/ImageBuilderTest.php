@@ -54,8 +54,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, [], uniqid());
-        $this->assertContains("builder-", $tag);
+        $image->prepare($container, [], uniqid());
+        $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
@@ -96,8 +96,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, [], uniqid());
-        $this->assertContains("builder-", $tag);
+        $image->prepare($container, [], uniqid());
+        $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
@@ -145,10 +145,13 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "yaml",
         ];
 
+        /**
+         * @var Image\Builder\ImageBuilder $image
+         */
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, [], uniqid());
-        $this->assertContains("builder-", $tag);
+        $image->prepare($container, [], uniqid());
+        $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();

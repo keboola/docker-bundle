@@ -28,11 +28,14 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('yaml', $image->getConfigFormat());
         $this->assertEquals(false, $image->getForwardToken());
         $this->assertEquals(false, $image->getForwardTokenDetails());
+        $this->assertEquals("latest", $image->getTag());
+        $this->assertEquals("dummy:latest", $image->getFullImageId());
 
         $configuration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo",
+                "tag" => "master"
             ),
             "cpu_shares" => 2048,
             "memory" => "128m",
@@ -53,6 +56,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $image->getForwardTokenDetails());
         $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals('json', $image->getConfigFormat());
+        $this->assertEquals("master", $image->getTag());
+        $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());
     }
 
     public function testDockerHubPrivateRepository()
@@ -89,6 +94,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("--email='aa' --username='cc' --password='bb' 'dd'", $image->getLoginParams());
         $this->assertEquals("'dd'", $image->getLogoutParams());
+        $this->assertEquals("keboola/docker-demo:latest", $image->getFullImageId());
     }
 
     public function testQuayIO()
@@ -134,6 +140,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $image->getForwardTokenDetails());
         $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals('json', $image->getConfigFormat());
+        $this->assertEquals("quay.io/keboola/demo:latest", $image->getFullImageId());
     }
 
     public function testFormat()

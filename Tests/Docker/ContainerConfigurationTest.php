@@ -12,9 +12,6 @@ class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new Configuration\Container())->parse(array(
             "config" => array(
-                "system" => array(
-                    "image_tag" => "0.6"
-                ),
                 "storage" => array(
                     "input" => array(
                         "tables" => array(

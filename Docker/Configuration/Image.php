@@ -24,6 +24,7 @@ class Image extends Configuration
                             ->end()
                         ->end()
                         ->scalarNode("uri")->isRequired()->end()
+                        ->scalarNode("tag")->defaultValue("latest")->end()
                         ->arrayNode("repository")
                             ->children()
                                 ->scalarNode("email")->end()
