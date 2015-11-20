@@ -67,7 +67,7 @@ class Image extends Configuration
                                                     ->thenInvalid("Invalid image type %s.")
                                                 ->end()
                                             ->end()
-                                            ->scalarNode("default_value")->end()
+                                            ->scalarNode("default_value")->defaultValue(null)->end()
                                             ->arrayNode("values")->prototype("scalar")->end()->end()
                                         ->end()
                                     ->end()
