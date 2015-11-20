@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
@@ -69,6 +70,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      * @var bool True if the application docker build is cached, false if it is not cached.
      */
     protected $cache = true;
+
+    /**
+     * @var string
+     */
+    protected $containerId;
+
+    /**
+     * @var string
+     */
+    protected $fullImageId;
 
     /**
      * Constructor
@@ -285,6 +296,25 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
+     * @return string
+     */
+    public function getContainerId()
+    {
+        return $this->containerId;
+    }
+
+    /**
+     * @param string $containerId
+     * @return $this
+     */
+    public function setContainerId($containerId)
+    {
+        $this->containerId = $containerId;
+
+        return $this;
+    }
+
+    /**
      * Replace placeholders in a string.
      * @param string $string Arbitrary string
      * @return string
@@ -420,6 +450,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     public function prepare(Container $container, array $configData, $containerId)
     {
+        $this->setContainerId($containerId);
         $this->initParameters($configData);
         try {
             if ($this->getLoginUsername()) {
@@ -448,14 +479,13 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
             $this->createDockerFile($workingFolder);
-            $tag = uniqid('builder-' . $containerId . "-");
             if (!$this->getCache()) {
                 $noCache = ' --no-cache';
             } else {
                 $noCache = '';
             }
             $this->logger->debug("Building image");
-            $process = new Process("sudo docker build$noCache --tag=" . escapeshellarg($tag) . " " . $workingFolder);
+            $process = new Process("sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $workingFolder);
             // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
             $process->setTimeout(3600);
             $process->run();
@@ -464,7 +494,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
-            return $tag;
         } catch (\Exception $e) {
             throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
         } finally {
@@ -475,6 +504,19 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
+    /**
+     *
+     */
+    public function getFullImageId()
+    {
+        if (!$this->getContainerId()) {
+            throw new ApplicationException("Container Id not set");
+        }
+        if (!$this->fullImageId) {
+            $this->fullImageId = uniqid('builder-' . $this->getContainerId(). "-");
+        }
+        return $this->fullImageId;
+    }
 
     /**
      * Set configuration from array.

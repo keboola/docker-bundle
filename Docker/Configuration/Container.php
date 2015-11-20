@@ -13,13 +13,6 @@ class Container extends Configuration
         // System
         $root
             ->children()
-                ->arrayNode("system")
-                    ->children()
-                        ->scalarNode("image_tag")->defaultValue("latest")->end()
-                        ->scalarNode("storage_api_token")->end()
-            ;
-        $root
-            ->children()
                 ->variableNode("parameters")
         ;
         $storage = $root

@@ -42,9 +42,9 @@ class QuayIORepositoryTest extends KernelTestCase
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("quay.io/keboola/demo:latest", $tag);
+        $this->assertEquals("quay.io/keboola/demo:latest", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
         $process->run();

@@ -75,8 +75,6 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $container->createDataDir($root);
 
         $configFile = <<< EOT
-system:
-  image_tag: latest # just an example, latest by default
 storage:
   input:
     tables:
@@ -113,7 +111,8 @@ EOF;
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo",
+                "tag" => "master"
             )
         );
         $encryptor = new ObjectEncryptor();
@@ -122,10 +121,10 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
-        $container->setId("keboola/demo:latest");
+        $container->setId($image->getFullImageId());
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
-        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/demo:latest'";
+        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
