@@ -55,6 +55,13 @@ class Executor
     private $configData;
 
     /**
+     * Component configuration which will be passed to the container, but not to the application.
+     *
+     * @var array
+     */
+    private $volatileConfigData;
+
+    /**
      * @var
      */
     protected $componentId;
@@ -173,10 +180,12 @@ class Executor
      * @param Container $container Docker container.
      * @param array $config Configuration injected into docker image.
      * @param array $state Configuration state
+     * @param array $volatileConfig Configuration used when running the image, but not injected into it.
      */
-    public function initialize(Container $container, array $config, array $state = null)
+    public function initialize(Container $container, array $config, array $state = null, array $volatileConfig = null)
     {
         $this->configData = $config;
+        $this->volatileConfigData = $volatileConfig;
         // create temporary working folder and all of its sub-folders
         $fs = new Filesystem();
         $this->currentTmpDir = $this->getTmpFolder();
@@ -268,7 +277,7 @@ class Executor
         $container->setEnvironmentVariables($envs);
 
         // run the container
-        $process = $container->run($id, $this->configData);
+        $process = $container->run($id, $this->configData, $this->volatileConfigData);
         if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
             $this->getLog()->info($process->getOutput());
         } else {

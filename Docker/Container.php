@@ -149,17 +149,18 @@ class Container
 
     /**
      * @param string $containerId container id
-     * @param array $configData Configuration (same as the one stored in data config file)
+     * @param array $configData Configuration (user supplied configuration stored in data config file)
+     * @param array $volatileConfigData Configuration (user supplied configuration NOT stored in data config file)
      * @return Process
      * @throws ApplicationException
      */
-    public function run($containerId, array $configData)
+    public function run($containerId, array $configData, array $volatileConfigData)
     {
         if (!$this->getDataDir()) {
             throw new ApplicationException("Data directory not set.");
         }
 
-        $id = $this->getImage()->prepare($this, $configData, $containerId);
+        $id = $this->getImage()->prepare($this, $configData, $volatileConfigData, $containerId);
         $this->setId($id);
 
         // Run container

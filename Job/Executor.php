@@ -161,6 +161,14 @@ class Executor extends BaseExecutor
                     );
                 }
             }
+
+            // Volatile config - used when running the image, but not passed inside the container
+            if (isset($params["volatileConfigData"]) && is_array($params["volatileConfigData"])) {
+                // configuration is already decrypted
+                $volatileConfigData = $params["volatileConfigData"];
+            } else {
+                $volatileConfigData = [];
+            }
         }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
@@ -188,7 +196,7 @@ class Executor extends BaseExecutor
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, $volatileConfigData);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
 
                 $message = 'Configuration prepared.';
@@ -201,7 +209,7 @@ class Executor extends BaseExecutor
                 $container = new Container($image, $this->log);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, $volatileConfigData);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
 
                 $message = 'Image configuration prepared.';
@@ -213,7 +221,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, $volatileConfigData);
                 $process = $executor->run($container, $containerId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
@@ -231,7 +239,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
                 $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, $volatileConfigData);
                 $process = $executor->run($container, $containerId);
                 $executor->storeOutput($container, $state);
                 if ($process->getOutput()) {

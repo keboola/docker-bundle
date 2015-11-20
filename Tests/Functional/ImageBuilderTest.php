@@ -3,13 +3,16 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Yaml\Yaml;
 
 class ImageBuilderTest extends KernelTestCase
 {
@@ -205,7 +208,7 @@ class ImageBuilderTest extends KernelTestCase
     }
 
 
-    public function testCreatePrivateRepoMissingPasssword()
+    public function testCreatePrivateRepoMissingPassword()
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
