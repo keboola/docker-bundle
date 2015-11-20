@@ -21,6 +21,11 @@ class ImageBuildParameterTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($param->isRequired());
         $this->assertNull($param->getValue());
 
+        $param = new BuilderParameter('bar', 'string', false, 'anvil');
+        $this->assertEquals('bar', $param->getName());
+        $this->assertFalse($param->isRequired());
+        $this->assertEquals('anvil', $param->getValue());
+
         try {
             $param = new BuilderParameter('bar', 'fooBar', false);
             $param->setValue('barBaz');
@@ -51,6 +56,13 @@ class ImageBuildParameterTest extends \PHPUnit_Framework_TestCase
         $param = new BuilderParameter('foo', 'plain_string', true);
         $param->setValue('fooBar-baz.Bar');
         $this->assertEquals('fooBar-baz.Bar', $param->getValue());
+
+        $param = new BuilderParameter('foo', 'enumeration', true, null, ['baz', 'bar']);
+        $param->setValue('baz');
+        $this->assertEquals('baz', $param->getValue());
+
+        $param = new BuilderParameter('foo', 'enumeration', true, 'bar', ['baz', 'bar']);
+        $this->assertEquals('bar', $param->getValue());
     }
 
     public function testParameterValidationFail()
@@ -90,6 +102,14 @@ class ImageBuildParameterTest extends \PHPUnit_Framework_TestCase
         $param = new BuilderParameter('foo', 'argument', true);
         try {
             $param->setValue(['foo' => '0']);
+            $this->fail("Invalid value must raise exception");
+        } catch (BuildParameterException $e) {
+            $this->assertContains('invalid value', strtolower($e->getMessage()));
+        }
+
+        $param = new BuilderParameter('foo', 'enumeration', true, null, ['baz', 'bar']);
+        try {
+            $param->setValue('notABaz');
             $this->fail("Invalid value must raise exception");
         } catch (BuildParameterException $e) {
             $this->assertContains('invalid value', strtolower($e->getMessage()));

@@ -138,7 +138,7 @@ ENTRYPOINT php /home/run.php --data=/data';
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd {{foo}} {{bar}}",
-                        "composer install"
+                        "composer {{action}}"
                     ],
                     "entry_point" => "php /home/run.php --data=/data",
                     "parameters" => [
@@ -149,6 +149,11 @@ ENTRYPOINT php /home/run.php --data=/data';
                         [
                             "name" => "bar",
                             "type" => "plain_string"
+                        ],
+                        [
+                            "name" => "action",
+                            "type" => "string",
+                            "default_value" => "install"
                         ]
                     ]
                 ]

@@ -248,6 +248,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 $parameter['name'],
                 $parameter['type'],
                 $parameter['required'],
+                $parameter['default_value'],
                 empty($parameter['values']) ? [] : $parameter['values']
             );
         }
