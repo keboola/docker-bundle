@@ -182,7 +182,7 @@ class Executor
      * @param array $state Configuration state
      * @param array $volatileConfig Configuration used when running the image, but not injected into it.
      */
-    public function initialize(Container $container, array $config, array $state = null, array $volatileConfig = null)
+    public function initialize(Container $container, array $config, array $state = null, array $volatileConfig = [])
     {
         $this->configData = $config;
         $this->volatileConfigData = $volatileConfig;
