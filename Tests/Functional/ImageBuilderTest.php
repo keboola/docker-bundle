@@ -7,7 +7,6 @@ use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\Syrup\Service\ObjectEncryptor;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -57,7 +56,7 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -99,7 +98,7 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -153,7 +152,7 @@ class ImageBuilderTest extends KernelTestCase
          */
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -203,7 +202,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('not found', $e->getMessage());
@@ -242,7 +241,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('Authentication failed', $e->getMessage());
@@ -280,7 +279,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('could not read Username', $e->getMessage());
