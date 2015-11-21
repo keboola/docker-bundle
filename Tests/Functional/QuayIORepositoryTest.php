@@ -23,6 +23,9 @@ class QuayIORepositoryTest extends KernelTestCase
     public function testDownloadedImage()
     {
         (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        # fixing a weird bug
+        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
         $process->run();
@@ -51,5 +54,9 @@ class QuayIORepositoryTest extends KernelTestCase
         $this->assertEquals(1, trim($process->getOutput()));
 
         (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        # fixing a weird bug
+        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
+
     }
 }
