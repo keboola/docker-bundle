@@ -16,9 +16,10 @@ class Container extends \Keboola\DockerBundle\Docker\Container
     /**
      * @param string $containerName
      * @param array $configData
+     * @param array $volatileConfigData
      * @return mixed
      */
-    public function run($containerName = "", array $configData = [])
+    public function run($containerName = "", array $configData = [], array $volatileConfigData = [])
     {
         return $this->runMethod($containerName);
     }
