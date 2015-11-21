@@ -427,7 +427,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 // use only root elements of configData
                 if (isset($this->parameters[$key])) {
                     $this->parameters[$key]->setValue($value);
-                    // handle special parameters - repository properties cannot be passed thru configData
+                    // handle special parameters - repository properties cannot be passed through configData
                     if ($key === 'repository') {
                         $this->setRepository($value);
                     } elseif ($key === 'username') {

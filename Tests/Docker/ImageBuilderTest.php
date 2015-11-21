@@ -205,12 +205,17 @@ ENTRYPOINT php /home/run.php --data=/data';
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd {{#password}}",
+                        "cd {{otherParam}}",
                         "composer install"
                     ],
                     "entry_point" => "php /home/run.php --data=/data",
                     "parameters" => [
                         [
                             "name" => "#password",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "otherParam",
                             "type" => "string"
                         ]
                     ]
@@ -223,18 +228,39 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
+        /** @var ImageBuilder $image */
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, ['parameters' => ['#password' => 'fooBar']], []);
+        $reflection->invoke(
+            $image,
+            ['parameters' => ['#password' => 'fooBar']],
+            ['parameters' => ["otherParam" => "fox"]]
+        );
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, $tempDir->getTmpFolder());
+        // password in configData will not be used for repository
+        $this->assertEquals('', $image->getRepoPassword());
+
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+        $reflection->setAccessible(true);
+        $reflection->invoke(
+            $image,
+            ['parameters' => []],
+            ['parameters' => ['#password' => 'fooBar', "otherParam" => "fox"]]
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         try {
+            // password in volatileConfig will not be used in Dockerfile
             $reflection->invoke($image, $tempDir->getTmpFolder());
-            $this->fail("Trying to use password in build commands must raise an exception.");
+            $this->fail("Missing parameter must cause exception.");
         } catch (BuildParameterException $e) {
             $this->assertContains('{{#password}}', $e->getMessage());
+            $this->assertNotContains('{{otherParam}}', $e->getMessage());
         }
+        $this->assertEquals('fooBar', $image->getRepoPassword());
     }
 
 

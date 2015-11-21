@@ -116,7 +116,7 @@ class Executor extends BaseExecutor
         $configId = null;
 
         if ($params['mode'] == 'sandbox') {
-            if (!isset($params["configData"]) || empty($params["configData"])) {
+            if (empty($params["configData"]) || !is_array($params["configData"])) {
                 throw new UserException("Configuration must be specified in 'configData'.");
             }
             $configData = $params["configData"];
@@ -142,7 +142,7 @@ class Executor extends BaseExecutor
             $this->log->pushProcessor([$processor, 'processRecord']);
 
             // Manual config from request
-            if (isset($params["configData"])) {
+            if (isset($params["configData"]) && is_array($params["configData"])) {
                 $configData = $params["configData"];
             } else {
                 // Read config from storage
@@ -161,14 +161,14 @@ class Executor extends BaseExecutor
                     );
                 }
             }
+        }
 
-            // Volatile config - used when running the image, but not passed inside the container
-            if (isset($params["volatileConfigData"]) && is_array($params["volatileConfigData"])) {
-                // configuration is already decrypted
-                $volatileConfigData = $params["volatileConfigData"];
-            } else {
-                $volatileConfigData = [];
-            }
+        // Volatile config - used when running the image, but not passed inside the container
+        if (isset($params["volatileConfigData"]) && is_array($params["volatileConfigData"])) {
+            // configuration is already decrypted
+            $volatileConfigData = $params["volatileConfigData"];
+        } else {
+            $volatileConfigData = [];
         }
 
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
