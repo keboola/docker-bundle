@@ -23,6 +23,9 @@ class QuayIORepositoryTest extends KernelTestCase
     public function testDownloadedImage()
     {
         (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        # fixing a weird bug
+        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
         $process->run();
@@ -42,14 +45,18 @@ class QuayIORepositoryTest extends KernelTestCase
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("quay.io/keboola/demo:latest", $tag);
+        $this->assertEquals("quay.io/keboola/demo:latest", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
         $process->run();
         $this->assertEquals(1, trim($process->getOutput()));
 
         (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        # fixing a weird bug
+        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
+
     }
 }

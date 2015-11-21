@@ -37,19 +37,28 @@ class BuilderParameter
      */
     private $value = null;
 
+    /**
+     * Predefined value of the parameter.
+     * @var null
+     */
+    private $defaultValue = null;
+
 
     /**
      * Constructor
      * @param string $name Parameter name.
      * @param string $type Parameter type.
      * @param bool $required
+     * @param string $defaultValue Initial parameter value.
      * @param array $values Allowed values of the parameter
      */
-    public function __construct($name, $type, $required, $values = [])
+    public function __construct($name, $type, $required, $defaultValue = null, $values = [])
     {
         $this->name = $name;
         $this->type = $type;
         $this->required = $required;
+        $this->defaultValue = $defaultValue;
+        $this->value = $defaultValue;
         $this->allowedValues = $values;
         if (($this->type == 'enumeration') && (count($this->allowedValues) == 0)) {
             throw new BuildException("Enumeration $name contains no valid values.");

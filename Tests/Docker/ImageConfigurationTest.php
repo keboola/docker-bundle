@@ -22,7 +22,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $expectedConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo",
+                "tag" => "latest"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -109,6 +110,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "definition" => [
                 "type" => "builder",
                 "uri" => "keboola/docker-base-r",
+                "tag" => "somebranch",
                 "build_options" => [
                     "repository" => [
                         "type" => "git",

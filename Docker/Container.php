@@ -160,8 +160,8 @@ class Container
             throw new ApplicationException("Data directory not set.");
         }
 
-        $id = $this->getImage()->prepare($this, $configData, $volatileConfigData, $containerId);
-        $this->setId($id);
+        $this->getImage()->prepare($this, $configData, $volatileConfigData, $containerId);
+        $this->setId($this->getImage()->getFullImageId());
 
         // Run container
         $process = new Process($this->getRunCommand($containerId));

@@ -63,7 +63,12 @@ class Image
     /**
      * @var string
      */
-    protected $imageId = "";
+    protected $imageId;
+
+    /**
+     * @var string
+     */
+    protected $tag = "latest";
 
 
     /**
@@ -88,6 +93,7 @@ class Image
     public function setId($id)
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -106,6 +112,7 @@ class Image
     public function setMemory($memory)
     {
         $this->memory = $memory;
+
         return $this;
     }
 
@@ -124,6 +131,7 @@ class Image
     public function setCpuShares($cpuShares)
     {
         $this->cpuShares = $cpuShares;
+
         return $this;
     }
 
@@ -146,6 +154,7 @@ class Image
             throw new \Exception("Configuration format '{$configFormat}' not supported");
         }
         $this->configFormat = $configFormat;
+
         return $this;
     }
 
@@ -164,6 +173,7 @@ class Image
     public function setProcessTimeout($timeout)
     {
         $this->processTimeout = (int)$timeout;
+
         return $this;
     }
 
@@ -174,6 +184,7 @@ class Image
     public function setForwardToken($forwardToken)
     {
         $this->forwardToken = $forwardToken;
+
         return $this;
     }
 
@@ -192,6 +203,7 @@ class Image
     public function setForwardTokenDetails($forwardTokenDetails)
     {
         $this->forwardTokenDetails = $forwardTokenDetails;
+
         return $this;
     }
 
@@ -210,6 +222,7 @@ class Image
     public function setStreamingLogs($streamingLogs)
     {
         $this->streamingLogs = $streamingLogs;
+
         return $this;
     }
 
@@ -236,6 +249,25 @@ class Image
     public function setImageId($imageId)
     {
         $this->imageId = $imageId;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTag()
+    {
+        return $this->tag;
+    }
+
+    /**
+     * @param string $tag
+     * @return $this
+     */
+    public function setTag($tag)
+    {
+        $this->tag = $tag;
 
         return $this;
     }
@@ -271,6 +303,7 @@ class Image
         if (isset($config["streaming_logs"])) {
             $this->setStreamingLogs($config["streaming_logs"]);
         }
+
         return $this;
     }
 
@@ -285,19 +318,38 @@ class Image
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
             $instance = new Image\DockerHub();
-        } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
-            $instance = new Image\DockerHub\PrivateRepository($encryptor);
-        } else if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
-            $instance = new Image\Builder\ImageBuilder($encryptor);
-            $instance->setLogger($logger);
-        } elseif (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "quayio") {
-            $instance = new Image\QuayIO();
         } else {
-            $instance = new self();
+            if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
+                $instance = new Image\DockerHub\PrivateRepository($encryptor);
+            } else {
+                if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
+                    $instance = new Image\Builder\ImageBuilder($encryptor);
+                    $instance->setLogger($logger);
+                } elseif (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "quayio") {
+                    $instance = new Image\QuayIO();
+                } else {
+                    $instance = new self();
+                }
+            }
         }
         $instance->setImageId($config["definition"]["uri"]);
+        if (isset($config["definition"]["tag"])) {
+            $instance->setTag($config["definition"]["tag"]);
+        }
         $instance->fromArray($processedConfig);
+
         return $instance;
+    }
+
+    /**
+     *
+     * Returns image id with tag
+     *
+     * @return string
+     */
+    public function getFullImageId()
+    {
+        return $this->getImageId() . ":" . $this->getTag();
     }
 
     /**
