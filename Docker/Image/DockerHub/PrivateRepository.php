@@ -168,8 +168,7 @@ class PrivateRepository extends Image\DockerHub
                     "{$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new LoginFailedException($message);
             }
-            $tag = parent::prepare($container, $configData, $volatileConfigData, $containerId);
-            return $tag;
+            parent::prepare($container, $configData, $volatileConfigData, $containerId);
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
         }

@@ -359,7 +359,6 @@ class Image
      * @param array $configData Configuration (user supplied configuration stored in data config file)
      * @param array $volatileConfigData Configuration (user supplied configuration NOT stored in config file)
      * @param string $containerId Container ID
-     * @return string Image tag name.
      * @throws \Exception
      */
     public function prepare(Container $container, array $configData, array $volatileConfigData, $containerId)
