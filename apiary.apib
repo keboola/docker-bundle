@@ -286,6 +286,12 @@ Create an execution job on a specified docker image.
                         "foo": "bar",
                         "script": null
                     }
+                },
+                "volatileConfigData": {
+                    "parameters": {
+                        "baz": "bazBaz",
+                        "ping": "pong"
+                    }                
                 }
             }
 
@@ -392,7 +398,7 @@ This API call is useful for verifying that a given input mapping and image confi
 
 ### Create an Input job [POST]
 
-+ Request Storad configuration (application/json)
++ Request Stored configuration (application/json)
     + Headers
 
             X-StorageApi-Token: 123456
