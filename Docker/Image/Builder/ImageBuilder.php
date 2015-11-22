@@ -415,10 +415,20 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         // set parameter values
         if (isset($configData['parameters']) && is_array($configData['parameters'])) {
             foreach ($configData['parameters'] as $key => $value) {
-                // use only root elements of configData
+                // use only root elements of parameters
                 if (isset($this->parameters[$key])) {
                     $this->parameters[$key]->setValue($value);
                     // handle special parameters
+                }
+            }
+        }
+
+        if (isset($configData['volatileParameters']) && is_array($configData['volatileParameters'])) {
+            foreach ($configData['volatileParameters'] as $key => $value) {
+                // use only root elements of parameters
+                if (isset($this->parameters[$key])) {
+                    $this->parameters[$key]->setValue($value);
+                    // handle special parameters - repository properties cannot be passed through normal parameters
                     if ($key === 'repository') {
                         $this->setRepository($value);
                     } elseif ($key === 'username') {
@@ -486,7 +496,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 $noCache = '';
             }
             $this->logger->debug("Building image");
-            $process = new Process("sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $workingFolder);
+            $process = new Process(
+                "sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $workingFolder
+            );
             // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
             $process->setTimeout(3600);
             $process->run();

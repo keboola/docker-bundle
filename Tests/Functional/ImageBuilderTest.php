@@ -208,7 +208,7 @@ class ImageBuilderTest extends KernelTestCase
     }
 
 
-    public function testCreatePrivateRepoMissingPasssword()
+    public function testCreatePrivateRepoMissingPassword()
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -282,5 +282,75 @@ class ImageBuilderTest extends KernelTestCase
         } catch (BuildException $e) {
             $this->assertContains('could not read Username', $e->getMessage());
         }
+    }
+
+
+    public function testCreatePrivateRepoViaParameters()
+    {
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $oldCount = intval(trim($process->getOutput()));
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd /{{dir}}/",
+                        "composer install"
+                    ],
+                    "parameters" => [
+                        [
+                            "name" => "repository",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "username",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "#password",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "dir",
+                            "type" => "string"
+                        ],
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data"
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+
+        $configData = [
+            'parameters' => [
+                'dir' => 'home',
+            ],
+            'volatileParameters' => [
+                'repository' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
+                'username' => GIT_PRIVATE_USERNAME,
+                '#password' => GIT_PRIVATE_PASSWORD,
+            ]
+        ];
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log);
+        $image->prepare($container, $configData, uniqid());
+        $this->assertContains("builder-", $image->getFullImageId());
+
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $this->assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 }

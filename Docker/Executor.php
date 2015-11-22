@@ -186,7 +186,9 @@ class Executor
         // create configuration file injected into docker
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
         try {
-            $adapter->setConfig($this->configData);
+            $configData = $this->configData;
+            unset($configData['volatileParameters']);
+            $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
         }
