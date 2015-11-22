@@ -165,8 +165,7 @@ class Executor extends BaseExecutor
 
         // Volatile config - used when running the image, but not passed inside the container
         if (isset($params["volatileConfigData"]) && is_array($params["volatileConfigData"])) {
-            // configuration is already decrypted
-            $volatileConfigData = $params["volatileConfigData"];
+            $volatileConfigData = $this->encryptor->decrypt($params["volatileConfigData"]);
         } else {
             $volatileConfigData = [];
         }

@@ -375,6 +375,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         if ($this->getVersion()) {
             $dockerFile .= "\nENV APP_VERSION " . $this->getVersion();
         }
+        if (!$this->getRepository()) {
+            throw new BuildException("Repository must be entered.");
+        }
         if ($this->getRepositoryType() == 'git') {
             $repositoryCommands = $this->handleGitCredentials($workingFolder);
         } else {
