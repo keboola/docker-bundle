@@ -662,6 +662,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -768,6 +769,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -878,7 +880,7 @@ class FunctionalTests extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $tag = $image->prepare($container, $userConfig, uniqid());
+        $tag = $image->prepare($container, $userConfig, [], uniqid());
         $this->assertContains("builder-", $tag);
         $executor = new \Keboola\DockerBundle\Docker\Executor($this->client, $log);
         $executor->initialize($container, $userConfig);
