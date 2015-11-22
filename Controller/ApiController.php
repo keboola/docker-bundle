@@ -10,6 +10,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -72,13 +73,20 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $this->checkMappingParams($params);
 
         // Encrypt configData for encrypt flagged components
-        if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+        if ($this->hasComponentEncryptFlag($params["component"])) {
             $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
             $cryptoWrapper->setComponentId($params["component"]);
             $tokenInfo = $this->storageApi->verifyToken();
             $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+
+            /** @var ObjectEncryptor $encryptor */
             $encryptor = $this->container->get("syrup.object_encryptor");
-            $params["configData"] = $encryptor->encrypt($params["configData"]);
+            if (isset($params["configData"])) {
+                $params["configData"] = $encryptor->encrypt($params["configData"]);
+            }
+            if (isset($params["volatileConfigData"])) {
+                $params["volatileConfigData"] = $encryptor->encrypt($params["volatileConfigData"]);
+            }
         }
 
         // Create new job

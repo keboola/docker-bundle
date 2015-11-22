@@ -485,7 +485,7 @@ class FunctionalTests extends KernelTestCase
         $container = new Container($image, $log);
         $container->setId("hello-world");
         $container->setDataDir("/tmp");
-        $process = $container->run("testsuite", []);
+        $process = $container->run("testsuite", [], []);
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
     }
@@ -510,7 +510,7 @@ class FunctionalTests extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfiguration);
 
         $container = new Container($image, $log);
-        $container->run("testsuite", []);
+        $container->run("testsuite", [], []);
     }
 
 
@@ -662,6 +662,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -768,6 +769,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -816,5 +818,84 @@ class FunctionalTests extends KernelTestCase
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
         $this->assertEquals("value3", $config["parameters"]["#key3"]);
         $this->assertEquals("value4", $config["parameters"]["#key4"]);
+    }
+
+
+    public function testCreatePrivateRepoReservedParams()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/",
+                        "cd /home/"
+                    ],
+                    "parameters" => [
+                        [
+                            "name" => "repository",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "username",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "#password",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "password",
+                            "type" => "string"
+                        ]
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data"
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+
+        $userConfig = [
+            'parameters' => [
+                'bar' => 'foo',
+                'password' => $encryptor->encrypt('somethingPrivate'),
+                'foo' => 'bar',
+            ]
+        ];
+        $volatileConfig = [
+            'parameters' => [
+                'repository' => 'https://github.com/keboola/docker-demo-app',
+                'username' => GIT_PRIVATE_USERNAME,
+                '#password' => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                'fooBar' => 'baz',
+            ]
+        ];
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log);
+        $image->prepare($container, $userConfig, $volatileConfig, uniqid());
+        $executor = new \Keboola\DockerBundle\Docker\Executor($this->client, $log);
+        $executor->initialize($container, $userConfig);
+
+        $configFile = $container->getDataDir() . DIRECTORY_SEPARATOR . 'config.yml';
+        $this->assertFileExists($configFile);
+        $configData = Yaml::parse(file_get_contents($configFile));
+        $this->assertArrayHasKey('bar', $configData['parameters']);
+        $this->assertArrayHasKey('foo', $configData['parameters']);
+        $this->assertArrayHasKey('password', $configData['parameters']);
+        $this->assertArrayNotHasKey('username', $configData['parameters']);
+        $this->assertArrayNotHasKey('#password', $configData['parameters']);
+        $this->assertArrayNotHasKey('repository', $configData['parameters']);
+        $this->assertArrayNotHasKey('fooBar', $configData['parameters']);
     }
 }

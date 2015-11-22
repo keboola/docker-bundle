@@ -356,12 +356,12 @@ class Image
      * Prepare the container image so that it can be run.
      *
      * @param Container $container
-     * @param array $configData Configuration (same as the one stored in data config file)
+     * @param array $configData Configuration (user supplied configuration stored in data config file)
+     * @param array $volatileConfigData Configuration (user supplied configuration NOT stored in config file)
      * @param string $containerId Container ID
-     * @return string Image tag name.
      * @throws \Exception
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(Container $container, array $configData, array $volatileConfigData, $containerId)
     {
         throw new \Exception("Not implemented");
     }

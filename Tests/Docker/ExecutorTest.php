@@ -17,6 +17,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Yaml\Yaml;
 
 class ExecutorTest extends \PHPUnit_Framework_TestCase
 {
@@ -829,5 +830,49 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             "{\n    \"lastUpdate\": \"today\"\n}",
             file_get_contents($this->tmpDir . "/data/in/state.json")
         );
+    }
+
+    public function testDockerHubExecutorVolatileConfig()
+    {
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ],
+            "configuration_format" => "yaml",
+        ];
+
+        $config = [
+            "storage" => [
+            ],
+            "parameters" => [
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
+            ]
+        ];
+        $volatileConfig = [
+            "foo" => "bar",
+            "baz" => "next"
+        ];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config, [], $volatileConfig);
+        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
+        $this->assertFileExists($configFile);
+        $config = Yaml::parse($configFile);
+        $this->assertEquals('id', $config['parameters']['primary_key_column']);
+        $this->assertEquals('text', $config['parameters']['data_column']);
+        $this->assertEquals('4', $config['parameters']['string_length']);
+        // volatile config must not get stored
+        $this->assertArrayNotHasKey('foo', $config['parameters']);
+        $this->assertArrayNotHasKey('baz', $config['parameters']);
     }
 }

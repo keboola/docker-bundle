@@ -375,6 +375,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         if ($this->getVersion()) {
             $dockerFile .= "\nENV APP_VERSION " . $this->getVersion();
         }
+        if (!$this->getRepository()) {
+            throw new BuildException("Repository must be entered.");
+        }
         if ($this->getRepositoryType() == 'git') {
             $repositoryCommands = $this->handleGitCredentials($workingFolder);
         } else {
@@ -408,8 +411,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
     /**
      * @param array $configData
+     * @param array $volatileConfigData
      */
-    private function initParameters(array $configData)
+    private function initParameters(array $configData, array $volatileConfigData)
     {
 
         // set parameter values
@@ -418,7 +422,15 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 // use only root elements of configData
                 if (isset($this->parameters[$key])) {
                     $this->parameters[$key]->setValue($value);
-                    // handle special parameters
+                }
+            }
+        }
+        if (isset($volatileConfigData['parameters']) && is_array($volatileConfigData['parameters'])) {
+            foreach ($volatileConfigData['parameters'] as $key => $value) {
+                // use only root elements of configData
+                if (isset($this->parameters[$key])) {
+                    $this->parameters[$key]->setValue($value);
+                    // handle special parameters - repository properties cannot be passed through configData
                     if ($key === 'repository') {
                         $this->setRepository($value);
                     } elseif ($key === 'username') {
@@ -449,10 +461,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(Container $container, array $configData, array $volatileConfigData, $containerId)
     {
+        $this->initParameters($configData, $volatileConfigData);
         $this->setContainerId($containerId);
-        $this->initParameters($configData);
+
         try {
             if ($this->getLoginUsername()) {
                 // Login to docker repository
@@ -465,6 +478,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 }
             }
 
+            $this->logger->debug("Getting parent image");
             try {
                 $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
                 $process->setTimeout(3600);

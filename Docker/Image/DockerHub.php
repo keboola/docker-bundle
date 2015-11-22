@@ -12,7 +12,7 @@ class DockerHub extends Image
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(Container $container, array $configData, array $volatileConfigData, $containerId)
     {
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));

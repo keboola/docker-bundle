@@ -46,7 +46,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, []);
+        $reflection->invoke($image, [], []);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -100,7 +100,7 @@ DOCKERFILE;
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, []);
+        $reflection->invoke($image, [], []);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -168,7 +168,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
+        $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']], []);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -205,12 +205,17 @@ ENTRYPOINT php /home/run.php --data=/data';
                     "commands" => [
                         "git clone {{repository}} /home/",
                         "cd {{#password}}",
+                        "cd {{otherParam}}",
                         "composer install"
                     ],
                     "entry_point" => "php /home/run.php --data=/data",
                     "parameters" => [
                         [
                             "name" => "#password",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "otherParam",
                             "type" => "string"
                         ]
                     ]
@@ -223,18 +228,39 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
+        /** @var ImageBuilder $image */
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, ['parameters' => ['#password' => 'fooBar']]);
+        $reflection->invoke(
+            $image,
+            ['parameters' => ['#password' => 'fooBar']],
+            ['parameters' => ["otherParam" => "fox"]]
+        );
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, $tempDir->getTmpFolder());
+        // password in configData will not be used for repository
+        $this->assertEquals('', $image->getRepoPassword());
+
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+        $reflection->setAccessible(true);
+        $reflection->invoke(
+            $image,
+            ['parameters' => []],
+            ['parameters' => ['#password' => 'fooBar', "otherParam" => "fox"]]
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         try {
+            // password in volatileConfig will not be used in Dockerfile
             $reflection->invoke($image, $tempDir->getTmpFolder());
-            $this->fail("Trying to use password in build commands must raise an exception.");
+            $this->fail("Missing parameter must cause exception.");
         } catch (BuildParameterException $e) {
             $this->assertContains('{{#password}}', $e->getMessage());
+            $this->assertNotContains('{{otherParam}}', $e->getMessage());
         }
+        $this->assertEquals('fooBar', $image->getRepoPassword());
     }
 
 
@@ -276,7 +302,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
-            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
+            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']], []);
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
             $reflection->setAccessible(true);
             $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -329,7 +355,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
-            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar']]);
+            $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar']], []);
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
             $reflection->setAccessible(true);
             $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -376,7 +402,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $image = Image::factory($encryptor, $log, $imageConfig);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        $reflection->invoke($image, []);
+        $reflection->invoke($image, [], []);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
@@ -438,5 +464,83 @@ DOCKERFILE;
         } catch (InvalidConfigurationException $e) {
             $this->assertContains('Invalid repository_type', $e->getMessage());
         }
+    }
+
+    public function testDockerFileConfigTypes()
+    {
+        $encryptor = new ObjectEncryptor();
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboolaprivatetest/docker-demo-docker",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "{{somewhere}} {{over}} {{the}} {{rainbow}}",
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data",
+                    "parameters" => [
+                        [
+                            "name" => "somewhere",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "over",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "the",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "rainbow",
+                            "type" => "plain_string"
+                        ]
+                    ]
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+        $config = [
+            'parameters' => [
+                'somewhere' => 'quick',
+                'over' => 'brown'
+            ]
+        ];
+        $volatileConfig = [
+            'parameters' => [
+                'the' => 'fox',
+                'rainbow' => 'jumped'
+            ]
+        ];
+        $tempDir = new Temp('docker-test');
+        $tempDir->initRunFolder();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, $config, $volatileConfig);
+        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
+        $reflection->setAccessible(true);
+        $reflection->invoke($image, $tempDir->getTmpFolder());
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $expectedFile = <<<DOCKERFILE
+FROM keboolaprivatetest/docker-demo-docker
+WORKDIR /home
+
+# Image definition commands
+RUN quick brown fox jumped
+WORKDIR /data
+ENTRYPOINT php /home/run.php --data=/data
+DOCKERFILE;
+        $this->assertEquals($expectedFile, trim($dockerFile));
     }
 }

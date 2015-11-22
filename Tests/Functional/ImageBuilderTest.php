@@ -54,7 +54,7 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -96,7 +96,7 @@ class ImageBuilderTest extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -150,7 +150,7 @@ class ImageBuilderTest extends KernelTestCase
          */
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
-        $image->prepare($container, [], uniqid());
+        $image->prepare($container, [], [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -200,7 +200,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('not found', $e->getMessage());
@@ -208,7 +208,7 @@ class ImageBuilderTest extends KernelTestCase
     }
 
 
-    public function testCreatePrivateRepoMissingPasssword()
+    public function testCreatePrivateRepoMissingPassword()
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -239,7 +239,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('Authentication failed', $e->getMessage());
@@ -277,7 +277,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare($container, [], [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('could not read Username', $e->getMessage());
