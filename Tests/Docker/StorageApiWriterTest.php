@@ -293,7 +293,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Keboola\DockerBundle\Exception\ManifestMismatchException
-     * @expectedExceptionMessage User error: Found orphaned file manifest: 'file1.manifest'
+     * @expectedExceptionMessage Found orphaned file manifest: 'file1.manifest'
      */
     public function testWriteFilesOrphanedManifest()
     {
@@ -414,7 +414,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Keboola\DockerBundle\Exception\ManifestMismatchException
-     * @expectedExceptionMessage User error: Found orphaned table manifest: 'table.csv.manifest'
+     * @expectedExceptionMessage Found orphaned table manifest: 'table.csv.manifest'
      */
     public function testWriteTableOrphanedManifest()
     {
@@ -430,7 +430,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Keboola\DockerBundle\Exception\MissingFileException
-     * @expectedExceptionMessage User error: Table source 'table1.csv' not found
+     * @expectedExceptionMessage Table source 'table1.csv' not found
      */
     public function testWriteTableOutputMappingMissing()
     {
