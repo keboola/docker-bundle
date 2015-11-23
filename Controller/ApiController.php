@@ -81,16 +81,16 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 $encryptor = $this->container->get("syrup.object_encryptor");
                 $params["configData"] = $encryptor->encrypt($params["configData"]);
             }
+
+            // Create new job
+            /** @var JobFactory $jobFactory */
+            $jobFactory = $this->container->get('syrup.job_factory');
+            $jobFactory->setStorageApiClient($this->storageApi);
+            $job = $jobFactory->create('run', $params);
+            $job->setLockName($job->getLockName() . '-' . $params['component']);
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
         }
-
-        // Create new job
-        /** @var JobFactory $jobFactory */
-        $jobFactory = $this->container->get('syrup.job_factory');
-        $jobFactory->setStorageApiClient($this->storageApi);
-        $job = $jobFactory->create('run', $params);
-        $job->setLockName($job->getLockName() . '-' . $params['component']);
 
         // Add job to Elasticsearch
         try {
