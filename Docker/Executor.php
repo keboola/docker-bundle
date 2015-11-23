@@ -187,7 +187,7 @@ class Executor
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
         try {
             $configData = $this->configData;
-            unset($configData['volatileParameters']);
+            unset($configData['definition']);
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);

@@ -832,7 +832,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         );
     }
 
-    public function testExecutorVolatileParameters()
+    public function testExecutorDefinitionParameters()
     {
         $imageConfig = [
             "definition" => [
@@ -850,7 +850,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 "data_column" => "text",
                 "string_length" => "4"
             ],
-            "volatileParameters" => [
+            "definition" => [
                 "foo" => "bar",
                 "baz" => "next"
             ]

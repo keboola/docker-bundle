@@ -230,7 +230,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection->setAccessible(true);
         $reflection->invoke(
             $image,
-            ['parameters' => ['#password' => 'fooBar'], 'volatileParameters' => ["otherParam" => "fox"]]
+            ['parameters' => ['#password' => 'fooBar'], 'definition' => ["otherParam" => "fox"]]
         );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
@@ -242,12 +242,12 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection->setAccessible(true);
         $reflection->invoke(
             $image,
-            ['parameters' => [], 'volatileParameters' => ['#password' => 'fooBar', "otherParam" => "fox"]]
+            ['parameters' => [], 'definition' => ['#password' => 'fooBar', "otherParam" => "fox"]]
         );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         try {
-            // password in volatileParameters will not be used in Dockerfile
+            // password in definition will not be used in Dockerfile
             $reflection->invoke($image, $tempDir->getTmpFolder());
             $this->fail("Missing parameter must cause exception.");
         } catch (BuildParameterException $e) {
@@ -464,7 +464,7 @@ DOCKERFILE;
 
     public function testDockerFileBothParameters()
     {
-        // test that both values from parameters and volatileParameters are treated equally
+        // test that both values from parameters and definition are treated equally
         $encryptor = new ObjectEncryptor();
         $imageConfig = [
             "definition" => [
@@ -506,7 +506,7 @@ DOCKERFILE;
                 'somewhere' => 'quick',
                 'over' => 'brown'
             ],
-            'volatileParameters' => [
+            'definition' => [
                 'the' => 'fox',
                 'rainbow' => 'jumped'
             ]
