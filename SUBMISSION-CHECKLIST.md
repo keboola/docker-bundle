@@ -11,3 +11,4 @@
 | 7 | **License agreement URL** | Can be included in your public source repository | &#9744; | `https://github.com/org/reponame/master/blob/LICENSE.md` |
 | 8 | **Docker image URL** | Currently supported are DockerHub (public and private) ad Quay (public) | &#9744; | `https://hub.docker.com/r/keboola/docker-demo` |
 | 9 | **Required memory**  | Maximum memory your image will use | &#9744; | `512M` |
+| 10 | **Component documentation** | Instructions to help end-user configure the application | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
