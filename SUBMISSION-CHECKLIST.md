@@ -14,4 +14,4 @@
 | 10 | **Required memory**  | Maximum memory your image will use | &#9744; | `512M` |
 | 11 | **Component documentation** | Instructions to help end-user configure the application | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
 
- Note: If required, all payment information should be described in **Cimponent documentation**.
+ Note: If required, all payment information should be described in **Component documentation**.
