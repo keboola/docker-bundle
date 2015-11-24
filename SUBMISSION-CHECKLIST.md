@@ -5,7 +5,7 @@
 | 1 | **Application name** | Do not use the word *extractor* or *writer* in your app.  | &#9744; | `iTunes` | 
 | 2 | **Application type** | One of `extractor`, `writer`, `application` | &#9744; | `extractor` |
 | 3 | **Short description** | One sentence describing your app. | &#9744; | `Tailor-made predictive models (recommendation engines, propensity models and many more) in R` |
-| 4 | **Application icon URL** | 32px and 64px sizes on a public URL | &#9744; | `https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png` | 
+| 4 | **Application icon URL** | PNG, 32px and 64px sizes on a public URL | &#9744; | `https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png` | 
 | 5 | **Vendor full name** | Will be visible to end-users | &#9744; | `Company LTD` | 
 | 6 | **Vendor address** |  Will be visible to end-users  | &#9744; | `1 Connected Way, BigTown, CS` | 
 | 7 | **Email address** | Will be visible to end-users and we will send error notifications to this address | &#9744; | `info@company.com` | 
