@@ -47,6 +47,11 @@ class Container
     private $log;
 
     /**
+     * @var int Docker CLI process timeout
+     */
+    protected $dockerCliTimeout = 120;
+
+    /**
      * @return string
      */
     public function getId()
@@ -323,7 +328,7 @@ class Container
     public function getRemoveCommand($containerId)
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
-        $command = "sudo docker rm ";
+        $command = "sudo docker rm -f ";
         $command .= escapeshellarg($containerId);
         return $command;
     }
@@ -346,6 +351,7 @@ class Container
     public function removeContainer($containerId)
     {
         $process = new Process($this->getRemoveCommand($containerId));
+        $process->setTimeout($this->dockerCliTimeout);
         $process->run();
     }
 
@@ -356,6 +362,7 @@ class Container
     public function inspectContainer($containerId)
     {
         $process = new Process($this->getInspectCommand($containerId));
+        $process->setTimeout($this->dockerCliTimeout);
         $process->run();
         $inspect = json_decode($process->getOutput(), true);
         return array_pop($inspect);
