@@ -423,8 +423,8 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
         }
 
-        if (isset($configData['definition']) && is_array($configData['definition'])) {
-            foreach ($configData['definition'] as $key => $value) {
+        if (isset($configData['runtime']) && is_array($configData['runtime'])) {
+            foreach ($configData['runtime'] as $key => $value) {
                 // use only root elements of parameters
                 if (isset($this->parameters[$key])) {
                     $this->parameters[$key]->setValue($value);

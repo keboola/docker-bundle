@@ -230,7 +230,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection->setAccessible(true);
         $reflection->invoke(
             $image,
-            ['parameters' => ['#password' => 'fooBar'], 'definition' => ["otherParam" => "fox"]]
+            ['parameters' => ['#password' => 'fooBar'], 'runtime' => ["otherParam" => "fox"]]
         );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
@@ -242,7 +242,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection->setAccessible(true);
         $reflection->invoke(
             $image,
-            ['parameters' => [], 'definition' => ['#password' => 'fooBar', "otherParam" => "fox"]]
+            ['parameters' => [], 'runtime' => ['#password' => 'fooBar', "otherParam" => "fox"]]
         );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
@@ -506,7 +506,7 @@ DOCKERFILE;
                 'somewhere' => 'quick',
                 'over' => 'brown'
             ],
-            'definition' => [
+            'runtime' => [
                 'the' => 'fox',
                 'rainbow' => 'jumped'
             ]

@@ -338,7 +338,7 @@ class ImageBuilderTest extends KernelTestCase
             'parameters' => [
                 'dir' => 'home',
             ],
-            'definition' => [
+            'runtime' => [
                 'repository' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
                 'username' => GIT_PRIVATE_USERNAME,
                 '#password' => GIT_PRIVATE_PASSWORD,
