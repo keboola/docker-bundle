@@ -676,7 +676,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage User error: Error in configuration: Invalid type for path
+     * @expectedExceptionMessage Error in configuration: Invalid type for path
      */
     public function testExecutorInvalidInputMapping2()
     {

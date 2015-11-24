@@ -162,7 +162,7 @@ EOF;
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
         $container->setId("keboola/demo:latest");
-        $expected = "sudo docker rm 'name'";
+        $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
     }
 }

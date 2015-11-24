@@ -72,21 +72,25 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $this->checkMappingParams($params);
 
         // Encrypt configData for encrypt flagged components
-        if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
-            $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
-            $cryptoWrapper->setComponentId($params["component"]);
-            $tokenInfo = $this->storageApi->verifyToken();
-            $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-            $encryptor = $this->container->get("syrup.object_encryptor");
-            $params["configData"] = $encryptor->encrypt($params["configData"]);
-        }
+        try {
+            if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
+                $cryptoWrapper->setComponentId($params["component"]);
+                $tokenInfo = $this->storageApi->verifyToken();
+                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+                $encryptor = $this->container->get("syrup.object_encryptor");
+                $params["configData"] = $encryptor->encrypt($params["configData"]);
+            }
 
-        // Create new job
-        /** @var JobFactory $jobFactory */
-        $jobFactory = $this->container->get('syrup.job_factory');
-        $jobFactory->setStorageApiClient($this->storageApi);
-        $job = $jobFactory->create('run', $params);
-        $job->setLockName($job->getLockName() . '-' . $params['component']);
+            // Create new job
+            /** @var JobFactory $jobFactory */
+            $jobFactory = $this->container->get('syrup.job_factory');
+            $jobFactory->setStorageApiClient($this->storageApi);
+            $job = $jobFactory->create('run', $params);
+            $job->setLockName($job->getLockName() . '-' . $params['component']);
+        } catch (ClientException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
 
         // Add job to Elasticsearch
         try {
