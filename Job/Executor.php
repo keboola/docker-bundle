@@ -193,7 +193,7 @@ class Executor extends BaseExecutor
 
                 $message = 'Configuration prepared.';
                 $this->log->info($message);
-                return ["message" => $message];
+                return array("message" => $message);
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
@@ -206,7 +206,7 @@ class Executor extends BaseExecutor
 
                 $message = 'Image configuration prepared.';
                 $this->log->info($message);
-                return ["message" => $message];
+                return array("message" => $message);
             case 'dry-run':
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
@@ -224,7 +224,7 @@ class Executor extends BaseExecutor
                 }
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
-                return ["message" => $message];
+                return array("message" => $message);
             case 'run':
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
@@ -241,7 +241,7 @@ class Executor extends BaseExecutor
                 }
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
-                return ["message" => $message];
+                return array("message" => $message);
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
