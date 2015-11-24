@@ -850,7 +850,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 "data_column" => "text",
                 "string_length" => "4"
             ],
-            "definition" => [
+            "runtime" => [
                 "foo" => "bar",
                 "baz" => "next"
             ]
