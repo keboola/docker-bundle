@@ -9,16 +9,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.11.0",
+            "version": "3.11.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d886f97f1bd18f99463dda09bf71ddf2b2a8364e"
+                "reference": "4f8e06728536a593bb8fdaead3ee4f6e7000f78e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d886f97f1bd18f99463dda09bf71ddf2b2a8364e",
-                "reference": "d886f97f1bd18f99463dda09bf71ddf2b2a8364e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4f8e06728536a593bb8fdaead3ee4f6e7000f78e",
+                "reference": "4f8e06728536a593bb8fdaead3ee4f6e7000f78e",
                 "shasum": ""
             },
             "require": {
@@ -83,7 +83,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2015-11-19 21:27:23"
+            "time": "2015-11-24 01:59:29"
         },
         {
             "name": "defuse/php-encryption",
@@ -1558,16 +1558,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "2.5.10",
+            "version": "2.5.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "7ec61d9179b1a798a22f756b891f0074e0d277a2"
+                "reference": "0fe0bd9fb78f8284a6c8d9f1eddb314aced0b097"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/7ec61d9179b1a798a22f756b891f0074e0d277a2",
-                "reference": "7ec61d9179b1a798a22f756b891f0074e0d277a2",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/0fe0bd9fb78f8284a6c8d9f1eddb314aced0b097",
+                "reference": "0fe0bd9fb78f8284a6c8d9f1eddb314aced0b097",
                 "shasum": ""
             },
             "require": {
@@ -1621,7 +1621,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-11-23 09:47:12"
+            "time": "2015-11-24 09:34:40"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -3086,16 +3086,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "2.3.4",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "11a2545c44a5915f883e2e5ec12e14ed345e3ab2"
+                "reference": "32a879f4f35019d78d568db2885d7779ca084a33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/11a2545c44a5915f883e2e5ec12e14ed345e3ab2",
-                "reference": "11a2545c44a5915f883e2e5ec12e14ed345e3ab2",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/32a879f4f35019d78d568db2885d7779ca084a33",
+                "reference": "32a879f4f35019d78d568db2885d7779ca084a33",
                 "shasum": ""
             },
             "require": {
@@ -3156,7 +3156,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2015-09-09 00:18:50"
+            "time": "2015-11-23 21:30:59"
         }
     ],
     "aliases": [],
