@@ -298,7 +298,7 @@ storage:
       0:
         source: data.csv
         destination: out.c-main.data
-        incremental: 1
+        incremental: true
         primary_key: ["id"]
 ```
 
@@ -311,7 +311,7 @@ storage:
       0:
         source: data.csv
         destination: out.c-main.Leads
-        incremental: 1
+        incremental: true
         delete_where_column: Status
         delete_where_values: ["Closed"]
         delete_where_operator: eq              
@@ -330,7 +330,7 @@ To allow dynamic data outputs, that cannot be determined before running the cont
 
 ```
 destination: out.c-main.Leads
-incremental: 1
+incremental: true
 ```
 
 #### Files
