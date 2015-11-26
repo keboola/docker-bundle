@@ -380,6 +380,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         } else {
             throw new BuildException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
         }
+        if (!$this->repository) {
+            throw new BuildException("Repository address must be supplied.");
+        }
         if ($repositoryCommands) {
             $dockerFile .= "\n# Repository initialization\n";
         }
