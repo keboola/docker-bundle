@@ -21,5 +21,6 @@
 | 17 | **Token forwarding** | Application needs Storage API token and its details, `true` or `false` | &#9744; | `false` |
 | 18 | **Component documentation** | Instructions to help end-user configure the application | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
 | 19 | **UI options** | Which UI helpers to use, any of `tableInput`, `tableOutput`, `fileInput`, `fileOutput`| &#9744; | `tableInput, tableOutput` |
+| 20 | **Test configuration** | JSON configuration to test the application | &#9744; |  |
 
  Note: If required, all payment information should be described in **Component documentation**.
