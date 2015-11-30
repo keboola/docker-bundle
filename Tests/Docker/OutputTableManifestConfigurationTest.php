@@ -21,7 +21,10 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "primary_key" => array(),
             "incremental" => false,
             "delete_where_values" => array(),
-            "delete_where_operator" => "eq"
+            "delete_where_operator" => "eq",
+            "delimiter" => ",",
+            "enclosure" => "\"",
+            "escaped_by" => ""
         );
 
         $processedConfiguration = (new Table\Manifest())->parse(array("config" => $config));
@@ -39,7 +42,10 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "primary_key" => array("Id", "Name"),
             "delete_where_column" => "status",
             "delete_where_values" => array("val1", "val2"),
-            "delete_where_operator" => "ne"
+            "delete_where_operator" => "ne",
+            "delimiter" => "\t",
+            "enclosure" => "'",
+            "escaped_by" => "\\"
         );
 
         $expectedArray = $config;

@@ -29,8 +29,11 @@ class Manifest extends Configuration
                     ->validate()
                     ->ifNotInArray(array("eq", "ne"))
                         ->thenInvalid("Invalid operator in delete_where_operator %s.")
+                    ->end()
                 ->end()
-
+                ->scalarNode("delimiter")->defaultValue(",")->end()
+                ->scalarNode("enclosure")->defaultValue("\"")->end()
+                ->scalarNode("escaped_by")->defaultValue("")->end()
             ;
     }
 }

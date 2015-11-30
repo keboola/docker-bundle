@@ -272,8 +272,11 @@ The tables element in configuration is an array and supports these attributes:
   - `incremental`
   - `primary_key`
   - `delete_where_column`
-  - `delete_where_column`
   - `delete_where_operator`
+  - `delete_where_values`
+  - `delimiter`
+  - `enclosure`
+  - `escaped_by`
 
 ##### Examples
 
@@ -331,6 +334,9 @@ To allow dynamic data outputs, that cannot be determined before running the cont
 ```
 destination: out.c-main.Leads
 incremental: true
+delimiter: "\t"
+enclosure: "\""
+escaped_by: "\\"
 ```
 
 #### Files

@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -410,6 +411,34 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
         $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
+    }
+
+    /**
+     *
+     */
+    public function testWriteTableManifestCsv()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            "'Id'\t'Name'\n'test'\t'test\\'s'\n"
+        );
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
+            "destination: out.c-docker-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\"\nescaped_by: \\"
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload");
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $root . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table3', $downloadedFile, []);
+        $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test's\"\n", file_get_contents($downloadedFile));
     }
 
     /**
