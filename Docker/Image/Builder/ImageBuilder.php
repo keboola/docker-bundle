@@ -510,6 +510,8 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
+        } catch (BuildParameterException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
         } finally {
