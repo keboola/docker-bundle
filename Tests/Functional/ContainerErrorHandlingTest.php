@@ -32,16 +32,28 @@ class ContainerErrorHandlingTest extends KernelTestCase
         return $dataDir;
     }
 
+    private function getImageConfiguration()
+    {
+        return [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app.git",
+                        "type" => "git"
+                    ],
+                    "commands" => [],
+                    "entry_point" => "php /data/test.php"
+                ],
+            ]
+        ];
+    }
 
     public function testSuccess()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -51,7 +63,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
         $process = $container->run(uniqid(), []);
 
         $this->assertEquals(0, $process->getExitCode());
@@ -61,12 +72,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testFatal()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -76,7 +82,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php this would be a parse error');
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
             $container->run(uniqid(), []);
@@ -90,12 +95,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testGraceful()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -105,7 +105,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
             $container->run(uniqid(), []);
@@ -119,12 +118,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testLessGraceful()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -134,7 +128,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $container->setId("keboola/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
             $container->run(uniqid(), []);
@@ -147,12 +140,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testEnvironmentPassing()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -163,7 +151,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
         $container->setDataDir($dataDir);
         $value = '123 ščř =-\'"321';
-        $container->setEnvironmentVariables(['command' => '/data/test.php', 'KBC_TOKENID' => $value]);
+        $container->setEnvironmentVariables(['KBC_TOKENID' => $value]);
 
         $process = $container->run(uniqid(), []);
         $this->assertEquals($value, $process->getOutput());
@@ -172,12 +160,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testTimeout()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -188,7 +171,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $container->setId("odinuv/docker-php-test");
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         try {
             $container->run(uniqid(), []);
@@ -253,14 +235,9 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testLogStreamingOn()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ],
-            "memory" => "64m",
-            "streaming_logs" => true
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration["memory"] = "64m";
+        $imageConfiguration["streaming_logs"] = true;
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -279,7 +256,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
             print "second message to stdout\n";'
         );
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         $process = $container->run("testsuite", []);
         $out = $process->getOutput();
@@ -299,13 +275,8 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testLogStreamingOff()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ],
-            "streaming_logs" => false
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration["streaming_logs"] = false;
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -324,7 +295,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
             print "second message to stdout\n";'
         );
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
 
         $process = $container->run("testsuite", []);
         $out = $process->getOutput();
@@ -346,13 +316,9 @@ class ContainerErrorHandlingTest extends KernelTestCase
     public function testOutOfMemory()
     {
         $temp = new Temp('docker');
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-php-test"
-            ],
-            "memory" => "10m"
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration["memory"] = "5m";
+
         $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -371,7 +337,6 @@ class ContainerErrorHandlingTest extends KernelTestCase
             print "finished";'
         );
         $container->setDataDir($dataDir);
-        $container->setEnvironmentVariables(['command' => '/data/test.php']);
         $container->run("testsuite", []);
     }
 }
