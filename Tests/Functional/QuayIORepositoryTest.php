@@ -18,14 +18,13 @@ class QuayIORepositoryTest extends KernelTestCase
     }
 
     /**
-     * Try do download private image using credentials
+     * Try do download image from Quay.io repository
      */
     public function testDownloadedImage()
     {
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
         # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:latest"))->run();
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:master"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:1.0.14"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
@@ -33,7 +32,8 @@ class QuayIORepositoryTest extends KernelTestCase
         $imageConfig = array(
             "definition" => array(
                 "type" => "quayio",
-                "uri" => "keboola/docker-demo-app"
+                "uri" => "keboola/docker-demo-app",
+                "tag" => "1.0.14"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -47,7 +47,7 @@ class QuayIORepositoryTest extends KernelTestCase
         $container = new Container($image, $log);
         $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-app:1.0.14", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
@@ -55,8 +55,7 @@ class QuayIORepositoryTest extends KernelTestCase
 
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
         # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:latest"))->run();
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:master"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:1.0.14"))->run();
 
     }
 }
