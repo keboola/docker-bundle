@@ -150,7 +150,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $imageConfig = array(
             "definition" => array(
                 "type" => "quayio",
-                "uri" => "keboola/demo"
+                "uri" => "keboola/docker-demo-app"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",

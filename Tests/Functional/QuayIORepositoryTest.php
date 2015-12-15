@@ -22,18 +22,18 @@ class QuayIORepositoryTest extends KernelTestCase
      */
     public function testDownloadedImage()
     {
-        (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
         # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
-        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:master"))->run();
 
-        $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
+        $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
         $imageConfig = array(
             "definition" => array(
                 "type" => "quayio",
-                "uri" => "keboola/demo"
+                "uri" => "keboola/docker-demo-app"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -47,16 +47,16 @@ class QuayIORepositoryTest extends KernelTestCase
         $container = new Container($image, $log);
         $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("quay.io/keboola/demo:latest", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
 
-        $process = new Process("sudo docker images | grep quay.io/keboola/demo | wc -l");
+        $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
         $this->assertEquals(1, trim($process->getOutput()));
 
-        (new Process("sudo docker rmi quay.io/keboola/demo"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
         # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/demo:latest"))->run();
-        (new Process("sudo docker rmi quay.io/keboola/demo:master"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:latest"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:master"))->run();
 
     }
 }

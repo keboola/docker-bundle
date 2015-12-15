@@ -119,7 +119,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $configuration = array(
             "definition" => array(
                 "type" => "quayio",
-                "uri" => "keboola/demo"
+                "uri" => "keboola/docker-demo-app"
             ),
             "cpu_shares" => 2048,
             "memory" => "128m",
@@ -140,7 +140,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $image->getForwardTokenDetails());
         $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals('json', $image->getConfigFormat());
-        $this->assertEquals("quay.io/keboola/demo:latest", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }
 
     public function testFormat()

@@ -51,7 +51,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo-app"
             )
         );
         $encryptor = new ObjectEncryptor();
@@ -111,7 +111,7 @@ EOF;
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo",
+                "uri" => "keboola/docker-demo-app",
                 "tag" => "master"
             )
         );
@@ -124,7 +124,7 @@ EOF;
         $container->setId($image->getFullImageId());
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
-        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo:master'";
+        $expected = "sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
@@ -133,7 +133,7 @@ EOF;
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo-app"
             )
         );
         $encryptor = new ObjectEncryptor();
@@ -142,7 +142,7 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
-        $container->setId("keboola/demo:latest");
+        $container->setId("keboola/docker-demo-app:latest");
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
     }
@@ -152,7 +152,7 @@ EOF;
         $imageConfiguration = array(
             "definition" => array(
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+                "uri" => "keboola/docker-demo-app"
             )
         );
         $encryptor = new ObjectEncryptor();
@@ -161,7 +161,7 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log);
-        $container->setId("keboola/demo:latest");
+        $container->setId("keboola/docker-demo-app:latest");
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
     }
