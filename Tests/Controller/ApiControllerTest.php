@@ -94,7 +94,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-r"
         ];
         $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
@@ -113,7 +113,7 @@ class ApiControllerTest extends WebTestCase
         ];
         $parameters = [];
         $request = Request::create("/docker/sandbox", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
@@ -135,7 +135,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-r"
         ];
         $request = Request::create("/docker/docker-r/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
@@ -156,7 +156,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-r"
         ];
         $request = Request::create("/docker/docker-r/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
@@ -178,7 +178,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "invalid-component"
         ];
         $request = Request::create("/docker/invalid-component/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         try {
@@ -203,7 +203,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "invalid-component"
         ];
         $request = Request::create("/docker/invalid-component/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         try {
@@ -227,7 +227,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "invalid-component"
         ];
         $request = Request::create("/docker/invalid-component/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         try {
@@ -250,7 +250,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-r"
         ];
         $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         try {
@@ -277,7 +277,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-r"
         ];
         $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
@@ -302,7 +302,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -344,7 +344,7 @@ class ApiControllerTest extends WebTestCase
             $server,
             $content
         );
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -378,7 +378,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -408,7 +408,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -440,7 +440,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -468,7 +468,7 @@ class ApiControllerTest extends WebTestCase
         ];
 
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -502,7 +502,7 @@ class ApiControllerTest extends WebTestCase
         ];
 
         $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -533,7 +533,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -564,7 +564,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -598,7 +598,7 @@ class ApiControllerTest extends WebTestCase
         ];
 
         $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -634,7 +634,7 @@ class ApiControllerTest extends WebTestCase
             "component" => "docker-dummy-test"
         ];
         $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -670,7 +670,7 @@ class ApiControllerTest extends WebTestCase
             }'
         ];
         $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;
@@ -763,7 +763,7 @@ class ApiControllerTest extends WebTestCase
             }'
         ];
         $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        self::$container->set('request', $request);
+        self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
         $container = self::$container;

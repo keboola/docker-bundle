@@ -23,7 +23,7 @@ class CryptoWrapperTest extends WebTestCase
         $container = $client->getContainer();
         $request = Request::create('/docker/docker-dummy-test/run', 'POST');
         $request->headers->set('X-StorageApi-Token', STORAGE_API_TOKEN);
-        $container->set('request', $request);
+        $container->get('request_stack')->push($request);
         $clientService = $container->get('syrup.storage_api');
 
         $wrapper = new ComponentProjectWrapper($secret);
@@ -43,7 +43,7 @@ class CryptoWrapperTest extends WebTestCase
 
         $request = Request::create('/docker/docker-dummy-test/run', 'POST');
         $request->headers->set('X-StorageApi-Token', STORAGE_API_TOKEN);
-        $container->set('request', $request);
+        $container->get('request_stack')->push($request);
 
         /** @var ComponentProjectWrapper $encryptor */
         $encryptor = $container->get('syrup.encryption.component_project_wrapper');
@@ -105,7 +105,7 @@ class CryptoWrapperTest extends WebTestCase
 
         $request = Request::create('/docker/docker-dummy-test/run', 'POST');
         $request->headers->set('X-StorageApi-Token', STORAGE_API_TOKEN);
-        $container->set('request', $request);
+        $container->get('request_stack')->push($request);
         /** @var ObjectEncryptor $encryptor */
         $encryptor = $container->get('syrup.object_encryptor');
 
