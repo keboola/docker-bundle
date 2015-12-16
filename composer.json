@@ -5,8 +5,8 @@
     "keywords": [],
     "authors": [],
     "require": {
-        "keboola/syrup": "~2.5.12",
-        "symfony/symfony": "2.7.5"
+        "keboola/syrup": "~2.5.16",
+        "symfony/symfony": "~2.7.5"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.0",
