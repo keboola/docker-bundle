@@ -87,7 +87,16 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             $jobFactory = $this->container->get('syrup.job_factory');
             $jobFactory->setStorageApiClient($this->storageApi);
             $job = $jobFactory->create('run', $params);
-            $job->setLockName($job->getLockName() . '-' . $params['component']);
+
+            // Lock name contains component id and configuration id or random string
+            $lockName = $job->getLockName() . '-' . $params['component'];
+            if (isset($params["config"])) {
+                $lockName .= "-" . $params["config"];
+            } else {
+                $lockName .= "-" . uniqid();
+            }
+            $job->setLockName($lockName);
+            
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
         }
@@ -243,9 +252,9 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      * @param Request $request
      * @return array
      */
-    protected function getPostJson(Request $request)
+    protected function getPostJson(Request $request, $assoc = true)
     {
-        $json = parent::getPostJson($request);
+        $json = parent::getPostJson($request, $assoc);
         $json["component"] = $request->get("component");
         return $json;
     }
