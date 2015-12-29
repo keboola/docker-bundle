@@ -307,9 +307,9 @@ class Executor
         }
 
         $this->getLog()->debug("Uploading output tables and files.");
-        $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
+        $writer->uploadTables($this->currentTmpDir . "/data/out/tables", ["mapping" => $outputTablesConfig]);
         try {
-            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
+            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", ["mapping" => $outputFilesConfig]);
         } catch (ManifestMismatchException $e) {
             $this->getLog()->warn($e->getMessage());
         }
@@ -372,14 +372,16 @@ class Executor
         // zip archive must be created in special directory, because uploadFiles is recursive
         $writer->uploadFiles(
             $zipDir,
-            [
+            ["mapping" =>
                 [
-                    'source' => $zipFileName,
-                    'tags' => $tags,
-                    'is_permanent' => false,
-                    'is_encrypted' => true,
-                    'is_public' => false,
-                    'notify' => false
+                    [
+                        'source' => $zipFileName,
+                        'tags' => $tags,
+                        'is_permanent' => false,
+                        'is_encrypted' => true,
+                        'is_public' => false,
+                        'notify' => false
+                    ]
                 ]
             ]
         );
