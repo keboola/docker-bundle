@@ -10,14 +10,8 @@ use Keboola\Syrup\Encryption\CryptoWrapperInterface;
  */
 class ObjectEncryptor extends \Keboola\Syrup\Service\ObjectEncryptor
 {
-    public function __construct()
-    {
-        $this->container = new KernelContainer();
-    }
-
     public function pushWrapper(CryptoWrapperInterface $wrapper)
     {
-        $this->container->set($wrapper);
         parent::pushWrapper($wrapper);
     }
 }
