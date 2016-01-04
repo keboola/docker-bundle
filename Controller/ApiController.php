@@ -96,7 +96,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 $lockName .= "-" . uniqid();
             }
             $job->setLockName($lockName);
-            
+
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
         }
@@ -255,7 +255,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     protected function getPostJson(Request $request, $assoc = true)
     {
         $json = parent::getPostJson($request, $assoc);
-        $json["component"] = $request->get("component");
+        if (is_array($json)) {
+            $json["component"] = $request->get("component");
+        } else {
+            $json->component = $request->get("component");
+        }
         return $json;
     }
 
@@ -408,8 +412,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function createJsonResponse($data = null, $status = '200', $headers = array())
     {
-        if (array_key_exists("component", $data)) {
+
+        if (is_array($data) && array_key_exists("component", $data)) {
             unset($data["component"]);
+        } elseif (is_object($data) && property_exists($data, 'component')) {
+            unset($data->component);
         }
         return parent::createJsonResponse($data, $status, $headers);
     }
