@@ -79,7 +79,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
             'userAgent' => 'docker-bundle',
         ]);
         $storageApiService = new StorageApiService();
-        $storageApiService->setClient($storageApiClient);
+        $storageApiService->setClient($this->getSapiStub(true));
         $objectEncryptor = new ObjectEncryptor();
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
         $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);

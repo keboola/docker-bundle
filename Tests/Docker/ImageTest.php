@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 
@@ -66,6 +67,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId(123);
         $encryptor = new ObjectEncryptor();
         $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $configuration = array(
             "definition" => array(

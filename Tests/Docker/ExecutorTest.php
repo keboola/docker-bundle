@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -220,6 +221,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $wrapper = new ComponentWrapper(md5(uniqid()));
         $wrapper->setComponentId(123);
         $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $imageConfig = array(
             "definition" => array(
