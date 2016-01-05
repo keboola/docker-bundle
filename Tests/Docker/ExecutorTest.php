@@ -880,10 +880,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     {
         $client = $this->client;
         if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
-           $client->dropTable("in.c-docker-demo-whatever.sliced");
+            $client->dropTable("in.c-docker-demo-whatever.sliced");
         }
         if ($client->bucketExists("in.c-docker-demo-whatever")) {
-           $client->dropBucket("in.c-docker-demo-whatever");
+            $client->dropBucket("in.c-docker-demo-whatever");
         }
 
         $imageConfig = array(
@@ -929,10 +929,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($client->tableExists("in.c-docker-demo-whatever.sliced"));
 
         if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
-           $client->dropTable("in.c-docker-demo-whatever.sliced");
+            $client->dropTable("in.c-docker-demo-whatever.sliced");
         }
         if ($client->bucketExists("in.c-docker-demo-whatever")) {
-           $client->dropBucket("in.c-docker-demo-whatever");
+            $client->dropBucket("in.c-docker-demo-whatever");
         }
     }
 }
