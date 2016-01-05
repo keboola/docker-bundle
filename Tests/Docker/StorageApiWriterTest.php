@@ -353,10 +353,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableOutputMappingAndManifest()
     {
         $root = $this->tmp->getTmpFolder();
@@ -384,13 +380,8 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
         $this->assertEquals(array(), $tables[0]["primaryKey"]);
-
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableManifest()
     {
         $root = $this->tmp->getTmpFolder();
@@ -413,9 +404,27 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
     }
 
-    /**
-     *
-     */
+    public function testWriteTableInvalidManifest()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
+            "destination: out.c-docker-test.table3\nprimary_key: \"Id\""
+        );
+
+        $writer = new Writer($this->client);
+        try {
+            $writer->uploadTables($root . "/upload");
+            $this->fail('Invalid table manifest must cause exception');
+        } catch (UserException $e) {
+            $this->assertContains('Invalid type for path', $e->getMessage());
+        }
+    }
+
     public function testWriteTableManifestCsv()
     {
         $root = $this->tmp->getTmpFolder();

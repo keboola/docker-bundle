@@ -321,8 +321,14 @@ class Writer
     protected function readTableManifest($source)
     {
         $adapter = new Table\Manifest\Adapter($this->getFormat());
-
-        return $adapter->readFromFile($source);
+        try {
+            return $adapter->readFromFile($source);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException(
+                "Failed to read table manifest from file " . basename($source) . ' ' . $e->getMessage(),
+                $e
+            );
+        }
     }
 
     /**
