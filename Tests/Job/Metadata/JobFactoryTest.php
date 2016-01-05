@@ -112,7 +112,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
         $storageApiService = new StorageApiService();
         $storageApiService->setClient($this->getSapiStub(true));
-        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor);
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
 
         $command = uniqid();
         $param = [
