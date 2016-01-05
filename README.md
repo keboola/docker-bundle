@@ -19,7 +19,7 @@ Start developing a new app
 
 ###[HOWTO-DOCKERFILE.md](HOWTO-DOCKERFILE.md)
 
-Encapsualte your app into an Docker image
+Encapsulate your app into an Docker image
 
 ###[ENVIRONMENT.md](ENVIRONMENT.md)
 

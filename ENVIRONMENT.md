@@ -339,6 +339,16 @@ enclosure: "\""
 escaped_by: "\\"
 ```
 
+##### default_bucket flag
+
+If you cannot define a bucket or want to get a bucket automatically, then use the `default_bucket` flag. 
+
+All tables in `/data/out/tables` will be uploaded to a bucket identified by component id and configuration id where the file name (minus `.csv` suffix) will be used as the table name. Note that the `destination` attributes in output mapping and file manifests will be overridden.
+ 
+Note: `default_bucket` flag always requires the `config` parameter when creating a job using API even if the configuration `config` does not exist in Storage.  
+
+To enable `default_bucket` flag on your component contact support.
+
 #### Files
 
 All output files from `/data/out/files` folder are automatically uploaded to file uploads. There are two ways how to define file upload options - configuration and manifest files, where manifest has a lower priority.

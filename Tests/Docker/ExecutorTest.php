@@ -875,4 +875,64 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayNotHasKey('foo', $config['parameters']);
         $this->assertArrayNotHasKey('baz', $config['parameters']);
     }
+
+    public function testExecutorDefaultBucket()
+    {
+        $client = $this->client;
+        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
+           $client->dropTable("in.c-docker-demo-whatever.sliced");
+        }
+        if ($client->bucketExists("in.c-docker-demo-whatever")) {
+           $client->dropBucket("in.c-docker-demo-whatever");
+        }
+
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "default_bucket" => true
+        );
+
+        $config = array();
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
+            $process = new Process('echo "Processed 1 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setConfigurationId("whatever");
+        $executor->setComponentId("docker-demo");
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, $config);
+        $executor->run($container, "testsuite");
+        $executor->storeOutput($container, null);
+        $this->assertTrue($client->tableExists("in.c-docker-demo-whatever.sliced"));
+
+        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
+           $client->dropTable("in.c-docker-demo-whatever.sliced");
+        }
+        if ($client->bucketExists("in.c-docker-demo-whatever")) {
+           $client->dropBucket("in.c-docker-demo-whatever");
+        }
+    }
 }
