@@ -934,5 +934,4 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
         $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
     }
-
 }
