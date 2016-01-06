@@ -160,11 +160,13 @@ class Executor
     /**
      * @param Client $storageApi
      * @param Logger $log
+     * @param string $tmpFolder
      */
-    public function __construct(Client $storageApi, Logger $log)
+    public function __construct(Client $storageApi, Logger $log, $tmpFolder)
     {
         $this->setStorageApiClient($storageApi);
         $this->setLog($log);
+        $this->setTmpFolder($tmpFolder);
     }
 
 
@@ -187,7 +189,9 @@ class Executor
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
         try {
             $configData = $this->configData;
+            // remove runtime parameters which is not supposed to be passed into the container
             unset($configData['runtime']);
+            // add image parameters which are supposed to be passed into the container
             $configData['image_parameters'] = $container->getImage()->getImageParameters();
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
@@ -233,11 +237,11 @@ class Executor
 
     /**
      * @param Container $container
-     * @param $id
-     * @return \Symfony\Component\Process\Process
-     * @throws \Exception
+     * @param string $id
+     * @param array $tokenInfo Storage API token information as returned by verifyToken()
+     * @return Process
      */
-    public function run(Container $container, $id)
+    public function run(Container $container, $id, $tokenInfo)
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
@@ -254,13 +258,12 @@ class Executor
         }
 
         // set environment variables
-        $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"]
         ];
         if ($container->getImage()->getForwardToken()) {
-            $envs["KBC_TOKEN"] = $this->getStorageApiClient()->getTokenString();
+            $envs["KBC_TOKEN"] = $tokenInfo["token"];
         }
         if ($container->getImage()->getForwardTokenDetails()) {
             $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];

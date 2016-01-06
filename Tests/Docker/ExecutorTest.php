@@ -135,10 +135,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -204,10 +203,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -282,10 +280,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -337,11 +334,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
             $executor->initialize($container, $config);
-            $executor->run($container, "testsuite");
+            $executor->run($container, "testsuite", $this->client->verifyToken());
             $this->fail("Timeouted process should raise exception.");
         } catch (ProcessTimedOutException $e) {
             $this->assertContains('exceeded the timeout', $e->getMessage());
@@ -386,10 +382,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_PROJECTID=', $ret);
         $this->assertNotContains('KBC_TOKEN=', $ret);
@@ -438,10 +433,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_TOKEN=', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
@@ -490,10 +484,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $tokenInfo = $this->client->verifyToken();
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $executor->run($container, "testsuite", $tokenInfo);
         $ret = $container->getRunCommand('test');
         $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertContains('KBC_PROJECTID=', $ret);
@@ -501,7 +495,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('KBC_TOKENID=', $ret);
         $this->assertContains('KBC_TOKENDESC=', $ret);
 
-        $tokenInfo = $this->client->getLogData();
         $this->assertContains(strval($tokenInfo["owner"]["id"]), $ret);
         $this->assertContains(str_replace('"', '\"', $tokenInfo["owner"]["name"]), $ret);
         $this->assertContains(strval($tokenInfo["id"]), $ret);
@@ -554,8 +547,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
         $this->assertFileExists(
@@ -613,8 +605,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
             $executor->initialize($container, $config);
             $this->fail("Invalid configuration must raise UserException.");
@@ -665,8 +656,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
             $executor->initialize($container, $config);
             $this->fail("Invalid configuration must raise UserException.");
@@ -730,8 +720,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
     }
 
@@ -774,8 +763,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
@@ -823,8 +811,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config, array("lastUpdate" => "today"));
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
@@ -863,8 +850,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config, []);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
@@ -903,8 +889,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, [], []);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
