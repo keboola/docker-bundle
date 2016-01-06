@@ -78,6 +78,7 @@ class Image extends Configuration
                         ->end()
                     ->end()
                 ->end()
+            ->variableNode("image_parameters")->end()
             ->integerNode("cpu_shares")->min(0)->defaultValue(1024)->end()
             ->scalarNode("memory")->defaultValue("64m")->end()
             ->scalarNode("configuration_format")

@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -874,5 +875,42 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         // volatile parameters must not get stored
         $this->assertArrayNotHasKey('foo', $config['parameters']);
         $this->assertArrayNotHasKey('baz', $config['parameters']);
+    }
+
+    public function testExecutorImageParametersEncrypt()
+    {
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $encrypted = $encryptor->encrypt('someString');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-config-encrypt-verify"
+            ],
+            "configuration_format" => "yaml",
+            "image_parameters" => [
+                "foo" => "bar",
+                "baz" => [
+                    "lily" => "pond"
+                ],
+                "#encrypted" => $encrypted
+            ]
+        ];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log);
+        $executor->setTmpFolder($this->tmpDir);
+        $executor->initialize($container, [], []);
+        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
+        $this->assertFileExists($configFile);
+        $config = Yaml::parse($configFile);
+        $this->assertEquals('bar', $config['image_parameters']['foo']);
+        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
+        $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
     }
 }

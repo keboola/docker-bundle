@@ -188,6 +188,7 @@ class Executor
         try {
             $configData = $this->configData;
             unset($configData['runtime']);
+            $configData['image_parameters'] = $container->getImage()->getImageParameters();
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
