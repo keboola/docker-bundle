@@ -18,9 +18,11 @@
 | 14 | **Configuration format**  | Format to store configuration file, state file and all manifests, `yaml` or `json` | &#9744; | `yaml` |
 | 15 | **Streaming logs**  | STDOUT will immediately forward to Storage API events, `true` or `false` | &#9744; | `false` |
 | 16 | **Encryption** | Application uses encrypted parameters, `true` or `false` | &#9744; | `false` |
-| 17 | **Token forwarding** | Application needs Storage API token and its details, `true` or `false` | &#9744; | `false` |
-| 18 | **Component documentation** | Instructions to help end-user configure the application | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
-| 19 | **UI options** | Which UI helpers to use, any of `tableInput`, `tableOutput`, `fileInput`, `fileOutput`| &#9744; | `tableInput, tableOutput` |
-| 20 | **Test configuration** | JSON configuration to test the application | &#9744; |  |
+| 17 | **Default bucket** | If all tables should be uploaded to a pregenerated bucket, `true` or `false` | &#9744; | `false` |
+| 18 | **Default bucket stage** | `in` or `out` | &#9744; | `in` |
+| 19 | **Token forwarding** | Application needs Storage API token and its details, `true` or `false` | &#9744; | `false` |
+| 20 | **Component documentation** | Instructions to help end-user configure the application | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
+| 21 | **UI options** | Which UI helpers to use, any of `tableInput`, `tableOutput`, `fileInput`, `fileOutput`| &#9744; | `tableInput, tableOutput` |
+| 22 | **Test configuration** | JSON configuration to test the application | &#9744; |  |
 
  Note: If required, all payment information should be described in **Component documentation**.

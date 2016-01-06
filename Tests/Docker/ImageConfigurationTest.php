@@ -32,6 +32,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "forward_token" => false,
             "forward_token_details" => false,
             "streaming_logs" => true,
+            "default_bucket" => false,
             "vendor" => array("a" => "b")
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
@@ -133,6 +134,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "forward_token" => false,
             "forward_token_details" => false,
             "streaming_logs" => true,
+            "default_bucket" => true,
+            "default_bucket_stage" => "out",
         ];
 
         $expectedConfiguration = $config;
