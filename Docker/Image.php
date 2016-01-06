@@ -268,7 +268,7 @@ class Image
      */
     public function setImageParameters($imageParameters)
     {
-        $this->imageParameters = $this->encryptor->decrypt($imageParameters);
+        $this->imageParameters = $imageParameters;
         return $this;
     }
 

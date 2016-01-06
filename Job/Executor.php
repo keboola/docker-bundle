@@ -203,7 +203,7 @@ class Executor extends BaseExecutor
                 $image = Image::factory($this->encryptor, $this->log, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
                 $container = new Container($image, $this->log);
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
                 $message = 'Configuration prepared.';
                 $this->log->info($message);
@@ -213,7 +213,7 @@ class Executor extends BaseExecutor
 
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
                 $message = 'Image configuration prepared.';
                 $this->log->info($message);
@@ -223,7 +223,7 @@ class Executor extends BaseExecutor
 
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, true);
                 $process = $executor->run($container, $containerId, $this->tokenInfo);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
@@ -240,7 +240,7 @@ class Executor extends BaseExecutor
 
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, false);
                 $process = $executor->run($container, $containerId, $this->tokenInfo);
 
                 $executor->storeOutput($container, $state);

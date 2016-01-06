@@ -175,8 +175,9 @@ class Executor
      * @param Container $container Docker container.
      * @param array $config Configuration injected into docker image.
      * @param array $state Configuration state
+     * @param bool $sandboxed
      */
-    public function initialize(Container $container, array $config, array $state = null)
+    public function initialize(Container $container, array $config, array $state, $sandboxed)
     {
         $this->configData = $config;
         // create temporary working folder and all of its sub-folders
@@ -192,7 +193,15 @@ class Executor
             // remove runtime parameters which is not supposed to be passed into the container
             unset($configData['runtime']);
             // add image parameters which are supposed to be passed into the container
-            $configData['image_parameters'] = $container->getImage()->getImageParameters();
+
+            if ($sandboxed) {
+                // do not decrypt image parameters on sandboxed calls
+                $configData['image_parameters'] = $container->getImage()->getImageParameters();
+            } else {
+                $configData['image_parameters'] = $container->getImage()->getEncryptor()->decrypt(
+                    $container->getImage()->getImageParameters()
+                );
+            }
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
