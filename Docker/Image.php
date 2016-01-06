@@ -53,6 +53,16 @@ class Image
     private $streamingLogs = true;
 
     /**
+     * @var bool
+     */
+    private $defaultBucket = false;
+
+    /**
+     * @var string
+     */
+    private $defaultBucketStage = "in";
+
+    /**
      * @var
      */
     private $imageParameters = [];
@@ -319,6 +329,44 @@ class Image
     }
 
     /**
+     * @return boolean|string
+     */
+    public function isDefaultBucket()
+    {
+        return $this->defaultBucket;
+    }
+
+    /**
+     * @param boolean|string $defaultBucket
+     * @return $this
+     */
+    public function setDefaultBucket($defaultBucket)
+    {
+        $this->defaultBucket = $defaultBucket;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultBucketStage()
+    {
+        return $this->defaultBucketStage;
+    }
+
+    /**
+     * @param mixed $defaultBucketStage
+     * @return $this
+     */
+    public function setDefaultBucketStage($defaultBucketStage)
+    {
+        $this->defaultBucketStage = $defaultBucketStage;
+
+        return $this;
+    }
+
+    /**
      * @param array $config
      * @return Image
      * @throws \Exception
@@ -348,6 +396,12 @@ class Image
         }
         if (isset($config["streaming_logs"])) {
             $this->setStreamingLogs($config["streaming_logs"]);
+        }
+        if (isset($config["default_bucket"])) {
+            $this->setDefaultBucket($config["default_bucket"]);
+        }
+        if (isset($config["default_bucket_stage"])) {
+            $this->setDefaultBucketStage($config["default_bucket_stage"]);
         }
         if (isset($config["image_parameters"])) {
             $this->setImageParameters($config["image_parameters"]);

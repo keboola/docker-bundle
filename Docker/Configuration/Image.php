@@ -92,6 +92,13 @@ class Image extends Configuration
             ->booleanNode("forward_token")->defaultValue(false)->end()
             ->booleanNode("forward_token_details")->defaultValue(false)->end()
             ->booleanNode("streaming_logs")->defaultValue(true)->end()
+            ->booleanNode("default_bucket")->defaultValue(false)->end()
+            ->scalarNode("default_bucket_stage")
+                ->validate()
+                    ->ifNotInArray(["in", "out"])
+                    ->thenInvalid("Invalid default_bucket_stage %s.")
+                ->end()
+            ->end()
             ->variableNode("vendor")->end()
         ;
 
