@@ -93,7 +93,8 @@ Configuration file may contain these sections:
 
  - `storage` - list of input and output mappings and Storage API token, if required
  - `system` - copy of system configuration (eg. image tag)
- - `parameters` - variable parameters for the container
+ - `parameters` - variable parameters for the container specified by the end-user (UI or API call)
+ - `image_parameters` - variable parameters for the container specified in the component (image) definition, these are specified by the developer and cannot be changed by the end-user
 
 ### State file
 
