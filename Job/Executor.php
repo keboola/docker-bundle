@@ -118,7 +118,7 @@ class Executor extends BaseExecutor
 
         $this->temp->setId($job->getId());
         $containerId = null;
-        $state = null;
+        $state = [];
         $configId = null;
 
         if ($params['mode'] == 'sandbox') {
@@ -178,7 +178,7 @@ class Executor extends BaseExecutor
      * @return array
      * @throws \Exception
      */
-    private function doExecute($component, $params, $configData, $state)
+    private function doExecute(array $component, array $params, array $configData, array $state)
     {
         $executor = new DockerExecutor($this->storageApi, $this->log, $this->temp->getTmpFolder());
         $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
