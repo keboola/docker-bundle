@@ -4,7 +4,7 @@
 | --- | ----- | ---- | ---- | ---- |  
 | 1 | **Application name** | Do not use the word *extractor* or *writer* in your app.  | &#9744; | `iTunes` | 
 | 2 | **Application type** | One of `extractor`, `writer`, `application` | &#9744; | `extractor` |
-| 3 | **Short description** | One sentence describing your app. | &#9744; | `Tailor-made predictive models (recommendation engines, propensity models and many more) in R` |
+| 3 | **Short description** | One sentence describing your app or the app you're integrating | &#9744; | `Tailor-made predictive models (recommendation engines, propensity models and many more) in R` |
 | 4 | **Full description** | Markdown or a link to a markdown document | &#9744; |  |
 | 5 | **Application icon URL** | PNG, 32x32px and 64x64px sizes on a public URL | &#9744; | `https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png` | 
 | 6 | **Vendor full name** | Will be visible to end-users | &#9744; | `Company LTD` | 
