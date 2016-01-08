@@ -181,7 +181,6 @@ class Executor extends BaseExecutor
     private function doExecute(array $component, array $params, array $configData, array $state)
     {
         $executor = new DockerExecutor($this->storageApi, $this->log, $this->temp->getTmpFolder());
-        $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
         if ($component && isset($component["id"])) {
             $executor->setComponentId($component["id"]);
         }
@@ -221,6 +220,7 @@ class Executor extends BaseExecutor
             case 'dry-run':
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
+                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, true);
@@ -238,6 +238,7 @@ class Executor extends BaseExecutor
             case 'run':
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
+                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, false);
