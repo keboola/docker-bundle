@@ -63,6 +63,11 @@ class Image
     private $defaultBucketStage = "in";
 
     /**
+     * @var
+     */
+    private $imageParameters = [];
+
+    /**
      *
      * process timeout in seconds
      *
@@ -80,12 +85,36 @@ class Image
      */
     protected $tag = "latest";
 
+    /**
+     * @var ObjectEncryptor
+     */
+    protected $encryptor;
 
     /**
      * Constructor (use @see {factory()})
+     * @param ObjectEncryptor $encryptor
      */
-    protected function __construct()
+    public function __construct(ObjectEncryptor $encryptor)
     {
+        $this->setEncryptor($encryptor);
+    }
+
+    /**
+     * @return ObjectEncryptor
+     */
+    public function getEncryptor()
+    {
+        return $this->encryptor;
+    }
+
+    /**
+     * @param ObjectEncryptor $encryptor
+     * @return $this
+     */
+    public function setEncryptor($encryptor)
+    {
+        $this->encryptor = $encryptor;
+        return $this;
     }
 
     /**
@@ -232,7 +261,6 @@ class Image
     public function setStreamingLogs($streamingLogs)
     {
         $this->streamingLogs = $streamingLogs;
-
         return $this;
     }
 
@@ -242,6 +270,24 @@ class Image
     public function isStreamingLogs()
     {
         return $this->streamingLogs;
+    }
+
+    /**
+     * @param $imageParameters
+     * @return $this
+     */
+    public function setImageParameters($imageParameters)
+    {
+        $this->imageParameters = $imageParameters;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImageParameters()
+    {
+        return $this->imageParameters;
     }
 
     /**
@@ -357,6 +403,10 @@ class Image
         if (isset($config["default_bucket_stage"])) {
             $this->setDefaultBucketStage($config["default_bucket_stage"]);
         }
+        if (isset($config["image_parameters"])) {
+            $this->setImageParameters($config["image_parameters"]);
+        }
+
         return $this;
     }
 
@@ -370,18 +420,24 @@ class Image
     {
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
-            $instance = new Image\DockerHub();
+            $instance = new Image\DockerHub($encryptor);
         } else {
-            if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
+            if (isset($processedConfig["definition"]["type"]) &&
+                $processedConfig["definition"]["type"] == "dockerhub-private"
+            ) {
                 $instance = new Image\DockerHub\PrivateRepository($encryptor);
             } else {
-                if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
+                if (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "builder"
+                ) {
                     $instance = new Image\Builder\ImageBuilder($encryptor);
                     $instance->setLogger($logger);
-                } elseif (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "quayio") {
-                    $instance = new Image\QuayIO();
+                } elseif (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "quayio"
+                ) {
+                    $instance = new Image\QuayIO($encryptor);
                 } else {
-                    $instance = new self();
+                    $instance = new self($encryptor);
                 }
             }
         }

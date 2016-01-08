@@ -1,6 +1,7 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
+use Keboola\DockerBundle\Docker\Executor as DockerExecutor;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
@@ -53,6 +54,11 @@ class Executor extends BaseExecutor
     protected $encryptionComponentProject;
 
     /**
+     * @var array Cached token information
+     */
+    private $tokenInfo;
+
+    /**
      * @param Logger $log
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
@@ -101,9 +107,9 @@ class Executor extends BaseExecutor
      */
     public function execute(Job $job)
     {
-        $tokenInfo = $this->storageApi->verifyToken();
+        $this->tokenInfo = $this->storageApi->verifyToken();
 
-        $this->encryptionComponentProject->setProjectId($tokenInfo["owner"]["id"]);
+        $this->encryptionComponentProject->setProjectId($this->tokenInfo["owner"]["id"]);
         if (isset($job->getRawParams()["component"])) {
             $this->encryptionComponent->setComponentId($job->getRawParams()["component"]);
             $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
@@ -136,7 +142,6 @@ class Executor extends BaseExecutor
             if (!$this->storageApi->getRunId()) {
                 $this->storageApi->generateRunId();
             }
-            $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
             $processor = new DockerProcessor($component['id']);
             // attach the processor to all handlers and channels
             $this->log->pushProcessor([$processor, 'processRecord']);
@@ -162,8 +167,21 @@ class Executor extends BaseExecutor
                 }
             }
         }
+        return $this->doExecute($component, $params, $configData, $state);
+    }
 
-        $executor = new \Keboola\DockerBundle\Docker\Executor($this->storageApi, $this->log);
+    /**
+     * @param $component
+     * @param $params
+     * @param $configData
+     * @param $state
+     * @return array
+     * @throws \Exception
+     */
+    private function doExecute($component, $params, $configData, $state)
+    {
+        $executor = new DockerExecutor($this->storageApi, $this->log, $this->temp->getTmpFolder());
+        $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
         if ($component && isset($component["id"])) {
             $executor->setComponentId($component["id"]);
         }
@@ -184,37 +202,29 @@ class Executor extends BaseExecutor
                 );
                 $image = Image::factory($this->encryptor, $this->log, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
-
                 $container = new Container($image, $this->log);
-
-                $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
-
                 $message = 'Configuration prepared.';
                 $this->log->info($message);
-                return array("message" => $message);
+                break;
             case 'input':
                 $this->log->info("Preparing image configuration.", $configData);
 
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
-
-                $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
+                $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
-
                 $message = 'Image configuration prepared.';
                 $this->log->info($message);
-                return array("message" => $message);
+                break;
             case 'dry-run':
-                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
-                $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
-                $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
-                $process = $executor->run($container, $containerId);
+                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
+                $container = new Container($image, $this->log);
+                $executor->initialize($container, $configData, $state, true);
+                $process = $executor->run($container, $containerId, $this->tokenInfo);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
                 if ($process->getOutput()) {
@@ -224,15 +234,15 @@ class Executor extends BaseExecutor
                 }
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
-                return array("message" => $message);
+                break;
             case 'run':
-                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
-                $container = new Container($image, $this->log);
                 $this->log->info("Running Docker container '{$component['id']}'.", $configData);
 
-                $executor->setTmpFolder($this->temp->getTmpFolder());
-                $executor->initialize($container, $configData, $state);
-                $process = $executor->run($container, $containerId);
+                $image = Image::factory($this->encryptor, $this->log, $component["data"]);
+                $container = new Container($image, $this->log);
+                $executor->initialize($container, $configData, $state, false);
+                $process = $executor->run($container, $containerId, $this->tokenInfo);
+
                 $executor->storeOutput($container, $state);
                 if ($process->getOutput()) {
                     $message = $process->getOutput();
@@ -241,10 +251,11 @@ class Executor extends BaseExecutor
                 }
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
-                return array("message" => $message);
+                break;
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
+        return array("message" => $message);
     }
 
     /**
