@@ -136,7 +136,7 @@ class Executor extends BaseExecutor
                     $configData['storage']['input']['tables'][$index] = $table;
                 }
             }
-            $component = null;
+            $component = [];
         } else {
             $component = $this->getComponent($params["component"]);
             if (!$this->storageApi->getRunId()) {
