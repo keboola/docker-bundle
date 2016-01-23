@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -42,7 +43,7 @@ class ImageBuilderTest extends KernelTestCase
                         "username" => GIT_PRIVATE_USERNAME,
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install"
                     ],
@@ -84,7 +85,7 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install"
                     ],
@@ -135,7 +136,7 @@ class ImageBuilderTest extends KernelTestCase
                     ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
-                        "git clone {{repository}} /home/src2/",
+                        "git clone {{repository}} /home/src2/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/src2/",
                         "composer install",
                     ],
@@ -187,7 +188,7 @@ class ImageBuilderTest extends KernelTestCase
                     ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
-                        "git clone {{repository}} /home/src2/",
+                        "git clone {{repository}} /home/src2/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/src2/",
                         "composer install",
                     ],
@@ -226,7 +227,7 @@ class ImageBuilderTest extends KernelTestCase
                         "username" => GIT_PRIVATE_USERNAME,
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
@@ -264,7 +265,7 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
@@ -306,7 +307,7 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /{{dir}}/",
                         "composer install"
                     ],
@@ -352,5 +353,43 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $this->assertEquals($oldCount + 1, trim($process->getOutput()));
+    }
+
+
+    public function testInvalidRepo()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/non-existent-repo",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone {{repository}} /home/ || echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1 ",
+                        "cd /home/",
+                        "composer install"
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data"
+                ]
+            ],
+            "configuration_format" => "yaml",
+        ];
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log);
+        try {
+            $image->prepare($container, [], uniqid());
+            $this->fail("Invalid repository must raise exception.");
+        } catch (UserException $e) {
+            $this->assertContains('Cannot access the repository', $e->getMessage());
+        }
     }
 }
