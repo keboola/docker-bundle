@@ -42,7 +42,7 @@ To be defined further, but you will have options to set:
   * format of injected config file and manifests (YAML, JSON)
   * container memory limit
   * whether or not the input and output mapping is provided by Keboola Connection
-
+  * network configuration, by default this is set to allow all outgoing configuration, this can be limited if required. 
 
 ## Workflow
 

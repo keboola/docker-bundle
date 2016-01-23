@@ -63,9 +63,14 @@ class Image
     private $defaultBucketStage = "in";
 
     /**
-     * @var
+     * @var array
      */
     private $imageParameters = [];
+
+    /**
+     * @var string
+     */
+    private $networkType = 'bridge';
 
     /**
      *
@@ -89,6 +94,7 @@ class Image
      * @var ObjectEncryptor
      */
     protected $encryptor;
+
 
     /**
      * Constructor (use @see {factory()})
@@ -362,7 +368,24 @@ class Image
     public function setDefaultBucketStage($defaultBucketStage)
     {
         $this->defaultBucketStage = $defaultBucketStage;
+        return $this;
+    }
 
+    /**
+     * @return string
+     */
+    public function getNetworkType()
+    {
+        return $this->networkType;
+    }
+
+    /**
+     * @param string $networkType
+     * @return $this
+     */
+    public function setNetworkType($networkType)
+    {
+        $this->networkType = $networkType;
         return $this;
     }
 
@@ -373,38 +396,16 @@ class Image
      */
     public function fromArray($config = [])
     {
-        if (isset($config["id"])) {
-            $this->setId($config["id"]);
-        }
-        if (isset($config["configuration_format"])) {
-            $this->setConfigFormat($config["configuration_format"]);
-        }
-        if (isset($config["cpu_shares"])) {
-            $this->setCpuShares($config["cpu_shares"]);
-        }
-        if (isset($config["memory"])) {
-            $this->setMemory($config["memory"]);
-        }
-        if (isset($config["process_timeout"])) {
-            $this->setProcessTimeout($config["process_timeout"]);
-        }
-        if (isset($config["forward_token"])) {
-            $this->setForwardToken($config["forward_token"]);
-        }
-        if (isset($config["forward_token_details"])) {
-            $this->setForwardTokenDetails($config["forward_token_details"]);
-        }
-        if (isset($config["streaming_logs"])) {
-            $this->setStreamingLogs($config["streaming_logs"]);
-        }
-        if (isset($config["default_bucket"])) {
-            $this->setDefaultBucket($config["default_bucket"]);
-        }
-        if (isset($config["default_bucket_stage"])) {
-            $this->setDefaultBucketStage($config["default_bucket_stage"]);
-        }
-        if (isset($config["image_parameters"])) {
-            $this->setImageParameters($config["image_parameters"]);
+        $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
+            'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
+            'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
+            'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType',
+        ];
+        foreach ($fields as $fieldName => $methodName) {
+            if (isset($config[$fieldName])) {
+                $this->$methodName($config[$fieldName]);
+            }
         }
 
         return $this;

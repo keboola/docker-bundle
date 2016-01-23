@@ -17,7 +17,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "vendor" => array("a" => "b")
+            "vendor" => array("a" => "b"),
+            "image_parameters" => array("foo" => "bar"),
         );
         $expectedConfiguration = array(
             "definition" => array(
@@ -33,7 +34,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "forward_token_details" => false,
             "streaming_logs" => true,
             "default_bucket" => false,
-            "vendor" => array("a" => "b")
+            "vendor" => array("a" => "b"),
+            "image_parameters" => array("foo" => "bar"),
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
@@ -61,9 +63,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m"
         );
-        $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     /**
@@ -81,9 +81,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "configuration_format" => "fail"
         );
-        $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     /**
@@ -99,11 +97,26 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "unknown" => array()
         );
-        $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Invalid configuration for path "image.network": Invalid network type "whatever".
+     */
+    public function testWrongNetwokType()
+    {
+        $config = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "network" => "whatever"
+        );
+        (new Configuration\Image())->parse(array("config" => $config));
+    }
 
     public function testBuilderConfiguration()
     {
