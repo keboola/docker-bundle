@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
+use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
@@ -227,7 +228,7 @@ class ImageBuilderTest extends KernelTestCase
                         "username" => GIT_PRIVATE_USERNAME,
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
@@ -242,8 +243,8 @@ class ImageBuilderTest extends KernelTestCase
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
-        } catch (BuildException $e) {
-            $this->assertContains('Authentication failed', $e->getMessage());
+        } catch (BuildParameterException $e) {
+            $this->assertContains('Cannot access the repository https://bitbucket.org/keboolaprivatetest', $e->getMessage());
         }
     }
 
