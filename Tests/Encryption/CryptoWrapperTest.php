@@ -127,7 +127,7 @@ class CryptoWrapperTest extends WebTestCase
         } catch (\InvalidCiphertextException $e) {
         }
 
-        $encrypted2 = $encryptor->encrypt('secret', 'syrup.encryption.component_project_wrapper');
+        $encrypted2 = $encryptor->encrypt('secret', ComponentProjectWrapper::class);
         try {
             $wrapper2->decrypt($encrypted2);
             $this->fail("Attempt to decrypt value for different components should fail.");
