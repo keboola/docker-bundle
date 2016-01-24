@@ -11,16 +11,10 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ContainerErrorHandlingTest extends KernelTestCase
+class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
     private function createScript(Temp $temp, $contents)
     {
         $temp->initRunFolder();
@@ -54,7 +48,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -73,7 +67,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -96,7 +90,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -119,7 +113,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -141,7 +135,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -161,7 +155,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -189,7 +183,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -216,7 +210,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
                 "uri" => "keboola/non-existent"
             ]
         ];
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -238,7 +232,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["memory"] = "64m";
         $imageConfiguration["streaming_logs"] = true;
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
@@ -277,7 +271,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["streaming_logs"] = false;
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);
@@ -319,7 +313,7 @@ class ContainerErrorHandlingTest extends KernelTestCase
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["memory"] = "5m";
 
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
         $log->pushHandler($handler);

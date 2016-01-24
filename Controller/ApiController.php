@@ -360,7 +360,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 $tokenInfo = $this->storageApi->verifyToken();
                 $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
                 $encryptor = $this->container->get("syrup.object_encryptor");
-                $configuration = $encryptor->encrypt($configuration, 'syrup.encryption.component_project_wrapper');
+                $configuration = $encryptor->encrypt($configuration, ComponentProjectWrapper::class);
             }
             $options->setConfiguration($configuration);
         }

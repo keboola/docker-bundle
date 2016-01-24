@@ -4,14 +4,8 @@
     "description": "Component for running Docker images in KBC",
     "keywords": [],
     "authors": [],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/keboola/syrup.git"
-        }
-    ],
     "require": {
-        "keboola/syrup": "dev-refactor-objectencryptor",
+        "keboola/syrup": "3.0.0-rc2",
         "symfony/symfony": "~2.7.5"
     },
     "require-dev": {
