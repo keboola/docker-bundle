@@ -266,7 +266,7 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
