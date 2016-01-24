@@ -281,8 +281,8 @@ class ImageBuilderTest extends KernelTestCase
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
-        } catch (BuildException $e) {
-            $this->assertContains('could not read Username', $e->getMessage());
+        } catch (BuildParameterException $e) {
+            $this->assertContains('Cannot access the repository https://bitbucket.org/keboolaprivatetest', $e->getMessage());
         }
     }
 
