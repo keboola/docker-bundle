@@ -95,7 +95,7 @@ class Image extends Configuration
             ->booleanNode("default_bucket")->defaultValue(false)->end()
             ->scalarNode("network")
                 ->validate()
-                    ->ifNotInArray(["none", "cran", "bridge"])
+                    ->ifNotInArray(["none", "bridge"])
                     ->thenInvalid("Invalid network type %s.")
                 ->end()
             ->end()

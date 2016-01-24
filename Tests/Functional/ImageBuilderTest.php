@@ -44,7 +44,8 @@ class ImageBuilderTest extends KernelTestCase
                         "username" => GIT_PRIVATE_USERNAME,
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install"
                     ],
@@ -86,7 +87,8 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install"
                     ],
@@ -137,7 +139,8 @@ class ImageBuilderTest extends KernelTestCase
                     ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
-                        "git clone {{repository}} /home/src2/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/src2/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/src2/",
                         "composer install",
                     ],
@@ -189,7 +192,8 @@ class ImageBuilderTest extends KernelTestCase
                     ],
                     "commands" => [
                         // use other directory than home, that is already used by docker-demo-docker
-                        "git clone {{repository}} /home/src2/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/src2/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /home/src2/",
                         "composer install",
                     ],
@@ -228,7 +232,8 @@ class ImageBuilderTest extends KernelTestCase
                         "username" => GIT_PRIVATE_USERNAME,
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/ || (echo " .
+                            "\"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
@@ -244,7 +249,10 @@ class ImageBuilderTest extends KernelTestCase
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
-            $this->assertContains('Cannot access the repository https://bitbucket.org/keboolaprivatetest', $e->getMessage());
+            $this->assertContains(
+                'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
+                $e->getMessage()
+            );
         }
     }
 
@@ -266,7 +274,8 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/ || echo " .
+                            "\"KBC::USER_ERR:Cannot access the repository {{repository}}.KBC::USER_ERR\" && exit 1)",
                         "cd /home/",
                         "composer install",
                     ],
@@ -282,7 +291,10 @@ class ImageBuilderTest extends KernelTestCase
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
-            $this->assertContains('Cannot access the repository https://bitbucket.org/keboolaprivatetest', $e->getMessage());
+            $this->assertContains(
+                'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
+                $e->getMessage()
+            );
         }
     }
 
@@ -308,7 +320,8 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
                         "cd /{{dir}}/",
                         "composer install"
                     ],
@@ -374,7 +387,8 @@ class ImageBuilderTest extends KernelTestCase
                         "type" => "git",
                     ],
                     "commands" => [
-                        "git clone {{repository}} /home/ || echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1 ",
+                        "git clone --depth 1 {{repository}} /home/" .
+                            " || echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1 ",
                         "cd /home/",
                         "composer install"
                     ],
