@@ -1,6 +1,31 @@
-languages:
-   PHP: true
+---
+engines:
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - php
+  fixme:
+    enabled: true
+  phpmd:
+    enabled: true
+    checks:
+      CleanCode/ElseExpression:
+        enabled: false
+      CleanCode/StaticAccess:
+        enabled: false        
+    exclude_fingerprints:
+    - fc7cdf1dcd9ffb15b73a2edf2ab992ed
+    - e995d923dc507123eca26fc6bbf71d4f
+    - ebdab1ef4653123f810bd274a7dc6aa6
+    - b2e3dcf37cdb8bbdbb36dc807d402b8c
+    - b2e3dcf37cdb8bbdbb36dc807d402b8c
+    - 003021da2b6e20540494ecdeeb639038
+    - 0ad9b31f46fbd78370a4aae1fc2e4f4d
+ratings:
+  paths:
+  - "**.php"
 exclude_paths:
-  - "Tests/*"
-  - "vendor/*"
-  - "*.md"
+- DependencyInjection/*
+- Tests/*
+- vendor/*

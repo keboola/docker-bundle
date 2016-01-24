@@ -10,40 +10,10 @@ use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\DockerHub
 {
-
     protected $loginEmail;
     protected $loginUsername;
     protected $loginPassword;
     protected $loginServer;
-
-    /**
-     * @var ObjectEncryptor
-     */
-    protected $encryptor;
-
-    public function __construct(ObjectEncryptor $encryptor)
-    {
-        $this->setEncryptor($encryptor);
-    }
-
-    /**
-     * @return ObjectEncryptor
-     */
-    public function getEncryptor()
-    {
-        return $this->encryptor;
-    }
-
-    /**
-     * @param ObjectEncryptor $encryptor
-     * @return $this
-     */
-    public function setEncryptor($encryptor)
-    {
-        $this->encryptor = $encryptor;
-
-        return $this;
-    }
 
     /**
      * @return mixed

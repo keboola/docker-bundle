@@ -115,7 +115,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadFiles($root . "/upload", $configs);
+        $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
         $options = new ListFilesOptions();
         $options->setTags(array("docker-bundle-test"));
@@ -165,7 +165,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadFiles($root . "/upload", $configs);
+        $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
         $options = new ListFilesOptions();
         $options->setTags(array("docker-bundle-test"));
@@ -203,7 +203,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadFiles($root . "/upload", $configs);
+        $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
         $options = new ListFilesOptions();
         $options->setTags(array("docker-bundle-test"));
@@ -240,7 +240,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer = new Writer($this->client);
         $writer->setFormat('json');
         try {
-            $writer->uploadFiles($root . "/upload", $configs);
+            $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
             $this->fail("Invalid manifest must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('json', $e->getMessage());
@@ -264,7 +264,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer = new Writer($this->client);
         $writer->setFormat('yaml');
         try {
-            $writer->uploadFiles($root . "/upload", $configs);
+            $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
             $this->fail("Invalid manifest must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('yaml', $e->getMessage());
@@ -289,7 +289,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
         $writer = new Writer($this->client);
-        $writer->uploadFiles($root . "/upload", $configs);
+        $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
     }
 
     /**
@@ -321,7 +321,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
@@ -346,17 +346,13 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableOutputMappingAndManifest()
     {
         $root = $this->tmp->getTmpFolder();
@@ -378,19 +374,14 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
         $this->assertEquals(array(), $tables[0]["primaryKey"]);
-
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableManifest()
     {
         $root = $this->tmp->getTmpFolder();
@@ -413,9 +404,27 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
     }
 
-    /**
-     *
-     */
+    public function testWriteTableInvalidManifest()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
+            "destination: out.c-docker-test.table3\nprimary_key: \"Id\""
+        );
+
+        $writer = new Writer($this->client);
+        try {
+            $writer->uploadTables($root . "/upload");
+            $this->fail('Invalid table manifest must cause exception');
+        } catch (UserException $e) {
+            $this->assertContains('Invalid type for path', $e->getMessage());
+        }
+    }
+
     public function testWriteTableManifestCsv()
     {
         $root = $this->tmp->getTmpFolder();
@@ -472,7 +481,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
         $writer = new Writer($this->client);
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
     }
 
     /**
@@ -538,10 +547,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client);
 
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
         // And again, check first incremental table
-        $writer->uploadTables($root . "/upload", $configs);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
         $this->client->exportTable("out.c-docker-test.table1", $root . "/download.csv");
         $this->assertEquals(
             "\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n",
@@ -625,5 +634,27 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer = new Writer($sapiStub);
         $writer->setFormat("json");
         $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
+    }
+
+    public function testWriteTableToDefaultBucket()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table2.csv", "\"Id\",\"Name2\"\n\"test2\",\"test2\"\n");
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload", ["bucket" => "in.c-docker-test"]);
+
+        $tables = $this->client->listTables("in.c-docker-test");
+        $this->assertCount(2, $tables);
+
+        $this->assertEquals('in.c-docker-test.table1', $tables[0]["id"]);
+        $tableInfo = $this->client->getTable('in.c-docker-test.table1');
+        $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
+
+        $this->assertEquals('in.c-docker-test.table2', $tables[1]["id"]);
+        $tableInfo = $this->client->getTable('in.c-docker-test.table2');
+        $this->assertEquals(array("Id", "Name2"), $tableInfo["columns"]);
     }
 }

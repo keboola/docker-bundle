@@ -13,7 +13,8 @@ class Container extends Configuration
         // System
         $root
             ->children()
-                ->variableNode("parameters")
+                ->variableNode("parameters")->end()
+                ->variableNode("image_parameters")
         ;
         $storage = $root
             ->children()

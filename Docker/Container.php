@@ -315,6 +315,7 @@ class Container
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
+            . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getId());

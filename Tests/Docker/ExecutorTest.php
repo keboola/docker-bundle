@@ -135,10 +135,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -204,10 +203,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -283,10 +281,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $process = $executor->run($container, "testsuite");
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -338,11 +335,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
-            $executor->initialize($container, $config);
-            $executor->run($container, "testsuite");
+            $executor->initialize($container, $config, [], false);
+            $executor->run($container, "testsuite", $this->client->verifyToken());
             $this->fail("Timeouted process should raise exception.");
         } catch (ProcessTimedOutException $e) {
             $this->assertContains('exceeded the timeout', $e->getMessage());
@@ -387,10 +383,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_PROJECTID=', $ret);
         $this->assertNotContains('KBC_TOKEN=', $ret);
@@ -439,10 +434,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_TOKEN=', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
@@ -491,10 +485,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
-        $executor->run($container, "testsuite");
+        $tokenInfo = $this->client->verifyToken();
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $executor->run($container, "testsuite", $tokenInfo);
         $ret = $container->getRunCommand('test');
         $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertContains('KBC_PROJECTID=', $ret);
@@ -502,7 +496,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('KBC_TOKENID=', $ret);
         $this->assertContains('KBC_TOKENDESC=', $ret);
 
-        $tokenInfo = $this->client->getLogData();
         $this->assertContains(strval($tokenInfo["owner"]["id"]), $ret);
         $this->assertContains(str_replace('"', '\"', $tokenInfo["owner"]["name"]), $ret);
         $this->assertContains(strval($tokenInfo["id"]), $ret);
@@ -555,9 +548,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
         $this->assertFileExists(
             $this->tmpDir . DIRECTORY_SEPARATOR . 'zip' . DIRECTORY_SEPARATOR . 'data.zip'
@@ -614,10 +606,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
-            $executor->initialize($container, $config);
+            $executor->initialize($container, $config, [], false);
             $this->fail("Invalid configuration must raise UserException.");
         } catch (UserException $e) {
         }
@@ -666,10 +657,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
         try {
-            $executor->initialize($container, $config);
+            $executor->initialize($container, $config, [], false);
             $this->fail("Invalid configuration must raise UserException.");
         } catch (UserException $e) {
         }
@@ -731,9 +721,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
     }
 
     public function testExecutorStoreEmptyStateFile()
@@ -775,9 +764,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
             new \stdclass(),
@@ -824,9 +812,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config, array("lastUpdate" => "today"));
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, ["lastUpdate" => "today"], false);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
             "{\n    \"lastUpdate\": \"today\"\n}",
@@ -864,9 +851,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log);
-        $executor->setTmpFolder($this->tmpDir);
-        $executor->initialize($container, $config, []);
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
         $config = Yaml::parse($configFile);
@@ -876,5 +862,136 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         // volatile parameters must not get stored
         $this->assertArrayNotHasKey('foo', $config['parameters']);
         $this->assertArrayNotHasKey('baz', $config['parameters']);
+    }
+
+    public function testExecutorDefaultBucket()
+    {
+        $client = $this->client;
+        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
+            $client->dropTable("in.c-docker-demo-whatever.sliced");
+        }
+        if ($client->bucketExists("in.c-docker-demo-whatever")) {
+            $client->dropBucket("in.c-docker-demo-whatever");
+        }
+
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "yaml",
+            "default_bucket" => true
+        );
+
+        $config = array();
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile(
+                $container->getDataDir() . "/out/tables/sliced.csv",
+                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            );
+            $process = new Process('echo "Processed 1 rows."');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->setConfigurationId("whatever");
+        $executor->setComponentId("docker-demo");
+        $executor->initialize($container, $config, [], false);
+        $executor->run($container, "testsuite", $this->client->verifyToken());
+        $executor->storeOutput($container, null);
+        $this->assertTrue($client->tableExists("in.c-docker-demo-whatever.sliced"));
+
+        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
+            $client->dropTable("in.c-docker-demo-whatever.sliced");
+        }
+        if ($client->bucketExists("in.c-docker-demo-whatever")) {
+            $client->dropBucket("in.c-docker-demo-whatever");
+        }
+    }
+
+    public function testExecutorImageParametersEncrypt()
+    {
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $encrypted = $encryptor->encrypt('someString');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-config-encrypt-verify"
+            ],
+            "configuration_format" => "yaml",
+            "image_parameters" => [
+                "foo" => "bar",
+                "baz" => [
+                    "lily" => "pond"
+                ],
+                "#encrypted" => $encrypted
+            ]
+        ];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, [], [], false);
+        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
+        $this->assertFileExists($configFile);
+        $config = Yaml::parse($configFile);
+        $this->assertEquals('bar', $config['image_parameters']['foo']);
+        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
+        $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
+    }
+
+    public function testExecutorImageParametersNoEncrypt()
+    {
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $encrypted = $encryptor->encrypt('someString');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-config-encrypt-verify"
+            ],
+            "configuration_format" => "yaml",
+            "image_parameters" => [
+                "foo" => "bar",
+                "baz" => [
+                    "lily" => "pond"
+                ],
+                "#encrypted" => $encrypted
+            ]
+        ];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, [], [], true);
+        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
+        $this->assertFileExists($configFile);
+        $config = Yaml::parse($configFile);
+        $this->assertEquals('bar', $config['image_parameters']['foo']);
+        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
+        $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
     }
 }

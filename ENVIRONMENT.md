@@ -42,7 +42,7 @@ To be defined further, but you will have options to set:
   * format of injected config file and manifests (YAML, JSON)
   * container memory limit
   * whether or not the input and output mapping is provided by Keboola Connection
-
+  * network configuration, by default this is set to allow all outgoing configuration, this can be limited if required. 
 
 ## Workflow
 
@@ -93,7 +93,8 @@ Configuration file may contain these sections:
 
  - `storage` - list of input and output mappings and Storage API token, if required
  - `system` - copy of system configuration (eg. image tag)
- - `parameters` - variable parameters for the container
+ - `parameters` - variable parameters for the container specified by the end-user (UI or API call)
+ - `image_parameters` - variable parameters for the container specified in the component (image) definition, these are specified by the developer and cannot be changed by the end-user
 
 ### State file
 
@@ -338,6 +339,16 @@ delimiter: "\t"
 enclosure: "\""
 escaped_by: "\\"
 ```
+
+##### default_bucket flag
+
+If you cannot define a bucket or want to get a bucket automatically, then use the `default_bucket` flag. 
+
+All tables in `/data/out/tables` will be uploaded to a bucket identified by component id and configuration id where the file name (minus `.csv` suffix) will be used as the table name. Note that the `destination` attributes in output mapping and file manifests will be overridden.
+ 
+Note: `default_bucket` flag always requires the `config` parameter when creating a job using API even if the configuration `config` does not exist in Storage.  
+
+To enable `default_bucket` flag on your component contact support.
 
 #### Files
 

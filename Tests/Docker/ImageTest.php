@@ -29,6 +29,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('yaml', $image->getConfigFormat());
         $this->assertEquals(false, $image->getForwardToken());
         $this->assertEquals(false, $image->getForwardTokenDetails());
+        $this->assertEquals(false, $image->isDefaultBucket());
         $this->assertEquals("latest", $image->getTag());
         $this->assertEquals("dummy:latest", $image->getFullImageId());
 
@@ -44,6 +45,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "forward_token" => true,
             "forward_token_details" => true,
             "streaming_logs" => true,
+            "default_bucket" => true,
             "configuration_format" => 'json'
         );
         $encryptor = new ObjectEncryptor();
@@ -56,6 +58,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(true, $image->getForwardToken());
         $this->assertEquals(true, $image->getForwardTokenDetails());
         $this->assertEquals(true, $image->isStreamingLogs());
+        $this->assertEquals(true, $image->isDefaultBucket());
         $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals("master", $image->getTag());
         $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());

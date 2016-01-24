@@ -13,6 +13,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
@@ -662,6 +663,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @noinspection PhpParamsInspection */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -698,6 +700,7 @@ class FunctionalTests extends KernelTestCase
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue))
         ;
+        /** @noinspection PhpParamsInspection */
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($encryptor, $data);
@@ -768,6 +771,7 @@ class FunctionalTests extends KernelTestCase
             ->method("getComponents")
             ->will($this->returnValue($componentsStub));
 
+        /** @noinspection PhpParamsInspection */
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
@@ -807,6 +811,7 @@ class FunctionalTests extends KernelTestCase
             ->method("verifyToken")
             ->will($this->returnValue($tokenInfo));
 
+        /** @noinspection PhpParamsInspection */
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($encryptor, $data);
@@ -816,5 +821,72 @@ class FunctionalTests extends KernelTestCase
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
         $this->assertEquals("value3", $config["parameters"]["#key3"]);
         $this->assertEquals("value4", $config["parameters"]["#key4"]);
+    }
+
+
+    public function testNetworkBridge()
+    {
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "entry_point" => "ping -W 10 -c 1 www.example.com"
+                ]
+            ],
+            "configuration_format" => "yaml",
+            "network" => "bridge",
+        ];
+
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new Container($image, $log);
+        $container->setId("network-bridge-test");
+        $container->setDataDir("/tmp");
+        $process = $container->run("testsuite", []);
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertContains("64 bytes from", $process->getOutput());
+    }
+
+
+    public function testNetworkNone()
+    {
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app",
+                        "type" => "git",
+                    ],
+                    "entry_point" => "ping -W 10 -c 1 www.example.com"
+                ]
+            ],
+            "configuration_format" => "yaml",
+            "network" => "none"
+        ];
+
+        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new Container($image, $log);
+        $container->setId("network-bridge-test");
+        $container->setDataDir("/tmp");
+        try {
+            $container->run("testsuite", []);
+            $this->fail("Ping must fail");
+        } catch (ApplicationException $e) {
+            $this->assertContains("unknown host www.example.com", $e->getMessage());
+        }
     }
 }

@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -160,11 +161,13 @@ class Executor
     /**
      * @param Client $storageApi
      * @param Logger $log
+     * @param string $tmpFolder
      */
-    public function __construct(Client $storageApi, Logger $log)
+    public function __construct(Client $storageApi, Logger $log, $tmpFolder)
     {
         $this->setStorageApiClient($storageApi);
         $this->setLog($log);
+        $this->setTmpFolder($tmpFolder);
     }
 
 
@@ -173,8 +176,9 @@ class Executor
      * @param Container $container Docker container.
      * @param array $config Configuration injected into docker image.
      * @param array $state Configuration state
+     * @param bool $sandboxed
      */
-    public function initialize(Container $container, array $config, array $state = null)
+    public function initialize(Container $container, array $config, array $state, $sandboxed)
     {
         $this->configData = $config;
         // create temporary working folder and all of its sub-folders
@@ -187,7 +191,18 @@ class Executor
         $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
         try {
             $configData = $this->configData;
+            // remove runtime parameters which is not supposed to be passed into the container
             unset($configData['runtime']);
+            // add image parameters which are supposed to be passed into the container
+
+            if ($sandboxed) {
+                // do not decrypt image parameters on sandboxed calls
+                $configData['image_parameters'] = $container->getImage()->getImageParameters();
+            } else {
+                $configData['image_parameters'] = $container->getImage()->getEncryptor()->decrypt(
+                    $container->getImage()->getImageParameters()
+                );
+            }
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
@@ -232,11 +247,11 @@ class Executor
 
     /**
      * @param Container $container
-     * @param $id
-     * @return \Symfony\Component\Process\Process
-     * @throws \Exception
+     * @param string $id
+     * @param array $tokenInfo Storage API token information as returned by verifyToken()
+     * @return Process
      */
-    public function run(Container $container, $id)
+    public function run(Container $container, $id, $tokenInfo)
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
@@ -253,13 +268,12 @@ class Executor
         }
 
         // set environment variables
-        $tokenInfo = $this->getStorageApiClient()->getLogData();
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"]
         ];
         if ($container->getImage()->getForwardToken()) {
-            $envs["KBC_TOKEN"] = $this->getStorageApiClient()->getTokenString();
+            $envs["KBC_TOKEN"] = $tokenInfo["token"];
         }
         if ($container->getImage()->getForwardTokenDetails()) {
             $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
@@ -281,9 +295,10 @@ class Executor
 
 
     /**
-     * Store results of last executed container (perform output mapping)
      * @param Container $container
      * @param mixed $state
+     * @throws ClientException
+     * @throws \Exception
      */
     public function storeOutput(Container $container, $state = null)
     {
@@ -307,9 +322,21 @@ class Executor
         }
 
         $this->getLog()->debug("Uploading output tables and files.");
-        $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $outputTablesConfig);
+
+        $uploadTablesOptions = ["mapping" => $outputTablesConfig];
+
+        // Get default bucket
+        if ($container->getImage()->isDefaultBucket()) {
+            if (!$this->getConfigurationId()) {
+                throw new UserException("Configuration ID not set, but is required for default_bucket option.");
+            }
+            $uploadTablesOptions["bucket"] = $container->getImage()->getDefaultBucketStage() . ".c-" . $this->getComponentId() . "-" . $this->getConfigurationId();
+            $this->getLog()->debug("Default bucket " . $uploadTablesOptions["bucket"]);
+        }
+
+        $writer->uploadTables($this->currentTmpDir . "/data/out/tables", $uploadTablesOptions);
         try {
-            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", $outputFilesConfig);
+            $writer->uploadFiles($this->currentTmpDir . "/data/out/files", ["mapping" => $outputFilesConfig]);
         } catch (ManifestMismatchException $e) {
             $this->getLog()->warn($e->getMessage());
         }
@@ -320,18 +347,35 @@ class Executor
         }
 
         if ($this->getComponentId() && $this->getConfigurationId()) {
-            // Store state
-            if (!$state) {
-                $state = (object) array();
-            }
-            $writer->updateState(
-                $this->getComponentId(),
-                $this->getConfigurationId(),
-                $this->currentTmpDir . "/data/out/state",
-                $state
-            );
-        }
+            $storeState = true;
 
+            // Do not store state if `default_bucket` and configurationId not really exists
+            if ($container->getImage()->isDefaultBucket()) {
+                $components = new Components($this->getStorageApiClient());
+                try {
+                    $components->getConfiguration($this->getComponentId(), $this->getConfigurationId());
+                } catch (ClientException $e) {
+                    if ($e->getStringCode() == 'notFound' && $e->getPrevious()->getCode() == 404) {
+                        $storeState = false;
+                    } else {
+                        throw $e;
+                    }
+                }
+            }
+
+            // Store state
+            if ($storeState) {
+                if (!$state) {
+                    $state = (object)array();
+                }
+                $writer->updateState(
+                    $this->getComponentId(),
+                    $this->getConfigurationId(),
+                    $this->currentTmpDir . "/data/out/state",
+                    $state
+                );
+            }
+        }
         $container->dropDataDir();
     }
 
@@ -372,14 +416,16 @@ class Executor
         // zip archive must be created in special directory, because uploadFiles is recursive
         $writer->uploadFiles(
             $zipDir,
-            [
+            ["mapping" =>
                 [
-                    'source' => $zipFileName,
-                    'tags' => $tags,
-                    'is_permanent' => false,
-                    'is_encrypted' => true,
-                    'is_public' => false,
-                    'notify' => false
+                    [
+                        'source' => $zipFileName,
+                        'tags' => $tags,
+                        'is_permanent' => false,
+                        'is_encrypted' => true,
+                        'is_public' => false,
+                        'notify' => false
+                    ]
                 ]
             ]
         );

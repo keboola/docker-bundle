@@ -53,6 +53,26 @@ class Image
     private $streamingLogs = true;
 
     /**
+     * @var bool
+     */
+    private $defaultBucket = false;
+
+    /**
+     * @var string
+     */
+    private $defaultBucketStage = "in";
+
+    /**
+     * @var array
+     */
+    private $imageParameters = [];
+
+    /**
+     * @var string
+     */
+    private $networkType = 'bridge';
+
+    /**
      *
      * process timeout in seconds
      *
@@ -70,12 +90,37 @@ class Image
      */
     protected $tag = "latest";
 
+    /**
+     * @var ObjectEncryptor
+     */
+    protected $encryptor;
+
 
     /**
      * Constructor (use @see {factory()})
+     * @param ObjectEncryptor $encryptor
      */
-    protected function __construct()
+    public function __construct(ObjectEncryptor $encryptor)
     {
+        $this->setEncryptor($encryptor);
+    }
+
+    /**
+     * @return ObjectEncryptor
+     */
+    public function getEncryptor()
+    {
+        return $this->encryptor;
+    }
+
+    /**
+     * @param ObjectEncryptor $encryptor
+     * @return $this
+     */
+    public function setEncryptor($encryptor)
+    {
+        $this->encryptor = $encryptor;
+        return $this;
     }
 
     /**
@@ -222,7 +267,6 @@ class Image
     public function setStreamingLogs($streamingLogs)
     {
         $this->streamingLogs = $streamingLogs;
-
         return $this;
     }
 
@@ -232,6 +276,24 @@ class Image
     public function isStreamingLogs()
     {
         return $this->streamingLogs;
+    }
+
+    /**
+     * @param $imageParameters
+     * @return $this
+     */
+    public function setImageParameters($imageParameters)
+    {
+        $this->imageParameters = $imageParameters;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImageParameters()
+    {
+        return $this->imageParameters;
     }
 
     /**
@@ -273,35 +335,77 @@ class Image
     }
 
     /**
+     * @return boolean|string
+     */
+    public function isDefaultBucket()
+    {
+        return $this->defaultBucket;
+    }
+
+    /**
+     * @param boolean|string $defaultBucket
+     * @return $this
+     */
+    public function setDefaultBucket($defaultBucket)
+    {
+        $this->defaultBucket = $defaultBucket;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultBucketStage()
+    {
+        return $this->defaultBucketStage;
+    }
+
+    /**
+     * @param mixed $defaultBucketStage
+     * @return $this
+     */
+    public function setDefaultBucketStage($defaultBucketStage)
+    {
+        $this->defaultBucketStage = $defaultBucketStage;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getNetworkType()
+    {
+        return $this->networkType;
+    }
+
+    /**
+     * @param string $networkType
+     * @return $this
+     */
+    public function setNetworkType($networkType)
+    {
+        $this->networkType = $networkType;
+        return $this;
+    }
+
+    /**
      * @param array $config
      * @return Image
      * @throws \Exception
      */
     public function fromArray($config = [])
     {
-        if (isset($config["id"])) {
-            $this->setId($config["id"]);
-        }
-        if (isset($config["configuration_format"])) {
-            $this->setConfigFormat($config["configuration_format"]);
-        }
-        if (isset($config["cpu_shares"])) {
-            $this->setCpuShares($config["cpu_shares"]);
-        }
-        if (isset($config["memory"])) {
-            $this->setMemory($config["memory"]);
-        }
-        if (isset($config["process_timeout"])) {
-            $this->setProcessTimeout($config["process_timeout"]);
-        }
-        if (isset($config["forward_token"])) {
-            $this->setForwardToken($config["forward_token"]);
-        }
-        if (isset($config["forward_token_details"])) {
-            $this->setForwardTokenDetails($config["forward_token_details"]);
-        }
-        if (isset($config["streaming_logs"])) {
-            $this->setStreamingLogs($config["streaming_logs"]);
+        $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
+            'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
+            'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
+            'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType',
+        ];
+        foreach ($fields as $fieldName => $methodName) {
+            if (isset($config[$fieldName])) {
+                $this->$methodName($config[$fieldName]);
+            }
         }
 
         return $this;
@@ -317,18 +421,24 @@ class Image
     {
         $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
-            $instance = new Image\DockerHub();
+            $instance = new Image\DockerHub($encryptor);
         } else {
-            if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub-private") {
+            if (isset($processedConfig["definition"]["type"]) &&
+                $processedConfig["definition"]["type"] == "dockerhub-private"
+            ) {
                 $instance = new Image\DockerHub\PrivateRepository($encryptor);
             } else {
-                if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "builder") {
+                if (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "builder"
+                ) {
                     $instance = new Image\Builder\ImageBuilder($encryptor);
                     $instance->setLogger($logger);
-                } elseif (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "quayio") {
-                    $instance = new Image\QuayIO();
+                } elseif (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "quayio"
+                ) {
+                    $instance = new Image\QuayIO($encryptor);
                 } else {
-                    $instance = new self();
+                    $instance = new self($encryptor);
                 }
             }
         }

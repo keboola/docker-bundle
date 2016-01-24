@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
@@ -506,9 +507,18 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $process->setTimeout(3600);
             $process->run();
             if ($process->getExitCode() != 0) {
-                $message = "Build failed (code: {$process->getExitCode()}): " .
-                    " {$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new BuildException($message);
+                /* string matching is used because currently it is not possible to have different exit codes for
+                    `docker build` It is either 0 for success or 1 for failure and the individual command exit codes
+                    are ignored. */
+                $err = $process->getErrorOutput();
+                if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $err, $matches)) {
+                    $message = $matches[1];
+                    throw new BuildParameterException($message);
+                } else {
+                    $message = "Build failed (code: {$process->getExitCode()}): " .
+                        " {$process->getOutput()} / {$process->getErrorOutput()}";
+                    throw new BuildException($message);
+                }
             }
         } catch (BuildParameterException $e) {
             throw $e;

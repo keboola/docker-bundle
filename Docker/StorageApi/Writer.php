@@ -86,9 +86,9 @@ class Writer
      * Upload files from local temp directory to Storage.
      *
      * @param string $source Source path.
-     * @param array $configurations Upload configurations.
+     * @param array $configuration Upload configuration
      */
-    public function uploadFiles($source, $configurations = array())
+    public function uploadFiles($source, $configuration = [])
     {
 
         $manifestNames = $this->getManifestFiles($source);
@@ -98,8 +98,10 @@ class Writer
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingFiles = array();
-        foreach ($configurations as $config) {
-            $outputMappingFiles[] = $config["source"];
+        if (isset($configuration["mapping"])) {
+            foreach ($configuration["mapping"] as $mapping) {
+                $outputMappingFiles[] = $mapping["source"];
+            }
         }
         $outputMappingFiles = array_unique($outputMappingFiles);
         $processedOutputMappingFiles = array();
@@ -110,9 +112,11 @@ class Writer
         }
 
         // Check if all files from output mappings are present
-        foreach ($configurations as $config) {
-            if (!in_array($config["source"], $fileNames)) {
-                throw new MissingFileException("File '{$config["source"]}' not found.");
+        if (isset($configuration["mapping"])) {
+            foreach ($configuration["mapping"] as $mapping) {
+                if (!in_array($mapping["source"], $fileNames)) {
+                    throw new MissingFileException("File '{$mapping["source"]}' not found.");
+                }
             }
         }
 
@@ -126,11 +130,13 @@ class Writer
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
-            foreach ($configurations as $config) {
-                if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
-                    $configFromMapping = $config;
-                    $processedOutputMappingFiles[] = $configFromMapping["source"];
-                    unset($configFromMapping["source"]);
+            if (isset($configuration["mapping"])) {
+                foreach ($configuration["mapping"] as $mapping) {
+                    if (isset($mapping["source"]) && $mapping["source"] == $file->getFilename()) {
+                        $configFromMapping = $mapping;
+                        $processedOutputMappingFiles[] = $configFromMapping["source"];
+                        unset($configFromMapping["source"]);
+                    }
                 }
             }
             $manifestKey = array_search($file->getPathname() . ".manifest", $manifestNames);
@@ -205,9 +211,9 @@ class Writer
 
     /**
      * @param $source
-     * @param array $configurations
+     * @param array $configuration
      */
-    public function uploadTables($source, $configurations = array())
+    public function uploadTables($source, $configuration = [])
     {
         $manifestNames = $this->getManifestFiles($source);
 
@@ -217,8 +223,10 @@ class Writer
         $files = $finder->files()->notName("*.manifest")->in($source);
 
         $outputMappingTables = array();
-        foreach ($configurations as $config) {
-            $outputMappingTables[] = $config["source"];
+        if (isset($configuration["mapping"])) {
+            foreach ($configuration["mapping"] as $mapping) {
+                $outputMappingTables[] = $mapping["source"];
+            }
         }
         $outputMappingTables = array_unique($outputMappingTables);
         $processedOutputMappingTables = array();
@@ -229,9 +237,11 @@ class Writer
         }
 
         // Check if all files from output mappings are present
-        foreach ($configurations as $config) {
-            if (!in_array($config["source"], $fileNames)) {
-                throw new MissingFileException("Table source '{$config["source"]}' not found.");
+        if (isset($configuration["mapping"])) {
+            foreach ($configuration["mapping"] as $mapping) {
+                if (!in_array($mapping["source"], $fileNames)) {
+                    throw new MissingFileException("Table source '{$mapping["source"]}' not found.");
+                }
             }
         }
 
@@ -245,11 +255,13 @@ class Writer
         foreach ($files as $file) {
             $configFromMapping = array();
             $configFromManifest = array();
-            foreach ($configurations as $config) {
-                if (isset($config["source"]) && $config["source"] == $file->getFilename()) {
-                    $configFromMapping = $config;
-                    $processedOutputMappingTables[] = $configFromMapping["source"];
-                    unset($configFromMapping["source"]);
+            if (isset($configuration["mapping"])) {
+                foreach ($configuration["mapping"] as $mapping) {
+                    if (isset($mapping["source"]) && $mapping["source"] == $file->getFilename()) {
+                        $configFromMapping = $mapping;
+                        $processedOutputMappingTables[] = $configFromMapping["source"];
+                        unset($configFromMapping["source"]);
+                    }
                 }
             }
 
@@ -261,14 +273,18 @@ class Writer
                 // If no manifest found and no output mapping, use filename (without .csv if present) as table id
                 if (!isset($configFromMapping["destination"])) {
                     // Check for .csv suffix
+                    $prefix = "";
+                    if (isset($configuration["bucket"])) {
+                        $prefix = $configuration["bucket"] . ".";
+                    }
                     if (substr($file->getFilename(), -4) == '.csv') {
-                        $configFromMapping["destination"] = substr(
+                        $configFromMapping["destination"] = $prefix . substr(
                             $file->getFilename(),
                             0,
                             strlen($file->getFilename()) - 4
                         );
                     } else {
-                        $configFromMapping["destination"] = $file->getFilename();
+                        $configFromMapping["destination"] = $prefix . $file->getFilename();
                     }
                 }
             }
@@ -321,8 +337,14 @@ class Writer
     protected function readTableManifest($source)
     {
         $adapter = new Table\Manifest\Adapter($this->getFormat());
-
-        return $adapter->readFromFile($source);
+        try {
+            return $adapter->readFromFile($source);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException(
+                "Failed to read table manifest from file " . basename($source) . ' ' . $e->getMessage(),
+                $e
+            );
+        }
     }
 
     /**
