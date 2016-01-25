@@ -5,8 +5,8 @@ namespace Keboola\DockerBundle\Tests\Job\Metadata;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Encryption\BaseWrapper;
-use Keboola\Syrup\Encryption\Encryptor;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
 class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -78,14 +78,11 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
             'token' => STORAGE_API_TOKEN,
             'userAgent' => 'docker-bundle',
         ]);
-
-        $key = hash('sha256', uniqid());
-        $encryptor = new Encryptor(substr($key, 0, 32));
-        $configEncryptor = new ObjectEncryptor();
-
-        $sapiStub = $this->getSapiStub(true);
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
-        $jobFactory->setStorageApiClient($sapiStub);
+        $storageApiService = new StorageApiService();
+        $storageApiService->setClient($this->getSapiStub(true));
+        $objectEncryptor = new ObjectEncryptor();
+        $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
 
         $command = uniqid();
         $param = uniqid();
@@ -106,19 +103,16 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('description', $job->getToken());
         $this->assertEquals($tokenData['description'], $job->getToken()['description']);
         $this->assertArrayHasKey('token', $job->getToken());
-        $this->assertEquals($tokenData['token'], $encryptor->decrypt($job->getToken()['token']));
+        $this->assertEquals($tokenData['token'], $objectEncryptor->decrypt($job->getToken()['token']));
     }
 
     public function testJobEncryptFlagSandbox()
     {
-        $key = hash('sha256', uniqid());
-        $encryptor = new Encryptor(substr($key, 0, 32));
-        $wrapper = new BaseWrapper(md5(uniqid()));
-        $configEncryptor = new ObjectEncryptor();
-        $configEncryptor->pushWrapper($wrapper);
-        $sapiStub = $this->getSapiStub(true);
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
-        $jobFactory->setStorageApiClient($sapiStub);
+        $objectEncryptor = new ObjectEncryptor();
+        $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $storageApiService = new StorageApiService();
+        $storageApiService->setClient($this->getSapiStub(true));
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
 
         $command = uniqid();
         $param = [
@@ -131,7 +125,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         ];
         $lock = uniqid();
 
-        $job = $jobFactory->create($command, $configEncryptor->encrypt($param), $lock);
+        $job = $jobFactory->create($command, $objectEncryptor->encrypt($param), $lock);
         $this->assertFalse($job->isEncrypted());
         $this->assertEquals($command, $job->getCommand());
         $this->assertEquals($lock, $job->getLockName());
@@ -141,14 +135,11 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testJobEncryptFlagNonEncryptComponent()
     {
-        $key = hash('sha256', uniqid());
-        $encryptor = new Encryptor(substr($key, 0, 32));
-        $wrapper = new BaseWrapper(md5(uniqid()));
-        $configEncryptor = new ObjectEncryptor();
-        $configEncryptor->pushWrapper($wrapper);
-        $sapiStub = $this->getSapiStub(false);
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
-        $jobFactory->setStorageApiClient($sapiStub);
+        $objectEncryptor = new ObjectEncryptor();
+        $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $storageApiService = new StorageApiService();
+        $storageApiService->setClient($this->getSapiStub(false));
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
 
         $command = uniqid();
         $param = [
@@ -160,7 +151,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         ];
         $lock = uniqid();
 
-        $job = $jobFactory->create($command, $configEncryptor->encrypt($param), $lock);
+        $job = $jobFactory->create($command, $objectEncryptor->encrypt($param), $lock);
         $this->assertFalse($job->isEncrypted());
         $this->assertEquals($command, $job->getCommand());
         $this->assertEquals($lock, $job->getLockName());
@@ -170,15 +161,11 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
 
     public function testJobEncryptFlagEncryptComponent()
     {
-        $key = hash('sha256', uniqid());
-        $encryptor = new Encryptor(substr($key, 0, 32));
-        $wrapper = new BaseWrapper(md5(uniqid()));
-        $configEncryptor = new ObjectEncryptor();
-        $configEncryptor->pushWrapper($wrapper);
-
-        $sapiStub = $this->getSapiStub(true);
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $configEncryptor);
-        $jobFactory->setStorageApiClient($sapiStub);
+        $objectEncryptor = new ObjectEncryptor();
+        $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $storageApiService = new StorageApiService();
+        $storageApiService->setClient($this->getSapiStub(true));
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
 
         $command = uniqid();
         $param = [
@@ -190,7 +177,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         ];
         $lock = uniqid();
 
-        $job = $jobFactory->create($command, $configEncryptor->encrypt($param), $lock);
+        $job = $jobFactory->create($command, $objectEncryptor->encrypt($param), $lock);
         $this->assertTrue($job->isEncrypted());
         $this->assertEquals($command, $job->getCommand());
         $this->assertEquals($lock, $job->getLockName());

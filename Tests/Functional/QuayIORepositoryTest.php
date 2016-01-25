@@ -42,7 +42,7 @@ class QuayIORepositoryTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new Container($image, $log);
         $image->prepare($container, [], uniqid());

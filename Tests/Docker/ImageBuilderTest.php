@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -366,6 +367,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $wrapper->setComponentId(123);
         $encryptor = new ObjectEncryptor();
         $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $imageConfig = [
             "definition" => [

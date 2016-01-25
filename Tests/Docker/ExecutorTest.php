@@ -219,6 +219,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $wrapper = new ComponentWrapper(md5(uniqid()));
         $wrapper->setComponentId(123);
         $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $imageConfig = array(
             "definition" => array(

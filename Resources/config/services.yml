@@ -22,4 +22,4 @@ services:
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
-        arguments: [%app_name%, @syrup.encryptor, @syrup.object_encryptor]
+        arguments: [%app_name%, @syrup.object_encryptor, @syrup.storage_api]
