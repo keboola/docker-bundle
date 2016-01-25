@@ -128,6 +128,14 @@ class Executor
     }
 
     /**
+     *
+     */
+    public function getSanitizedComponentId()
+    {
+        return preg_replace('/[^a-zA-Z0-9-]/i', '-', $this->componentId);
+    }
+
+    /**
      * @param mixed $componentId
      * @return $this
      */
@@ -330,7 +338,7 @@ class Executor
             if (!$this->getConfigurationId()) {
                 throw new UserException("Configuration ID not set, but is required for default_bucket option.");
             }
-            $uploadTablesOptions["bucket"] = $container->getImage()->getDefaultBucketStage() . ".c-" . $this->getComponentId() . "-" . $this->getConfigurationId();
+            $uploadTablesOptions["bucket"] = $container->getImage()->getDefaultBucketStage() . ".c-" . $this->getSanitizedComponentId() . "-" . $this->getConfigurationId();
             $this->getLog()->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
