@@ -127,7 +127,7 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('docker-r');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
@@ -210,7 +210,7 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('docker-r');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
@@ -313,7 +313,7 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('docker-r');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
@@ -412,7 +412,7 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('docker-r');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
@@ -477,7 +477,7 @@ class FunctionalTests extends KernelTestCase
             )
         );
 
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -504,7 +504,7 @@ class FunctionalTests extends KernelTestCase
             )
         );
 
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
@@ -549,7 +549,7 @@ class FunctionalTests extends KernelTestCase
         ];
 
         $tokenInfo = $this->client->verifyToken();
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('docker-r');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
@@ -641,8 +641,8 @@ class FunctionalTests extends KernelTestCase
                 "parameters" => [
                     "key1" => "value1",
                     "#key2" => $encryptor->encrypt("value2"),
-                    "#key3" => $encryptor->encrypt("value3", 'syrup.encryption.component_wrapper'),
-                    "#key4" => $encryptor->encrypt("value4", 'syrup.encryption.component_project_wrapper'),
+                    "#key3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                    "#key4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                 ]
             ],
             "state" => []
@@ -749,8 +749,8 @@ class FunctionalTests extends KernelTestCase
                 "parameters" => [
                     "key1" => "value1",
                     "#key2" => $encryptor->encrypt("value2"),
-                    "#key3" => $encryptor->encrypt("value3", 'syrup.encryption.component_wrapper'),
-                    "#key4" => $encryptor->encrypt("value4", 'syrup.encryption.component_project_wrapper'),
+                    "#key3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                    "#key4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                 ]
             ],
             "state" => []
@@ -842,7 +842,7 @@ class FunctionalTests extends KernelTestCase
             "network" => "bridge",
         ];
 
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -874,7 +874,7 @@ class FunctionalTests extends KernelTestCase
             "network" => "none"
         ];
 
-        $encryptor = new ObjectEncryptor(self::$kernel->getContainer());
+        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfig);

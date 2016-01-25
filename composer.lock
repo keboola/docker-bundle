@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "3e31eb844aaafc7fe8d8ec8fe09c7f81",
-    "content-hash": "9f4ab54528f805cabb0b263e3f2cac39",
+    "hash": "c27e4d40bb067a9ea2f616f3315e6baf",
+    "content-hash": "74d844759c2bfd6d5b7739c40e8560b6",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1562,16 +1562,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "2.5.24",
+            "version": "dev-refactor-objectencryptor",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "71c3c6c10408b07cc0bfb7815cffa7509892adac"
+                "reference": "c11ae1befe7416fe2cce29b4c28cad75abfa9f94"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/71c3c6c10408b07cc0bfb7815cffa7509892adac",
-                "reference": "71c3c6c10408b07cc0bfb7815cffa7509892adac",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/c11ae1befe7416fe2cce29b4c28cad75abfa9f94",
+                "reference": "c11ae1befe7416fe2cce29b4c28cad75abfa9f94",
                 "shasum": ""
             },
             "require": {
@@ -1610,7 +1610,17 @@
                     "": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "": "tests/"
+                }
+            },
+            "scripts": {
+                "post-install-cmd": [
+                    "bash git/setup.sh"
+                ],
+                "post-update-cmd": []
+            },
             "license": [
                 "MIT"
             ],
@@ -1625,7 +1635,11 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2015-12-21 14:36:16"
+            "support": {
+                "source": "https://github.com/keboola/syrup/tree/refactor-objectencryptor",
+                "issues": "https://github.com/keboola/syrup/issues"
+            },
+            "time": "2016-01-04 19:03:50"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -3739,7 +3753,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/syrup": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

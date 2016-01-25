@@ -120,14 +120,14 @@ class CryptoWrapperTest extends WebTestCase
         $wrapper2->setProjectId($tokenInfo["owner"]["id"]);
         $wrapper2->setComponentId('docker-dummy-test');
 
-        $encrypted = $encryptor->encrypt('secret', 'syrup.encryption.component_wrapper');
+        $encrypted = $encryptor->encrypt('secret', ComponentWrapper::class);
         try {
             $wrapper2->decrypt($encrypted);
             $this->fail("Attempt to decrypt value for different components should fail.");
         } catch (\InvalidCiphertextException $e) {
         }
 
-        $encrypted2 = $encryptor->encrypt('secret', 'syrup.encryption.component_project_wrapper');
+        $encrypted2 = $encryptor->encrypt('secret', ComponentProjectWrapper::class);
         try {
             $wrapper2->decrypt($encrypted2);
             $this->fail("Attempt to decrypt value for different components should fail.");
