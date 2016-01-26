@@ -2,6 +2,7 @@
 
 | # | Name | Note | &#9745; | Example | 
 | --- | ----- | ---- | ---- | ---- |  
+| 0 | **Vendor ID** | Prefixes application id.  | &#9744; | `keboola` | 
 | 1 | **Application name** | Do not use the word *extractor* or *writer* in your app.  | &#9744; | `iTunes` | 
 | 2 | **Application type** | One of `extractor`, `writer`, `application` | &#9744; | `extractor` |
 | 3 | **Short description** | One sentence describing your app or the app you're integrating | &#9744; | `Tailor-made predictive models (recommendation engines, propensity models and many more) in R` |
