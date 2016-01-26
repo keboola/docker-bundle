@@ -25,5 +25,7 @@
 | 20 | **Component documentation** | Instructions to help end-user configure the application (linked from application configuration page) | &#9744; | `https://github.com/org/reponame/master/blob/CONFIGURATION.md` |
 | 21 | **UI options** | Which UI helpers to use, any of `tableInput`, `tableOutput`, `fileInput`, `fileOutput`| &#9744; | `tableInput, tableOutput` |
 | 22 | **Test configuration** | JSON configuration to test the application | &#9744; |  |
+| 23 | **Networking** | If the app downloads or uploads the data to the Internet, any of `dataIn` (eg. for extractors), `dataOut` (eg. for writers) | &#9744; | `dataIn` |
+| 24 | **Fees** | Using the component in KBC implies additional fees, `true` or `false` | &#9744; | `false` |
 
  Note: If required, all payment information should be described in **Component documentation**.
