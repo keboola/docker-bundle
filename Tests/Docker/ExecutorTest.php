@@ -86,7 +86,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "yaml",
+            "streaming_logs" => false
         );
 
         $config = array(
@@ -154,7 +155,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "yaml",
+            "streaming_logs" => false
         );
 
         $config = array(
@@ -233,7 +235,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "yaml",
+            "streaming_logs" => false
         );
 
         $config = array(
