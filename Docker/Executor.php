@@ -257,7 +257,7 @@ class Executor
      * @param Container $container
      * @param string $id
      * @param array $tokenInfo Storage API token information as returned by verifyToken()
-     * @return Process
+     * @return string Container result message.
      */
     public function run(Container $container, $id, $tokenInfo)
     {
@@ -293,12 +293,17 @@ class Executor
 
         // run the container
         $process = $container->run($id, $this->configData);
-        if ($process->getOutput() && !$container->getImage()->isStreamingLogs()) {
-            $this->getLog()->info($process->getOutput());
+        $message = $process->getOutput();
+        if ($message && !$container->getImage()->isStreamingLogs()) {
+            // trim the result if it is too long
+            if (mb_strlen($message) > 64000) {
+                $message = mb_substr($message, 0, 32000) . " ... " . mb_substr($message, -32000);
+            }
         } else {
-            $this->getLog()->info("Docker container processing finished.");
+            $message = "Docker container processing finished.";
         }
-        return $process;
+
+        return $message;
     }
 
 

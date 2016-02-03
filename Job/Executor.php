@@ -224,14 +224,8 @@ class Executor extends BaseExecutor
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, true);
-                $process = $executor->run($container, $containerId, $this->tokenInfo);
+                $message = $executor->run($container, $containerId, $this->tokenInfo);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
-
-                if ($process->getOutput()) {
-                    $message = $process->getOutput();
-                } else {
-                    $message = "Container finished successfully.";
-                }
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 break;
@@ -242,14 +236,7 @@ class Executor extends BaseExecutor
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, false);
-                $process = $executor->run($container, $containerId, $this->tokenInfo);
-
-                $executor->storeOutput($container, $state);
-                if ($process->getOutput()) {
-                    $message = $process->getOutput();
-                } else {
-                    $message = "Container finished successfully.";
-                }
+                $message = $executor->run($container, $containerId, $this->tokenInfo);
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 break;

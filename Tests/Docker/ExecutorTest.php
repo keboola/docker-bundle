@@ -137,8 +137,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
-        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -205,8 +205,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
-        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -283,8 +283,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor = new Executor($this->client, $log, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $process = $executor->run($container, "testsuite", $this->client->verifyToken());
-        $this->assertContains("Processed 1 rows.", trim($process->getOutput()));
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -1054,9 +1054,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
     }
 
-    /**
-     *
-     */
     public function testGetSanitizedComponentId()
     {
         $log = new Logger("null");
@@ -1068,5 +1065,77 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor->setComponentId("ex-generic");
         $this->assertEquals("ex-generic", $executor->getSanitizedComponentId());
+    }
+
+    public function testContainerMessageTrimmingStreamingOff()
+    {
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ],
+            "streaming_logs" => false
+        ];
+
+        $config = [];
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile($container->getDataDir() . "/in/files/text", str_repeat("Batman", 100000));
+
+            $process = new Process('cat ' . $container->getDataDir() . '/in/files/text');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $this->assertContains("BatmanBatman", trim($message));
+        $this->assertContains('...', $message);
+        $this->assertEquals(64005, strlen($message));
+    }
+
+    public function testContainerMessageTrimmingStreamingOn()
+    {
+        $imageConfig = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ],
+            "streaming_logs" => true
+        ];
+
+        $config = [];
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $fs = new Filesystem();
+            $fs->dumpFile($container->getDataDir() . "/in/files/text", str_repeat("Batman", 100000));
+
+            $process = new Process('cat ' . $container->getDataDir() . '/in/files/text');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $executor->initialize($container, $config, [], false);
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $this->assertEquals("Docker container processing finished.", trim($message));
     }
 }

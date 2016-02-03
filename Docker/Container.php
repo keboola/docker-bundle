@@ -175,8 +175,8 @@ class Container
             $this->log->debug("Executing docker process.");
             if ($this->getImage()->isStreamingLogs()) {
                 $process->run(function ($type, $buffer) {
-                    if (strlen($buffer) > 65536) {
-                        $buffer = substr($buffer, 0, 65536) . " [trimmed]";
+                    if (mb_strlen($buffer) > 64000) {
+                        $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
                     }
                     if ($type === Process::ERR) {
                         $this->log->error($buffer);
@@ -219,12 +219,16 @@ class Container
             if (!$message) {
                 $message = "No error message.";
             }
-            if (strlen($message) > 255) {
-                $message = substr($message, 0, 125) . " ... " . substr($message, -125);
+
+            // make the exception message very short
+            if (mb_strlen($message) > 255) {
+                $message = mb_substr($message, 0, 125) . " ... " . mb_substr($message, -125);
             }
+
+            // put the whole message to exception data, but make sure not use too much memory
             $data = [
-                "output" => substr($process->getOutput(), -1048576),
-                "errorOutput" => substr($process->getErrorOutput(), -1048576)
+                "output" => mb_substr($process->getOutput(), -1000000),
+                "errorOutput" => mb_substr($process->getErrorOutput(), -1000000)
             ];
 
             if ($process->getExitCode() == 1) {
