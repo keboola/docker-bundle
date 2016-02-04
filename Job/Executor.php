@@ -237,6 +237,7 @@ class Executor extends BaseExecutor
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, false);
                 $message = $executor->run($container, $containerId, $this->tokenInfo);
+                $executor->storeOutput($container, $state);
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
                 break;
