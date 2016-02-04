@@ -667,11 +667,11 @@ class FunctionalTests extends KernelTestCase
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
-        $indexActionValue = array(
+        $indexActionValue = [
             'components' =>
-                array (
+                [
                     0 =>
-                        array (
+                        [
                             'id' => 'docker-config-dump',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -681,18 +681,19 @@ class FunctionalTests extends KernelTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => [
                                 'definition' =>
-                                    array (
+                                    [
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/config-dump',
-                                    ),
-                            ),
-                            'flags' => array (),
+                                    ],
+                                    'streaming_logs' => false,
+                            ],
+                            'flags' => [],
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
-                        )
-                )
-        );
+                        ]
+                ]
+        ];
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
@@ -775,11 +776,11 @@ class FunctionalTests extends KernelTestCase
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
 
         // mock client to return image data
-        $indexActionValue = array(
+        $indexActionValue = [
             'components' =>
-                array (
+                [
                     0 =>
-                        array (
+                        [
                             'id' => 'docker-config-dump',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -789,18 +790,20 @@ class FunctionalTests extends KernelTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array (
+                            'data' => [
                                 'definition' =>
-                                    array (
+                                    [
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/config-dump',
-                                    ),
-                            ),
-                            'flags' => array ('encrypt'),
+                                    ],
+                                'streaming_logs' => false,
+
+                            ],
+                            'flags' => ['encrypt'],
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
-                        )
-                )
-        );
+                        ]
+                ]
+        ];
         $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
