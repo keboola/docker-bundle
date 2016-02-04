@@ -18,7 +18,7 @@
 | 13 | **Processing timeout**  | Maximum processing time in seconds | &#9744; | `3600` |
 | 14 | **Configuration format**  | Format to store configuration file, state file and all manifests, `yaml` or `json` | &#9744; | `yaml` |
 | 15 | **Streaming logs**  | STDOUT will immediately forward to Storage API events, `true` or `false` | &#9744; | `false` |
-| 16 | **Encryption** | Application uses encrypted parameters, `true` or `false` | &#9744; | `false` |
+| 16 | **Encryption** | All parameter attributes with keys prefixed `#` will be encrypted. If you do not use attribute keys starting with `#` we encourage to turn encryption on., `true` or `false` | &#9744; | `true` |
 | 17 | **Default bucket** | If all tables should be uploaded to a pregenerated bucket, `true` or `false` | &#9744; | `false` |
 | 18 | **Default bucket stage** | `in` or `out` | &#9744; | `in` |
 | 19 | **Token forwarding** | Application needs Storage API token and its details, `true` or `false` | &#9744; | `false` |
