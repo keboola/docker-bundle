@@ -498,7 +498,7 @@ The `OAUTH_API_ID` is the id provided when storing authorization via OAuth API V
 
 Docker Bundle then retrieves, decrypts and injects the credentials to the configuration file in the `authorization.oauth_api.credentials` attribute.
 
-**Content of config.yml **
+**Content of config.yml**
 
 ```
 storage: 
