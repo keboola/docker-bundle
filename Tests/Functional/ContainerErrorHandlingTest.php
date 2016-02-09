@@ -311,7 +311,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["memory"] = "5m";
+        $imageConfiguration["memory"] = "32m";
 
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");

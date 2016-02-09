@@ -56,6 +56,15 @@ class Container extends Configuration
         ;
         Output\File::configureNode($outputFile);
 
+        // authorization
+        $root->children()
+            ->arrayNode("authorization")
+            ->children()
+                ->arrayNode("oauth_api")
+                ->children()
+                    ->scalarNode("id")->end()
+                    ->variableNode("credentials");
+
         return $treeBuilder;
     }
 }

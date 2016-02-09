@@ -27,6 +27,11 @@ class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
         'parameters' => array(
             'primary_key_column' => 'id',
         ),
+        'authorization' => array(
+            'oauth_api' => array(
+                'id' => 1234
+            )
+        )
     );
 
     protected function getYmlConfigFileTemplate()
@@ -42,6 +47,9 @@ storage:
                     - Name
 parameters:
     primary_key_column: id
+authorization:
+    oauth_api:
+        id: 1234
 
 EOT;
         return $data;
@@ -66,6 +74,11 @@ EOT;
     },
     "parameters": {
         "primary_key_column": "id"
+    },
+    "authorization": {
+        "oauth_api": {
+            "id": 1234
+        }
     }
 }
 EOT;

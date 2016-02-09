@@ -86,7 +86,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             // Create new job
             /** @var JobFactory $jobFactory */
             $jobFactory = $this->container->get('syrup.job_factory');
-            $jobFactory->setStorageApiClient($this->storageApi);
             $job = $jobFactory->create('run', $params);
 
             // Lock name contains component id and configuration id or random string

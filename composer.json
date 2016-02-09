@@ -5,8 +5,10 @@
     "keywords": [],
     "authors": [],
     "require": {
-        "keboola/syrup": "3.0.0-rc2",
-        "symfony/symfony": "~2.7.5"
+        "keboola/syrup": "~3.0",
+        "symfony/symfony": "~2.7.5",
+        "keboola/oauth-v2-php-client": "~0.0.1",
+        "keboola/storage-api-client": "4.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.0",

@@ -44,6 +44,11 @@ class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
                 "parameters" => array(
                     array("var1" => "val1"),
                     array("arr1" => array("var2" => "val2"))
+                ),
+                "authorization" => array(
+                    "oauth_api" => array(
+                        "id" => 1234
+                    )
                 )
             )
         ));

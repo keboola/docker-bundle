@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
+use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -115,7 +116,6 @@ class Executor extends BaseExecutor
             $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
         }
         $params = $job->getParams();
-
         $this->temp->setId($job->getId());
         $containerId = null;
         $state = [];
@@ -180,7 +180,8 @@ class Executor extends BaseExecutor
      */
     private function doExecute(array $component, array $params, array $configData, array $state)
     {
-        $executor = new DockerExecutor($this->storageApi, $this->log, $this->temp->getTmpFolder());
+        $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
+        $executor = new DockerExecutor($this->storageApi, $this->log, $oauthCredentialsClient, $this->temp->getTmpFolder());
         if ($component && isset($component["id"])) {
             $executor->setComponentId($component["id"]);
         }
@@ -250,9 +251,9 @@ class Executor extends BaseExecutor
     /**
      *
      */
-    public function cleanup()
+    public function cleanup(Job $job)
     {
-        $params = $this->job->getRawParams();
+        $params = $job->getRawParams();
         if (isset($params["component"])) {
             $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
             $this->log->info("Terminating process");

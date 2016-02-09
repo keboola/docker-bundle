@@ -72,22 +72,40 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
         return $storageClientStub;
     }
 
-    public function testJobFactory()
+    protected function getSapiServiceStub($encrypt = true)
     {
         $storageApiClient = new Client([
             'token' => STORAGE_API_TOKEN,
             'userAgent' => 'docker-bundle',
         ]);
-        $storageApiService = new StorageApiService();
-        $storageApiService->setClient($this->getSapiStub(true));
+
+        $tokenData = $storageApiClient->verifyToken();
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->any())
+            ->method("getClient")
+            ->will($this->returnValue($this->getSapiStub($encrypt)));
+        $storageServiceStub->expects($this->any())
+            ->method("getTokenData")
+            ->will($this->returnValue($tokenData));
+
+        return $storageServiceStub;
+    }
+
+    public function testJobFactory()
+    {
+        $tokenData = $this->getSapiServiceStub()->getTokenData();
+
         $objectEncryptor = new ObjectEncryptor();
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $this->getSapiServiceStub());
 
         $command = uniqid();
         $param = uniqid();
         $lock = uniqid();
-        $tokenData = $storageApiClient->verifyToken();
+
 
         $job = $jobFactory->create($command, ['configData' => $param, 'component' => 'docker-dummy-test'], $lock);
 
@@ -110,9 +128,8 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $objectEncryptor = new ObjectEncryptor();
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $storageApiService = new StorageApiService();
-        $storageApiService->setClient($this->getSapiStub(true));
-        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
+
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $this->getSapiServiceStub());
 
         $command = uniqid();
         $param = [
@@ -137,9 +154,8 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $objectEncryptor = new ObjectEncryptor();
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $storageApiService = new StorageApiService();
-        $storageApiService->setClient($this->getSapiStub(false));
-        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
+
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $this->getSapiServiceStub(false));
 
         $command = uniqid();
         $param = [
@@ -163,9 +179,8 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     {
         $objectEncryptor = new ObjectEncryptor();
         $objectEncryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $storageApiService = new StorageApiService();
-        $storageApiService->setClient($this->getSapiStub(true));
-        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $storageApiService);
+
+        $jobFactory = new JobFactory('docker-bundle', $objectEncryptor, $this->getSapiServiceStub());
 
         $command = uniqid();
         $param = [

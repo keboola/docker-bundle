@@ -82,7 +82,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         (new Process("sudo docker rmi keboolaprivatetest/docker-demo-docker"))->run();
     }
 
-
     /**
      * Try do download private image using credentials
      */

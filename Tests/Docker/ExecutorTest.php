@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\BaseWrapper;
@@ -136,7 +137,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($message));
@@ -205,7 +207,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($message));
@@ -284,7 +287,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("Processed 1 rows.", trim($message));
@@ -338,7 +342,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         try {
             $executor->initialize($container, $config, [], false);
             $executor->run($container, "testsuite", $this->client->verifyToken());
@@ -386,7 +391,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
@@ -437,7 +443,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
@@ -489,7 +496,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $container->setRunMethod($callback);
 
         $tokenInfo = $this->client->verifyToken();
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $tokenInfo);
         $ret = $container->getRunCommand('test');
@@ -551,7 +559,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $executor->storeDataArchive($container, ['sandbox', 'docker-test']);
         $this->assertFileExists(
@@ -609,7 +618,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         try {
             $executor->initialize($container, $config, [], false);
             $this->fail("Invalid configuration must raise UserException.");
@@ -660,7 +670,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         try {
             $executor->initialize($container, $config, [], false);
             $this->fail("Invalid configuration must raise UserException.");
@@ -724,7 +735,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
     }
 
@@ -767,7 +779,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
@@ -815,7 +828,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, ["lastUpdate" => "today"], false);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
@@ -854,7 +868,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
@@ -910,7 +925,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("docker-demo");
         $executor->initialize($container, $config, [], false);
@@ -969,7 +985,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], false);
@@ -1011,7 +1028,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, [], [], false);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
@@ -1047,7 +1065,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, $imageConfig);
         $container = new MockContainer($image, $log);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, [], [], true);
         $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
         $this->assertFileExists($configFile);
@@ -1061,7 +1080,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
 
         $executor->setComponentId("keboola.ex-generic");
         $this->assertEquals("keboola-ex-generic", $executor->getSanitizedComponentId());
@@ -1099,7 +1119,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertContains("BatmanBatman", trim($message));
@@ -1136,9 +1157,284 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $container->setRunMethod($callback);
 
-        $executor = new Executor($this->client, $log, $this->tmpDir);
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken());
         $this->assertEquals("Docker container processing finished.", trim($message));
+    }
+
+    public function testOauthConfigDecrypt()
+    {
+        $client = $this->client;
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "default_bucket" => true
+        );
+
+        $config = ["authorization" => ["oauth_api" => ["id" => "whatever"]]];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $credentials = [
+            'id' => 'test-credentials-45',
+            'authorizedFor' => '',
+            'creator' => [
+                'id' => '3800',
+                'description' => 'ondrej.hlavacek@keboola.com'
+            ],
+            'created' => '2016-02-09 09:47:16',
+            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
+            'oauthVersion' => '2.0',
+            'appKey' => '123456',
+            '#appSecret' => '654321',
+        ];
+        $oauthResponse = $encryptor->encrypt($credentials);
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'whatever')
+            ->will($this->returnValue($oauthResponse));
+
+        $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
+        $executor->setConfigurationId("whatever");
+        $executor->setComponentId("keboola.docker-demo");
+        $executor->initialize($container, $config, [], false);
+
+        $this->assertEquals($credentials, json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]);
+    }
+
+    public function testOauthConfigDecryptSandboxed()
+    {
+        $client = $this->client;
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "default_bucket" => true
+        );
+
+        $config = ["authorization" => ["oauth_api" => ["id" => "whatever"]]];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $credentials = [
+            'id' => 'test-credentials-45',
+            'authorizedFor' => '',
+            'creator' => [
+                'id' => '3800',
+                'description' => 'ondrej.hlavacek@keboola.com'
+            ],
+            'created' => '2016-02-09 09:47:16',
+            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
+            'oauthVersion' => '2.0',
+            'appKey' => '123456',
+            '#appSecret' => '654321',
+        ];
+        $oauthResponse = $encryptor->encrypt($credentials);
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'whatever')
+            ->will($this->returnValue($oauthResponse));
+
+        $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
+        $executor->setConfigurationId("whatever");
+        $executor->setComponentId("keboola.docker-demo");
+        $executor->initialize($container, $config, [], true);
+
+        $this->assertEquals($oauthResponse, json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]);
+    }
+
+    public function testOauthConfigDecryptAndExecute()
+    {
+        $client = $this->client;
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "streaming_logs" => false
+        );
+
+        $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $configFile = json_decode(file_get_contents($container->getDataDir() . "/config.json"), true);
+            $process = new Process('echo ' . escapeshellarg(json_encode($configFile)) . '');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $credentials = [
+            'id' => 'test-credentials-45',
+            'authorizedFor' => '',
+            'creator' => [
+                'id' => '3800',
+                'description' => 'ondrej.hlavacek@keboola.com'
+            ],
+            'created' => '2016-02-09 09:47:16',
+            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
+            'oauthVersion' => '2.0',
+            'appKey' => '123456',
+            '#appSecret' => '654321',
+        ];
+        $oauthResponse = $encryptor->encrypt($credentials);
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'test-credentials-45')
+            ->will($this->returnValue($oauthResponse));
+
+        $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
+        $executor->setConfigurationId("test-credentials-45");
+        $executor->setComponentId("keboola.docker-demo");
+        $executor->initialize($container, $config, [], false);
+
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $expectedConfigFile = [
+            "authorization" => [
+                "oauth_api" => [
+                    "id" => "test-credentials-45",
+                    "credentials" => $credentials
+                ]
+            ],
+            "image_parameters" => []
+        ];
+        $this->assertEquals(json_encode($expectedConfigFile), trim($message));
+    }
+
+    public function testOauthConfigExecuteSandboxed()
+    {
+        $client = $this->client;
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "streaming_logs" => false
+        );
+
+        $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new MockContainer($image, $log);
+
+        $callback = function () use ($container) {
+            $configFile = json_decode(file_get_contents($container->getDataDir() . "/config.json"), true);
+            $process = new Process('echo ' . escapeshellarg(json_encode($configFile)) . '');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
+
+        $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $credentials = [
+            'id' => 'test-credentials-45',
+            'authorizedFor' => '',
+            'creator' => [
+                'id' => '3800',
+                'description' => 'ondrej.hlavacek@keboola.com'
+            ],
+            'created' => '2016-02-09 09:47:16',
+            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
+            'oauthVersion' => '2.0',
+            'appKey' => '123456',
+            '#appSecret' => '654321',
+        ];
+        $oauthResponse = $encryptor->encrypt($credentials);
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'test-credentials-45')
+            ->will($this->returnValue($oauthResponse));
+
+        $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
+        $executor->setConfigurationId("test-credentials-45");
+        $executor->setComponentId("keboola.docker-demo");
+        $executor->initialize($container, $config, [], true);
+
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $expectedConfigFile = [
+            "authorization" => [
+                "oauth_api" => [
+                    "id" => "test-credentials-45",
+                    "credentials" => $oauthResponse
+                ]
+            ],
+            "image_parameters" => []
+        ];
+        $this->assertEquals(json_encode($expectedConfigFile), trim($message));
     }
 }

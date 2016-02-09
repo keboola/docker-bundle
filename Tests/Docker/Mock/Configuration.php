@@ -11,7 +11,8 @@ class Configuration extends \Keboola\DockerBundle\Docker\Configuration
         $treeBuilder->root("test")
             ->children()
             ->variableNode("parameters")->end()
-            ->variableNode("storage")->end();
+            ->variableNode("storage")->end()
+            ->variableNode("authorization")->end();
         return $treeBuilder;
     }
 }

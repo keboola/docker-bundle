@@ -16,7 +16,6 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -42,6 +41,7 @@ class FunctionalTests extends KernelTestCase
     {
         $this->client = new Client(["token" => STORAGE_API_TOKEN]);
         $this->temp = new Temp('docker');
+        $this->temp->setId(123456);
         $this->temp->initRunFolder();
 
         if ($this->client->bucketExists("out.c-docker-test")) {
@@ -91,6 +91,27 @@ class FunctionalTests extends KernelTestCase
         $fs->remove($this->temp->getTmpFolder());
     }
 
+    protected function getSapiServiceStub()
+    {
+        $storageApiClient = new Client([
+            'token' => STORAGE_API_TOKEN,
+            'userAgent' => 'docker-bundle',
+        ]);
+
+        $tokenData = $storageApiClient->verifyToken();
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->any())
+            ->method("getClient")
+            ->will($this->returnValue($this->client));
+        $storageServiceStub->expects($this->any())
+            ->method("getTokenData")
+            ->will($this->returnValue($tokenData));
+
+        return $storageServiceStub;
+    }
 
     public function testRDocker()
     {
@@ -136,6 +157,7 @@ class FunctionalTests extends KernelTestCase
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -158,9 +180,7 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $sapiService = new StorageApiService();
-        $sapiService->setClient($this->client);
-        $componentsService = new ComponentsService($sapiService);
+        $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -219,6 +239,7 @@ class FunctionalTests extends KernelTestCase
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -244,9 +265,7 @@ class FunctionalTests extends KernelTestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $sapiService = new StorageApiService();
-        $sapiService->setClient($this->client);
-        $componentsService = new ComponentsService($sapiService);
+        $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -322,6 +341,7 @@ class FunctionalTests extends KernelTestCase
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -343,9 +363,7 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $sapiService = new StorageApiService();
-        $sapiService->setClient($this->client);
-        $componentsService = new ComponentsService($sapiService);
+        $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -421,6 +439,7 @@ class FunctionalTests extends KernelTestCase
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -442,9 +461,7 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $sapiService = new StorageApiService();
-        $sapiService->setClient($this->client);
-        $componentsService = new ComponentsService($sapiService);
+        $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -558,6 +575,7 @@ class FunctionalTests extends KernelTestCase
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         // Create buckets
         if (!$this->client->bucketExists("in.c-docker-test")) {
@@ -586,9 +604,7 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $sapiService = new StorageApiService();
-        $sapiService->setClient($this->client);
-        $componentsService = new ComponentsService($sapiService);
+        $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -705,6 +721,7 @@ class FunctionalTests extends KernelTestCase
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);
@@ -818,6 +835,7 @@ class FunctionalTests extends KernelTestCase
         $jobExecutor->setStorageApi($sapiStub);
 
         $job = new Job($encryptor, $data);
+        $job->setId(123456);
 
         $response = $jobExecutor->execute($job);
         $config = Yaml::parse($response["message"]);

@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
+use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -64,6 +65,11 @@ class Executor
      * @var
      */
     protected $configurationId;
+
+    /**
+     * @var Credentials
+     */
+    protected $oauthCredentialsClient;
 
     /**
      * @return string
@@ -165,17 +171,38 @@ class Executor
         return $this;
     }
 
+    /**
+     * @return Credentials
+     */
+    public function getOauthCredentialsClient()
+    {
+        return $this->oauthCredentialsClient;
+    }
+
+    /**
+     * @param Credentials $oauthCredentialsClient
+     * @return $this
+     */
+    public function setOauthCredentialsClient($oauthCredentialsClient)
+    {
+        $this->oauthCredentialsClient = $oauthCredentialsClient;
+
+        return $this;
+    }
 
     /**
      * @param Client $storageApi
      * @param Logger $log
-     * @param string $tmpFolder
+     * @param Credentials $oauthCredentialsClient
+     * @param $tmpFolder
      */
-    public function __construct(Client $storageApi, Logger $log, $tmpFolder)
+    public function __construct(Client $storageApi, Logger $log, Credentials $oauthCredentialsClient, $tmpFolder)
     {
         $this->setStorageApiClient($storageApi);
         $this->setLog($log);
+        $this->setOauthCredentialsClient($oauthCredentialsClient);
         $this->setTmpFolder($tmpFolder);
+
     }
 
 
@@ -211,9 +238,22 @@ class Executor
                     $container->getImage()->getImageParameters()
                 );
             }
+
+            // read authorization
+            if (isset($configData["authorization"]["oauth_api"]["id"])) {
+                $credentials = $this->getOauthCredentialsClient()->getDetail($this->getComponentId(), $configData["authorization"]["oauth_api"]["id"]);
+                if ($sandboxed) {
+                    $decrypted = $credentials;
+                } else {
+                    $decrypted = $container->getImage()->getEncryptor()->decrypt($credentials);
+                }
+                $configData["authorization"]["oauth_api"]["credentials"] = $decrypted;
+            }
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
+        } catch (\Keboola\OAuthV2Api\Exception\RequestException $e) {
+            throw new UserException("Error loading credentials: " . $e->getMessage(), $e);
         }
         $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
         $adapter->writeToFile($this->currentConfigFile);
