@@ -7,7 +7,7 @@
     "require": {
         "keboola/syrup": "~3.0",
         "symfony/symfony": "~2.7.5",
-        "keboola/oauth-v2-php-client": "~0.0.1",
+        "keboola/oauth-v2-php-client": "~0.0.2",
         "keboola/storage-api-client": "~4.5"
     },
     "require-dev": {

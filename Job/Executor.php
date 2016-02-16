@@ -181,6 +181,7 @@ class Executor extends BaseExecutor
     private function doExecute(array $component, array $params, array $configData, array $state)
     {
         $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
+        $oauthCredentialsClient->enableReturnArrays(true);
         $executor = new DockerExecutor($this->storageApi, $this->log, $oauthCredentialsClient, $this->temp->getTmpFolder());
         if ($component && isset($component["id"])) {
             $executor->setComponentId($component["id"]);
