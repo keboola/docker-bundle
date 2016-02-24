@@ -32,9 +32,9 @@
     <target name="api-tests-ci" depends="prepare" description="Run unit tests with PHPUnit">
         <exec executable="phpunit" failonerror="true">
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
-            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
-            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
-            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
+            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username2}"/>
+            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email2}"/>
+            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password2}"/>
             <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
             <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
@@ -46,9 +46,9 @@
     <target name="api-tests-ci-full" depends="prepare" description="Run unit tests with PHPUnit">
         <exec executable="phpunit" failonerror="true">
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
-            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
-            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
-            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
+            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username2}"/>
+            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email2}"/>
+            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password2}"/>
             <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
             <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
