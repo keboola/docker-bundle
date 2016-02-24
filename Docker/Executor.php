@@ -318,7 +318,8 @@ class Executor
         // set environment variables
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
-            "KBC_PROJECTID" => $tokenInfo["owner"]["id"]
+            "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
+            "KBC_DATADIR" => '/data/',
         ];
         if ($container->getImage()->getForwardToken()) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
