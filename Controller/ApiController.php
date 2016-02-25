@@ -352,7 +352,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $options->setConfigurationId($request->get("configId"));
 
         if ($request->get("configuration")) {
-            $configuration = json_decode($request->get("configuration"), true);
+            $configuration = json_decode($request->get("configuration"));
             if ($this->hasComponentEncryptFlag($request->get("component"))) {
                 $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($request->get("component"));
