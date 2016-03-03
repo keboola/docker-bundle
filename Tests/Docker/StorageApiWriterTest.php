@@ -430,11 +430,11 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmp->getTmpFolder();
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
-            "'Id'\t'Name'\n'test'\t'test\\'s'\n"
+            "'Id'\t'Name'\n'test'\t'test''s'\n"
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
-            "destination: out.c-docker-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\"\nescaped_by: \\"
+            "destination: out.c-docker-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\""
         );
 
         $writer = new Writer($this->client);
