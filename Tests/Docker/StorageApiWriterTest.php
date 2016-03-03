@@ -552,9 +552,15 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         // And again, check first incremental table
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
         $this->client->exportTable("out.c-docker-test.table1", $root . "/download.csv");
+        $sortCsv = function ($csv) {
+            $lines = array_filter(explode("\n", $csv));
+            $header = array_shift($lines);
+            sort($lines);
+            return [$header] + $lines;
+        };
         $this->assertEquals(
-            "\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n",
-            file_get_contents($root . "/download.csv")
+            $sortCsv("\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n"),
+            $sortCsv(file_get_contents($root . "/download.csv"))
         );
     }
 
