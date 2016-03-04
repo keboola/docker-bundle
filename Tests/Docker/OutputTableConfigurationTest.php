@@ -74,7 +74,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage The child node "destination" at path "table" must be configured
+     * @expectedExceptionMessage The child node "source" at path "table" must be configured
      */
     public function testEmptyConfiguration()
     {
