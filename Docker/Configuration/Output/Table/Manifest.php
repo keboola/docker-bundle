@@ -19,7 +19,7 @@ class Manifest extends Configuration
     {
         $node
             ->children()
-                ->scalarNode("destination")->isRequired()->end()
+                ->scalarNode("destination")->end()
                 ->booleanNode("incremental")->defaultValue(false)->end()
                 ->arrayNode("primary_key")->prototype("scalar")->end()->end()
                 ->scalarNode("delete_where_column")->end()
