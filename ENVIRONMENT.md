@@ -277,7 +277,6 @@ The tables element in configuration is an array and supports these attributes:
   - `delete_where_values`
   - `delimiter`
   - `enclosure`
-  - `escaped_by`
 
 ##### Examples
 
@@ -337,7 +336,6 @@ destination: out.c-main.Leads
 incremental: true
 delimiter: "\t"
 enclosure: "\""
-escaped_by: "\\"
 ```
 
 ##### default_bucket flag

@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
@@ -39,6 +40,15 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             // Delete bucket
             $this->client->dropBucket("out.c-docker-test");
         }
+
+        if ($this->client->bucketExists("out.c-docker-redshift-test")) {
+            foreach ($this->client->listTables("out.c-docker-redshift-test") as $table) {
+                $this->client->dropTable($table["id"]);
+            }
+
+            // Delete bucket
+            $this->client->dropBucket("out.c-docker-redshift-test");
+        }
     }
 
     /**
@@ -71,6 +81,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->client = new Client(array("token" => STORAGE_API_TOKEN));
         $this->clearBucket();
         $this->clearFileUploads();
+        $this->client->createBucket("docker-redshift-test", 'out', '', 'redshift');
     }
 
     /**
@@ -304,9 +315,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer->uploadFiles($root . "/upload");
     }
 
-    /**
-     *
-     */
     public function testWriteTableOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
@@ -328,10 +336,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableOutputMappingWithoutCsv()
     {
         $root = $this->tmp->getTmpFolder();
@@ -447,7 +451,45 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $exporter = new TableExporter($this->client);
         $downloadedFile = $root . DIRECTORY_SEPARATOR . "download.csv";
         $exporter->exportTable('out.c-docker-test.table3', $downloadedFile, []);
-        $this->assertEquals("\"Id\",\"Name\"\n\"test\",\"test's\"\n", file_get_contents($downloadedFile));
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertEquals(1, count($table));
+        $this->assertEquals(2, count($table[0]));
+        $this->assertArrayHasKey('Id', $table[0]);
+        $this->assertArrayHasKey('Name', $table[0]);
+        $this->assertEquals('test', $table[0]['Id']);
+        $this->assertEquals('test\'s', $table[0]['Name']);
+    }
+
+    public function testWriteTableManifestCsvRedshift()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-redshift-test.table3.csv",
+            "'Id'\t'Name'\n'test'\t'test''s'\n"
+        );
+        // TODO: remove the escaped_by parameter as soon as it is removed from manifest
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-redshift-test.table3.csv.manifest",
+            "destination: out.c-docker-redshift-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\"\nescaped_by: \\"
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload");
+
+        $tables = $this->client->listTables("out.c-docker-redshift-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-redshift-test.table3', $tables[0]["id"]);
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $root . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-redshift-test.table3', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertEquals(1, count($table));
+        $this->assertEquals(2, count($table[0]));
+        $this->assertArrayHasKey('Id', $table[0]);
+        $this->assertArrayHasKey('Name', $table[0]);
+        $this->assertEquals('test', $table[0]['Id']);
+        $this->assertEquals('test\'s', $table[0]['Name']);
     }
 
     /**
@@ -484,9 +526,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
     }
 
-    /**
-     *
-     */
     public function testWriteTableBare()
     {
         $root = $this->tmp->getTmpFolder();
@@ -504,9 +543,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
     }
 
-    /**
-     *
-     */
     public function testWriteTableBareWithoutSuffix()
     {
         $root = $this->tmp->getTmpFolder();
@@ -524,13 +560,8 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
     }
 
-
-    /**
-     *
-     */
     public function testWriteTableIncrementalWithDelete()
     {
-
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
@@ -551,17 +582,21 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         // And again, check first incremental table
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
-        $this->client->exportTable("out.c-docker-test.table1", $root . "/download.csv");
-        $sortCsv = function ($csv) {
-            $lines = array_filter(explode("\n", $csv));
-            $header = array_shift($lines);
-            sort($lines);
-            return [$header] + $lines;
-        };
-        $this->assertEquals(
-            $sortCsv("\"Id\",\"Name\"\n\"test\",\"test\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n"),
-            $sortCsv(file_get_contents($root . "/download.csv"))
-        );
+        $this->client->exportTable("out.c-docker-test.table1", $root . DIRECTORY_SEPARATOR . "download.csv");
+        $table = $this->client->parseCsv(file_get_contents($root . DIRECTORY_SEPARATOR . "download.csv"));
+        usort($table, function ($a, $b) {
+            return strcasecmp($a['Id'], $b['Id']);
+        });
+        $this->assertEquals(3, count($table));
+        $this->assertEquals(2, count($table[0]));
+        $this->assertArrayHasKey('Id', $table[0]);
+        $this->assertArrayHasKey('Name', $table[0]);
+        $this->assertEquals('aabb', $table[0]['Id']);
+        $this->assertEquals('ccdd', $table[0]['Name']);
+        $this->assertEquals('test', $table[1]['Id']);
+        $this->assertEquals('test', $table[1]['Name']);
+        $this->assertEquals('test', $table[2]['Id']);
+        $this->assertEquals('test', $table[2]['Name']);
     }
 
     public function testTagFiles()
