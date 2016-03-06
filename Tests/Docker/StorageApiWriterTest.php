@@ -757,4 +757,19 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table7', $tables[0]["id"]);
     }
+
+    public function testWriteManifestWithoutDestination()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table8.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table8.csv.manifest", "primary_key: [\"Id\", \"Name\"]");
+
+        $writer = new Writer($this->client);
+        try {
+            $writer->uploadTables($root . "/upload", ["mapping" => []]);
+            $this->fail("Empty destination with invalid table name must cause exception.");
+        } catch (UserException $e) {
+            $this->assertContains('valid table identifier', $e->getMessage());
+        }
+    }
 }
