@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
@@ -697,5 +696,65 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('in.c-docker-test.table2', $tables[1]["id"]);
         $tableInfo = $this->client->getTable('in.c-docker-test.table2');
         $this->assertEquals(array("Id", "Name2"), $tableInfo["columns"]);
+    }
+
+    public function testWriteTableBareWithDefaultBucket()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table5.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload", ['bucket' => 'out.c-docker-test']);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+
+        $this->assertEquals('out.c-docker-test.table5', $tables[0]["id"]);
+        $tableInfo = $this->client->getTable('out.c-docker-test.table5');
+        $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
+}
+
+    public function testWriteTableManifestWithDefaultBucket()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . "/upload/table6.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        file_put_contents(
+            $root . "/upload/table6.csv.manifest",
+            "primary_key: [\"Id\", \"Name\"]"
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload", ['bucket' => 'out.c-docker-test']);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-test.table6', $tables[0]["id"]);
+        $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
+    }
+
+    public function testWriteTableOutputMappingWithDefaultBucket()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table7.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+
+        $configs = array(
+            array(
+                "source" => "table7.csv",
+                "destination" => "table7"
+            )
+        );
+
+        $writer = new Writer($this->client);
+
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs, 'bucket' => 'out.c-docker-test']);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-test.table7', $tables[0]["id"]);
     }
 }

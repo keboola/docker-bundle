@@ -265,27 +265,19 @@ class Writer
                 }
             }
 
+            $prefix = isset($configuration['bucket']) ? ($configuration['bucket'] . '.') : '';
+
             $manifestKey = array_search($file->getPathname() . ".manifest", $manifestNames);
             if ($manifestKey !== false) {
                 $configFromManifest = $this->readTableManifest($file->getPathname() . ".manifest");
+                if (isset($configuration['bucket'])) {
+                    $configFromManifest['destination'] = $this->createDestinationConfigParam($prefix, $file->getFilename());
+                }
                 unset($manifestNames[$manifestKey]);
             } else {
                 // If no manifest found and no output mapping, use filename (without .csv if present) as table id
-                if (!isset($configFromMapping["destination"])) {
-                    // Check for .csv suffix
-                    $prefix = "";
-                    if (isset($configuration["bucket"])) {
-                        $prefix = $configuration["bucket"] . ".";
-                    }
-                    if (substr($file->getFilename(), -4) == '.csv') {
-                        $configFromMapping["destination"] = $prefix . substr(
-                            $file->getFilename(),
-                            0,
-                            strlen($file->getFilename()) - 4
-                        );
-                    } else {
-                        $configFromMapping["destination"] = $prefix . $file->getFilename();
-                    }
+                if (!isset($configFromMapping["destination"]) || isset($configuration['bucket'])) {
+                    $configFromMapping["destination"] = $this->createDestinationConfigParam($prefix, $file->getFilename());
                 }
             }
 
@@ -331,6 +323,21 @@ class Writer
         );
         if (count($diff)) {
             throw new UserException("Couldn't process output mapping for file(s) '" . join("', '", $diff) . "'.");
+        }
+    }
+
+    /**
+     * Creates destination configuration parameter from prefix and file name
+     * @param $prefix
+     * @param $filename
+     * @return string
+     */
+    protected function createDestinationConfigParam($prefix, $filename)
+    {
+        if (substr($filename, -4) == '.csv') {
+            return $prefix . substr($filename, 0, strlen($filename) - 4);
+        } else {
+            return $prefix . $filename;
         }
     }
 

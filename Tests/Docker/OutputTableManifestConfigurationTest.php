@@ -67,13 +67,4 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
         );
         (new Table\Manifest())->parse(array("config" => $config));
     }
-
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage The child node "destination" at path "table" must be configured
-     */
-    public function testEmptyConfiguration()
-    {
-        (new Table\Manifest())->parse(array("config" => array()));
-    }
 }
