@@ -713,7 +713,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('out.c-docker-test.table5', $tables[0]["id"]);
         $tableInfo = $this->client->getTable('out.c-docker-test.table5');
         $this->assertEquals(array("Id", "Name"), $tableInfo["columns"]);
-}
+    }
 
     public function testWriteTableManifestWithDefaultBucket()
     {
