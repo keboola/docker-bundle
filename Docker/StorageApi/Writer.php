@@ -270,13 +270,13 @@ class Writer
             $manifestKey = array_search($file->getPathname() . ".manifest", $manifestNames);
             if ($manifestKey !== false) {
                 $configFromManifest = $this->readTableManifest($file->getPathname() . ".manifest");
-                if (isset($configuration['bucket'])) {
+                if (empty($configFromManifest["destination"]) || isset($configuration['bucket'])) {
                     $configFromManifest['destination'] = $this->createDestinationConfigParam($prefix, $file->getFilename());
                 }
                 unset($manifestNames[$manifestKey]);
             } else {
                 // If no manifest found and no output mapping, use filename (without .csv if present) as table id
-                if (!isset($configFromMapping["destination"]) || isset($configuration['bucket'])) {
+                if (empty($configFromMapping["destination"]) || isset($configuration['bucket'])) {
                     $configFromMapping["destination"] = $this->createDestinationConfigParam($prefix, $file->getFilename());
                 }
             }
