@@ -366,7 +366,7 @@ class Writer
      */
     protected function uploadTable($source, $config = array())
     {
-        $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"], $config["escaped_by"]);
+        $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
         $tableIdParts = explode(".", $config["destination"]);
         $bucketId = $tableIdParts[0] . "." . $tableIdParts[1];
         $bucketName = substr($tableIdParts[1], 2);
