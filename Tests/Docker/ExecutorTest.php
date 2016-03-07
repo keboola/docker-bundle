@@ -505,7 +505,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $tokenInfo);
         $ret = $container->getRunCommand('test');
-        $this->assertNotContains('KBC_TOKEN', $ret);
+        $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertContains('KBC_CONFIGID', $ret);
         $this->assertContains('KBC_PROJECTID', $ret);
         $this->assertContains('KBC_PROJECTNAME', $ret);
