@@ -188,8 +188,9 @@ class Executor extends BaseExecutor
         }
         if ($params && isset($params["config"])) {
             $executor->setConfigurationId($params["config"]);
+            $configId = $params['config'];
         } else {
-            $executor->setConfigurationId(sha1(serialize($params["configData"])));
+            $configId = sha1(serialize($params['configData']));
         }
 
         switch ($params['mode']) {
@@ -228,7 +229,7 @@ class Executor extends BaseExecutor
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, true);
-                $message = $executor->run($container, $containerId, $this->tokenInfo);
+                $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
                 $this->log->info("Docker container '{$component['id']}' finished.");
@@ -240,7 +241,7 @@ class Executor extends BaseExecutor
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
                 $container = new Container($image, $this->log);
                 $executor->initialize($container, $configData, $state, false);
-                $message = $executor->run($container, $containerId, $this->tokenInfo);
+                $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeOutput($container, $state);
 
                 $this->log->info("Docker container '{$component['id']}' finished.");

@@ -297,9 +297,10 @@ class Executor
      * @param Container $container
      * @param string $id
      * @param array $tokenInfo Storage API token information as returned by verifyToken()
+     * @param string $configId Configuration passed to the container (not used for any KBC work).
      * @return string Container result message.
      */
-    public function run(Container $container, $id, $tokenInfo)
+    public function run(Container $container, $id, $tokenInfo, $configId)
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
@@ -320,7 +321,7 @@ class Executor
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
-            "KBC_CONFIGID" => $this->getConfigurationId(),
+            "KBC_CONFIGID" => $configId,
         ];
         if ($container->getImage()->getForwardToken()) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
