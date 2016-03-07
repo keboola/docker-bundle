@@ -400,7 +400,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertContains('KBC_PROJECTID', $ret);
         $this->assertContains('KBC_CONFIGID', $ret);
         $this->assertContains('testConfigurationId', $ret);
-        $this->assertNotContains('KBC_TOKEN', $ret);
+        $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
         $this->assertNotContains('KBC_PROJECTNAME', $ret);
         $this->assertNotContains('KBC_TOKENID', $ret);
