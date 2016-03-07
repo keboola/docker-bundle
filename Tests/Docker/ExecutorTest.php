@@ -394,14 +394,17 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
+        $executor->setConfigurationId('testConfigurationId');
         $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
-        $this->assertContains('KBC_PROJECTID=', $ret);
-        $this->assertNotContains('KBC_TOKEN=', $ret);
+        $this->assertContains('KBC_PROJECTID', $ret);
+        $this->assertContains('KBC_CONFIGID', $ret);
+        $this->assertContains('testConfigurationId', $ret);
+        $this->assertNotContains('KBC_TOKEN', $ret);
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
-        $this->assertNotContains('KBC_PROJECTNAME=', $ret);
-        $this->assertNotContains('KBC_TOKENID=', $ret);
-        $this->assertNotContains('KBC_TOKENDESC=', $ret);
+        $this->assertNotContains('KBC_PROJECTNAME', $ret);
+        $this->assertNotContains('KBC_TOKENID', $ret);
+        $this->assertNotContains('KBC_TOKENDESC', $ret);
     }
 
     public function testExecutorForwardToken()
@@ -448,12 +451,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $this->client->verifyToken());
         $ret = $container->getRunCommand('test');
-        $this->assertContains('KBC_TOKEN=', $ret);
+        $this->assertContains('KBC_TOKEN', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
-        $this->assertContains('KBC_PROJECTID=', $ret);
-        $this->assertNotContains('KBC_PROJECTNAME=', $ret);
-        $this->assertNotContains('KBC_TOKENID=', $ret);
-        $this->assertNotContains('KBC_TOKENDESC=', $ret);
+        $this->assertContains('KBC_PROJECTID', $ret);
+        $this->assertContains('KBC_CONFIGID', $ret);
+        $this->assertNotContains('KBC_PROJECTNAME', $ret);
+        $this->assertNotContains('KBC_TOKENID', $ret);
+        $this->assertNotContains('KBC_TOKENDESC', $ret);
     }
 
     public function testExecutorForwardTokenDetails()
@@ -501,11 +505,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config, [], false);
         $executor->run($container, "testsuite", $tokenInfo);
         $ret = $container->getRunCommand('test');
-        $this->assertNotContains('KBC_TOKEN=', $ret);
-        $this->assertContains('KBC_PROJECTID=', $ret);
-        $this->assertContains('KBC_PROJECTNAME=', $ret);
-        $this->assertContains('KBC_TOKENID=', $ret);
-        $this->assertContains('KBC_TOKENDESC=', $ret);
+        $this->assertNotContains('KBC_TOKEN', $ret);
+        $this->assertContains('KBC_CONFIGID', $ret);
+        $this->assertContains('KBC_PROJECTID', $ret);
+        $this->assertContains('KBC_PROJECTNAME', $ret);
+        $this->assertContains('KBC_TOKENID', $ret);
+        $this->assertContains('KBC_TOKENDESC', $ret);
 
         $this->assertContains(strval($tokenInfo["owner"]["id"]), $ret);
         $this->assertContains(str_replace('"', '\"', $tokenInfo["owner"]["name"]), $ret);
@@ -1166,7 +1171,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testOauthConfigDecrypt()
     {
-        $client = $this->client;
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -1225,7 +1229,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testOauthConfigDecryptSandboxed()
     {
-        $client = $this->client;
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub",

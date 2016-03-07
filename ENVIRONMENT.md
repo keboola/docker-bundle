@@ -70,6 +70,7 @@ These environment variables are injected in the container:
 
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
  - `KBC_PROJECTID` - Id of the project in KBC.
+ - `KBC_CONFIGID` - Id of the configuration or hash of configuration data if the configuration is not named.
  
  The following are available only if enabled in component configuration:
  
@@ -277,7 +278,6 @@ The tables element in configuration is an array and supports these attributes:
   - `delete_where_values`
   - `delimiter`
   - `enclosure`
-  - `escaped_by`
 
 ##### Examples
 
@@ -337,7 +337,6 @@ destination: out.c-main.Leads
 incremental: true
 delimiter: "\t"
 enclosure: "\""
-escaped_by: "\\"
 ```
 
 ##### default_bucket flag

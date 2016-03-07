@@ -320,6 +320,7 @@ class Executor
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
+            "KBC_CONFIGID" => $this->getConfigurationId(),
         ];
         if ($container->getImage()->getForwardToken()) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
