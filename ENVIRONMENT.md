@@ -70,6 +70,7 @@ These environment variables are injected in the container:
 
  - `KBC_RUNID` - RunId from Storage, couples all events within an API call (use for logging)
  - `KBC_PROJECTID` - Id of the project in KBC.
+ - `KBC_CONFIGID` - Id of the configuration or hash of configuration data if the configuration is not named.
  
  The following are available only if enabled in component configuration:
  

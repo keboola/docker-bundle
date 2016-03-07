@@ -91,9 +91,9 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [
-            "component" => "docker-r"
+            "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -132,9 +132,9 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [
-            "component" => "docker-r"
+            "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/docker-r/input", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/keboola.r-transformation/input", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -153,9 +153,9 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [
-            "component" => "docker-r"
+            "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/docker-r/dry-run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/keboola.r-transformation/dry-run", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -247,9 +247,9 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [
-            "component" => "docker-r"
+            "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
@@ -274,9 +274,9 @@ class ApiControllerTest extends WebTestCase
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
         ];
         $parameters = [
-            "component" => "docker-r"
+            "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/docker-r/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);

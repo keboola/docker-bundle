@@ -117,7 +117,7 @@ class FunctionalTests extends KernelTestCase
     {
         $data = [
             'params' => [
-                'component' => 'docker-r',
+                'component' => 'keboola.r-transformation',
                 'mode' => 'run',
                 'configData' => [
                     'storage' => [
@@ -150,9 +150,9 @@ class FunctionalTests extends KernelTestCase
         $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('docker-r');
+        $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-r');
+        $ecpWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
@@ -232,9 +232,9 @@ class FunctionalTests extends KernelTestCase
         $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('docker-r');
+        $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-r');
+        $ecpWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
@@ -300,7 +300,7 @@ class FunctionalTests extends KernelTestCase
 
         $data = [
             'params' => [
-                'component' => 'docker-r',
+                'component' => 'keboola.r-transformation',
                 'configData' => [
                     'storage' => [
                         'input' => [
@@ -334,9 +334,9 @@ class FunctionalTests extends KernelTestCase
         $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('docker-r');
+        $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-r');
+        $ecpWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
@@ -398,7 +398,7 @@ class FunctionalTests extends KernelTestCase
 
         $data = [
             'params' => [
-                'component' => 'docker-r',
+                'component' => 'keboola.r-transformation',
                 'configData' => [
                     'storage' => [
                         'input' => [
@@ -432,9 +432,9 @@ class FunctionalTests extends KernelTestCase
         $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('docker-r');
+        $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-r');
+        $ecpWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
@@ -536,7 +536,7 @@ class FunctionalTests extends KernelTestCase
     {
         $data = [
             'params' => [
-                'component' => 'docker-r',
+                'component' => 'keboola.r-transformation',
                 'mode' => 'run',
                 'configData' => [
                     'storage' => [
@@ -568,9 +568,9 @@ class FunctionalTests extends KernelTestCase
         $tokenInfo = $this->client->verifyToken();
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('docker-r');
+        $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('docker-r');
+        $ecpWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
