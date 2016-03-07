@@ -189,7 +189,7 @@ class Executor extends BaseExecutor
         if ($params && isset($params["config"])) {
             $executor->setConfigurationId($params["config"]);
         } else {
-            $executor->setConfigurationId(sha1($params["configData"]));
+            $executor->setConfigurationId(sha1(serialize($params["configData"])));
         }
 
         switch ($params['mode']) {
