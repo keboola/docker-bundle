@@ -394,8 +394,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $executor->setConfigurationId('testConfigurationId');
-        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'testConfigurationId');
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_PROJECTID', $ret);
         $this->assertContains('KBC_CONFIGID', $ret);
