@@ -140,7 +140,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -210,7 +210,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -290,7 +290,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $this->assertContains("Processed 1 rows.", trim($message));
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
@@ -346,7 +346,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         try {
             $executor->initialize($container, $config, [], false);
-            $executor->run($container, "testsuite", $this->client->verifyToken());
+            $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
             $this->fail("Timeouted process should raise exception.");
         } catch (ProcessTimedOutException $e) {
             $this->assertContains('exceeded the timeout', $e->getMessage());
@@ -395,7 +395,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $executor->setConfigurationId('testConfigurationId');
-        $executor->run($container, "testsuite", $this->client->verifyToken());
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_PROJECTID', $ret);
         $this->assertContains('KBC_CONFIGID', $ret);
@@ -449,7 +449,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken());
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $ret = $container->getRunCommand('test');
         $this->assertContains('KBC_TOKEN', $ret);
         $this->assertContains(STORAGE_API_TOKEN, $ret);
@@ -503,7 +503,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $tokenInfo);
+        $executor->run($container, "testsuite", $tokenInfo, 'test-config');
         $ret = $container->getRunCommand('test');
         $this->assertNotContains('KBC_TOKEN=', $ret);
         $this->assertContains('KBC_CONFIGID', $ret);
@@ -935,7 +935,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("docker-demo");
         $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken());
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $executor->storeOutput($container, null);
         $this->assertTrue($client->tableExists("in.c-docker-demo-whatever.sliced"));
 
@@ -995,7 +995,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken());
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $executor->storeOutput($container, null);
         $this->assertTrue($client->tableExists("in.c-keboola-docker-demo-whatever.sliced"));
 
@@ -1127,7 +1127,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $this->assertContains("BatmanBatman", trim($message));
         $this->assertContains('...', $message);
         $this->assertEquals(64005, strlen($message));
@@ -1165,7 +1165,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $this->assertEquals("Docker container processing finished.", trim($message));
     }
 
@@ -1224,7 +1224,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], false);
 
-        $this->assertEquals($credentials, json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]);
+        $this->assertEquals(
+            $credentials,
+            json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]
+        );
     }
 
     public function testOauthConfigDecryptSandboxed()
@@ -1282,7 +1285,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], true);
 
-        $this->assertEquals($oauthResponse, json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]);
+        $this->assertEquals(
+            $oauthResponse,
+            json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]
+        );
     }
 
     public function testOauthConfigDecryptAndExecute()
@@ -1350,7 +1356,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], false);
 
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $expectedConfigFile = [
             "authorization" => [
                 "oauth_api" => [
@@ -1428,7 +1434,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], true);
 
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken());
+        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
         $expectedConfigFile = [
             "authorization" => [
                 "oauth_api" => [
