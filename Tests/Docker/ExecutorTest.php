@@ -1092,6 +1092,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $executor->setComponentId("ex-generic");
         $this->assertEquals("ex-generic", $executor->getSanitizedComponentId());
+
+        $executor->setComponentId("keboola.ex.generic");
+        $this->assertEquals("keboola-ex-generic", $executor->getSanitizedComponentId());
     }
 
     public function testContainerMessageTrimmingStreamingOff()
