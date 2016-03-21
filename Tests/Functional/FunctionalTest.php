@@ -850,7 +850,7 @@ class FunctionalTests extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://github.com/keboola/docker-demo-app",
@@ -882,7 +882,7 @@ class FunctionalTests extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://github.com/keboola/docker-demo-app",
