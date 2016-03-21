@@ -35,7 +35,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php70",
+                "uri" => "keboola/base-php56",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
