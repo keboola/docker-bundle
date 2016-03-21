@@ -557,7 +557,7 @@ class FunctionalTests extends KernelTestCase
                             "for (file in files) {",
                             "    fn <- paste0(outDirectory, file, '.csv');",
                             "    file.copy(paste0(inDirectory, file), fn);",
-                            "    wrapper.saveFileManifest(fn, c('processed', 'docker-bundle-test'))",
+                            "    app\$writeFileManifest(fn, c('processed', 'docker-bundle-test'))",
                             "}"
                         ]
                     ]

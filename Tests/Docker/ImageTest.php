@@ -148,6 +148,43 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }
 
+
+    public function testQuayIOPrivateRepository()
+    {
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
+        $configuration = array(
+            "definition" => array(
+                "type" => "quayio-private",
+                "uri" => "keboola/docker-demo-private",
+                "repository" => array(
+                    "#password" => $encryptor->encrypt("bb"),
+                    "username" => "cc"
+                )
+            ),
+            "cpu_shares" => 2048,
+            "memory" => "128m",
+            "process_timeout" => 7200
+        );
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var Image\DockerHub\PrivateRepository $image */
+        $image = Image::factory($encryptor, $log, $configuration);
+        $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\QuayIO\\PrivateRepository", get_class($image));
+        $this->assertEquals("bb", $image->getLoginPassword());
+        $this->assertEquals("cc", $image->getLoginUsername());
+        $this->assertEquals("quay.io", $image->getLoginServer());
+        $this->assertEquals(".", $image->getLoginEmail());
+
+        $this->assertEquals("--email='.' --username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
+        $this->assertEquals("'quay.io'", $image->getLogoutParams());
+        $this->assertEquals("keboola/docker-demo-private:latest", $image->getFullImageId());
+    }
+
     public function testFormat()
     {
         $dummyConfig = array(
