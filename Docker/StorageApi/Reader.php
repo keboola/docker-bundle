@@ -208,8 +208,8 @@ class Reader
             if (isset($table["columns"]) && count($table["columns"])) {
                 $exportOptions["columns"] = $table["columns"];
             }
-            if (isset($table["changed_since"])) {
-                $exportOptions["changedSince"] = $table["changed_since"];
+            if (isset($table["days"])) {
+                $exportOptions["changedSince"] = "-{$table["days"]} days";
             }
             if (isset($table["where_column"]) && count($table["where_values"])) {
                 $exportOptions["whereColumn"] = $table["where_column"];
