@@ -125,7 +125,7 @@ The tables element in configuration is an array and supports these attributes
 
   - `source`
   - `destination`
-  - `changed_since`
+  - `days`
   - `columns`
   - `where_column`
   - `where_operator`
@@ -158,7 +158,7 @@ storage:
     tables:
       0:
         source: in.c-storage.StoredData
-        changed_since: -2 days  
+        days: 2  
 ```
 
 Download only certain columns
