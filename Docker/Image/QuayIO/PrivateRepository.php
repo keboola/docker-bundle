@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Component\Process\Process;
 
-class PrivateRepository extends Image\DockerHub
+class PrivateRepository extends Image\QuayIO
 {
     protected $loginEmail = ".";
     protected $loginUsername;

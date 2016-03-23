@@ -45,9 +45,9 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
      */
     public function testDownloadedImageEncryptedPassword()
     {
-        (new Process("sudo docker rmi keboola/docker-demo-private"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-private"))->run();
 
-        $process = new Process("sudo docker images | grep keboola/docker-demo-private | wc -l");
+        $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-private | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
@@ -73,12 +73,12 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $container = new Container($image, $log);
         $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("keboola/docker-demo-private:latest", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());
 
-        $process = new Process("sudo docker images | grep keboola/docker-demo-private | wc -l");
+        $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-private | wc -l");
         $process->run();
         $this->assertEquals(1, trim($process->getOutput()));
 
-        (new Process("sudo docker rmi keboola/docker-demo-private"))->run();
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-private"))->run();
     }
 }

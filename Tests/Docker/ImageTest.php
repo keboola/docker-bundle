@@ -182,7 +182,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("--email='.' --username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
         $this->assertEquals("'quay.io'", $image->getLogoutParams());
-        $this->assertEquals("keboola/docker-demo-private:latest", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());
     }
 
     public function testFormat()
