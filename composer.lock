@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4f24ea097053e8a1e57f67e72286e4e7",
-    "content-hash": "7a33e892583fa3e4b6d44cd96faf1eec",
+    "hash": "a76dc26019c4f33bf5d8247ad688b4a3",
+    "content-hash": "b9b60542023e59a823f2d8a551c6a483",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1562,24 +1562,24 @@
         },
         {
             "name": "keboola/php-temp",
-            "version": "0.1.5",
+            "version": "0.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-temp.git",
-                "reference": "97f0cc548e6ae5a4a7221d50d72cc78998cc3194"
+                "reference": "25a5b7902d3dd6e9f211071acc388b33990d6b6e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-temp/zipball/97f0cc548e6ae5a4a7221d50d72cc78998cc3194",
-                "reference": "97f0cc548e6ae5a4a7221d50d72cc78998cc3194",
+                "url": "https://api.github.com/repos/keboola/php-temp/zipball/25a5b7902d3dd6e9f211071acc388b33990d6b6e",
+                "reference": "25a5b7902d3dd6e9f211071acc388b33990d6b6e",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.3.3"
+                "php": ">=5.3.3",
+                "symfony/filesystem": ">2.1.0"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "dev-master",
-                "phpunit/phpunit": "^5.2"
+                "phpunit/phpunit": "3.7.*"
             },
             "type": "library",
             "autoload": {
@@ -1606,7 +1606,7 @@
                 "filesystem",
                 "temp"
             ],
-            "time": "2016-03-03 07:31:22"
+            "time": "2015-12-18 13:57:34"
         },
         {
             "name": "keboola/php-utils",
