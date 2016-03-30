@@ -120,7 +120,7 @@ class Reader
 
         // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
         if (count($files) > 10) {
-            throw new UserException("File mapping leads maps to more than 10 files, this seems like a mistake.");
+            throw new UserException("File input mapping downloads more than 10 files, this seems like a mistake.");
         }
         return $files;
     }
