@@ -24,7 +24,7 @@ class File extends Configuration
                 ->end()
                 ->scalarNode("query")->end()
                 ->booleanNode("filter_by_run_id")->end()
-                ->integerNode("limit")->defaultValue(1000)->end()
+                ->integerNode("limit")->defaultValue(10)->end()
                 ->arrayNode("processed_tags")
                     ->prototype("scalar")->end()
                 ->end()
