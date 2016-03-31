@@ -81,6 +81,9 @@ class Reader
             $files = $this->getFiles($fileConfiguration);
             foreach ($files as $file) {
                 $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
+                if ($fileInfo['isSliced']) {
+                    throw new UserException("File " . $file["id"] . " - " . $fileInfo["name"] . " is sliced and cannot be downloaded.");
+                }
                 try {
                     $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"] . '_' . $fileInfo["name"]);
                     $this->writeFileManifest(
