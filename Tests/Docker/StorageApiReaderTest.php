@@ -216,11 +216,12 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
         }
 
+        // valid configuration, but does nothing
         $reader = new Reader($this->client);
         $configuration = [];
         $reader->downloadFiles($configuration, $root . "/download");
 
-
+        // invalid configuration
         $reader = new Reader($this->client);
         $configuration = [[]];
         try {
@@ -238,6 +239,9 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $this->assertContains('File input mapping downloads more than', $e->getMessage());
         }
 
+        $reader = new Reader($this->client);
+        $configuration = [['tags' => ['docker-bundle-test'], 'limit' => 12]];
+        $reader->downloadFiles($configuration, $root . "/download");
     }
 
 

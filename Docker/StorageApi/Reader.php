@@ -122,8 +122,13 @@ class Reader
         $files = $this->getClient()->listFiles($options);
 
         // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
-        if (count($files) > 1000) {
-            throw new UserException("File input mapping downloads more than 10 files, this seems like a mistake.");
+        if (empty($fileConfiguration["limit"])) {
+            $fileConfiguration["limit"] = 10;
+        }
+        if (count($files) > $fileConfiguration["limit"]) {
+            throw new UserException(
+                "File input mapping downloads more than $fileConfiguration[limit] files, this seems like a mistake."
+            );
         }
         return $files;
     }
