@@ -1,1 +1,1 @@
-See [documentation](https://developers.keboola.com/extend/docker/quick-start/).
+See [documentation](http://developers.keboola.com/extend/docker/quick-start/).

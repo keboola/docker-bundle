@@ -1,1 +1,1 @@
-See [documentation](https://developers.keboola.com/extend/registration/checklist/).
+See [documentation](http://developers.keboola.com/extend/registration/checklist/).

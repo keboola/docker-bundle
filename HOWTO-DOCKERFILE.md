@@ -1,2 +1,2 @@
-See [documentation](https://developers.keboola.com/extend/docker/tutorial/).
+See [documentation](http://developers.keboola.com/extend/docker/tutorial/).
 

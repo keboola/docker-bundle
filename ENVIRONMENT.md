@@ -1,1 +1,1 @@
-See [documentation](https://developers.keboola.com/extend/common-interface/).
+See [documentation](http://developers.keboola.com/extend/common-interface/).
