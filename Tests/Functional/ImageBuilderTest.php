@@ -35,7 +35,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php56",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -80,7 +80,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://github.com/keboola/docker-demo-app",
@@ -224,7 +224,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -267,7 +267,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -313,7 +313,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php56",
                 "build_options" => [
                     "repository" => [
                         "uri" => "",
@@ -380,7 +380,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://github.com/keboola/non-existent-repo",

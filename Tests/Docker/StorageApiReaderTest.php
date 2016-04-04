@@ -179,6 +179,32 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(file_exists($root . "/download/" . $id6 . '_upload'));
     }
 
+    public function testReadSlicedFile()
+    {
+        // Create bucket
+        if (!$this->client->bucketExists("in.c-docker-test-redshift")) {
+            $this->client->createBucket("docker-test-redshift", Client::STAGE_IN, "Docker Testsuite", "redshift");
+        }
+
+        // Create redshift table and export it to produce a sliced file
+        if (!$this->client->tableExists("in.c-docker-test-redshift.test_file")) {
+            $csv = new CsvFile($this->tmpDir . "/upload.csv");
+            $csv->writeRow(array("Id", "Name"));
+            $csv->writeRow(array("test", "test"));
+            $this->client->createTableAsync("in.c-docker-test-redshift", "test_file", $csv);
+        }
+        $table = $this->client->exportTableAsync('in.c-docker-test-redshift.test_file');
+        $fileId = $table['file']['id'];
+
+        $reader = new Reader($this->client);
+        $configuration = [['query' => 'id: ' . $fileId]];
+        try {
+            $reader->downloadFiles($configuration, $this->tmpDir . "/download");
+            $this->fail("Downloading a sliced files should fail.");
+        } catch (UserException $e) {
+        }
+    }
+
 
     public function testReadFilesErrors()
     {
@@ -190,11 +216,12 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
         }
 
+        // valid configuration, but does nothing
         $reader = new Reader($this->client);
         $configuration = [];
         $reader->downloadFiles($configuration, $root . "/download");
 
-
+        // invalid configuration
         $reader = new Reader($this->client);
         $configuration = [[]];
         try {
@@ -204,13 +231,17 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         }
 
         $reader = new Reader($this->client);
-        $configuration = [['query' => 'id: >0']];
+        $configuration = [['query' => 'id:>0 AND (NOT tags:table-export)']];
         try {
             $reader->downloadFiles($configuration, $root . "/download");
             $this->fail("Too broad query should fail.");
         } catch (UserException $e) {
+            $this->assertContains('File input mapping downloads more than', $e->getMessage());
         }
 
+        $reader = new Reader($this->client);
+        $configuration = [['tags' => ['docker-bundle-test'], 'limit' => 12]];
+        $reader->downloadFiles($configuration, $root . "/download");
     }
 
 

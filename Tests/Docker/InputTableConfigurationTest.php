@@ -35,7 +35,7 @@ class InputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         $config = array(
             "source" => "in.c-main.test",
             "destination" => "test",
-            "changed_since" => "-1 days",
+            "days" => 1,
             "columns" => array("Id", "Name"),
             "where_column" => "status",
             "where_values" => array("val1", "val2"),

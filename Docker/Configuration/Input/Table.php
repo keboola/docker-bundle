@@ -21,7 +21,7 @@ class Table extends Configuration
             ->children()
                 ->scalarNode("source")->isRequired()->end()
                 ->scalarNode("destination")->end()
-                ->scalarNode("changed_since")->end()
+                ->integerNode("days")->end()
                 ->arrayNode("columns")->prototype("scalar")->end()->end()
                 ->scalarNode("where_column")->end()
                 ->integerNode("limit")->end()

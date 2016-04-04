@@ -81,6 +81,9 @@ class Reader
             $files = $this->getFiles($fileConfiguration);
             foreach ($files as $file) {
                 $fileInfo = $this->getClient()->getFile($file["id"], (new GetFileOptions())->setFederationToken(true));
+                if ($fileInfo['isSliced']) {
+                    throw new UserException("File " . $file["id"] . " - " . $fileInfo["name"] . " is sliced and cannot be downloaded.");
+                }
                 try {
                     $this->downloadFile($fileInfo, $destination . "/" . $fileInfo["id"] . '_' . $fileInfo["name"]);
                     $this->writeFileManifest(
@@ -119,8 +122,13 @@ class Reader
         $files = $this->getClient()->listFiles($options);
 
         // a little sanity check, otherwise it may easily happen that a wrong ES query would fill up the server
-        if (count($files) > 10) {
-            throw new UserException("File mapping leads maps to more than 10 files, this seems like a mistake.");
+        if (empty($fileConfiguration["limit"])) {
+            $fileConfiguration["limit"] = 10;
+        }
+        if (count($files) > $fileConfiguration["limit"]) {
+            throw new UserException(
+                "File input mapping downloads more than $fileConfiguration[limit] files, this seems like a mistake."
+            );
         }
         return $files;
     }
@@ -208,8 +216,8 @@ class Reader
             if (isset($table["columns"]) && count($table["columns"])) {
                 $exportOptions["columns"] = $table["columns"];
             }
-            if (isset($table["changed_since"])) {
-                $exportOptions["changedSince"] = $table["changed_since"];
+            if (isset($table["days"])) {
+                $exportOptions["changedSince"] = "-{$table["days"]} days";
             }
             if (isset($table["where_column"]) && count($table["where_values"])) {
                 $exportOptions["whereColumn"] = $table["where_column"];
