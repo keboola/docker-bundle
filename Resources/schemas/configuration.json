@@ -1,0 +1,207 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "title": "Docker Application configuration",
+  "type": "object",
+  "properties": {
+    "parameters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "oauth_api": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tables": {
+              "type": "array",
+              "required": [
+                "source"
+              ],
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "source": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "destination": {
+                    "type": "string"
+                  },
+                  "columns": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "uniqueItems": true
+                  },
+                  "days": {
+                    "type": "integer"
+                  },
+                  "where_column": {
+                    "type": "string"
+                  },
+                  "where_operator": {
+                    "default": "eq",
+                    "enum": [
+                      "eq",
+                      "ne"
+                    ],
+                    "type": "string"
+                  },
+                  "where_values": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "tags": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                       "type": "string"
+                    }
+                  },
+                  "query": {
+                    "type": "string"
+                  },
+                  "filter_by_run_id": {
+                    "type": "boolean"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "processed_tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "output": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["source"],
+                "properties": {
+                  "source": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "is_public": {
+                    "type": "boolean"
+                  },
+                  "is_permanent": {
+                    "type": "boolean"
+                  },
+                  "is_encrypted": {
+                    "type": "boolean"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "tables": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["source", "destination"],
+                "properties": {
+                  "source": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "destination": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "incremental": {
+                    "type": "boolean"
+                  },
+                  "primary_key": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "delete_where_column": {
+                    "type": "string"
+                  },
+                  "delete_where_operator": {
+                    "default": "eq",
+                    "enum": [
+                      "eq",
+                      "ne"
+                    ],
+                    "type": "string"
+                  },
+                  "delete_where_values": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "delimiter": {
+                    "type": "string"
+                  },
+                  "enclosure": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
