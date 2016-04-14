@@ -163,14 +163,30 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image->setProcessTimeout(1);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
-        $dataDir = $this->createScript($temp, '<?php sleep(10);');
-        $container->setDataDir($dataDir);
 
+        // set benchmark time
+        $dataDir = $this->createScript($temp, '<?php echo "done";');
+        $container->setDataDir($dataDir);
+        $containerId = uniqid();
+        $benchmarkStartTime = time();
+        $container->run($containerId, []);
+        $benchmarkDuration = time() - $benchmarkStartTime;
+
+        // actual test
+        $dataDir = $this->createScript($temp, '<?php sleep(20);');
+        $container->setDataDir($dataDir);
+        $containerId = uniqid();
+        $testStartTime = time();
         try {
-            $container->run(uniqid(), []);
+            $container->run($containerId, []);
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
+            $testDuration = time() - $testStartTime;
             $this->assertContains('timeout', $e->getMessage());
+            // test should last longer than benchmark
+            $this->assertGreaterThan($benchmarkDuration, $testDuration);
+            // test shouldn't last longer than benchmark plus process timeout (plus a safety margin)
+            $this->assertLessThan($benchmarkDuration + $image->getProcessTimeout() + 5, $testDuration);
         }
     }
 
