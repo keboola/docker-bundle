@@ -169,8 +169,8 @@ class Container
 
         // Run container
         $process = new Process($this->getRunCommand($containerId));
-        $process->setTimeout($this->getImage()->getProcessTimeout());
-
+        $process->setTimeout($this->getImage()->getProcessTimeout() + 1);
+        $startTime = time();
         try {
             $this->log->debug("Executing docker process.");
             if ($this->getImage()->isStreamingLogs()) {
@@ -189,11 +189,13 @@ class Container
             }
             $this->log->debug("Docker process finished.");
         } catch (ProcessTimedOutException $e) {
+            // is actually not working
             $this->removeContainer($containerId);
             throw new UserException(
                 "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
             );
         }
+        $duration = time() - $startTime;
 
         if (!$process->isSuccessful()) {
             $inspect = $this->inspectContainer($containerId);
@@ -209,6 +211,13 @@ class Container
                     "Out of memory (exceeded {$this->getImage()->getMemory()})",
                     null,
                     $data
+                );
+            }
+
+            // this catches the timeout from `sudo timeout`
+            if ($process->getExitCode() == 137 && $duration >= $this->getImage()->getProcessTimeout()) {
+                throw new UserException(
+                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
                 );
             }
 
@@ -302,19 +311,12 @@ class Container
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
-            foreach ($this->getEnvironmentVariables() as $key => $value) {
-                $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
-            }
-            $command = "docker run";
-        } else {
-            $dataDir = $this->dataDir;
-            foreach ($this->getEnvironmentVariables() as $key => $value) {
-                $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
-            }
-            $command = "sudo docker run";
+        $dataDir = $this->dataDir;
+        foreach ($this->getEnvironmentVariables() as $key => $value) {
+            $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
         }
+
+        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} sudo docker run";
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())

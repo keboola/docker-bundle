@@ -12,6 +12,7 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 {
@@ -160,7 +161,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $image->setProcessTimeout(1);
         $container = new Container($image, $log);
         $container->setId("odinuv/docker-php-test");
 
@@ -173,6 +173,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $benchmarkDuration = time() - $benchmarkStartTime;
 
         // actual test
+        $image->setProcessTimeout(5);
         $dataDir = $this->createScript($temp, '<?php sleep(20);');
         $container->setDataDir($dataDir);
         $containerId = uniqid();
