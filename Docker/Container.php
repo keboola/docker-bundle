@@ -316,7 +316,7 @@ class Container
             $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
         }
 
-        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} sudo docker run";
+        $command = "sudo timeout --foreground --signal=SIGKILL {$this->getImage()->getProcessTimeout()} sudo docker run";
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
