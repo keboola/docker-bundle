@@ -124,7 +124,7 @@ EOF;
         $container->setId($image->getFullImageId());
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
-        $expected = "sudo timeout --foreground --signal=SIGKILL 3600 sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
+        $expected = "sudo timeout --signal=SIGKILL 3600 sudo docker run --volume='/tmp':/data --memory='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
