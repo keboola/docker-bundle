@@ -17,9 +17,13 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
      */
     public function encryptAction(Request $request)
     {
+        $component = $request->get("component");
+        if (!$component) {
+            return parent::encryptAction($request);
+        }
+
         /** @var StorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
-        $component = $request->get("component");
         if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',

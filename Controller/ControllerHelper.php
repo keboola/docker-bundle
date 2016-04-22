@@ -14,9 +14,6 @@ class ControllerHelper
      */
     public function hasComponentEncryptFlag(Client $client, $componentId)
     {
-        if (!$componentId) {
-            return false;
-        }
         $components = $client->indexAction();
         foreach ($components["components"] as $c) {
             if ($c["id"] == $componentId) {
