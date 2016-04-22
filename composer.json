@@ -4,10 +4,21 @@
     "description": "Component for running Docker images in KBC",
     "keywords": [],
     "authors": [],
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/keboola/syrup"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/keboola/oauth-v2-php-client"
+        }
+    ],
     "require": {
-        "keboola/syrup": "~3.0",
+        "keboola/syrup": "dev-encrypt-without-token",
+        "keboola/php-utils": "1.0.0",
         "symfony/symfony": "~2.7.5",
-        "keboola/oauth-v2-php-client": "~0.0.2",
+        "keboola/oauth-v2-php-client": "dev-php-utils-update",
         "keboola/storage-api-client": "~4.5"
     },
     "require-dev": {
