@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -16,8 +17,10 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
      */
     public function encryptAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
         $component = $request->get("component");
-        if (!ControllerHelper::hasComponentEncryptFlag($component)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',

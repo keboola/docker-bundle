@@ -9,6 +9,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -67,12 +68,17 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     private function createJobFromParams($params)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         // check params against ES mapping
         $this->checkMappingParams($params);
 
         // Encrypt configData for encrypt flagged components
         try {
-            if (ControllerHelper::hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $params["component"])
+                && isset($params["configData"])
+            ) {
                 $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($params["component"]);
                 $tokenInfo = $this->storageApi->verifyToken();
@@ -164,12 +170,15 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function inputAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         // Get params from request
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        if (ControllerHelper::hasComponentEncryptFlag($component)) {
+        if ((new ControllerHelper())->hasComponentEncryptFlag($storage->getClient(), $params["component"])) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
@@ -191,11 +200,14 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function dryRunAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        if (ControllerHelper::hasComponentEncryptFlag($component)) {
+        if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
@@ -267,8 +279,11 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function encryptConfigAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $component = $request->get("component");
-        if (!ControllerHelper::hasComponentEncryptFlag($component)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
@@ -301,6 +316,9 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
     public function saveConfigAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $components = new Components($this->storageApi);
         $options = new Configuration();
         $options->setComponentId($request->get("component"));
@@ -308,7 +326,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
         if ($request->get("configuration")) {
             $configuration = json_decode($request->get("configuration"));
-            if (ControllerHelper::hasComponentEncryptFlag($request->get("component"))) {
+            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $request->get("component"))) {
                 $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($request->get("component"));
                 $tokenInfo = $this->storageApi->verifyToken();

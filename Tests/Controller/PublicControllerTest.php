@@ -88,7 +88,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
 
         ];
@@ -123,7 +122,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json; charset=UTF-8'
 
         ];
@@ -153,7 +151,6 @@ class PublicControllerTest extends WebTestCase
     {
         $content = 'value';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'text/plain; charset=UTF-8'
 
         ];
@@ -185,7 +182,6 @@ class PublicControllerTest extends WebTestCase
     {
         $content = 'value';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'someotherheader;'
 
         ];
@@ -212,7 +208,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
 
         ];
@@ -247,7 +242,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
 
         ];
@@ -281,7 +275,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
 
         ];
@@ -317,7 +310,6 @@ class PublicControllerTest extends WebTestCase
             "#key2": "value2"
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
 
         ];
