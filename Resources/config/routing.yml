@@ -41,3 +41,10 @@ keboola_docker_save_config:
     defaults:
       _controller: KeboolaDockerBundle:Api:saveConfig
     methods:  [PUT]
+
+# run sync actions
+keboola_docker_sync_action:
+    path:     /{component}/action/{action}
+    defaults:
+      _controller: KeboolaDockerBundle:Action:process
+    methods:  [POST]

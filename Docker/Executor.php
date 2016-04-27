@@ -212,8 +212,9 @@ class Executor
      * @param array $config Configuration injected into docker image.
      * @param array $state Configuration state
      * @param bool $sandboxed
+     * @param string $action
      */
-    public function initialize(Container $container, array $config, array $state, $sandboxed)
+    public function initialize(Container $container, array $config, array $state, $sandboxed, $action="run")
     {
         $this->configData = $config;
         // create temporary working folder and all of its sub-folders
@@ -249,6 +250,10 @@ class Executor
                 }
                 $configData["authorization"]["oauth_api"]["credentials"] = $decrypted;
             }
+
+            // action
+            $configData["action"] = $action;
+
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
@@ -336,7 +341,7 @@ class Executor
 
         // run the container
         $process = $container->run($id, $this->configData);
-        $message = $process->getOutput();
+        $message = trim($process->getOutput());
         if ($message && !$container->getImage()->isStreamingLogs()) {
             // trim the result if it is too long
             if (mb_strlen($message) > 64000) {

@@ -19,6 +19,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "vendor" => array("a" => "b"),
             "image_parameters" => array("foo" => "bar"),
+            "synchronous_actions" => ["test", "test2"],
         );
         $expectedConfiguration = array(
             "definition" => array(
@@ -36,15 +37,46 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "default_bucket" => false,
             "vendor" => array("a" => "b"),
             "image_parameters" => array("foo" => "bar"),
+            "synchronous_actions" => ["test", "test2"],
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+    }
+
+    public function testEmptyConfiguration() {
+        $config = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            )
+        );
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $expectedConfiguration = array (
+            'definition' =>
+                array (
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'latest',
+                ),
+            'cpu_shares' => 1024,
+            'memory' => '64m',
+            'configuration_format' => 'yaml',
+            'process_timeout' => 3600,
+            'forward_token' => false,
+            'forward_token_details' => false,
+            'streaming_logs' => true,
+            'default_bucket' => false,
+            'synchronous_actions' =>
+                array (
+                ),
+        );
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
      */
-    public function testEmptyConfiguration()
+    public function testTotallyEmptyConfiguration()
     {
         (new Configuration\Image())->parse(array("config" => array()));
     }
@@ -149,6 +181,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "streaming_logs" => true,
             "default_bucket" => true,
             "default_bucket_stage" => "out",
+            "synchronous_actions" => [],
         ];
 
         $expectedConfiguration = $config;

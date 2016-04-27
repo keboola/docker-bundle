@@ -65,6 +65,11 @@ class Container extends Configuration
                     ->scalarNode("id")->end()
                     ->variableNode("credentials");
 
+
+        // action
+        $root->children()
+            ->scalarNode("action");
+
         return $treeBuilder;
     }
 }

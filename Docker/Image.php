@@ -261,7 +261,7 @@ class Image
     }
 
     /**
-     * @param $streamingLogs
+     * @param bool $streamingLogs
      * @return $this
      */
     public function setStreamingLogs($streamingLogs)
