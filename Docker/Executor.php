@@ -214,7 +214,7 @@ class Executor
      * @param bool $sandboxed
      * @param string $action
      */
-    public function initialize(Container $container, array $config, array $state, $sandboxed, $action="run")
+    public function initialize(Container $container, array $config, array $state, $sandboxed, $action = "run")
     {
         $this->configData = $config;
         // create temporary working folder and all of its sub-folders

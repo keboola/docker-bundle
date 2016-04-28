@@ -121,7 +121,7 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         try {
             $message = $executor->run($container, $containerId, $tokenInfo, $configId);
         } catch (UserException $e) {
-            throw new UserException("Action '{$request->get("action")}' finished with an error: " . $e->getMessage() , $e);
+            throw new UserException("Action '{$request->get("action")}' finished with an error: " . $e->getMessage(), $e);
         }
         $executor->storeOutput($container, $state);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
@@ -137,7 +137,6 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         return $this->createJsonResponse($jsonData);
     }
 
-
     /**
      *
      * hide component param from response
@@ -149,7 +148,6 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
      */
     public function createJsonResponse($data = null, $status = '200', $headers = array())
     {
-
         if (is_array($data) && array_key_exists("component", $data)) {
             unset($data["component"]);
         } elseif (is_object($data) && property_exists($data, 'component')) {
@@ -157,5 +155,4 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         }
         return parent::createJsonResponse($data, $status, $headers);
     }
-
 }

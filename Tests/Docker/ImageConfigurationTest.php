@@ -43,7 +43,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
-    public function testEmptyConfiguration() {
+    public function testEmptyConfiguration()
+    {
         $config = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -51,13 +52,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             )
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $expectedConfiguration = array (
-            'definition' =>
-                array (
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'latest',
-                ),
+        $expectedConfiguration = array(
+            'definition' => array(
+                'type' => 'dockerhub',
+                'uri' => 'keboola/docker-demo',
+                'tag' => 'latest',
+            ),
             'cpu_shares' => 1024,
             'memory' => '64m',
             'configuration_format' => 'yaml',
@@ -66,9 +66,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => false,
             'streaming_logs' => true,
             'default_bucket' => false,
-            'synchronous_actions' =>
-                array (
-                ),
+            'synchronous_actions' => array(),
         );
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }

@@ -45,31 +45,28 @@ class ActionControllerTest extends WebTestCase
 
         // mock client to return image data
         $indexActionValue = array(
-            'components' =>
-                array(
-                    0 =>
-                        array(
-                            'id' => 'docker-dummy-test',
-                            'type' => 'other',
-                            'name' => 'Docker Config Dump',
-                            'description' => 'Testing Docker',
-                            'longDescription' => null,
-                            'hasUI' => false,
-                            'hasRun' => true,
-                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
-                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array(
-                                'definition' =>
-                                    array(
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/docker-dummy-test',
-                                    ),
-                                'synchronous_actions' => ['test', 'timeout'],
-                            ),
-                            'flags' => $flags,
-                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-                        )
+            'components' => array(
+                0 => array(
+                    'id' => 'docker-dummy-test',
+                    'type' => 'other',
+                    'name' => 'Docker Config Dump',
+                    'description' => 'Testing Docker',
+                    'longDescription' => null,
+                    'hasUI' => false,
+                    'hasRun' => true,
+                    'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                    'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                    'data' => array(
+                        'definition' => array(
+                            'type' => 'dockerhub',
+                            'uri' => 'keboola/docker-dummy-test',
+                        ),
+                        'synchronous_actions' => ['test', 'timeout'],
+                    ),
+                    'flags' => $flags,
+                    'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
                 )
+            )
         );
 
         $storageClientStub->expects($this->any())
@@ -96,73 +93,61 @@ class ActionControllerTest extends WebTestCase
 
         // mock client to return image data
         $indexActionValue = array(
-            'components' =>
-                array(
-                    0 =>
-                        array (
-                            'id' => 'dca-custom-science-python',
-                            'type' => 'application',
-                            'name' => 'Custom science Python',
-                            'description' => 'Custom science Python',
-                            'longDescription' => NULL,
-                            'hasUI' => false,
-                            'hasRun' => false,
-                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/dca-custom-science-python-32-1.png',
-                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/dca-custom-science-python-64-1.png',
-                            'data' =>
-                                array (
-                                    'definition' =>
-                                        array (
-                                            'type' => 'builder',
-                                            'uri' => 'quay.io/keboola/docker-custom-python:1.1.0',
-                                            'build_options' =>
-                                                array (
-                                                    'repository' =>
-                                                        array (
-                                                            'uri' => '',
-                                                            'type' => 'git',
-                                                        ),
-                                                    'commands' =>
-                                                        array (
-                                                            0 => 'git clone -b {{version}} --depth 1 {{repository}} /home/ || (echo "KBC::USER_ERR:Cannot access the Git repository {{repository}}, please verify its URL, credentials and version.KBC::USER_ERR" && exit 1)',
-                                                        ),
-                                                    'parameters' =>
-                                                        array (
-                                                            0 =>
-                                                                array (
-                                                                    'name' => 'version',
-                                                                    'type' => 'string',
-                                                                ),
-                                                            1 =>
-                                                                array (
-                                                                    'name' => 'repository',
-                                                                    'type' => 'string',
-                                                                ),
-                                                            2 =>
-                                                                array (
-                                                                    'name' => 'username',
-                                                                    'type' => 'string',
-                                                                    'required' => false,
-                                                                ),
-                                                            3 =>
-                                                                array (
-                                                                    'name' => '#password',
-                                                                    'type' => 'string',
-                                                                    'required' => false,
-                                                                ),
-                                                        ),
-                                                    'entry_point' => 'python /home/main.py',
-                                                ),
-                                        ),
-                                    'process_timeout' => 21600,
-                                    'memory' => '8192m',
-                                    'configuration_format' => 'json',
-                                    'synchronous_actions' => ['test', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
+            'components' => array(
+                0 => array (
+                    'id' => 'dca-custom-science-python',
+                    'type' => 'application',
+                    'name' => 'Custom science Python',
+                    'description' => 'Custom science Python',
+                    'longDescription' => null,
+                    'hasUI' => false,
+                    'hasRun' => false,
+                    'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/dca-custom-science-python-32-1.png',
+                    'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/dca-custom-science-python-64-1.png',
+                    'data' => array (
+                        'definition' => array (
+                            'type' => 'builder',
+                            'uri' => 'quay.io/keboola/docker-custom-python:1.1.0',
+                            'build_options' => array (
+                                'repository' => array (
+                                    'uri' => '',
+                                    'type' => 'git',
                                 ),
-                            'flags' => ['encrypt'],
-                            'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
-                        )
+                                'commands' => array (
+                                    0 => 'git clone -b {{version}} --depth 1 {{repository}} /home/ || (echo "KBC::USER_ERR:Cannot access the Git repository {{repository}}, please verify its URL, credentials and version.KBC::USER_ERR" && exit 1)',
+                                ),
+                                'parameters' => array (
+                                    0 => array (
+                                        'name' => 'version',
+                                        'type' => 'string',
+                                    ),
+                                    1 => array (
+                                        'name' => 'repository',
+                                        'type' => 'string',
+                                    ),
+                                    2 => array (
+                                        'name' => 'username',
+                                        'type' => 'string',
+                                        'required' => false,
+                                    ),
+                                    3 => array (
+                                        'name' => '#password',
+                                        'type' => 'string',
+                                        'required' => false,
+                                    ),
+                                ),
+                                'entry_point' => 'python /home/main.py',
+                            ),
+                        ),
+                        'process_timeout' => 21600,
+                        'memory' => '8192m',
+                        'configuration_format' => 'json',
+                        'synchronous_actions' => ['test', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
+                        ),
+                    'flags' => ['encrypt'],
+                    'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
                 )
+            )
         );
 
         $storageClientStub->expects($this->any())
@@ -192,9 +177,7 @@ class ActionControllerTest extends WebTestCase
             "component" => "docker-dummy-test-invalid",
             "action" => "somethingelse"
         ];
-        $request = Request::create("/docker/docker-dummy-test-invalid/action/somethingelse", 'POST', $parameters, [], [],
-            $server, $content);
-
+        $request = Request::create("/docker/docker-dummy-test-invalid/action/somethingelse", 'POST', $parameters, [], [], $server, $content);
 
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDummy(true));
@@ -223,8 +206,7 @@ class ActionControllerTest extends WebTestCase
             "component" => "docker-dummy-test",
             "action" => "somethingelse"
         ];
-        $request = Request::create("/docker/docker-dummy-test/action/somethingelse", 'POST', $parameters, [], [],
-            $server, $content);
+        $request = Request::create("/docker/docker-dummy-test/action/somethingelse", 'POST', $parameters, [], [], $server, $content);
 
 
         $container = self::$container;
@@ -237,7 +219,8 @@ class ActionControllerTest extends WebTestCase
         $ctrl->processAction($request);
     }
 
-    public function prepareRequest($method, $parameters=null) {
+    public function prepareRequest($method, $parameters = null)
+    {
         $content = '
         {
             "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '
@@ -255,8 +238,7 @@ class ActionControllerTest extends WebTestCase
             "component" => "dca-custom-science-python",
             "action" => $method
         ];
-        return Request::create("/docker/dca-custom-science-python/action/{$method}", 'POST', $parameters, [], [], $server,
-            $content);
+        return Request::create("/docker/dca-custom-science-python/action/{$method}", 'POST', $parameters, [], [], $server, $content);
     }
 
     public function testActionTest()
@@ -279,7 +261,8 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage Running container exceeded the timeout of 30 seconds.
      */
-    public function testTimeout() {
+    public function testTimeout()
+    {
         $request = $this->prepareRequest('timeout');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
@@ -295,7 +278,8 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage Action 'usererror' finished with an error: user error
      */
-    public function testUserException() {
+    public function testUserException()
+    {
         $request = $this->prepareRequest('usererror');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
@@ -329,7 +313,8 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage Decoding JSON response from component failed
      */
-    public function testInvalidJSONRepsonse() {
+    public function testInvalidJSONRepsonse()
+    {
         $request = $this->prepareRequest('invalidjson');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
@@ -345,7 +330,8 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage No response from component
      */
-    public function testNoResponse() {
+    public function testNoResponse()
+    {
         $request = $this->prepareRequest('noresponse');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
@@ -357,7 +343,8 @@ class ActionControllerTest extends WebTestCase
         $ctrl->processAction($request);
     }
 
-    public function testDecryptSuccess() {
+    public function testDecryptSuccess()
+    {
         $container = self::$container;
 
         /**
@@ -381,7 +368,8 @@ class ActionControllerTest extends WebTestCase
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
      */
-    public function testDecryptFailure() {
+    public function testDecryptFailure()
+    {
         $request = $this->prepareRequest('decrypt', ["#password" => "nesmysl"]);
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
