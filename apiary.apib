@@ -52,7 +52,7 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
 
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
 
 ### Encrypt data [POST]
 
@@ -91,11 +91,11 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
 ## Image configuration encryption [/{image}/configs/encrypt]
 
 Used for encrypting values in image configuration. Cipher text can be decrypted only in the specified image
-only in the specified project (project is specified in token).  
+only in the specified project (project is specified in token).
 
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
 
 ### Encrypt data [POST]
 
@@ -130,15 +130,15 @@ only in the specified project (project is specified in token).
                 "config": 1,
                 "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
             }
-            
+
 ## Encrypt and store configuration [/{image}/configs/{configId}]
 
-Wrapper for a native Storage API call, that encrypts (image configuration encryption is used) values before saving them. 
+Wrapper for a native Storage API call, that encrypts (image configuration encryption is used) values before saving them.
 1:1 compatible with http://docs.keboola.apiary.io/#reference/components/manage-configs/update-config
 
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
     + configId (string) ... Configuration ID
 
 ### Save configuration [PUT]
@@ -158,7 +158,7 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
             Test
             ------WebKitFormBoundaryfIBRqd05C6Na2Lvl
             Content-Disposition: form-data; name="configuration"
-            {   
+            {
                 "parameters": {
                     "plain": "test",
                     "#encrypted": "test"
@@ -168,7 +168,7 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
             Content-Disposition: form-data; name="state"
             []
             ------WebKitFormBoundaryfIBRqd05C6Na2Lvl--
-            
+
 
 + Response 200 (application/json)
 
@@ -190,7 +190,7 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
                 }
               },
               "state": []
-            }        
+            }
 
 + Request Encrypt JSON structure (application/json)
     + Headers
@@ -222,7 +222,7 @@ Run a configuration in an image.
 Create an execution job on a specified docker image.
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
 
 ### Create a Run job [POST]
 
@@ -302,13 +302,13 @@ Create an execution job on a specified docker image.
 
 # Group Sandbox
 
-Sandbox call are handy when developing or troubleshooting Docker images. 
+Sandbox call are handy when developing or troubleshooting Docker images.
 They can dump the `data` folder for you before running the image, before uploading the results back to Storage or event without even having the image configured.
 
 ## Sandbox [/sandbox?format={format}]
 
-This job will prepare the `data` folder including serialized configuration file in the given format. 
-Then it will compress the `data` folder and upload it to your project's File Uploads in Storage. 
+This job will prepare the `data` folder including serialized configuration file in the given format.
+Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
 This call is useful when developing new docker component to obtain a sample of the development environment.
 
 Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder.
@@ -383,15 +383,15 @@ Note: only 50 first rows of each table will be exported.
 
 ## Input data [/{image}/input]
 
-This job will prepare the `data` folder including serialized configuration file in format set in the image configuration. 
-Then it will compress the `data` folder and upload it to your project's File Uploads in Storage. 
-**The image itself will not be downloaded nor executed.** 
+This job will prepare the `data` folder including serialized configuration file in format set in the image configuration.
+Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
+**The image itself will not be downloaded nor executed.**
 
 
 This API call is useful for verifying that a given input mapping and image configuration are working correctly and as a simple dumping tool for troubleshooting Docker apps.
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
 
 ### Create an Input job [POST]
 
@@ -469,15 +469,15 @@ This API call is useful for verifying that a given input mapping and image confi
 
 ## Dry Run [/{image}/dry-run]
 
-This job will prepare the `data` folder including serialized configuration file in format set in the image configuration. 
-Then it will execute the docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage. 
+This job will prepare the `data` folder including serialized configuration file in format set in the image configuration.
+Then it will execute the docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage.
 
-This API call is useful for verifying that the given image is producing the correct output without altering the real data in your KBC project. 
- 
-Note that the archive will contain all files in the `data` folder including any temporary files produced be the Docker image. 
+This API call is useful for verifying that the given image is producing the correct output without altering the real data in your KBC project.
+
+Note that the archive will contain all files in the `data` folder including any temporary files produced be the Docker image.
 
 + Parameters
-    + image (string) ... ID of the image (KBC component name)
+    + image (string) ... KBC component Id
 
 ### Create a Dry Run job [POST]
 
@@ -551,3 +551,36 @@ Note that the archive will contain all files in the `data` folder including any 
             "url": "https://syrup.keboola.com/queue/job/67121676",
             "status": "waiting"
         }
+
+
+# Group Actions
+
+Runs a Docker image synchronously, waits for the result and returns as response.
+
+## Run custom Docker extension action [/{image}/actions/{action}]
+
++ Parameters
+    + image (string) ... KBC component Id
+    + action (string) ... Action name
+
+### Process action [POST]
+
+The body contains configuration for the component.
+You need to provide the whole configuration, there is no link to a stored configuration.
+
++ Request Process action (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "parameters": {}
+            }
+
++ Response 200 (application/json)
+
+            {
+                "response": 1
+            }

@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ActionController;
-use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -157,7 +157,7 @@ class ActionControllerTest extends WebTestCase
                                     'process_timeout' => 21600,
                                     'memory' => '8192m',
                                     'configuration_format' => 'json',
-                                    'synchronous_actions' => ['test', 'timeout', 'json', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'encrypt'],
+                                    'synchronous_actions' => ['test', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
                                 ),
                             'flags' => ['encrypt'],
                             'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
@@ -173,8 +173,12 @@ class ActionControllerTest extends WebTestCase
             ->will($this->returnValue(["owner" => ["id" => "123"]]));
 
         return $storageServiceStub;
-    }    
+    }
 
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
+     * @expectedExceptionMessage Component 'docker-dummy-test-invalid' not found.
+     */
     public function testNonExistingComponent()
     {
         $content = '
@@ -199,14 +203,13 @@ class ActionControllerTest extends WebTestCase
         $ctrl = new ActionController();
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
-        $response = $ctrl->processAction($request);
-        $this->assertEquals(404, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("error", $responseData["status"]);
-        $this->assertEquals("Component 'docker-dummy-test-invalid' not found.", $responseData["message"]);
+        $ctrl->processAction($request);
     }
     
-    
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
+     * @expectedExceptionMessage Action 'somethingelse' not found.
+     */
     public function testNonExistingAction()
     {
         $content = '
@@ -231,35 +234,34 @@ class ActionControllerTest extends WebTestCase
         $ctrl = new ActionController();
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
-        $response = $ctrl->processAction($request);
-        $this->assertEquals(404, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("error", $responseData["status"]);
-        $this->assertEquals("Action 'somethingelse' not found.", $responseData["message"]);
+        $ctrl->processAction($request);
     }
 
-
-    public function testActionTest()
-    {
+    public function prepareRequest($method, $parameters=null) {
         $content = '
         {
-            "parameters": {
-            },
+            "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '
+            ,
             "runtime": {
                 "repository": "https://github.com/keboola/docker-actions-test",
-                "version": "0.0.4"            
+                "version": "0.0.6"            
             }
         }';
         $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+            'HTTP_Content-Type' => 'application/json'
         ];
         $parameters = [
             "component" => "dca-custom-science-python",
-            "action" => "test"
+            "action" => $method
         ];
-        $request = Request::create("/docker/dca-custom-science-python/action/test", 'POST', $parameters, [], [], $server,
+        return Request::create("/docker/dca-custom-science-python/action/{$method}", 'POST', $parameters, [], [], $server,
             $content);
+    }
 
+    public function testActionTest()
+    {
+        $request = $this->prepareRequest('test');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
         $container->get('request_stack')->push($request);
@@ -269,40 +271,150 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("ok", $responseData["status"]);
-        $this->assertEquals("test", $responseData["payload"]);
+        $this->assertEquals('{"test":"test"}', $response->getContent());
     }
 
-    // TODO
-    public function testJSONResponse() {
-        $this->fail("not implemented");
-    }
 
-    // TODO
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage Running container exceeded the timeout of 30 seconds.
+     */
     public function testTimeout() {
-        $this->fail("not implemented");
+        $request = $this->prepareRequest('timeout');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
 
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
     }
 
-    // TODO error
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage Action 'usererror' finished with an error: user error
+     */
     public function testUserException() {
-        $this->fail("not implemented");
+        $request = $this->prepareRequest('usererror');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
     }
 
-    // TODO error
+    /**
+     * @expectedException \Keboola\Syrup\Exception\ApplicationException
+     * @expectedExceptionMessageRegExp /Application error/
+     */
     public function testAppException()
     {
-        $this->fail("not implemented");
+        $request = $this->prepareRequest('apperror');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+
     }
 
-    // TODO invalid JSON response
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage Decoding JSON response from component failed
+     */
     public function testInvalidJSONRepsonse() {
-        $this->fail("not implemented");
+        $request = $this->prepareRequest('invalidjson');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
     }
 
-    // TODO decrypt params
-    public function testDecrypt() {
-        $this->fail("not implemented");
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage No response from component
+     */
+    public function testNoResponse() {
+        $request = $this->prepareRequest('noresponse');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+    }
+
+    public function testDecryptSuccess() {
+        $container = self::$container;
+
+        /**
+         * @var $encryptor ObjectEncryptor
+         */
+        $encryptor = $container->get('syrup.object_encryptor');
+        $encryptedPassword = $encryptor->encrypt('password');
+        $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
+
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"password":"password"}', $response->getContent());
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     */
+    public function testDecryptFailure() {
+        $request = $this->prepareRequest('decrypt', ["#password" => "nesmysl"]);
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage Action 'decrypt' finished with an error: failed
+     */
+    public function testDecryptMismatch()
+    {
+        $container = self::$container;
+
+        /**
+         * @var $encryptor ObjectEncryptor
+         */
+        $encryptor = $container->get('syrup.object_encryptor');
+        $encryptedPassword = $encryptor->encrypt('mismatch');
+        $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
     }
 }

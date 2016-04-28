@@ -1168,7 +1168,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
         $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertEquals("Docker container processing finished.", trim($message));
+        $this->assertEquals(false, trim($message));
     }
 
     public function testOauthConfigDecrypt()
@@ -1366,7 +1366,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                     "credentials" => $credentials
                 ]
             ],
-            "image_parameters" => []
+            "image_parameters" => [],
+            "action" => "run"
         ];
         $this->assertEquals(json_encode($expectedConfigFile), trim($message));
     }
@@ -1444,7 +1445,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                     "credentials" => $oauthResponse
                 ]
             ],
-            "image_parameters" => []
+            "image_parameters" => [],
+            "action" => "run"
         ];
         $this->assertEquals(json_encode($expectedConfigFile), trim($message));
     }

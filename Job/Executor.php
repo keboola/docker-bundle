@@ -249,6 +249,9 @@ class Executor extends BaseExecutor
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
+        if (!$message) {
+            $message = "Docker container processing finished.";
+        }
         return array("message" => $message);
     }
 

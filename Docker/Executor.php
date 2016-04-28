@@ -347,11 +347,10 @@ class Executor
             if (mb_strlen($message) > 64000) {
                 $message = mb_substr($message, 0, 32000) . " ... " . mb_substr($message, -32000);
             }
-        } else {
-            $message = "Docker container processing finished.";
+            return $message;
         }
 
-        return $message;
+        return false;
     }
 
 
