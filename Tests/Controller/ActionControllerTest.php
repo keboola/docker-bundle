@@ -142,7 +142,7 @@ class ActionControllerTest extends WebTestCase
                         'process_timeout' => 21600,
                         'memory' => '8192m',
                         'configuration_format' => 'json',
-                        'synchronous_actions' => ['test', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
+                        'synchronous_actions' => ['test', 'run', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
                         ),
                     'flags' => ['encrypt'],
                     'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
@@ -162,7 +162,7 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
-     * @expectedExceptionMessage Component 'docker-dummy-test-invalid' not found.
+     * @expectedExceptionMessage Component 'docker-dummy-test-invalid' not found
      */
     public function testNonExistingComponent()
     {
@@ -191,7 +191,7 @@ class ActionControllerTest extends WebTestCase
     
     /**
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
-     * @expectedExceptionMessage Action 'somethingelse' not found.
+     * @expectedExceptionMessage Action 'somethingelse' not found
      */
     public function testNonExistingAction()
     {
@@ -254,6 +254,24 @@ class ActionControllerTest extends WebTestCase
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('{"test":"test"}', $response->getContent());
+    }
+
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
+     * @expectedExceptionMessage Action 'run' not allowed
+     */
+
+    public function testActionRun()
+    {
+        $request = $this->prepareRequest('run');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
     }
 
 

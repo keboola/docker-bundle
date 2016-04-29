@@ -65,12 +65,15 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
     {
         $component = $this->getComponent($request->get("component"));
         if (!$component) {
-            throw new HttpException(404, "Component '{$request->get("component")}' not found.");
+            throw new HttpException(404, "Component '{$request->get("component")}' not found");
         }
         if (!isset($component["data"]["synchronous_actions"]) || !in_array($request->get("action"), $component["data"]["synchronous_actions"])) {
-            throw new HttpException(404, "Action '{$request->get("action")}' not found.");
+            throw new HttpException(404, "Action '{$request->get("action")}' not found");
         }
-
+        if ($request->get("action") == 'run') {
+            throw new HttpException(405, "Action '{$request->get("action")}' not allowed");
+        }
+        
         // set params for component_project_wrapper
         $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
