@@ -106,6 +106,7 @@ class Image extends Configuration
                 ->end()
             ->end()
             ->variableNode("vendor")->end()
+            ->arrayNode("synchronous_actions")->prototype("scalar")->end()->end()
         ;
 
         return $treeBuilder;
