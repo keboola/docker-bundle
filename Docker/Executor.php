@@ -349,8 +349,7 @@ class Executor
             }
             return $message;
         }
-
-        return false;
+        return "";
     }
 
 
