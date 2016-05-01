@@ -431,7 +431,6 @@ class Image
                 $processedConfig["definition"]["type"] == "quayio-private"
             ) {
                 $instance = new Image\QuayIO\PrivateRepository($encryptor);
-
             } else {
                 if (isset($processedConfig["definition"]["type"]) &&
                     $processedConfig["definition"]["type"] == "builder"

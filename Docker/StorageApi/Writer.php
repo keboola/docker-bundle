@@ -151,7 +151,6 @@ class Writer
                 } else {
                     $storageConfig = (new File\Manifest())->parse(array($configFromManifest));
                 }
-
             } catch (InvalidConfigurationException $e) {
                 throw new UserException("Failed to write manifest for table {$file->getFilename()}.", $e);
             }

@@ -100,7 +100,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 $lockName .= "-" . uniqid();
             }
             $job->setLockName($lockName);
-
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
         }
