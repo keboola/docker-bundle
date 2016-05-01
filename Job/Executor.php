@@ -275,6 +275,5 @@ class Executor extends BaseExecutor
                 $this->log->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
             }
         }
-
     }
 }
