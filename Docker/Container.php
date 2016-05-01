@@ -221,9 +221,9 @@ class Container
                 );
             }
 
-            $message = $process->getErrorOutput();
+            $message = trim($process->getErrorOutput());
             if (!$message) {
-                $message = $process->getOutput();
+                $message = trim($process->getOutput());
             }
             if (!$message) {
                 $message = "No error message.";
