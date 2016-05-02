@@ -92,7 +92,7 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         $configData = $requestJsonData["configData"];
         if (in_array("encrypt", $component["flags"])) {
             $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
-        } 
+        }
 
         $configId = uniqid();
         $state = [];
