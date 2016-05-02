@@ -61,7 +61,7 @@ class ActionControllerTest extends WebTestCase
                             'type' => 'dockerhub',
                             'uri' => 'keboola/docker-dummy-test',
                         ),
-                        'synchronous_actions' => ['test', 'timeout'],
+                        'synchronous_actions' => ['test'],
                     ),
                     'flags' => $flags,
                     'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
@@ -168,7 +168,9 @@ class ActionControllerTest extends WebTestCase
     {
         $content = '
         {
-            "something": "else"
+            "configData": {
+                "something": "else"
+            }
         }';
         $server = [
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
@@ -197,7 +199,9 @@ class ActionControllerTest extends WebTestCase
     {
         $content = '
         {
-            "something": "else"
+            "configData": {
+                "something": "else"
+            }
         }';
         $server = [
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
@@ -219,15 +223,50 @@ class ActionControllerTest extends WebTestCase
         $ctrl->processAction($request);
     }
 
+    /**
+     * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
+     * @expectedExceptionMessage Attribute 'configData' missing in request body
+     */
+    public function testConfigDataMissing()
+    {
+        $content = '
+        {
+            "config": {
+                "something": "else"
+            }
+        }';
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test",
+            "action" => "test"
+        ];
+        $request = Request::create("/docker/docker-dummy-test/action/test", 'POST', $parameters, [], [], $server, $content);
+
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDummy(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);        
+    }
+    
+    
     public function prepareRequest($method, $parameters = null)
     {
         $content = '
         {
-            "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '
-            ,
-            "runtime": {
-                "repository": "https://github.com/keboola/docker-actions-test",
-                "version": "0.0.6"            
+            "configData": {
+                "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '
+                ,
+                "runtime": {
+                    "repository": "https://github.com/keboola/docker-actions-test",
+                    "version": "0.0.6"            
+                }
             }
         }';
         $server = [

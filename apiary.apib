@@ -565,8 +565,8 @@ Runs a Docker image synchronously, waits for the result and returns as response.
 
 ### Process action [POST]
 
-The body contains configuration for the component.
-You need to provide the whole configuration, there is no link to a stored configuration.
+The body attribute `configData` contains component configuration.
+You need to provide the whole configuration, linking a stored configuration is not supported.
 
 + Request Process action (application/json)
     + Headers
@@ -576,7 +576,9 @@ You need to provide the whole configuration, there is no link to a stored config
     + Body
 
             {
-                "parameters": {}
+                "configData": {
+                    "parameters": {}
+                }
             }
 
 + Response 200 (application/json)

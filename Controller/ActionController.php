@@ -73,7 +73,12 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         if ($request->get("action") == 'run') {
             throw new HttpException(405, "Action '{$request->get("action")}' not allowed");
         }
-        
+
+        $requestJsonData = $this->getPostJson($request, true);
+        if (!isset($requestJsonData["configData"])) {
+            throw new HttpException(400, "Attribute 'configData' missing in request body");
+        }
+
         // set params for component_project_wrapper
         $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
@@ -84,11 +89,10 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
 
+        $configData = $requestJsonData["configData"];
         if (in_array("encrypt", $component["flags"])) {
-            $configData = $this->container->get('syrup.object_encryptor')->decrypt($this->getPostJson($request, true));
-        } else {
-            $configData = $this->getPostJson($request, true);
-        }
+            $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
+        } 
 
         $configId = uniqid();
         $state = [];
