@@ -15,10 +15,6 @@ Used for encrypting global values.
 ### Encrypt data [POST]
 
 + Request Encrypt plain text (text/plain)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
     + Body
 
             abcd
@@ -28,10 +24,6 @@ Used for encrypting global values.
         KBC::Encrypted==ENCODEDSTRING==
 
 + Request Encrypt JSON structure (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
     + Body
 
             {
@@ -57,10 +49,6 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
 ### Encrypt data [POST]
 
 + Request Encrypt plain text (text/plain)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
     + Body
 
             abcd
@@ -70,10 +58,6 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
         KBC::ComponentEncrypted==ENCODEDSTRING==
 
 + Request Encrypt JSON structure (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
     + Body
 
             {
@@ -91,7 +75,7 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
 ## Image configuration encryption [/{image}/configs/encrypt]
 
 Used for encrypting values in image configuration. Cipher text can be decrypted only in the specified image
-only in the specified project (project is specified in token).
+only in the specified project - specified in StorageAPI token.  
 
 
 + Parameters

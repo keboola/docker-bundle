@@ -3,14 +3,13 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -69,12 +68,17 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     private function createJobFromParams($params)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         // check params against ES mapping
         $this->checkMappingParams($params);
 
         // Encrypt configData for encrypt flagged components
         try {
-            if ($this->hasComponentEncryptFlag($params["component"]) && isset($params["configData"])) {
+            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $params["component"])
+                && isset($params["configData"])
+            ) {
                 $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($params["component"]);
                 $tokenInfo = $this->storageApi->verifyToken();
@@ -96,7 +100,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
                 $lockName .= "-" . uniqid();
             }
             $job->setLockName($lockName);
-
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
         }
@@ -166,12 +169,15 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function inputAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         // Get params from request
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        if ($this->hasComponentEncryptFlag($component)) {
+        if ((new ControllerHelper())->hasComponentEncryptFlag($storage->getClient(), $params["component"])) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
@@ -193,11 +199,14 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      */
     public function dryRunAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
 
-        if ($this->hasComponentEncryptFlag($component)) {
+        if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
@@ -267,53 +276,13 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function encryptAction(Request $request)
-    {
-        $component = $request->get("component");
-        if (!$component) {
-            return parent::encryptAction($request);
-        }
-        if (!$this->hasComponentEncryptFlag($component)) {
-            return $this->createJsonResponse([
-                'status'    => 'error',
-                'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
-            ], 400);
-        }
-
-        /** @var ComponentWrapper $cryptoWrapper */
-        $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
-        $cryptoWrapper->setComponentId($request->get("component"));
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $this->container->get("syrup.object_encryptor");
-
-        $contentTypeHeader = $request->headers->get("Content-Type");
-        if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type header.");
-        }
-
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptor->encrypt($request->getContent(), ComponentWrapper::class);
-            return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
-        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
-            $params = $this->getPostJson($request);
-            $encryptedValue = $encryptor->encrypt($params, ComponentWrapper::class);
-            return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
-        } else {
-            throw new UserException("Incorrect Content-Type header.");
-        }
-    }
-
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
     public function encryptConfigAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $component = $request->get("component");
-        if (!$component) {
-            return parent::encryptAction($request);
-        }
-        if (!$this->hasComponentEncryptFlag($component)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
@@ -346,6 +315,9 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
     public function saveConfigAction(Request $request)
     {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+
         $components = new Components($this->storageApi);
         $options = new Configuration();
         $options->setComponentId($request->get("component"));
@@ -353,7 +325,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
         if ($request->get("configuration")) {
             $configuration = json_decode($request->get("configuration"));
-            if ($this->hasComponentEncryptFlag($request->get("component"))) {
+            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $request->get("component"))) {
                 $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
                 $cryptoWrapper->setComponentId($request->get("component"));
                 $tokenInfo = $this->storageApi->verifyToken();
@@ -385,22 +357,6 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
     }
 
-    /**
-     * @param $componentId
-     * @return bool
-     */
-    public function hasComponentEncryptFlag($componentId)
-    {
-        $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $componentId) {
-                if (in_array('encrypt', $c['flags'])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 
     /**
      *
