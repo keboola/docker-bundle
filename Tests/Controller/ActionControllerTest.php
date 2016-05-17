@@ -78,7 +78,7 @@ class ActionControllerTest extends WebTestCase
 
         return $storageServiceStub;
     }
-    
+
     protected function getStorageServiceStubDcaPython()
     {
         $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
@@ -190,7 +190,7 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
     }
-    
+
     /**
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
      * @expectedExceptionMessage Action 'somethingelse' not found
@@ -254,8 +254,8 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
     }
-    
-    
+
+
     public function prepareRequest($method, $parameters = null)
     {
         $content = '
@@ -333,7 +333,7 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage Action 'usererror' finished with an error: user error
+     * @expectedExceptionMessage user error
      */
     public function testUserException()
     {
@@ -440,7 +440,7 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage Action 'decrypt' finished with an error: failed
+     * @expectedExceptionMessage failed
      */
     public function testDecryptMismatch()
     {
