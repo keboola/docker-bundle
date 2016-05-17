@@ -130,7 +130,6 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         } catch (UserException $e) {
             throw new UserException("Action '{$request->get("action")}' finished with an error: " . $e->getMessage(), $e);
         }
-        $executor->storeOutput($container, $state);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
 
         if ($message == '' || !$message) {
