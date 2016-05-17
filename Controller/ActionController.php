@@ -126,7 +126,6 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         $container = new Container($image, $this->container->get('logger'));
         $executor->initialize($container, $configData, $state, false, $request->get("action"));
         $message = $executor->run($container, $containerId, $tokenInfo, $configId);
-        $executor->storeOutput($container, $state);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
 
         if ($message == '' || !$message) {
