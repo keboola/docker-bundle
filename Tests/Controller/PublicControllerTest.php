@@ -92,16 +92,13 @@ class PublicControllerTest extends WebTestCase
 
         ];
         $parameters = [
-            "component" => "docker-dummy-test"
+            "component" => "docker-config-encrypt-verify"
         ];
-        $request = Request::create("/docker/docker-dummy-test/encrypt", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new PublicController();
 
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
-
-        $ctrl->setContainer($container);
+        $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
         $response = $ctrl->encryptAction($request);
         $this->assertEquals(200, $response->getStatusCode());
@@ -112,7 +109,6 @@ class PublicControllerTest extends WebTestCase
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
     }
-
 
     public function testEncryptJsonHeaderWithCharset()
     {
