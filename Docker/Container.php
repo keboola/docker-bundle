@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\Gelf\Server;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -10,6 +11,11 @@ use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+
+
+function dump($msg) {
+    var_dump($msg);
+}
 
 class Container
 {
@@ -160,6 +166,7 @@ class Container
      */
     public function run($containerId, array $configData)
     {
+
         if (!$this->getDataDir()) {
             throw new ApplicationException("Data directory not set.");
         }
@@ -167,11 +174,72 @@ class Container
         $this->getImage()->prepare($this, $configData, $containerId);
         $this->setId($this->getImage()->getFullImageId());
 
-        // Run container
-        $process = new Process($this->getRunCommand($containerId));
-        $process->setTimeout($this->getImage()->getProcessTimeout() + 1);
+        //get  self ID
+        $process = new Process('hostname.cmd -i');
+        $process->mustRun();
+        $hostIp = trim($process->getOutput());
+
+        // create container
+
+      //  $process = new Process("sudo docker start $containerId");
         $startTime = time();
         try {
+//dump($message);
+            //require (ROOT_PATH . '/vendor/keboola/gelf-server/src/Keboola/Gelf/Socket/')
+            $server = new Server();
+
+        //    $process = new Process('php ' . ROOT_PATH . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'clients' . DIRECTORY_SEPARATOR . 'TcpClient.php');
+            $cntr = 0;
+            $newPort = null;
+            $newPort = $server->start(
+                12202,
+                13202,
+//                $ip,
+                function ($port) use ($process, &$newPort, $hostIp, $containerId) {
+                    dump("server started, executing docker process");
+                    $this->setEnvironmentVariables(array_merge(
+                        $this->getEnvironmentVariables(),
+                        ['KBC_LOGGER_ADDR' => $hostIp,
+                            'KBC_LOGGER_PORT'=> $port]
+                    ));
+                    $process = new Process($this->getRunCommand($containerId));
+
+                    $process->start();
+                },
+                function (&$terminated) use(&$cntr, $process) {
+
+                    dump("server running $cntr");
+                    //$cntr++;
+                    if ($cntr < 0) {
+                        //$terminated = true;
+                    }
+                    if ($process->isRunning()) {
+                        dump("Client is running");
+                    } else {
+                        dump("Client output");
+                        dump($process->getOutput());
+                        $terminated = true;
+                    }
+                },
+                function () {
+                    dump("server terminated");
+                },
+                function ($event) use (&$cntr) {
+                    $this->log->addRecord(100, $event['short_message'], $event);
+
+            //        $cntr++;
+          //          $file = __DIR__ . DIRECTORY_SEPARATOR . $cntr . ".json";
+        //            dump($file);
+                    //file_put_contents($file, json_encode($event, JSON_PRETTY_PRINT));
+      //              $mustr = json_decode(file_get_contents($file), true);
+    //                unset($mustr['timestamp']);
+  //                  unset($event['timestamp']);
+//                    $this->assertEquals($mustr, $event);
+                    //dump($event);
+                }
+            );
+
+            /*
             $this->log->debug("Executing docker process.");
             if ($this->getImage()->isStreamingLogs()) {
                 $process->run(function ($type, $buffer) {
@@ -188,6 +256,7 @@ class Container
                 $process->run();
             }
             $this->log->debug("Docker process finished.");
+            */
         } catch (ProcessTimedOutException $e) {
             // is actually not working
             $this->removeContainer($containerId);
@@ -311,12 +380,19 @@ class Container
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
-        $dataDir = $this->dataDir;
-        foreach ($this->getEnvironmentVariables() as $key => $value) {
-            $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
+            }
+            $command = "docker run";
+        } else {
+            $dataDir = $this->dataDir;
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
+            }
+            $command = "sudo docker run";
         }
-
-        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
@@ -324,7 +400,10 @@ class Container
             . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
-            . " " . escapeshellarg($this->getId());
+           // . " --ip=172.17.0.2 "
+            . " --add-host=dockerhost:172.17.0.1 "
+            . " 35a ";
+          //  . " " . escapeshellarg($this->getId());
         return $command;
     }
 
@@ -375,3 +454,4 @@ class Container
         return array_pop($inspect);
     }
 }
+
