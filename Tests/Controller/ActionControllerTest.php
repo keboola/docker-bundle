@@ -424,22 +424,6 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     */
-    public function testDecryptFailure()
-    {
-        $request = $this->prepareRequest('decrypt', ["#password" => "nesmysl"]);
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
-        $container->get('request_stack')->push($request);
-
-        $ctrl = new ActionController();
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $ctrl->processAction($request);
-    }
-
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage failed
      */
     public function testDecryptMismatch()
@@ -461,5 +445,62 @@ class ActionControllerTest extends WebTestCase
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
+
     }
+
+    public function testDecryptNonEncrypted()
+    {
+        $request = $this->prepareRequest('decrypt', ["#password" => 'password']);
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"password":"password"}', $response->getContent());
+
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage failed
+     */
+    public function testDecryptNonEncryptedMismatch()
+    {
+        $request = $this->prepareRequest('decrypt', ["#password" => 'mismatch']);
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage failed
+     */
+    public function testDecryptNonEncryptedMismatchTotallyWeird()
+    {
+        $privateKey = "-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEAyobHg2VSUSwUIPbdx8DY5/0f7Qj0nz24lQnLlN0YjA/ac3Oe\nbKy+VmIoURGXt5cYGpxNLBnDeJyUI+sV9Y5eUHqK2HzN8CY+Z9Lg1Q+Yi5xNmv5c\nkR4E0t4KbGLC5/M1d4nxSSoR7vLz59CX4Ant6E+BfMkmzVxOpWDWkvstSTV/8fcf\nPMFdBSxzNSLIpLcUDevOrcIUuN4UwJhl4c1q9WkpU904vkZZ+W2Xs8MwCh+HkA2I\n2FgQ+sFrEKmNzM4dROTJx31TRFDK4SJv4O7b6s8t2BFrXcIyZTnQ97JXQ4cAKW3w\nK+M0/zRZNzr3F4mtvHncFGLr1i8J9WH+h47TywIDAQABAoIBAG9NTP6AQ5IKqHFJ\nWq8547rzGIWbQ1z0famivXhtXd0zpTmH1Awjj2NIBKIxCfFCn2OYfKz857k0TBHF\nU8ck295cykuZo1AUpH1InnlZXdt0Jg5FNjgmiD4e+xl/2V/CAKNWcv1jmoF4keTX\ndXAR5OakMySSI7n+vdYTdzlFwyiUvLbVRyVYgQhmu0u/iDJKQi1gh2Lt3m5iNryC\n0F0OVpd88gUTdhXKtVIVtNxkhcuHoKJ3grqFvI18xasYt5CpgSg7Wqsu6JWYVyoV\n1fNEKZ1D+QMC0rIjCSphJLDcoOBBafDglZoIfarTzyY9PCHxtlu7uwM4v98dy5SA\n41zhaYkCgYEA8MIrtfwV9q4EumTgN1lF7ilZd9Oedy4kiPBRcoVfGlXd+LoK6oi2\nyWF1U+gNAZl/BHUUITJE/i5+p4MaFStFx3Keu407UlmaU6yljM7cE1cW9RS/cFbv\nsTTRMfnNufDOx9CbJPCvUkSNgTNZiv1/hbky5pmeFk+ZkTwUcSSukvcCgYEA11kB\nYWa2dO0dwk5aUnL+T9L3wvGOrx4ZeLeNbpiivoZJOe0UDRQ9ua9eSjhvraICOKTT\n/tDzyNjjk2J4ccpm0s5W5QGBYpS3cO0E9SUXychFKqIDtHffftcwoCvvTnTQPi/+\nJAKEhnfbVbGyrdU82pBEFtRZf8zPlGKVwsuo/M0CgYEA0tcoknHWBjZ1O4q19KLA\npAYgLNjtUK/fHPFgUmtMUvLZtkWu45+ge5FWv4lbQoha/NtPKpcsZnDvR+F/CQTh\nUf4l1lejmMWRai+qtzo87s748t4dnNL1i/mWLi72pByn6cLc6yfAUcppJbmDdD31\n3HTIh7wF/sHs2YyE1mTqYRcCgYA58zWv5FgNNxHfC/66WT+ec4NA7ogbD9qC5cIl\nlOWWp8Rk1iujKWNC6LJS/sTu0L4QSCrUU56G2fbD3qfS10i8SdKQZctPn/2NYfsH\njSfNoRsb0eV1VxzJoVbwg2IulrjDQ178icDn/rEDaoJOzSdHGbN5AUPkZFUn9S+f\n7/ZVsQKBgFJCQP74gZVudfDKj8k+J4ivTMR0ESZC35O0Yu3eUwKejHs24CNdIeWg\nuOdxDShFac010Y8HPY46d9AASjmIxIM0t8QdMaibL+TUJZgCMq6/Agay1ucrLAxo\nl58J2aHb+6s3RLRTe1i3vk505wdqzUbBHQGckaDiILPXy63KcIMg\n-----END RSA PRIVATE KEY-----\n";
+        $request = $this->prepareRequest('decrypt', ["#password" => $privateKey]);
+
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+    }
+
 }
