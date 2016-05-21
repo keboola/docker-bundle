@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
+use Keboola\DockerBundle\Service\ObjectEncryptor;
 use Keboola\OAuthV2Api\Credentials;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
@@ -91,7 +92,11 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
 
         $configData = $requestJsonData["configData"];
         if (in_array("encrypt", $component["flags"])) {
-            $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
+            $objectEncryptor = new ObjectEncryptor();
+            $objectEncryptor->pushWrapper($this->container->get('syrup.encryption.base_wrapper'));
+            $objectEncryptor->pushWrapper($this->container->get('syrup.encryption.component_wrapper'));
+            $objectEncryptor->pushWrapper($this->container->get('syrup.encryption.component_project_wrapper'));
+            $configData = $objectEncryptor->decrypt($configData);
         }
 
         $configId = uniqid();
