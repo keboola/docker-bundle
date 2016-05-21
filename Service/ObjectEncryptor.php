@@ -7,7 +7,6 @@
 
 namespace Keboola\DockerBundle\Service;
 
-
 class ObjectEncryptor extends \Keboola\Syrup\Service\ObjectEncryptor
 {
     /**
@@ -18,7 +17,8 @@ class ObjectEncryptor extends \Keboola\Syrup\Service\ObjectEncryptor
      * @return mixed
      * @throws \InvalidCiphertextException
      */
-    protected function decryptValue($value) {
+    protected function decryptValue($value)
+    {
         try {
             return parent::decryptValue($value);
         } catch (\InvalidCiphertextException $e) {
@@ -28,5 +28,4 @@ class ObjectEncryptor extends \Keboola\Syrup\Service\ObjectEncryptor
             return $value;
         }
     }
-
 }

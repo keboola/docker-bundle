@@ -502,5 +502,4 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
     }
-
 }
