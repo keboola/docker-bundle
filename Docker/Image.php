@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Image\DockerHub;
+use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 
@@ -94,6 +95,21 @@ class Image
      * @var ObjectEncryptor
      */
     protected $encryptor;
+
+    /**
+     * @var string
+     */
+    private $loggerType;
+
+    /**
+     * @var array
+     */
+    private $loggerPublicLevels;
+
+    /**
+     * @var string
+     */
+    private $loggerServerType;
 
 
     /**
@@ -390,6 +406,55 @@ class Image
     }
 
     /**
+     * @param array $logger
+     * @return $this
+     * @throws \Exception
+     */
+    public function setLogger($logger)
+    {
+        $this->loggerType = $logger['type'];
+        $this->loggerPublicLevels = $logger['gelf_public_levels'];
+        switch ($logger['gelf_type']) {
+            case 'udp':
+                $this->loggerServerType = ServerFactory::SERVER_UDP;
+                break;
+            case 'tcp':
+                $this->loggerServerType = ServerFactory::SERVER_TCP;
+                break;
+            case 'http':
+                $this->loggerServerType = ServerFactory::SERVER_HTTP;
+                break;
+            default:
+                throw new \Exception("Server type '{$logger['gelf_type']}' not supported");
+        }
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLoggerType()
+    {
+        return $this->loggerType;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLoggerPublicLevels()
+    {
+        return $this->loggerPublicLevels;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLoggerServerType()
+    {
+        return $this->loggerServerType;
+    }
+
+    /**
      * @param array $config
      * @return Image
      * @throws \Exception
@@ -400,7 +465,7 @@ class Image
             'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
             'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
             'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
-            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType',
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logger' => 'setLogger'
         ];
         foreach ($fields as $fieldName => $methodName) {
             if (isset($config[$fieldName])) {
