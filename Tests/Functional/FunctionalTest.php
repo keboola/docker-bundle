@@ -194,8 +194,18 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $log,
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $containerLogger
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -278,9 +288,19 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $log,
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $containerLogger
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -377,8 +397,18 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $log,
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $containerLogger
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -670,6 +700,8 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         // mock components
         $configData = [
@@ -700,7 +732,15 @@ class FunctionalTests extends KernelTestCase
             ->will($this->returnValue($componentsStub));
 
         /** @noinspection PhpParamsInspection */
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $log,
+            $this->temp,
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper,
+            $continerLogger
+        );
 
         // mock client to return image data
         $indexActionValue = [
@@ -780,6 +820,8 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         // mock components
         $configData = [
@@ -810,7 +852,15 @@ class FunctionalTests extends KernelTestCase
             ->will($this->returnValue($componentsStub));
 
         /** @noinspection PhpParamsInspection */
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $log,
+            $this->temp,
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper,
+            $containerLogger
+        );
 
         // mock client to return image data
         $indexActionValue = [

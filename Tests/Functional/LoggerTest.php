@@ -65,7 +65,7 @@ class LoggerTests extends KernelTestCase
         return [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "odinuv/gelf-test-client"
+                "uri" => "keboola/gelf-test-client"
             ],
             "configuration_format" => "json",
             "logging" => [

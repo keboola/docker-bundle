@@ -232,7 +232,7 @@ class Container
             13202,
             function ($port) use ($process, $containerId) {
                 // get IP address of host
-                $processIp = new Process('hostname.cmd -i');
+                $processIp = new Process('hostname -i');
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
