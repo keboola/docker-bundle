@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -42,9 +43,11 @@ class QuayIORepositoryTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $image->prepare($container, [], uniqid());
 
         $this->assertEquals("quay.io/keboola/docker-demo-app:1.0.14", $image->getFullImageId());

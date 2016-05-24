@@ -18,8 +18,14 @@ services:
 
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
-        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.components, @syrup.encryption.component_wrapper, @syrup.encryption.component_project_wrapper]
+        arguments: [@logger, @syrup.temp, @syrup.object_encryptor, @syrup.components, @syrup.encryption.component_wrapper, @syrup.encryption.component_project_wrapper, @docker.logger]
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
         arguments: [%app_name%, @syrup.object_encryptor, @syrup.storage_api]
+
+    docker.logger:
+        class: Keboola\DockerBundle\Monolog\Logger
+        arguments: ['@logger']
+        tags:
+            - { name: monolog.logger, channel: container }

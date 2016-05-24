@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
@@ -29,6 +30,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -56,7 +59,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $image->prepare($container, [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -74,6 +77,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -99,7 +104,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $image->prepare($container, [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -117,6 +122,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -154,7 +161,7 @@ class ImageBuilderTest extends KernelTestCase
          * @var Image\Builder\ImageBuilder $image
          */
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $image->prepare($container, [], uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -172,6 +179,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -204,7 +213,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private image without login should fail");
@@ -218,6 +227,8 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -244,7 +255,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
@@ -261,6 +272,8 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -286,7 +299,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Building from private repository without login should fail");
@@ -307,6 +320,8 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -360,7 +375,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ];
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $image->prepare($container, $configData, uniqid());
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -374,6 +389,8 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -399,7 +416,7 @@ class ImageBuilderTest extends KernelTestCase
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         try {
             $image->prepare($container, [], uniqid());
             $this->fail("Invalid repository must raise exception.");

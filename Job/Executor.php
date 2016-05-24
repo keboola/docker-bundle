@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Job;
 use Keboola\DockerBundle\Docker\Executor as DockerExecutor;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
@@ -60,12 +61,18 @@ class Executor extends BaseExecutor
     private $tokenInfo;
 
     /**
+     * @var ContainerLogger
+     */
+    private $containerLogger;
+
+    /**
      * @param Logger $log
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param ComponentsService $components
      * @param ComponentWrapper $componentWrapper
      * @param ComponentProjectWrapper $componentProjectWrapper
+     * @param ContainerLogger $containerLogger
      */
     public function __construct(
         Logger $log,
@@ -73,7 +80,8 @@ class Executor extends BaseExecutor
         ObjectEncryptor $encryptor,
         ComponentsService $components,
         ComponentWrapper $componentWrapper,
-        ComponentProjectWrapper $componentProjectWrapper
+        ComponentProjectWrapper $componentProjectWrapper,
+        ContainerLogger $containerLogger
     ) {
         $this->log = $log;
         $this->temp = $temp;
@@ -81,6 +89,7 @@ class Executor extends BaseExecutor
         $this->components = $components->getComponents();
         $this->encryptionComponent = $componentWrapper;
         $this->encryptionComponentProject = $componentProjectWrapper;
+        $this->containerLogger = $containerLogger;
     }
 
     /**
@@ -145,6 +154,7 @@ class Executor extends BaseExecutor
             $processor = new DockerProcessor($component['id']);
             // attach the processor to all handlers and channels
             $this->log->pushProcessor([$processor, 'processRecord']);
+            $this->containerLogger->pushProcessor([$processor, 'processRecord']);
 
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
@@ -206,7 +216,7 @@ class Executor extends BaseExecutor
                 );
                 $image = Image::factory($this->encryptor, $this->log, $dummyConfig);
                 $image->setConfigFormat($params["format"]);
-                $container = new Container($image, $this->log);
+                $container = new Container($image, $this->log, $this->containerLogger);
                 $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
                 $message = 'Configuration prepared.';
@@ -216,7 +226,7 @@ class Executor extends BaseExecutor
                 $this->log->info("Preparing image configuration.", $configData);
 
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
-                $container = new Container($image, $this->log);
+                $container = new Container($image, $this->log, $this->containerLogger);
                 $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
                 $message = 'Image configuration prepared.';
@@ -227,7 +237,7 @@ class Executor extends BaseExecutor
 
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
-                $container = new Container($image, $this->log);
+                $container = new Container($image, $this->log, $this->containerLogger);
                 $executor->initialize($container, $configData, $state, true);
                 $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
@@ -239,7 +249,7 @@ class Executor extends BaseExecutor
 
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->log, $component["data"]);
-                $container = new Container($image, $this->log);
+                $container = new Container($image, $this->log, $this->containerLogger);
                 $executor->initialize($container, $configData, $state, false);
                 $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeOutput($container, $state);

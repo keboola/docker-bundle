@@ -414,7 +414,7 @@ class Image
     {
         $this->loggerType = $logger['type'];
         $this->loggerPublicLevels = $logger['gelf_public_levels'];
-        switch ($logger['gelf_type']) {
+        switch ($logger['gelf_server_type']) {
             case 'udp':
                 $this->loggerServerType = ServerFactory::SERVER_UDP;
                 break;
@@ -465,7 +465,7 @@ class Image
             'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
             'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
             'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
-            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logger' => 'setLogger'
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLogger'
         ];
         foreach ($fields as $fieldName => $methodName) {
             if (isset($config[$fieldName])) {
