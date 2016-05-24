@@ -25,7 +25,7 @@ services:
         arguments: [%app_name%, @syrup.object_encryptor, @syrup.storage_api]
 
     docker.logger:
-        class: Keboola\DockerBundle\Monolog\Logger
+        class: Keboola\DockerBundle\Monolog\ContainerLogger
         arguments: ['@logger']
         tags:
             - { name: monolog.logger, channel: container }
