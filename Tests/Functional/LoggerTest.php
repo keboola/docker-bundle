@@ -96,7 +96,8 @@ class LoggerTests extends KernelTestCase
         $handler = new TestHandler();
         $log->pushHandler($handler);
         $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
+        $containerHandler = new TestHandler();
+        $containerLog->pushHandler($containerHandler);
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log, $containerLog);
@@ -113,18 +114,22 @@ print "second message to stdout\n";'
         $container->setDataDir($dataDir);
 
         $process = $container->run("testsuite", []);
+
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
         $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
-        $this->assertTrue($handler->hasErrorRecords());
-        $this->assertTrue($handler->hasInfoRecords());
-        $records = $handler->getRecords();
-        $this->assertGreaterThan(4, count($records));
-        $this->assertTrue($handler->hasInfo("first message to stdout\n"));
-        $this->assertTrue($handler->hasInfo("second message to stdout\n"));
-        $this->assertTrue($handler->hasError("first message to stderr\n"));
-        $this->assertTrue($handler->hasError("second message to stderr\n\n"));
+        $this->assertTrue($handler->hasDebugRecords());
+        $this->assertFalse($handler->hasErrorRecords());
+
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(4, count($records));
+        $this->assertTrue($containerHandler->hasErrorRecords());
+        $this->assertTrue($containerHandler->hasInfoRecords());
+        $this->assertTrue($containerHandler->hasInfo("first message to stdout\n"));
+        $this->assertTrue($containerHandler->hasInfo("second message to stdout\n"));
+        $this->assertTrue($containerHandler->hasError("first message to stderr\n"));
+        $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
     }
 
     public function testLogStreamingOff()

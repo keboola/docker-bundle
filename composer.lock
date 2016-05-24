@@ -1527,7 +1527,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/gelf-server",
-                "reference": "961a12b1008c99479d9409d31c3d038a8a001900"
+                "reference": "ce14cec6e0059f4e0298d53f1fc21efdd71d21ed"
             },
             "require": {
                 "graylog2/gelf-php": "~1.4.0",
@@ -1556,7 +1556,7 @@
                 }
             ],
             "description": "Simple server for GELF logger",
-            "time": "2016-05-23 00:28:51"
+            "time": "2016-05-24 13:51:01"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -3657,12 +3657,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "7d6e9b20ab980c8d9fa2e36185a83e3fc2b91feb"
+                "reference": "5cb0ad3f819aec62a2f9e9165ef4512b9188293b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/7d6e9b20ab980c8d9fa2e36185a83e3fc2b91feb",
-                "reference": "7d6e9b20ab980c8d9fa2e36185a83e3fc2b91feb",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/5cb0ad3f819aec62a2f9e9165ef4512b9188293b",
+                "reference": "5cb0ad3f819aec62a2f9e9165ef4512b9188293b",
                 "shasum": ""
             },
             "require": {
@@ -3783,7 +3783,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2016-05-20 15:01:42"
+            "time": "2016-05-24 10:00:02"
         },
         {
             "name": "twig/twig",
@@ -5172,12 +5172,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "ad76ed2d49311ecce3680bbebfee7d05b684123b"
+                "reference": "c8fa8b2b7c897ad4bb2acf2a05c9dc71dc3d7aac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/ad76ed2d49311ecce3680bbebfee7d05b684123b",
-                "reference": "ad76ed2d49311ecce3680bbebfee7d05b684123b",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/c8fa8b2b7c897ad4bb2acf2a05c9dc71dc3d7aac",
+                "reference": "c8fa8b2b7c897ad4bb2acf2a05c9dc71dc3d7aac",
                 "shasum": ""
             },
             "require": {
@@ -5242,7 +5242,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2016-05-22 20:28:46"
+            "time": "2016-05-24 09:11:20"
         }
     ],
     "aliases": [],
