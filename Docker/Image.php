@@ -410,7 +410,7 @@ class Image
      * @return $this
      * @throws \Exception
      */
-    public function setLogger($logger)
+    public function setLoggerOptions($logger)
     {
         $this->loggerType = $logger['type'];
         $this->loggerPublicLevels = $logger['gelf_public_levels'];
@@ -465,7 +465,7 @@ class Image
             'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
             'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
             'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
-            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLogger'
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
         ];
         foreach ($fields as $fieldName => $methodName) {
             if (isset($config[$fieldName])) {

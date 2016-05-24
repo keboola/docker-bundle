@@ -64,8 +64,15 @@ class LoggerTests extends KernelTestCase
     {
         return [
             "definition" => [
-                "type" => "quayio",
-                "uri" => "keboola/gelf-test-client"
+                "type" => "builder",
+                "uri" => "quay.io/keboola/gelf-test-client:master",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "https://github.com/keboola/docker-demo-app.git",
+                        "type" => "git"
+                    ],
+                    "entry_point" => "php /src/UdpClient.php"
+                ],
             ],
             "configuration_format" => "json",
             "logging" => [
@@ -176,6 +183,46 @@ print "second message to stdout\n";'
         //keboola.docker-log-test
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'udp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/UdpClient.php';
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $handler = new TestHandler();
+        $log->pushHandler($handler);
+        $containerLog = new ContainerLogger("null");
+        $containerHandler = new TestHandler();
+        $containerLog->pushHandler($containerHandler);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
+
+        $process = $container->run("testsuite" . uniqid(), []);
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $this->assertEquals('', $err);
+        $this->assertEquals('Client finished', $out);
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(7, count($records));
+        $this->assertTrue($containerHandler->hasDebug("A debug message."));
+        $this->assertTrue($containerHandler->hasAlert("An alert message"));
+        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
+        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasWarning("A warning message."));
+        $this->assertTrue($containerHandler->hasInfoRecords());
+        $this->assertTrue($containerHandler->hasError("Error message."));
+    }
+
+    public function testGelfLogTcp()
+    {
+        //keboola.docker-log-test
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
