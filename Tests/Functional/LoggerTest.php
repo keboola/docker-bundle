@@ -64,7 +64,7 @@ class LoggerTests extends KernelTestCase
     {
         return [
             "definition" => [
-                "type" => "dockerhub",
+                "type" => "quayio",
                 "uri" => "keboola/gelf-test-client"
             ],
             "configuration_format" => "json",

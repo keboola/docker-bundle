@@ -567,7 +567,13 @@ class FunctionalTests extends KernelTestCase
                 "uri" => "hello-world"
             )
         );
-        $container = $this->getContainer($imageConfiguration);
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
         $container->run("testsuite", []);
     }
 
@@ -739,7 +745,7 @@ class FunctionalTests extends KernelTestCase
             $componentsServiceStub,
             $ecWrapper,
             $ecpWrapper,
-            $continerLogger
+            $containerLogger
         );
 
         // mock client to return image data

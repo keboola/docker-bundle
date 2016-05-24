@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -16,6 +17,9 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
         $dummyConfig = array(
             "definition" => array(
                 "type" => "dummy",
@@ -23,7 +27,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             )
         );
         $encryptor = new ObjectEncryptor();
-        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log);
+        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log, $containerLog);
         $fs = new Filesystem();
         $root = "/tmp/docker/" . uniqid("", true);
         $fs->mkdir($root);
@@ -57,9 +61,11 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Docker\Mock\Container($image, $log);
+        $container = new Docker\Mock\Container($image, $log, $containerLog);
 
         $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
@@ -118,9 +124,11 @@ EOF;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $container->setId($image->getFullImageId());
         $container->setDataDir("/tmp");
         $container->setEnvironmentVariables(["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ]);
@@ -139,9 +147,11 @@ EOF;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $container->setId("keboola/docker-demo-app:latest");
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
@@ -158,9 +168,11 @@ EOF;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $container->setId("keboola/docker-demo-app:latest");
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));

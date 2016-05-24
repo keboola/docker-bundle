@@ -7,33 +7,13 @@ use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\Syrup\Controller\ApiController;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class ActionController extends \Keboola\Syrup\Controller\ApiController
+class ActionController extends ApiController
 {
-
-    /**
-     * Validate request body configuration.
-     *
-     * @param array $body Configuration parameters
-     * @return array Validated configuration parameters.
-     * @throws UserException In case of error.
-     */
-    private function validateParams($body)
-    {
-        if (!isset($body["config"]) && !isset($body["configData"])) {
-            throw new UserException("Specify 'config' or 'configData'.");
-        }
-
-        if (isset($body["config"]) && isset($body["configData"])) {
-            $this->logger->info("Both config and configData specified, 'config' ignored.");
-            unset($body["config"]);
-        }
-        return $body;
-    }
-
     /**
      * @param $componentId
      * @return bool
@@ -108,14 +88,23 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
 
         $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
         $oauthCredentialsClient->enableReturnArrays(true);
-        $executor = new Executor($this->storageApi, $this->container->get('logger'), $oauthCredentialsClient, $this->temp->getTmpFolder());
+        $executor = new Executor(
+            $this->storageApi,
+            $this->container->get('logger'),
+            $oauthCredentialsClient,
+            $this->temp->getTmpFolder()
+        );
         $executor->setComponentId($component["id"]);
 
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
 
         $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
 
-        $image = Image::factory($this->container->get('syrup.object_encryptor'), $this->container->get('logger'), $component["data"]);
+        $image = Image::factory(
+            $this->container->get('syrup.object_encryptor'),
+            $this->container->get('logger'),
+            $component["data"]
+        );
 
         // Async actions force streaming logs off!
         $image->setStreamingLogs(false);
@@ -123,7 +112,7 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         // Limit processing to 30 seconds
         $image->setProcessTimeout(30);
 
-        $container = new Container($image, $this->container->get('logger'));
+        $container = new Container($image, $this->container->get('logger'), $this->container->get('docker.logger'));
         $executor->initialize($container, $configData, $state, false, $request->get("action"));
         $message = $executor->run($container, $containerId, $tokenInfo, $configId);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
