@@ -232,7 +232,8 @@ class Container
             13202,
             function ($port) use ($process, $containerId) {
                 // get IP address of host
-                $processIp = new Process('hostname -i');
+                //$processIp = new Process('hostname -i');
+                $processIp = new Process('ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'');
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
