@@ -180,7 +180,6 @@ print "second message to stdout\n";'
 
     public function testGelfLogUdp()
     {
-        //keboola.docker-log-test
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['logging']['gelf_server_type'] = 'udp';
@@ -218,11 +217,47 @@ print "second message to stdout\n";'
 
     public function testGelfLogTcp()
     {
-        //keboola.docker-log-test
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $handler = new TestHandler();
+        $log->pushHandler($handler);
+        $containerLog = new ContainerLogger("null");
+        $containerHandler = new TestHandler();
+        $containerLog->pushHandler($containerHandler);
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
+
+        $process = $container->run("testsuite" . uniqid(), []);
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $this->assertEquals('', $err);
+        $this->assertEquals('Client finished', $out);
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(7, count($records));
+        $this->assertTrue($containerHandler->hasDebug("A debug message."));
+        $this->assertTrue($containerHandler->hasAlert("An alert message"));
+        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
+        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasWarning("A warning message."));
+        $this->assertTrue($containerHandler->hasInfoRecords());
+        $this->assertTrue($containerHandler->hasError("Error message."));
+    }
+
+    public function testGelfLogHttp()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
