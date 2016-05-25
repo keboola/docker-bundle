@@ -203,7 +203,7 @@ print "second message to stdout\n";'
         $records = $handler->getRecords();
         $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals('Client finished', $out);
+        $this->assertContains('Client finished', $out);
         $records = $containerHandler->getRecords();
         $this->assertEquals(7, count($records));
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
