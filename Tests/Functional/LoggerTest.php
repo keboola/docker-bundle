@@ -256,7 +256,7 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['logging']['gelf_server_type'] = 'http';
         $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
