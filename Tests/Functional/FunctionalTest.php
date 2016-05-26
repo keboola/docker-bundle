@@ -43,7 +43,7 @@ class FunctionalTests extends KernelTestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
-        $log->pushHandler(new NullHandler());
+        $containerLog->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfig);
 
         $container = new Container($image, $log, $containerLog);
@@ -127,6 +127,24 @@ class FunctionalTests extends KernelTestCase
         return $storageServiceStub;
     }
 
+    protected function getLoggerServiceStub()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
+        $loggersServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\LoggersService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggersServiceStub->expects($this->any())
+            ->method("getLog")
+            ->will($this->returnValue($log));
+        $loggersServiceStub->expects($this->any())
+            ->method("getContainerLog")
+            ->will($this->returnValue($containerLogger));
+        return $loggersServiceStub;
+    }
+
     public function testRDocker()
     {
         $data = [
@@ -192,19 +210,14 @@ class FunctionalTests extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsService,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -286,20 +299,14 @@ class FunctionalTests extends KernelTestCase
             $fs->remove($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
-
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsService,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -395,19 +402,14 @@ class FunctionalTests extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsService,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -502,20 +504,15 @@ class FunctionalTests extends KernelTestCase
             }
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
+        
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsService,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -648,19 +645,14 @@ class FunctionalTests extends KernelTestCase
             (new FileUploadOptions())->setTags(["docker-bundle-test", "incremental-test"])
         );
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsService,
             $ecWrapper,
             $ecpWrapper,
-            $containerLog
+            $this->getLoggerServiceStub()
         );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
@@ -739,13 +731,12 @@ class FunctionalTests extends KernelTestCase
 
         /** @noinspection PhpParamsInspection */
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsServiceStub,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
 
         // mock client to return image data
@@ -859,13 +850,12 @@ class FunctionalTests extends KernelTestCase
 
         /** @noinspection PhpParamsInspection */
         $jobExecutor = new Executor(
-            $log,
             $this->temp,
             $encryptor,
             $componentsServiceStub,
             $ecWrapper,
             $ecpWrapper,
-            $containerLogger
+            $this->getLoggerServiceStub()
         );
 
         // mock client to return image data

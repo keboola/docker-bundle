@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Controller;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Monolog\LoggersService;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\Syrup\Controller\ApiController;
@@ -82,15 +83,16 @@ class ActionController extends ApiController
         if (!$this->storageApi->getRunId()) {
             $this->storageApi->generateRunId();
         }
-        $processor = new DockerProcessor($component['id']);
-        // attach the processor to all handlers and channels
-        $this->container->get('logger')->pushProcessor([$processor, 'processRecord']);
+
+        /** @var LoggersService $logService */
+        $logService = $this->container->get('docker_bundle.loggers');
+        $logService->setComponentId($component['id']);
 
         $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
         $oauthCredentialsClient->enableReturnArrays(true);
         $executor = new Executor(
             $this->storageApi,
-            $this->container->get('logger'),
+            $logService->getLog(),
             $oauthCredentialsClient,
             $this->temp->getTmpFolder()
         );
@@ -102,7 +104,7 @@ class ActionController extends ApiController
 
         $image = Image::factory(
             $this->container->get('syrup.object_encryptor'),
-            $this->container->get('logger'),
+            $logService->getLog(),
             $component["data"]
         );
 
@@ -112,7 +114,11 @@ class ActionController extends ApiController
         // Limit processing to 30 seconds
         $image->setProcessTimeout(30);
 
-        $container = new Container($image, $this->container->get('logger'), $this->container->get('docker.logger'));
+        $container = new Container(
+            $image,
+            $logService->getLog(),
+            $logService->getContainerLog()
+        );
         $executor->initialize($container, $configData, $state, false, $request->get("action"));
         $message = $executor->run($container, $containerId, $tokenInfo, $configId);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");

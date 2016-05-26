@@ -233,7 +233,7 @@ class Container
             function ($port) use ($process, $containerId) {
                 // get IP address of host
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    $processIp = new Process('hostname -i');
+                    $processIp = new Process('hostnamei');
                 } else {
                     $processIp = new Process('ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'');
                 }

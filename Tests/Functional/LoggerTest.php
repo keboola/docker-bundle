@@ -2,20 +2,10 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Job\Executor;
-use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Exception;
-use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Job\Metadata\Job;
+use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -23,7 +13,6 @@ use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Yaml\Yaml;
 
 class LoggerTests extends KernelTestCase
 {
@@ -274,6 +263,48 @@ print "second message to stdout\n";'
         $process = $container->run("testsuite" . uniqid(), []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $this->assertEquals('', $err);
+        $this->assertEquals('Client finished', $out);
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(7, count($records));
+        $this->assertTrue($containerHandler->hasDebug("A debug message."));
+        $this->assertTrue($containerHandler->hasAlert("An alert message"));
+        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
+        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasWarning("A warning message."));
+        $this->assertTrue($containerHandler->hasInfoRecords());
+        $this->assertTrue($containerHandler->hasError("Error message."));
+    }
+
+
+    public function testGelfLogPassing()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+
+        //start the symfony kernel
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $container = $kernel->getContainer();
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $container->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $container->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
+
+        $process = $container->run("testsuite" . uniqid(), []);
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        
         $records = $handler->getRecords();
         $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
