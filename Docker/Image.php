@@ -99,17 +99,17 @@ class Image
     /**
      * @var string
      */
-    private $loggerType;
+    private $loggerType = 'standard';
 
     /**
      * @var array
      */
-    private $loggerPublicLevels;
+    private $loggerVerbosity = [];
 
     /**
      * @var string
      */
-    private $loggerServerType;
+    private $loggerServerType = 'tcp';
 
 
     /**
@@ -413,7 +413,7 @@ class Image
     public function setLoggerOptions($logger)
     {
         $this->loggerType = $logger['type'];
-        $this->loggerPublicLevels = $logger['gelf_public_levels'];
+        $this->loggerVerbosity = $logger['verbosity'];
         switch ($logger['gelf_server_type']) {
             case 'udp':
                 $this->loggerServerType = ServerFactory::SERVER_UDP;
@@ -441,9 +441,9 @@ class Image
     /**
      * @return mixed
      */
-    public function getLoggerPublicLevels()
+    public function getLoggerVerbosity()
     {
-        return $this->loggerPublicLevels;
+        return $this->loggerVerbosity;
     }
 
     /**

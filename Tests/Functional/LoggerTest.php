@@ -5,8 +5,11 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\StorageApi\Client;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
@@ -33,21 +36,6 @@ class LoggerTests extends KernelTestCase
             ]
         ];
     }
-
-    private function getContainer($imageConfig, $dataDir)
-    {
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new Container($image, $log, $containerLog);
-        $container->setDataDir($dataDir);
-        return $container;
-    }
-
 
     private function getGelfImageConfiguration()
     {
@@ -97,7 +85,7 @@ class LoggerTests extends KernelTestCase
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log, $containerLog);
-        $container->setId("keboola/docker-php-test");
+        $container->setId("dummy-testing");
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -142,7 +130,7 @@ print "second message to stdout\n";'
 
         $image = Image::factory($encryptor, $log, $imageConfiguration);
         $container = new Container($image, $log, $containerLog);
-        $container->setId("keboola/docker-php-test");
+        $container->setId("dummy-testing");
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -279,7 +267,7 @@ print "second message to stdout\n";'
     }
 
 
-    public function testGelfLogPassing()
+    public function testVerbosityDefault()
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
@@ -289,34 +277,242 @@ print "second message to stdout\n";'
         //start the symfony kernel
         $kernel = static::createKernel();
         $kernel->boot();
-        $container = $kernel->getContainer();
+        $serviceContainer = $kernel->getContainer();
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = $container->get('syrup.object_encryptor');
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
         /** @var LoggersService $logService */
-        $logService = $container->get('docker_bundle.loggers');
+        $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
         $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
         $container->setId("dummy-testing");
         $container->setDataDir($temp->getTmpFolder());
 
-        $process = $container->run("testsuite" . uniqid(), []);
-        $out = $process->getOutput();
-        $err = $process->getErrorOutput();
-        
-        $records = $handler->getRecords();
-        $this->assertGreaterThan(0, count($records));
-        $this->assertEquals('', $err);
-        $this->assertEquals('Client finished', $out);
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(7, count($records));
-        $this->assertTrue($containerHandler->hasDebug("A debug message."));
-        $this->assertTrue($containerHandler->hasAlert("An alert message"));
-        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("Structured message"));
-        $this->assertTrue($containerHandler->hasWarning("A warning message."));
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasError("Error message."));
+        $container->run("testsuite" . uniqid(), []);
+        sleep(5); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        $this->assertCount(6, $events);
+        $error = [];
+        $info = [];
+        $warn = [];
+        foreach ($events as $event) {
+            if ($event['type'] == 'error') {
+                $error[] = $event['message'];
+            }
+            if ($event['type'] == 'info') {
+                $info[] = $event['message'];
+            }
+            if ($event['type'] == 'warn') {
+                $warn[] = $event['message'];
+            }
+        }
+        $this->assertCount(1, $warn);
+        $this->assertEquals('A warning message.', $warn[0]);
+        $this->assertCount(1, $info);
+        $this->assertEquals(5827, strlen($info[0]));
+        sort($error);
+        $this->assertCount(4, $error);
+        $this->assertEquals('Application error', $error[0]);
+        $this->assertEquals('Application error', $error[1]);
+        $this->assertEquals('Application error', $error[2]);
+        $this->assertEquals('Error message.', $error[3]);
+    }
+
+    public function testGelfVerbosityVerbose()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['logging']['verbosity'] = [
+            Logger::DEBUG => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::INFO => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::NOTICE => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::WARNING => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::ERROR => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::CRITICAL => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
+        ];
+        //start the symfony kernel
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $serviceContainer = $kernel->getContainer();
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $serviceContainer->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $logService->setVerbosity($image->getLoggerVerbosity());
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
+
+        $container->run("testsuite" . uniqid(), []);
+        sleep(5); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        $this->assertCount(7, $events);
+        $error = [];
+        $info = [];
+        $warn = [];
+        $exception = [];
+        $struct = [];
+        foreach ($events as $event) {
+            if ($event['type'] == 'error') {
+                $error[] = $event['message'];
+            }
+            if ($event['type'] == 'info') {
+                $info[] = $event['message'];
+            }
+            if ($event['type'] == 'warn') {
+                $warn[] = $event['message'];
+            }
+            if ($event['message'] == 'Exception example') {
+                $exception = $event;
+            }
+            if ($event['message'] == 'A warning message.') {
+                $struct = $event;
+            }
+        }
+        $this->assertCount(1, $warn);
+        $this->assertEquals('A warning message.', $warn[0]);
+        $this->assertCount(2, $info);
+        sort($info);
+        $this->assertEquals('A debug message.', $info[0]);
+        $this->assertEquals(5827, strlen($info[1]));
+        sort($error);
+        $this->assertCount(4, $error);
+        $this->assertEquals('An alert message', $error[0]);
+        $this->assertEquals('Error message.', $error[1]);
+        $this->assertEquals('Exception example', $error[2]);
+        $this->assertEquals('Structured message', $error[3]);
+        $this->assertNotEmpty($exception);
+        $this->assertContains('file', $exception['results']);
+        $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
+        $this->assertContains('full_message', $exception['results']);
+        $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
+        $this->assertArrayHasKey('several', $struct['results']['_structure']['with']);
+        $this->assertEquals('nested', $struct['results']['_structure']['with']['several']);
+
+    }
+
+    public function testGelfVerbosityNone()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['logging']['verbosity'] = [
+            Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
+            Logger::INFO => StorageApiHandler::VERBOSITY_NONE,
+            Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE,
+            Logger::WARNING => StorageApiHandler::VERBOSITY_NONE,
+            Logger::ERROR => StorageApiHandler::VERBOSITY_NONE,
+            Logger::CRITICAL => StorageApiHandler::VERBOSITY_NONE,
+            Logger::ALERT => StorageApiHandler::VERBOSITY_NONE,
+            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
+        ];
+        //start the symfony kernel
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $serviceContainer = $kernel->getContainer();
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $serviceContainer->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $logService->setVerbosity($image->getLoggerVerbosity());
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
+
+        $container->run("testsuite" . uniqid(), []);
+        sleep(5); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        $this->assertCount(0, $events);
+    }
+
+    public function testStdoutVerbosity()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration["streaming_logs"] = true;
+
+        //start the symfony kernel
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $serviceContainer = $kernel->getContainer();
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $serviceContainer->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $logService->setVerbosity($image->getLoggerVerbosity());
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+echo "first message to stdout\n";
+file_put_contents("php://stderr", "first message to stderr\n");
+sleep(5);
+error_log("second message to stderr\n");
+print "second message to stdout\n";'
+        );
+        $container->setDataDir($dataDir);
+
+        $container->run("testsuite" . uniqid(), []);
+        sleep(5); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        $this->assertCount(4, $events);
+        $error = [];
+        $info = [];
+        foreach ($events as $event) {
+            if ($event['type'] == 'error') {
+                $error[] = $event['message'];
+            }
+            if ($event['type'] == 'info') {
+                $info[] = $event['message'];
+            }
+        }
+        $this->assertCount(2, $error);
+        sort($error);
+        $this->assertEquals("first message to stderr\n", $error[0]);
+        $this->assertEquals("second message to stderr\n\n", $error[1]);
+        sort($info);
+        $this->assertCount(2, $info);
+        $this->assertEquals("first message to stdout\n", $info[0]);
+        $this->assertEquals("second message to stdout\n", $info[1]);
     }
 }

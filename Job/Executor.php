@@ -207,6 +207,7 @@ class Executor extends BaseExecutor
                 );
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $dummyConfig);
                 $image->setConfigFormat($params["format"]);
+                $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['sandbox', 'docker']);
@@ -217,6 +218,7 @@ class Executor extends BaseExecutor
                 $this->logService->getLog()->info("Preparing image configuration.", $configData);
 
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
+                $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, true);
                 $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
@@ -228,6 +230,7 @@ class Executor extends BaseExecutor
 
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
+                $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, true);
                 $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
@@ -240,6 +243,7 @@ class Executor extends BaseExecutor
 
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
+                $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, false);
                 $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);

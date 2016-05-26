@@ -62,6 +62,9 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals("master", $image->getTag());
         $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());
+        $this->assertEquals('standard', $image->getLoggerType());
+        $this->assertEquals('tcp', $image->getLoggerServerType());
+        $this->assertEquals([], $image->getLoggerVerbosity());
     }
 
     public function testDockerHubPrivateRepository()
