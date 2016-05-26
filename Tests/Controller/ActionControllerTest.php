@@ -422,8 +422,25 @@ class ActionControllerTest extends WebTestCase
         $this->assertEquals('{"password":"password"}', $response->getContent());
     }
 
+    public function testUnencryptedSuccess()
+    {
+        $container = self::$container;
+
+        $request = $this->prepareRequest('decrypt', ["#password" => 'password']);
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"password":"password"}', $response->getContent());
+    }
+
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage failed
      */
     public function testDecryptFailure()
     {
