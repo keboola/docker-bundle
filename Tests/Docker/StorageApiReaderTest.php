@@ -248,7 +248,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
     /**
      *
      */
-    public function testReadTablesMysql()
+    public function testReadTablesDefaultBackend()
     {
         // Create bucket
         if (!$this->client->bucketExists("in.c-docker-test")) {
