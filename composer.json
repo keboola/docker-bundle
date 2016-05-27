@@ -10,14 +10,8 @@
         "symfony/symfony": "~2.8.0",
         "keboola/oauth-v2-php-client": "~1.0.0",
         "keboola/storage-api-client": "~4.5",
-        "keboola/gelf-server": "dev-master"
+        "keboola/gelf-server": "~1.0"
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/keboola/gelf-server"
-        }
-    ],
     "require-dev": {
         "phpunit/phpunit": "~5.2",
         "symfony/var-dumper": "~2.7",
@@ -39,7 +33,7 @@
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
         ]
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "autoload": {
         "psr-0": {
             "Keboola\\DockerBundle": ""
