@@ -222,15 +222,16 @@ class Container
         }
     }
 
-    private function runWithLogger(Process $process, $containerId)
+    private function runWithLogger(Process $process, $containerName)
     {
         $server = ServerFactory::createServer($this->getImage()->getLoggerServerType());
         /* the port range is rather arbitrary, it intentionally excludes the default port (12201)
             to avoid mis-configured clients. */
+        $containerId = '';
         $server->start(
             12202,
             13202,
-            function ($port) use ($process, $containerId) {
+            function ($port) use ($process, $containerName) {
                 // get IP address of host
                 if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
                     $processIp = new Process('hostnamei');
@@ -244,21 +245,36 @@ class Container
                     $this->getEnvironmentVariables(),
                     ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
                 ));
-                $process->setCommandLine($this->getRunCommand($containerId));
+                $process->setCommandLine($this->getRunCommand($containerName));
                 $process->start();
             },
             function (&$terminated) use ($process) {
                 if (!$process->isRunning()) {
                     $terminated = true;
+                    if (trim($process->getOutput()) != '') {
+                        $this->containerLog->info($process->getOutput());
+                    }
+                    if (trim($process->getErrorOutput()) != '') {
+                        $this->containerLog->error($process->getErrorOutput());
+                    }
                 }
             },
-            function ($event) {
-                $this->containerLog->addRawRecord(
-                    $event['level'],
-                    $event['timestamp'],
-                    $event['short_message'],
-                    $event
-                );
+            function ($event) use ($containerName, &$containerId) {
+                if (!$containerId) {
+                    $inspect = $this->inspectContainer($containerName);
+                    $containerId = $inspect['Id'];
+                }
+                // host is shortened containerId
+                if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
+                    $this->log->error("Invalid container host " . $event['host'], $event);
+                } else {
+                    $this->containerLog->addRawRecord(
+                        $event['level'],
+                        $event['timestamp'],
+                        $event['short_message'],
+                        $event
+                    );
+                }
             }
         );
     }

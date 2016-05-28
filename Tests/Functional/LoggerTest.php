@@ -182,7 +182,7 @@ print "second message to stdout\n";'
         $this->assertEquals('', $err);
         $this->assertContains('Client finished', $out);
         $records = $containerHandler->getRecords();
-        $this->assertEquals(7, count($records));
+        $this->assertEquals(8, count($records));
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
@@ -219,7 +219,7 @@ print "second message to stdout\n";'
         $this->assertEquals('', $err);
         $this->assertEquals('Client finished', $out);
         $records = $containerHandler->getRecords();
-        $this->assertEquals(7, count($records));
+        $this->assertEquals(8, count($records));
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
@@ -256,7 +256,7 @@ print "second message to stdout\n";'
         $this->assertEquals('', $err);
         $this->assertEquals('Client finished', $out);
         $records = $containerHandler->getRecords();
-        $this->assertEquals(7, count($records));
+        $this->assertEquals(8, count($records));
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
@@ -298,7 +298,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(6, $events);
+        $this->assertCount(7, $events);
         $error = [];
         $info = [];
         $warn = [];
@@ -315,8 +315,9 @@ print "second message to stdout\n";'
         }
         $this->assertCount(1, $warn);
         $this->assertEquals('A warning message.', $warn[0]);
-        $this->assertCount(1, $info);
+        $this->assertCount(2, $info);
         $this->assertEquals(5827, strlen($info[0]));
+        $this->assertEquals('Client finished', $info[1]);
         sort($error);
         $this->assertCount(4, $error);
         $this->assertEquals('Application error', $error[0]);
@@ -366,7 +367,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(7, $events);
+        $this->assertCount(8, $events);
         $error = [];
         $info = [];
         $warn = [];
@@ -391,10 +392,11 @@ print "second message to stdout\n";'
         }
         $this->assertCount(1, $warn);
         $this->assertEquals('A warning message.', $warn[0]);
-        $this->assertCount(2, $info);
+        $this->assertCount(3, $info);
         sort($info);
         $this->assertEquals('A debug message.', $info[0]);
         $this->assertEquals(5827, strlen($info[1]));
+        $this->assertEquals('Client finished', $info[2]);
         sort($error);
         $this->assertCount(4, $error);
         $this->assertEquals('An alert message', $error[0]);
