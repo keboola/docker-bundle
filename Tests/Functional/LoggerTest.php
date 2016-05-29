@@ -316,6 +316,7 @@ print "second message to stdout\n";'
         $this->assertCount(1, $warn);
         $this->assertEquals('A warning message.', $warn[0]);
         $this->assertCount(2, $info);
+        sort($info);
         $this->assertEquals(5827, strlen($info[0]));
         $this->assertEquals('Client finished', $info[1]);
         sort($error);
