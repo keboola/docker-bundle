@@ -140,7 +140,7 @@ class Executor extends BaseExecutor
         } else {
             $component = $this->getComponent($params["component"]);
             if (!$this->storageApi->getRunId()) {
-                $this->storageApi->generateRunId();
+                $this->storageApi->setRunId($this->storageApi->generateRunId());
             }
             $processor = new DockerProcessor($component['id']);
             // attach the processor to all handlers and channels

@@ -101,7 +101,7 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
         $tokenInfo = $this->storageApi->verifyToken();
 
         if (!$this->storageApi->getRunId()) {
-            $this->storageApi->generateRunId();
+            $this->storageApi->setRunId($this->storageApi->generateRunId());
         }
         $processor = new DockerProcessor($component['id']);
         // attach the processor to all handlers and channels

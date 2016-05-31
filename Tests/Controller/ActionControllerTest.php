@@ -156,6 +156,9 @@ class ActionControllerTest extends WebTestCase
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
             ->will($this->returnValue(["owner" => ["id" => "123"]]));
+        $storageClientStub->expects($this->any())
+            ->method("getRunId")
+            ->will($this->returnValue(uniqid()));        
 
         return $storageServiceStub;
     }
