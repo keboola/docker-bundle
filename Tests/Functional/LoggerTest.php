@@ -40,6 +40,8 @@ class LoggerTests extends KernelTestCase
     private function getGelfImageConfiguration()
     {
         return [
+            /* docker-demo app is actually not used here, it is only needed for
+            builder (because requires URI, builder is used to override for the entry point. */
             "definition" => [
                 "type" => "builder",
                 "uri" => "quay.io/keboola/gelf-test-client:master",
