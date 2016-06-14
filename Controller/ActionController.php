@@ -82,7 +82,7 @@ class ActionController extends ApiController
         $tokenInfo = $this->storageApi->verifyToken();
 
         if (!$this->storageApi->getRunId()) {
-            $this->storageApi->generateRunId();
+            $this->storageApi->setRunId($this->storageApi->generateRunId());
         }
 
         /** @var LoggersService $logService */

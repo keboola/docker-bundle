@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
@@ -365,6 +366,28 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
         $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
+    }
+
+    public function testWriteTableOutputMappingEmptyFile()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table1", "");
+
+        $configs = array(
+            array(
+                "source" => "table1",
+                "destination" => "out.c-docker-test.table1"
+            )
+        );
+
+        $writer = new Writer($this->client);
+
+        try {
+            $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
+            $this->fail("Empty CSV file must fail");
+        } catch (UserException $e) {
+            $this->assertContains('no data in import file', $e->getMessage());
+        }
     }
 
     public function testWriteTableOutputMappingAndManifest()

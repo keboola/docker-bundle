@@ -139,7 +139,7 @@ class Executor extends BaseExecutor
             $component = $this->getComponent($params["component"]);
             $this->logService->setComponentId($component["id"]);
             if (!$this->storageApi->getRunId()) {
-                $this->storageApi->generateRunId();
+                $this->storageApi->setRunId($this->storageApi->generateRunId());
             }
 
             // Manual config from request
