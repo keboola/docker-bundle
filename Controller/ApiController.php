@@ -94,7 +94,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
 
             // Lock name contains component id and configuration id or random string
             $lockName = $job->getLockName() . '-' . $params['component'];
-            if (isset($params["config"]) && is_string($params["config"])) {
+            if (isset($params["config"]) && is_scalar($params["config"])) {
                 $lockName .= "-" . $params["config"];
             } else {
                 $lockName .= "-" . uniqid();
