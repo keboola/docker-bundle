@@ -6,6 +6,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\OAuthV2Api\Credentials;
@@ -77,7 +78,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $this->client->deleteFile($file['id']);
         }
     }
-
+    
     public function testDockerHubExecutorRun()
     {
         $imageConfig = array(
@@ -118,11 +119,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $logContainer->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $logContainer);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -188,11 +191,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $logContainer->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $logContainer);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -269,10 +274,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -322,11 +329,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $logContainer->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $logContainer);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -377,11 +386,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $logContainer->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $logContainer);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -431,11 +442,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -484,11 +497,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -557,11 +572,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -616,11 +633,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -668,11 +687,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -733,11 +754,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -769,11 +792,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -788,7 +813,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config, [], false);
         $this->assertFileExists($this->tmpDir . "/data/in/state.json");
         $this->assertEquals(
-            new \stdclass(),
+            new \stdClass(),
             json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), false)
         );
     }
@@ -818,11 +843,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $process = new Process('sleep 1');
@@ -868,9 +895,11 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -911,11 +940,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
         $callback = function () use ($container) {
             $fs = new Filesystem();
             $fs->dumpFile(
@@ -971,11 +1002,13 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
         $callback = function () use ($container) {
             $fs = new Filesystem();
             $fs->dumpFile(
@@ -1029,8 +1062,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog ->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -1066,8 +1101,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
@@ -1110,10 +1147,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $config = [];
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -1148,10 +1187,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $config = [];
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -1188,6 +1229,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -1197,7 +1240,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
             ->disableOriginalConstructor()
@@ -1221,6 +1264,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->with('keboola.docker-demo', 'whatever')
             ->will($this->returnValue($oauthResponse));
 
+        /** @noinspection PhpParamsInspection */
         $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("keboola.docker-demo");
@@ -1228,7 +1272,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $credentials,
-            json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]
+            json_decode(
+                file_get_contents($container->getDataDir() . "/config.json"),
+                true
+            )["authorization"]["oauth_api"]["credentials"]
         );
     }
 
@@ -1249,6 +1296,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -1258,7 +1307,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $oauthClientStub = $this->getMockBuilder("\\Keboola\\OAuthV2Api\\Credentials")
             ->disableOriginalConstructor()
@@ -1282,6 +1331,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->with('keboola.docker-demo', 'whatever')
             ->will($this->returnValue($oauthResponse));
 
+        /** @noinspection PhpParamsInspection */
         $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
         $executor->setConfigurationId("whatever");
         $executor->setComponentId("keboola.docker-demo");
@@ -1289,13 +1339,15 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(
             $oauthResponse,
-            json_decode(file_get_contents($container->getDataDir() . "/config.json"), true)["authorization"]["oauth_api"]["credentials"]
+            json_decode(
+                file_get_contents($container->getDataDir() . "/config.json"),
+                true
+            )["authorization"]["oauth_api"]["credentials"]
         );
     }
 
     public function testOauthConfigDecryptAndExecute()
     {
-        $client = $this->client;
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -1311,6 +1363,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -1320,7 +1374,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLog);
 
         $callback = function () use ($container) {
             $configFile = json_decode(file_get_contents($container->getDataDir() . "/config.json"), true);
@@ -1353,6 +1407,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will($this->returnValue($oauthResponse));
 
+        /** @noinspection PhpParamsInspection */
         $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
         $executor->setConfigurationId("test-credentials-45");
         $executor->setComponentId("keboola.docker-demo");
@@ -1374,7 +1429,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testOauthConfigExecuteSandboxed()
     {
-        $client = $this->client;
         $imageConfig = array(
             "definition" => array(
                 "type" => "dockerhub",
@@ -1390,6 +1444,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -1399,7 +1455,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log);
+        $container = new MockContainer($image, $log, $containerLogger);
 
         $callback = function () use ($container) {
             $configFile = json_decode(file_get_contents($container->getDataDir() . "/config.json"), true);
@@ -1432,6 +1488,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will($this->returnValue($oauthResponse));
 
+        /** @noinspection PhpParamsInspection */
         $executor = new Executor($this->client, $log, $oauthClientStub, $this->tmpDir);
         $executor->setConfigurationId("test-credentials-45");
         $executor->setComponentId("keboola.docker-demo");

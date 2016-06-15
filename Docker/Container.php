@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -50,6 +52,11 @@ class Container
      * @var int Docker CLI process timeout
      */
     protected $dockerCliTimeout = 120;
+
+    /**
+     * @var ContainerLogger
+     */
+    private $containerLog;
 
     /**
      * @return string
@@ -108,10 +115,12 @@ class Container
     /**
      * @param Image $image
      * @param Logger $logger
+     * @param ContainerLogger $containerLogger
      */
-    public function __construct(Image $image, Logger $logger)
+    public function __construct(Image $image, Logger $logger, ContainerLogger $containerLogger)
     {
         $this->log = $logger;
+        $this->containerLog = $containerLogger;
         $this->setImage($image);
     }
 
@@ -167,95 +176,168 @@ class Container
         $this->getImage()->prepare($this, $configData, $containerId);
         $this->setId($this->getImage()->getFullImageId());
 
-        // Run container
         $process = new Process($this->getRunCommand($containerId));
-        $process->setTimeout($this->getImage()->getProcessTimeout() + 1);
+
+        // create container
         $startTime = time();
         try {
             $this->log->debug("Executing docker process.");
-            if ($this->getImage()->isStreamingLogs()) {
-                $process->run(function ($type, $buffer) {
-                    if (mb_strlen($buffer) > 64000) {
-                        $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
-                    }
-                    if ($type === Process::ERR) {
-                        $this->log->error($buffer);
-                    } else {
-                        $this->log->info($buffer);
-                    }
-                });
+            if ($this->getImage()->getLoggerType() == 'gelf') {
+                $this->runWithLogger($process, $containerId);
             } else {
-                $process->run();
+                $this->runWithoutLogger($process);
             }
             $this->log->debug("Docker process finished.");
+
+            if (!$process->isSuccessful()) {
+                $this->handleContainerFailure($process, $containerId, $startTime);
+            }
         } catch (ProcessTimedOutException $e) {
             // is actually not working
+            throw new UserException(
+                "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+            );
+        } finally {
             $this->removeContainer($containerId);
+
+        }
+        return $process;
+    }
+
+    private function runWithoutLogger(Process $process)
+    {
+        if ($this->getImage()->isStreamingLogs()) {
+            $process->run(function ($type, $buffer) {
+                if (mb_strlen($buffer) > 64000) {
+                    $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
+                }
+                if ($type === Process::ERR) {
+                    $this->containerLog->error($buffer);
+                } else {
+                    $this->containerLog->info($buffer);
+                }
+            });
+        } else {
+            $process->run();
+        }
+    }
+
+    private function runWithLogger(Process $process, $containerName)
+    {
+        $server = ServerFactory::createServer($this->getImage()->getLoggerServerType());
+        /* the port range is rather arbitrary, it intentionally excludes the default port (12201)
+            to avoid mis-configured clients. */
+        $containerId = '';
+        $server->start(
+            12202,
+            13202,
+            function ($port) use ($process, $containerName) {
+                // get IP address of host
+                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                    $processIp = new Process('hostnamei');
+                } else {
+                    $processIp = new Process('ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'');
+                }
+                $processIp->mustRun();
+                $hostIp = trim($processIp->getOutput());
+
+                $this->setEnvironmentVariables(array_merge(
+                    $this->getEnvironmentVariables(),
+                    ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
+                ));
+                $process->setCommandLine($this->getRunCommand($containerName));
+                $process->start();
+            },
+            function (&$terminated) use ($process) {
+                if (!$process->isRunning()) {
+                    $terminated = true;
+                    if (trim($process->getOutput()) != '') {
+                        $this->containerLog->info($process->getOutput());
+                    }
+                    if (trim($process->getErrorOutput()) != '') {
+                        $this->containerLog->error($process->getErrorOutput());
+                    }
+                }
+            },
+            function ($event) use ($containerName, &$containerId) {
+                if (!$containerId) {
+                    $inspect = $this->inspectContainer($containerName);
+                    $containerId = $inspect['Id'];
+                }
+                // host is shortened containerId
+                if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
+                    $this->log->error("Invalid container host " . $event['host'], $event);
+                } else {
+                    $this->containerLog->addRawRecord(
+                        $event['level'],
+                        $event['timestamp'],
+                        $event['short_message'],
+                        $event
+                    );
+                }
+            }
+        );
+    }
+
+
+    private function handleContainerFailure(Process $process, $containerId, $startTime)
+    {
+        $duration = time() - $startTime;
+        $inspect = $this->inspectContainer($containerId);
+        $this->removeContainer($containerId);
+
+        if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+            $data = [
+                "container" => [
+                    "id" => $this->getId()
+                ]
+            ];
+            throw new OutOfMemoryException(
+                "Out of memory (exceeded {$this->getImage()->getMemory()})",
+                null,
+                $data
+            );
+        }
+
+        // this catches the timeout from `sudo timeout`
+        if ($process->getExitCode() == 137 && $duration >= $this->getImage()->getProcessTimeout()) {
             throw new UserException(
                 "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
             );
         }
-        $duration = time() - $startTime;
 
-        if (!$process->isSuccessful()) {
-            $inspect = $this->inspectContainer($containerId);
-            $this->removeContainer($containerId);
-
-            if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
-                $data = [
-                    "container" => [
-                        "id" => $this->getId()
-                    ]
-                ];
-                throw new OutOfMemoryException(
-                    "Out of memory (exceeded {$this->getImage()->getMemory()})",
-                    null,
-                    $data
-                );
-            }
-
-            // this catches the timeout from `sudo timeout`
-            if ($process->getExitCode() == 137 && $duration >= $this->getImage()->getProcessTimeout()) {
-                throw new UserException(
-                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
-                );
-            }
-
-            $message = trim($process->getErrorOutput());
-            if (!$message) {
-                $message = trim($process->getOutput());
-            }
-            if (!$message) {
-                $message = "No error message.";
-            }
-
-            // make the exception message very short
-            if (mb_strlen($message) > 255) {
-                $message = mb_substr($message, 0, 125) . " ... " . mb_substr($message, -125);
-            }
-
-            // put the whole message to exception data, but make sure not use too much memory
-            $data = [
-                "output" => mb_substr($process->getOutput(), -1000000),
-                "errorOutput" => mb_substr($process->getErrorOutput(), -1000000)
-            ];
-
-            if ($process->getExitCode() == 1) {
-                $data["container"] = [
-                    "id" => $this->getId()
-                ];
-                throw new UserException($message, null, $data);
-            } else {
-                // syrup will make sure that the actual exception message will be hidden to end-user
-                throw new ApplicationException(
-                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                    null,
-                    $data
-                );
-            }
+        $message = trim($process->getErrorOutput());
+        if (!$message) {
+            $message = trim($process->getOutput());
         }
-        $this->removeContainer($containerId);
-        return $process;
+        if (!$message) {
+            $message = "No error message.";
+        }
+
+        // make the exception message very short
+        if (mb_strlen($message) > 255) {
+            $message = mb_substr($message, 0, 125) . " ... " . mb_substr($message, -125);
+        }
+
+        // put the whole message to exception data, but make sure not use too much memory
+        $data = [
+            "output" => mb_substr($process->getOutput(), -1000000),
+            "errorOutput" => mb_substr($process->getErrorOutput(), -1000000)
+        ];
+
+        if ($process->getExitCode() == 1) {
+            $data["container"] = [
+                "id" => $this->getId()
+            ];
+            throw new UserException($message, null, $data);
+        } else {
+            // syrup will make sure that the actual exception message will be hidden to end-user
+            throw new ApplicationException(
+                "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                null,
+                $data
+            );
+        }
     }
 
     /**
@@ -311,12 +393,19 @@ class Container
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
-        $dataDir = $this->dataDir;
-        foreach ($this->getEnvironmentVariables() as $key => $value) {
-            $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
+        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+            $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
+            }
+            $command = "docker run";
+        } else {
+            $dataDir = $this->dataDir;
+            foreach ($this->getEnvironmentVariables() as $key => $value) {
+                $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
+            }
+            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
         }
-
-        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())

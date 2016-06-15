@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -36,6 +37,19 @@ class FunctionalTests extends KernelTestCase
      */
     private $temp;
 
+    private function getContainer($imageConfig)
+    {
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new Container($image, $log, $containerLog);
+        $container->setDataDir($this->temp->getTmpFolder());
+        return $container;
+    }
 
     public function setUp()
     {
@@ -113,6 +127,24 @@ class FunctionalTests extends KernelTestCase
         return $storageServiceStub;
     }
 
+    protected function getLoggerServiceStub()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
+        $loggersServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\LoggersService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggersServiceStub->expects($this->any())
+            ->method("getLog")
+            ->will($this->returnValue($log));
+        $loggersServiceStub->expects($this->any())
+            ->method("getContainerLog")
+            ->will($this->returnValue($containerLogger));
+        return $loggersServiceStub;
+    }
+
     public function testRDocker()
     {
         $data = [
@@ -178,10 +210,15 @@ class FunctionalTests extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -262,11 +299,15 @@ class FunctionalTests extends KernelTestCase
             $fs->remove($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -361,10 +402,15 @@ class FunctionalTests extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -458,11 +504,16 @@ class FunctionalTests extends KernelTestCase
             }
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
+        
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -494,15 +545,8 @@ class FunctionalTests extends KernelTestCase
             )
         );
 
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfiguration);
-
-        $container = new Container($image, $log);
+        $container = $this->getContainer($imageConfiguration);
         $container->setId("hello-world");
-        $container->setDataDir("/tmp");
         $process = $container->run("testsuite", []);
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
@@ -520,14 +564,13 @@ class FunctionalTests extends KernelTestCase
                 "uri" => "hello-world"
             )
         );
-
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $imageConfiguration);
-
-        $container = new Container($image, $log);
+        $container = new Container($image, $log, $containerLog);
         $container->run("testsuite", []);
     }
 
@@ -602,10 +645,15 @@ class FunctionalTests extends KernelTestCase
             (new FileUploadOptions())->setTags(["docker-bundle-test", "incremental-test"])
         );
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         $componentsService = new ComponentsService($this->getSapiServiceStub());
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsService, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsService,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
         $jobExecutor->setStorageApi($this->client);
         $jobExecutor->execute($job);
 
@@ -650,6 +698,8 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         // mock components
         $configData = [
@@ -680,7 +730,14 @@ class FunctionalTests extends KernelTestCase
             ->will($this->returnValue($componentsStub));
 
         /** @noinspection PhpParamsInspection */
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
 
         // mock client to return image data
         $indexActionValue = [
@@ -760,6 +817,8 @@ class FunctionalTests extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger("null");
+        $containerLogger->pushHandler(new NullHandler());
 
         // mock components
         $configData = [
@@ -790,7 +849,14 @@ class FunctionalTests extends KernelTestCase
             ->will($this->returnValue($componentsStub));
 
         /** @noinspection PhpParamsInspection */
-        $jobExecutor = new Executor($log, $this->temp, $encryptor, $componentsServiceStub, $ecWrapper, $ecpWrapper);
+        $jobExecutor = new Executor(
+            $this->temp,
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper,
+            $this->getLoggerServiceStub()
+        );
 
         // mock client to return image data
         $indexActionValue = [
@@ -813,7 +879,7 @@ class FunctionalTests extends KernelTestCase
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/config-dump',
                                     ],
-                                'streaming_logs' => false,
+                                    'streaming_logs' => false,
 
                             ],
                             'flags' => ['encrypt'],
@@ -863,14 +929,8 @@ class FunctionalTests extends KernelTestCase
             "network" => "bridge",
         ];
 
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new Container($image, $log);
+        $container = $this->getContainer($imageConfig);
         $container->setId("network-bridge-test");
-        $container->setDataDir("/tmp");
         $process = $container->run("testsuite", []);
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("64 bytes from", $process->getOutput());
@@ -895,14 +955,8 @@ class FunctionalTests extends KernelTestCase
             "network" => "none"
         ];
 
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new Container($image, $log);
+        $container = $this->getContainer($imageConfig);
         $container->setId("network-bridge-test");
-        $container->setDataDir("/tmp");
         try {
             $container->run("testsuite", []);
             $this->fail("Ping must fail");

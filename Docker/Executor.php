@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\OAuthV2Api\Exception\RequestException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -80,31 +81,11 @@ class Executor
     }
 
     /**
-     * @param string $tmpFolder
-     * @return $this
-     */
-    public function setTmpFolder($tmpFolder)
-    {
-        $this->tmpFolder = $tmpFolder;
-        return $this;
-    }
-
-    /**
      * @return Client
      */
     public function getStorageApiClient()
     {
         return $this->storageApiClient;
-    }
-
-    /**
-     * @param Client $storageApiClient
-     * @return $this
-     */
-    public function setStorageApiClient($storageApiClient)
-    {
-        $this->storageApiClient = $storageApiClient;
-        return $this;
     }
 
     /**
@@ -115,17 +96,7 @@ class Executor
         return $this->log;
     }
 
-    /**
-     * @param Logger $log
-     * @return $this
-     */
-    public function setLog($log)
-    {
-        $this->log = $log;
-        return $this;
-    }
-
-    /**
+     /**
      * @return mixed
      */
     public function getComponentId()
@@ -180,29 +151,17 @@ class Executor
     }
 
     /**
-     * @param Credentials $oauthCredentialsClient
-     * @return $this
-     */
-    public function setOauthCredentialsClient($oauthCredentialsClient)
-    {
-        $this->oauthCredentialsClient = $oauthCredentialsClient;
-
-        return $this;
-    }
-
-    /**
      * @param Client $storageApi
      * @param Logger $log
      * @param Credentials $oauthCredentialsClient
-     * @param $tmpFolder
+     * @param string $tmpFolder
      */
     public function __construct(Client $storageApi, Logger $log, Credentials $oauthCredentialsClient, $tmpFolder)
     {
-        $this->setStorageApiClient($storageApi);
-        $this->setLog($log);
-        $this->setOauthCredentialsClient($oauthCredentialsClient);
-        $this->setTmpFolder($tmpFolder);
-
+        $this->storageApiClient = $storageApi;
+        $this->log = $log;
+        $this->oauthCredentialsClient = $oauthCredentialsClient;
+        $this->tmpFolder = $tmpFolder;
     }
 
 
@@ -257,7 +216,7 @@ class Executor
             $adapter->setConfig($configData);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
-        } catch (\Keboola\OAuthV2Api\Exception\RequestException $e) {
+        } catch (RequestException $e) {
             throw new UserException("Error loading credentials: " . $e->getMessage(), $e);
         }
         $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();

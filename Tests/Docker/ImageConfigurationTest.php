@@ -20,6 +20,11 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "vendor" => array("a" => "b"),
             "image_parameters" => array("foo" => "bar"),
             "synchronous_actions" => ["test", "test2"],
+            "network" => "none",
+            "logging" => [
+                "type" => "gelf",
+                "verbosity" => [200 => "verbose"]
+            ]
         );
         $expectedConfiguration = array(
             "definition" => array(
@@ -38,6 +43,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "vendor" => array("a" => "b"),
             "image_parameters" => array("foo" => "bar"),
             "synchronous_actions" => ["test", "test2"],
+            "network" => "none",
+            "logging" => [
+                "type" => "gelf",
+                "verbosity" => [200 => "verbose"],
+                "gelf_server_type" => "tcp",
+            ]
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);

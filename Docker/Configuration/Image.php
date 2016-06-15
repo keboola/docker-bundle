@@ -2,6 +2,8 @@
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Monolog\Logger;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Image extends Configuration
@@ -107,6 +109,37 @@ class Image extends Configuration
             ->end()
             ->variableNode("vendor")->end()
             ->arrayNode("synchronous_actions")->prototype("scalar")->end()->end()
+            ->arrayNode("logging")
+                ->children()
+                    ->scalarNode("type")
+                        ->validate()
+                            ->ifNotInArray(["standard", "gelf"])
+                            ->thenInvalid("Invalid logging type %s.")
+                        ->end()
+                        ->defaultValue('standard')
+                    ->end()
+                    ->arrayNode("verbosity")
+                        ->prototype('scalar')->end()
+                        ->defaultValue([
+                            Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
+                            Logger::INFO => StorageApiHandler::VERBOSITY_NORMAL,
+                            Logger::NOTICE => StorageApiHandler::VERBOSITY_NORMAL,
+                            Logger::WARNING => StorageApiHandler::VERBOSITY_NORMAL,
+                            Logger::ERROR => StorageApiHandler::VERBOSITY_NORMAL,
+                            Logger::CRITICAL => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
+                            Logger::ALERT => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
+                            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
+                        ])
+                    ->end()
+                    ->scalarNode("gelf_server_type")
+                        ->validate()
+                            ->ifNotInArray(["tcp", "udp", "http"])
+                            ->thenInvalid("Invalid GELF server type %s.")
+                        ->end()
+                        ->defaultValue("tcp")
+                    ->end()
+                ->end()
+            ->end()
         ;
 
         return $treeBuilder;
