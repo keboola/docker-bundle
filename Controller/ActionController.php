@@ -7,11 +7,12 @@ use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\Syrup\Controller\ApiController;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class ActionController extends \Keboola\Syrup\Controller\ApiController
+class ActionController extends ApiController
 {
     /**
      * @param $componentId
