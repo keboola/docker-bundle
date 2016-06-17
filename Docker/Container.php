@@ -177,6 +177,7 @@ class Container
         $this->setId($this->getImage()->getFullImageId());
 
         $process = new Process($this->getRunCommand($containerId));
+        $process->setTimeout($this->getImage()->getProcessTimeout() + 1);
 
         // create container
         $startTime = time();
