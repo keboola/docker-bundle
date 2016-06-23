@@ -173,6 +173,25 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testTimeoutMoreThanDefault()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getImageConfiguration();
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("odinuv/docker-php-test");
+
+        $dataDir = $this->createScript($temp, '<?php sleep(100);');
+        $container->setDataDir($dataDir);
+        $containerId = uniqid();
+        $container->run($containerId, []);
+    }
 
     public function testInvalidDirectory()
     {
@@ -197,7 +216,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $this->assertContains('directory', $e->getMessage());
         }
     }
-    
+
     public function testInvalidImage()
     {
         $temp = new Temp('docker');
