@@ -177,7 +177,7 @@ class Container
         $this->setId($this->getImage()->getFullImageId());
 
         $process = new Process($this->getRunCommand($containerId));
-        $process->setTimeout($this->getImage()->getProcessTimeout() + 1);
+        $process->setTimeout(null);
 
         // create container
         $startTime = time();
@@ -193,14 +193,8 @@ class Container
             if (!$process->isSuccessful()) {
                 $this->handleContainerFailure($process, $containerId, $startTime);
             }
-        } catch (ProcessTimedOutException $e) {
-            // is actually not working
-            throw new UserException(
-                "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
-            );
         } finally {
             $this->removeContainer($containerId);
-
         }
         return $process;
     }
@@ -285,7 +279,6 @@ class Container
     {
         $duration = time() - $startTime;
         $inspect = $this->inspectContainer($containerId);
-        $this->removeContainer($containerId);
 
         if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
             $data = [
