@@ -108,7 +108,9 @@ EOT;
         $adapter = new Adapter();
         $adapter->readFromFile($root . "/config.yml");
 
-        $this->assertEquals($this->getStructure(), $adapter->getConfig());
+        $str = $this->getStructure();
+        $str['parameters']['empty_object'] = null;
+        $this->assertEquals($str, $adapter->getConfig());
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
@@ -129,7 +131,9 @@ EOT;
         $adapter->setFormat("json");
         $adapter->readFromFile($root . "/config.json");
 
-        $this->assertEquals($this->getStructure(), $adapter->getConfig());
+        $str = $this->getStructure();
+        $str['parameters']['empty_object'] = [];
+        $this->assertEquals($str, $adapter->getConfig());
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
