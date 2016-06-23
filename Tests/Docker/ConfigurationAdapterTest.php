@@ -10,29 +10,34 @@ use Symfony\Component\Filesystem\Filesystem;
 class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
 {
 
-    protected $structure = array(
-        'storage' => array(
-            'input' => array(
-                'tables' => array(
-                    0 => array(
-                        'source' => 'in.c-main.data',
-                        'columns' => array(
-                            0 => 'Id',
-                            1 => 'Name',
-                        ),
-                    ),
-                ),
-            ),
-        ),
-        'parameters' => array(
-            'primary_key_column' => 'id',
-        ),
-        'authorization' => array(
-            'oauth_api' => array(
-                'id' => 1234
-            )
-        )
-    );
+    protected function getStructure()
+    {
+        return [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        0 => [
+                            'source' => 'in.c-main.data',
+                            'columns' => [
+                                0 => 'Id',
+                                1 => 'Name',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'primary_key_column' => 'id',
+                'empty_array' => [],
+                'empty_object' => new \stdClass(),
+            ],
+            'authorization' => [
+                'oauth_api' => [
+                    'id' => 1234
+                ]
+            ]
+        ];
+    }
 
     protected function getYmlConfigFileTemplate()
     {
@@ -47,6 +52,8 @@ storage:
                     - Name
 parameters:
     primary_key_column: id
+    empty_array: {  }
+    empty_object: null
 authorization:
     oauth_api:
         id: 1234
@@ -73,7 +80,9 @@ EOT;
         }
     },
     "parameters": {
-        "primary_key_column": "id"
+        "primary_key_column": "id",
+        "empty_array": [],
+        "empty_object": {}
     },
     "authorization": {
         "oauth_api": {
@@ -99,7 +108,7 @@ EOT;
         $adapter = new Adapter();
         $adapter->readFromFile($root . "/config.yml");
 
-        $this->assertEquals($this->structure, $adapter->getConfig());
+        $this->assertEquals($this->getStructure(), $adapter->getConfig());
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
@@ -120,7 +129,7 @@ EOT;
         $adapter->setFormat("json");
         $adapter->readFromFile($root . "/config.json");
 
-        $this->assertEquals($this->structure, $adapter->getConfig());
+        $this->assertEquals($this->getStructure(), $adapter->getConfig());
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
@@ -136,7 +145,7 @@ EOT;
         $fs->mkdir($root);
 
         $adapter = new Adapter();
-        $adapter->setConfig($this->structure);
+        $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.yml");
 
         $this->assertEquals(file_get_contents($root . "/config.yml"), $this->getYmlConfigFileTemplate());
@@ -156,7 +165,7 @@ EOT;
         $fs->mkdir($root);
 
         $adapter = new Adapter();
-        $adapter->setConfig($this->structure);
+        $adapter->setConfig($this->getStructure());
         $adapter->setFormat("json");
         $adapter->writeToFile($root . "/config.json");
 
