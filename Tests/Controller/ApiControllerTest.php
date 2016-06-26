@@ -3,7 +3,11 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ApiController;
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -276,14 +280,213 @@ class ApiControllerTest extends WebTestCase
         $parameters = [
             "component" => "keboola.r-transformation"
         ];
-        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
+        $request = Request::create("/docker/r-transformation/run", 'POST', $parameters, [], [], $server, $content);
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
-        $ctrl->runAction($request);
-        $response = $ctrl->dryRunAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        try {
+            $ctrl->runAction($request);
+            $this->fail("Attempting to merge a non-existent configuration must fail.");
+        } catch (ClientException $e) {
+            $this->assertContains('dummy not found', $e->getMessage());
+            $this->assertEquals(404, $e->getCode());
+        }
+    }
+
+    public function testBodyOverloadParameters()
+    {
+        $componentId = "keboola.r-transformation";
+        /** @var StorageApiService $storage */
+        $storage = self::$container->get("syrup.storage_api");
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => $componentId
+        ];
+        $request = Request::create("/docker/$componentId/run", 'POST', $parameters, [], [], $server, '');
+        self::$container->get('request_stack')->push($request);
+
+        $component = new Components($storage->getClient());
+        $config = new Configuration();
+        $config->setComponentId($componentId);
+        $config->setName('test-overload');
+        $config->setConfiguration([
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'test',
+                            'destination' => 'test.csv'
+                        ]
+                    ]
+                ]
+            ],
+            'parameters' => [
+                'nested' => [
+                    'keyA1' => [
+                        'keyB1' => 'valueB1'
+                    ],
+                    'keyA2' => 'valueA2',
+                ]
+            ]
+        ]);
+        $configId = $component->addConfiguration($config)['id'];
+
+        $content = json_decode('
+        {
+            "config": "' . $configId . '",
+            "configData": {
+                "storage": {
+                    "input": {
+                        "tables": [
+                            {
+                                "source": "test2",
+                                "destination": "test2.csv"
+                            }
+                        ]
+                    }
+                },
+                "parameters": {
+                    "nested": {
+                        "keyA3": "valueA3",
+                        "keyA1": {
+                            "keyB1": 12
+                        }
+                    }
+                }                
+            }
+        }', true);
+
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $method = new \ReflectionMethod(ApiController::class, 'validateParams');
+        $method->setAccessible(true);
+        $newConfig = $method->invokeArgs($ctrl, [$content, $componentId]);
+        $sampleConfig = [
+            'configData' => [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
+                            [
+                                'source' => 'test2',
+                                'destination' => 'test2.csv',
+                            ],
+                        ]
+                    ]
+                ],
+                'parameters' => [
+                    'nested' => [
+                        'keyA1' => [
+                            'keyB1' => 12
+                        ],
+                        'keyA2' => 'valueA2',
+                        'keyA3' => 'valueA3',
+                    ]
+                ]
+            ]
+        ];
+        $this->assertEquals($sampleConfig, $newConfig);
+        $component->deleteConfiguration($componentId, $configId);
+    }
+
+    public function testBodyOverloadDisabledParameters()
+    {
+        $componentId = "keboola.ex-db-db2";
+        /** @var StorageApiService $storage */
+        $storage = self::$container->get("syrup.storage_api");
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
+        ];
+        $parameters = [
+            "component" => $componentId
+        ];
+        $request = Request::create("/docker/$componentId/run", 'POST', $parameters, [], [], $server, '');
+        self::$container->get('request_stack')->push($request);
+
+        $component = new Components($storage->getClient());
+        $config = new Configuration();
+        $config->setComponentId($componentId);
+        $config->setName('test-overload');
+        $config->setConfiguration([
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'test',
+                            'destination' => 'test.csv'
+                        ]
+                    ]
+                ]
+            ],
+            'parameters' => [
+                'nested' => [
+                    'keyA1' => [
+                        'keyB1' => 'valueB1'
+                    ],
+                    'keyA2' => 'valueA2',
+                ]
+            ]
+        ]);
+        $configId = $component->addConfiguration($config)['id'];
+
+        $content = json_decode('
+        {
+            "config": "' . $configId . '",
+            "configData": {
+                "storage": {
+                    "input": {
+                        "tables": [
+                            {
+                                "source": "test2",
+                                "destination": "test2.csv"
+                            }
+                        ]
+                    }
+                },
+                "parameters": {
+                    "nested": {
+                        "keyA3": "valueA3",
+                        "keyA1": {
+                            "keyB1": 12
+                        }
+                    }
+                }                
+            }
+        }', true);
+
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $method = new \ReflectionMethod(ApiController::class, 'validateParams');
+        $method->setAccessible(true);
+        $newConfig = $method->invokeArgs($ctrl, [$content, $componentId]);
+        $sampleConfig = [
+            'configData' => [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
+                            [
+                                'source' => 'test2',
+                                'destination' => 'test2.csv',
+                            ]
+                        ]
+                    ]
+                ],
+                'parameters' => [
+                    'nested' => [
+                        'keyA1' => [
+                            'keyB1' => 12
+                        ],
+                        'keyA3' => 'valueA3',
+                    ]
+                ]
+            ]
+        ];
+        $this->assertEquals($sampleConfig, $newConfig);
+        $component->deleteConfiguration($componentId, $configId);
     }
 
     public function testEncryptProject()
@@ -389,7 +592,7 @@ class ApiControllerTest extends WebTestCase
             $responseData["message"]
         );
     }
-    
+
 
     public function testSaveEncryptedConfig()
     {
