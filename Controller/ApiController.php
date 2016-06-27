@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -21,37 +20,18 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
      * Validate request body configuration.
      *
      * @param array $body Configuration parameters
-     * @param string $componentId Component ID.
      * @return array Validated configuration parameters.
+     * @throws UserException In case of error.
      */
-    private function validateParams($body, $componentId)
+    private function validateParams($body)
     {
         if (!isset($body["config"]) && !isset($body["configData"])) {
             throw new UserException("Specify 'config' or 'configData'.");
         }
 
         if (isset($body["config"]) && isset($body["configData"])) {
-            if (!$componentId) {
-                $this->logger->info("Both config and configData specified, 'config' ignored.");
-                unset($body["config"]);
-            } else {
-                /** @var StorageApiService $storage */
-                $storage = $this->container->get("syrup.storage_api");
-                $legacyConfig = (new ControllerHelper)->hasLegacyConfigFlag($storage->getClient(), $componentId);
-                if ($legacyConfig) {
-                    $this->logger->info("Both config and configData specified for $componentId, 'config' ignored.");
-                    unset($body["config"]);
-                } else {
-                    /** @var ComponentsService $components */
-                    $components = $this->container->get('syrup.components');
-                    $configuration = $components->getComponents()->getConfiguration($componentId, $body["config"]);
-                    $body['configData'] = $this->arrayMergeRecursiveFull(
-                        $configuration['configuration'],
-                        $body['configData']
-                    );
-                    unset($body['config']);
-                }
-            }
+            $this->logger->info("Both config and configData specified, 'config' ignored.");
+            unset($body["config"]);
         }
         return $body;
     }
@@ -168,7 +148,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
     {
         // Get params from request
         $params = $this->getPostJson($request);
-        $params = $this->validateParams($params, null, false);
+        $params = $this->validateParams($params);
         $params['mode'] = 'sandbox';
 
         $params["format"] = $request->get("format", "yaml");
@@ -204,7 +184,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             ], 400);
         }
 
-        $params = $this->validateParams($params, $component);
+        $params = $this->validateParams($params);
         $params['mode'] = 'input';
 
         return $this->createJobFromParams($params);
@@ -233,7 +213,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             ], 400);
         }
 
-        $params = $this->validateParams($params, $component);
+        $params = $this->validateParams($params);
         $params['mode'] = 'dry-run';
 
         return $this->createJobFromParams($params);
@@ -251,7 +231,7 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
         $params = $this->getPostJson($request);
         $component = $request->get("component");
         $this->checkComponent($component);
-        $this->validateParams($params, $component);
+        $this->validateParams($params);
         $params['mode'] = 'run';
 
         return $this->createJobFromParams($params);
@@ -396,25 +376,5 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             unset($data->component);
         }
         return parent::createJsonResponse($data, $status, $headers);
-    }
-
-    /**
-     * Merge two arrays recursively while maintaining array keys.
-     *
-     * @param array &$array1 First array.
-     * @param array &$array2 Second array.
-     * @return array Merged array
-     */
-    private function arrayMergeRecursiveFull(array &$array1, array &$array2)
-    {
-        $merged = $array1;
-        foreach ($array2 as $key => &$value) {
-            if (is_array($value) && isset($merged[$key]) && is_array($merged[$key])) {
-                $merged[$key] = $this->arrayMergeRecursiveFull($merged[$key], $value);
-            } else {
-                $merged[$key] = $value;
-            }
-        }
-        return $merged;
     }
 }
