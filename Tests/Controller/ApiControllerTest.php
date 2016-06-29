@@ -647,5 +647,4 @@ class ApiControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->saveConfigAction($request);
     }
-
 }
