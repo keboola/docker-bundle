@@ -45,6 +45,7 @@ class NetworkTest extends KernelTestCase
 
     public function tearDown()
     {
+        parent::tearDown();
         // clean temporary folder
         $fs = new Filesystem();
         $fs->remove($this->temp->getTmpFolder());
