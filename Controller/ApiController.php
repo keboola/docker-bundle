@@ -336,6 +336,10 @@ class ApiController extends \Keboola\Syrup\Controller\ApiController
             $options->setConfiguration($configuration);
         }
 
+        if ($request->get("changeDescription")) {
+            $options->setChangeDescription($request->get("changeDescription"));
+        }
+
         if ($request->get("name")) {
             $options->setName($request->get("name"));
         }
