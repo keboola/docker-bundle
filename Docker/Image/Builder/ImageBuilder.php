@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
@@ -441,6 +440,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     } elseif ($key === '#password') {
                         $this->setRepoPassword($value);
                         unset($this->parameters[$key]);
+                    } elseif ($key === 'network') {
+                        $this->logger->info("Overriding image network configuration setting with runtime value $value.");
+                        $this->setNetworkType($value);
                     }
                 }
             }

@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\Gelf\ServerFactory;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 
@@ -401,6 +402,9 @@ class Image
      */
     public function setNetworkType($networkType)
     {
+        if (($networkType != 'none') && ($networkType != 'bridge')) {
+            throw new ApplicationException("Network type '$networkType' is not supported.");
+        }
         $this->networkType = $networkType;
         return $this;
     }
@@ -425,7 +429,7 @@ class Image
                 $this->loggerServerType = ServerFactory::SERVER_HTTP;
                 break;
             default:
-                throw new \Exception("Server type '{$logger['gelf_type']}' not supported");
+                throw new ApplicationException("Server type '{$logger['gelf_type']}' not supported");
         }
         return $this;
     }

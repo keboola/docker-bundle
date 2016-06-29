@@ -8,7 +8,6 @@ use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -400,7 +399,7 @@ class Container
             }
             $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
         }
-
+        
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
