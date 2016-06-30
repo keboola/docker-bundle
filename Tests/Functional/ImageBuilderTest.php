@@ -132,7 +132,7 @@ class ImageBuilderTest extends KernelTestCase
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "repository" => [
-                    "password" => DOCKERHUB_PRIVATE_PASSWORD,
+                    "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
                     "username" => DOCKERHUB_PRIVATE_USERNAME,
                     "server" => DOCKERHUB_PRIVATE_SERVER,
                 ],
