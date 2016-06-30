@@ -10,29 +10,10 @@ use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\DockerHub
 {
-    protected $loginEmail;
     protected $loginUsername;
     protected $loginPassword;
     protected $loginServer;
 
-    /**
-     * @return mixed
-     */
-    public function getLoginEmail()
-    {
-        return $this->loginEmail;
-    }
-
-    /**
-     * @param mixed $loginEmail
-     * @return $this
-     */
-    public function setLoginEmail($loginEmail)
-    {
-        $this->loginEmail = $loginEmail;
-
-        return $this;
-    }
 
     /**
      * @return mixed
@@ -98,9 +79,6 @@ class PrivateRepository extends Image\DockerHub
     {
         // Login
         $loginParams = [];
-        if ($this->getLoginEmail()) {
-            $loginParams[] = "--email=" . escapeshellarg($this->getLoginEmail());
-        }
         if ($this->getLoginUsername()) {
             $loginParams[] = "--username=" . escapeshellarg($this->getLoginUsername());
         }
@@ -153,14 +131,8 @@ class PrivateRepository extends Image\DockerHub
     {
         parent::fromArray($config);
         if (isset($config["definition"]["repository"])) {
-            if (isset($config["definition"]["repository"]["email"])) {
-                $this->setLoginEmail($config["definition"]["repository"]["email"]);
-            }
             if (isset($config["definition"]["repository"]["username"])) {
                 $this->setLoginUsername($config["definition"]["repository"]["username"]);
-            }
-            if (isset($config["definition"]["repository"]["password"])) {
-                $this->setLoginPassword($config["definition"]["repository"]["password"]);
             }
             if (isset($config["definition"]["repository"]["#password"])) {
                 $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));

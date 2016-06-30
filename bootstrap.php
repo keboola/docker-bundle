@@ -1,14 +1,6 @@
 <?php
 // Define path to application directory
 define('ROOT_PATH', __DIR__);
-
-// Ensure library/ is on include_path
-/*
-set_include_path(implode(PATH_SEPARATOR, array(
-	realpath(ROOT_PATH . '/library'),
-	get_include_path(),
-)));
-*/
 ini_set('display_errors', true);
 
 date_default_timezone_set('Europe/Prague');
@@ -24,9 +16,6 @@ defined('STORAGE_API_TOKEN')
 
 defined('DOCKERHUB_PRIVATE_USERNAME')
     || define('DOCKERHUB_PRIVATE_USERNAME', getenv('DOCKERHUB_PRIVATE_USERNAME') ? getenv('DOCKERHUB_PRIVATE_USERNAME') : 'username');
-
-defined('DOCKERHUB_PRIVATE_EMAIL')
-    || define('DOCKERHUB_PRIVATE_EMAIL', getenv('DOCKERHUB_PRIVATE_EMAIL') ? getenv('DOCKERHUB_PRIVATE_EMAIL') : 'email');
 
 defined('DOCKERHUB_PRIVATE_PASSWORD')
     || define('DOCKERHUB_PRIVATE_PASSWORD', getenv('DOCKERHUB_PRIVATE_PASSWORD') ? getenv('DOCKERHUB_PRIVATE_PASSWORD') : 'password');
