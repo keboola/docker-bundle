@@ -10,18 +10,9 @@ use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\QuayIO
 {
-    protected $loginEmail = ".";
     protected $loginUsername;
     protected $loginPassword;
     protected $loginServer = "quay.io";
-
-    /**
-     * @return mixed
-     */
-    public function getLoginEmail()
-    {
-        return $this->loginEmail;
-    }
 
     /**
      * @return mixed
@@ -76,9 +67,6 @@ class PrivateRepository extends Image\QuayIO
     {
         // Login
         $loginParams = [];
-        if ($this->getLoginEmail()) {
-            $loginParams[] = "--email=" . escapeshellarg($this->getLoginEmail());
-        }
         if ($this->getLoginUsername()) {
             $loginParams[] = "--username=" . escapeshellarg($this->getLoginUsername());
         }

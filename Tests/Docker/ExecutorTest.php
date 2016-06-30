@@ -236,7 +236,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub-private",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "repository" => array(
-                    "email" => DOCKERHUB_PRIVATE_EMAIL,
                     "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
                     "username" => DOCKERHUB_PRIVATE_USERNAME
                 )

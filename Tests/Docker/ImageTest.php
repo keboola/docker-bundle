@@ -80,7 +80,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub-private",
                 "uri" => "keboola/docker-demo",
                 "repository" => array(
-                    "email" => "aa",
                     "#password" => $encryptor->encrypt("bb"),
                     "username" => "cc",
                     "server" => "dd"
@@ -95,12 +94,11 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         /** @var Image\DockerHub\PrivateRepository $image */
         $image = Image::factory($encryptor, $log, $configuration);
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\DockerHub\\PrivateRepository", get_class($image));
-        $this->assertEquals("aa", $image->getLoginEmail());
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());
         $this->assertEquals("dd", $image->getLoginServer());
 
-        $this->assertEquals("--email='aa' --username='cc' --password='bb' 'dd'", $image->getLoginParams());
+        $this->assertEquals("--username='cc' --password='bb' 'dd'", $image->getLoginParams());
         $this->assertEquals("'dd'", $image->getLogoutParams());
         $this->assertEquals("keboola/docker-demo:latest", $image->getFullImageId());
     }
@@ -181,9 +179,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());
         $this->assertEquals("quay.io", $image->getLoginServer());
-        $this->assertEquals(".", $image->getLoginEmail());
 
-        $this->assertEquals("--email='.' --username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
+        $this->assertEquals("--username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
         $this->assertEquals("'quay.io'", $image->getLogoutParams());
         $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());
     }
