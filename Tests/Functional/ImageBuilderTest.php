@@ -132,7 +132,6 @@ class ImageBuilderTest extends KernelTestCase
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
                 "repository" => [
-                    "email" => DOCKERHUB_PRIVATE_EMAIL,
                     "password" => DOCKERHUB_PRIVATE_PASSWORD,
                     "username" => DOCKERHUB_PRIVATE_USERNAME,
                     "server" => DOCKERHUB_PRIVATE_SERVER,
@@ -188,10 +187,9 @@ class ImageBuilderTest extends KernelTestCase
             "definition" => [
                 "type" => "builder",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => array(
-                    "email" => DOCKERHUB_PRIVATE_EMAIL,
+                "repository" => [
                     "server" => DOCKERHUB_PRIVATE_SERVER,
-                ),
+                ],
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://github.com/keboola/docker-demo-app",
