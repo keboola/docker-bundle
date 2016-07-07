@@ -18,6 +18,7 @@ use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -126,12 +127,16 @@ class FunctionalTests extends KernelTestCase
         return $storageServiceStub;
     }
 
-    protected function getLoggerServiceStub()
+    protected function getLoggerServiceStub(&$handler = null)
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
+        if ($handler) {
+            $containerLogger->pushHandler($handler);
+        } else {
+            $containerLogger->pushHandler(new NullHandler());
+        }
         $loggersServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\LoggersService")
             ->disableOriginalConstructor()
             ->getMock();
@@ -694,11 +699,7 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_project_wrapper');
         $ecpWrapper->setComponentId('docker-config-dump');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
+        $handler = new TestHandler();
 
         // mock components
         $configData = [
@@ -735,7 +736,7 @@ class FunctionalTests extends KernelTestCase
             $componentsServiceStub,
             $ecWrapper,
             $ecpWrapper,
-            $this->getLoggerServiceStub()
+            $this->getLoggerServiceStub($handler)
         );
 
         // mock client to return image data
@@ -754,11 +755,19 @@ class FunctionalTests extends KernelTestCase
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
                             'data' => [
-                                'definition' =>
-                                    [
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/config-dump',
+                                "definition" => [
+                                    "type" => "builder",
+                                    "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
+                                    "build_options" => [
+                                        "repository" => [
+                                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                                            "type" => "git"
+                                        ],
+                                        "commands" => [],
+                                        "entry_point" => "cat /data/config.json",
                                     ],
+                                ],
+                                "configuration_format" => "json",
                             ],
                             'flags' => [],
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
@@ -778,8 +787,11 @@ class FunctionalTests extends KernelTestCase
         $job = new Job($encryptor, $data);
         $job->setId(123456);
 
-        $response = $jobExecutor->execute($job);
-        $config = Yaml::parse($response["message"]);
+        $jobExecutor->execute($job);
+        $ret = $handler->getRecords();
+        $this->assertEquals(1, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $config = json_decode($ret[0]['message'], true);
         $this->assertEquals("KBC::Encrypted==", substr($config["parameters"]["#key2"], 0, 16));
         $this->assertEquals(
             $ecWrapper->getPrefix(),
@@ -812,11 +824,7 @@ class FunctionalTests extends KernelTestCase
         $ecpWrapper = self::$kernel->getContainer()->get('syrup.encryption.component_project_wrapper');
         $ecpWrapper->setComponentId('docker-config-dump');
         $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
+        $handler = new TestHandler();
 
         // mock components
         $configData = [
@@ -853,7 +861,7 @@ class FunctionalTests extends KernelTestCase
             $componentsServiceStub,
             $ecWrapper,
             $ecpWrapper,
-            $this->getLoggerServiceStub()
+            $this->getLoggerServiceStub($handler)
         );
 
         // mock client to return image data
@@ -872,14 +880,21 @@ class FunctionalTests extends KernelTestCase
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
                             'data' => [
-                                'definition' =>
-                                    [
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/config-dump',
+                                "definition" => [
+                                    "type" => "builder",
+                                    "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
+                                    "build_options" => [
+                                        "repository" => [
+                                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                                            "type" => "git"
+                                        ],
+                                        "commands" => [],
+                                        "entry_point" => "cat /data/config.json",
                                     ],
+                                ],
+                                "configuration_format" => "json",
                             ],
                             'flags' => ['encrypt'],
-                            'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
                         ]
                 ]
         ];
@@ -899,8 +914,11 @@ class FunctionalTests extends KernelTestCase
         $job = new Job($encryptor, $data);
         $job->setId(123456);
 
-        $response = $jobExecutor->execute($job);
-        $config = Yaml::parse($response["message"]);
+        $jobExecutor->execute($job);
+        $ret = $handler->getRecords();
+        $this->assertEquals(1, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $config = json_decode($ret[0]['message'], true);
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
         $this->assertEquals("value3", $config["parameters"]["#key3"]);
         $this->assertEquals("value4", $config["parameters"]["#key4"]);
