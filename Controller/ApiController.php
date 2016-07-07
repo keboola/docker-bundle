@@ -10,6 +10,7 @@ use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -189,10 +190,13 @@ class ApiController extends BaseApiController
      */
     public function inputAction(Request $request)
     {
-        $params = $this->validateComponent($request);
-        $params['mode'] = 'input';
-
-        return $this->createJobFromParams($params);
+        $ret = $this->validateComponent($request);
+        if (is_a($ret, JsonResponse::class)) {
+            return $ret;
+        } else {
+            $ret['mode'] = 'input';
+            return $this->createJobFromParams($ret);
+        }
     }
 
 
@@ -204,10 +208,13 @@ class ApiController extends BaseApiController
      */
     public function dryRunAction(Request $request)
     {
-        $params = $this->validateComponent($request);
-        $params['mode'] = 'dry-run';
-
-        return $this->createJobFromParams($params);
+        $ret = $this->validateComponent($request);
+        if (is_a($ret, JsonResponse::class)) {
+            return $ret;
+        } else {
+            $ret['mode'] = 'dry-run';
+            return $this->createJobFromParams($ret);
+        }
     }
 
 
