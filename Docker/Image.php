@@ -48,7 +48,7 @@ class Image
      * @var bool
      */
     protected $forwardTokenDetails = false;
-    
+
     /**
      * @var bool
      */
@@ -444,7 +444,7 @@ class Image
     {
         $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
             'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
-            'forward_token_details' => 'setForwardTokenDetails', 
+            'forward_token_details' => 'setForwardTokenDetails',
             'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
             'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
         ];
