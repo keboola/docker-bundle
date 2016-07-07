@@ -40,7 +40,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $fs = new Filesystem();
         $fs->mkdir($this->tmpDir . "/download");
 
-        $this->client = new Client(array("token" => STORAGE_API_TOKEN));
+        $this->client = new Client(["token" => STORAGE_API_TOKEN]);
     }
 
     public function tearDown()
@@ -55,7 +55,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         // Delete file uploads
         $options = new ListFilesOptions();
-        $options->setTags(array("docker-bundle-test"));
+        $options->setTags(["docker-bundle-test"]);
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
             $this->client->deleteFile($file["id"]);
@@ -87,8 +87,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
         file_put_contents($root . "/upload", "test");
 
-        $id1 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
-        $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+        $id1 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
+        $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
 
         $reader = new Reader($this->client);
         $configuration = [["tags" => ["docker-bundle-test"]]];
@@ -189,8 +189,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         // Create redshift table and export it to produce a sliced file
         if (!$this->client->tableExists("in.c-docker-test-redshift.test_file")) {
             $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(array("Id", "Name"));
-            $csv->writeRow(array("test", "test"));
+            $csv->writeRow(["Id", "Name"]);
+            $csv->writeRow(["test", "test"]);
             $this->client->createTableAsync("in.c-docker-test-redshift", "test_file", $csv);
         }
         $table = $this->client->exportTableAsync('in.c-docker-test-redshift.test_file');
@@ -213,7 +213,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         // make at least 10 files in the project
         for ($i = 0; $i < 12; $i++) {
-            $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(array("docker-bundle-test")));
+            $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
         }
 
         // valid configuration, but does nothing

@@ -23,15 +23,15 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "quayio-private",
                 "uri" => "keboola/docker-demo-private"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -55,19 +55,19 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "quayio-private",
                 "uri" => "keboola/docker-demo-private",
-                "repository" => array(
+                "repository" => [
                     "username" => QUAYIO_PRIVATE_USERNAME,
                     "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD)
-                )
-            ),
+                ]
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
