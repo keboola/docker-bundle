@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class ActionController extends \Keboola\Syrup\Controller\ApiController
+class ActionController extends BaseApiController
 {
     /**
      * @param $componentId
@@ -128,24 +128,5 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
             throw new UserException("Decoding JSON response from component failed");
         }
         return $this->createJsonResponse($jsonData);
-    }
-
-    /**
-     *
-     * hide component param from response
-     *
-     * @param null $data
-     * @param string $status
-     * @param array $headers
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
-     */
-    public function createJsonResponse($data = null, $status = '200', $headers = array())
-    {
-        if (is_array($data) && array_key_exists("component", $data)) {
-            unset($data["component"]);
-        } elseif (is_object($data) && property_exists($data, 'component')) {
-            unset($data->component);
-        }
-        return parent::createJsonResponse($data, $status, $headers);
     }
 }
