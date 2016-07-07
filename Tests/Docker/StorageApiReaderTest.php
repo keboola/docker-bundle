@@ -258,8 +258,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         // Create table
         if (!$this->client->tableExists("in.c-docker-test.test")) {
             $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(array("Id", "Name"));
-            $csv->writeRow(array("test", "test"));
+            $csv->writeRow(["Id", "Name"]);
+            $csv->writeRow(["test", "test"]);
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
             $this->client->setTableAttribute("in.c-docker-test.test", "attr1", "val1");
         }
@@ -267,12 +267,12 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
 
         $reader = new Reader($this->client);
-        $configuration = array(
-            array(
+        $configuration = [
+            [
                 "source" => "in.c-docker-test.test",
                 "destination" => "test.csv"
-            )
-        );
+            ]
+        ];
 
         $reader->downloadTables($configuration, $root . "/download");
 
@@ -298,8 +298,8 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         // Create table
         if (!$this->client->tableExists("in.c-docker-test-redshift.test")) {
             $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(array("Id", "Name"));
-            $csv->writeRow(array("test", "test"));
+            $csv->writeRow(["Id", "Name"]);
+            $csv->writeRow(["test", "test"]);
             $this->client->createTableAsync("in.c-docker-test-redshift", "test", $csv);
             $this->client->setTableAttribute("in.c-docker-test-redshift.test", "attr1", "val2");
         }
@@ -307,12 +307,12 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmpDir;
 
         $reader = new Reader($this->client);
-        $configuration = array(
-            array(
+        $configuration = [
+            [
                 "source" => "in.c-docker-test-redshift.test",
                 "destination" => "test-redshift.csv"
-            )
-        );
+            ]
+        ];
 
         $reader->downloadTables($configuration, $root . "/download");
 

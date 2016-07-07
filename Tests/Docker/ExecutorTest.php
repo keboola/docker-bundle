@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\Configuration\Input\File;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -16,6 +17,7 @@ use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
@@ -47,7 +49,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->temp->initRunFolder();
         $this->tmpDir = $this->temp->getTmpFolder();
 
-        $this->client = new Client(array("token" => STORAGE_API_TOKEN));
+        $this->client = new Client(["token" => STORAGE_API_TOKEN]);
 
         // Delete bucket
         if ($this->client->bucketExists("in.c-docker-test")) {
@@ -66,8 +68,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         // Create table
         if (!$this->client->tableExists("in.c-docker-test.test")) {
             $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(array("id", "text"));
-            $csv->writeRow(array("test", "testtesttest"));
+            $csv->writeRow(["id", "text"]);
+            $csv->writeRow(["test", "testtesttest"]);
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
         }
 
@@ -78,49 +80,49 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $this->client->deleteFile($file['id']);
         }
     }
-    
+
     public function testDockerHubExecutorRun()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
-            "streaming_logs" => false
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-            "parameters" => array(
+                        ]
+                    ]
+                ]
+            ],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $logContainer = new ContainerLogger("null");
-        $logContainer->pushHandler(new NullHandler());
+        $handler = new TestHandler();
+        $logContainer->pushHandler($handler);
 
         $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -143,8 +145,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertContains("Processed 1 rows.", trim($message));
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
+        $this->assertEquals(
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
+            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
+        );
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -153,41 +159,40 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testQuayIOExecutorRun()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "quayio",
                 "uri" => "keboola/docker-demo-app"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
-            "streaming_logs" => false
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-            "parameters" => array(
+                        ]
+                    ]
+                ]
+            ],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -215,8 +220,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertContains("Processed 1 rows.", trim($message));
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
+        $this->assertEquals(
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
+            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
+        );
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -231,54 +240,53 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub-private",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => array(
+                "repository" => [
                     "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
                     "username" => DOCKERHUB_PRIVATE_USERNAME
-                )
-            ),
+                ]
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
-            "streaming_logs" => false
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-            "parameters" => array(
+                        ]
+                    ]
+                ]
+            ],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $logContainer->pushHandler(new NullHandler());
 
         $image = Image::factory($encryptor, $log, $imageConfig);
 
-        $container = new MockContainer($image, $log, $containerLog);
+        $container = new MockContainer($image, $log, $logContainer);
 
         $callback = function () use ($container) {
             $fs = new Filesystem();
@@ -296,8 +304,12 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
         $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertContains("Processed 1 rows.", trim($message));
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
+        $this->assertEquals(
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
+            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
+        );
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -306,25 +318,25 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorRunTimeout()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "process_timeout" => 1
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -363,25 +375,25 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorEnvs()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "process_timeout" => 1
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -418,26 +430,26 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardToken()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "process_timeout" => 1,
             "forward_token" => true
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -473,26 +485,26 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardTokenDetails()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "process_timeout" => 1,
             "forward_token_details" => true
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -534,40 +546,40 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorSandbox()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-            "parameters" => array(
+                        ]
+                    ]
+                ]
+            ],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -597,38 +609,38 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorInvalidOutputMapping()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out",
                             // erroneous lines
                             "primary_key" => "col1",
                             "incremental" => 1
-                        )
-                    )
-                )
-            ),
-        );
+                        ]
+                    ]
+                ]
+            ],
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -652,37 +664,37 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorInvalidInputMapping()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test",
                             // erroneous lines
                             "foo" => "bar"
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-        );
+                        ]
+                    ]
+                ]
+            ],
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -710,46 +722,46 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
      */
     public function testExecutorInvalidInputMapping2()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml"
-        );
+        ];
 
-        $config = array(
-            "storage" => array(
-                "input" => array(
-                    "tables" => array(
-                        array(
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
                             "source" => "in.c-docker-test.test",
                             // erroneous lines
-                            "columns" => array(
-                                array(
+                            "columns" => [
+                                [
                                     "value" => "id",
                                     "label" => "id"
-                                ),
-                                array(
+                                ],
+                                [
                                     "value" => "col1",
                                     "label" => "col1"
-                                )
-                            )
-                        )
-                    )
-                ),
-                "output" => array(
-                    "tables" => array(
-                        array(
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
                             "source" => "sliced.csv",
                             "destination" => "in.c-docker-test.out"
-                        )
-                    )
-                )
-            ),
-        );
+                        ]
+                    ]
+                ]
+            ],
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -768,26 +780,26 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorStoreEmptyStateFile()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "process_timeout" => 1,
             "forward_token_details" => true
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -819,26 +831,26 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorStoreNonEmptyStateFile()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "process_timeout" => 1,
             "forward_token_details" => true
-        );
+        ];
 
-        $config = array(
-            "storage" => array(),
-            "parameters" => array(
+        $config = [
+            "storage" => [],
+            "parameters" => [
                 "primary_key_column" => "id",
                 "data_column" => "text",
                 "string_length" => "4"
-            )
-        );
+            ]
+        ];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -924,18 +936,18 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $client->dropBucket("in.c-docker-demo-whatever");
         }
 
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "default_bucket" => true
-        );
+        ];
 
-        $config = array();
+        $config = [];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -986,18 +998,18 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $client->dropBucket("in.c-docker-demo-whatever");
         }
 
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "yaml",
             "default_bucket" => true
-        );
+        ];
 
-        $config = array();
+        $config = [];
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -1133,96 +1145,19 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("keboola-ex-generic", $executor->getSanitizedComponentId());
     }
 
-    public function testContainerMessageTrimmingStreamingOff()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "streaming_logs" => false
-        ];
-
-        $config = [];
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $callback = function () use ($container) {
-            $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() . "/in/files/text", str_repeat("Batman", 100000));
-
-            $process = new Process('cat ' . $container->getDataDir() . '/in/files/text');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertContains("BatmanBatman", trim($message));
-        $this->assertContains('...', $message);
-        $this->assertEquals(64005, strlen($message));
-    }
-
-    public function testContainerMessageTrimmingStreamingOn()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "streaming_logs" => true
-        ];
-
-        $config = [];
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $callback = function () use ($container) {
-            $fs = new Filesystem();
-            $fs->dumpFile($container->getDataDir() . "/in/files/text", str_repeat("Batman", 100000));
-
-            $process = new Process('cat ' . $container->getDataDir() . '/in/files/text');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertEquals(false, trim($message));
-    }
 
     public function testOauthConfigDecrypt()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "default_bucket" => true
-        );
+        ];
 
         $config = ["authorization" => ["oauth_api" => ["id" => "whatever"]]];
 
@@ -1280,16 +1215,16 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testOauthConfigDecryptSandboxed()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "default_bucket" => true
-        );
+        ];
 
         $config = ["authorization" => ["oauth_api" => ["id" => "whatever"]]];
 
@@ -1347,16 +1282,15 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
 
     public function testOauthConfigDecryptAndExecute()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
-            "streaming_logs" => false
-        );
+        ];
 
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
@@ -1412,7 +1346,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], false);
 
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($container->getDataDir() . DIRECTORY_SEPARATOR . 'config.json'));
         $expectedConfigFile = [
             "authorization" => [
                 "oauth_api" => [
@@ -1423,21 +1358,23 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             "image_parameters" => [],
             "action" => "run"
         ];
-        $this->assertEquals(json_encode($expectedConfigFile), trim($message));
+        $this->assertEquals(
+            $expectedConfigFile,
+            json_decode(file_get_contents($container->getDataDir() . DIRECTORY_SEPARATOR . 'config.json'), true)
+        );
     }
 
     public function testOauthConfigExecuteSandboxed()
     {
-        $imageConfig = array(
-            "definition" => array(
+        $imageConfig = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
-            "streaming_logs" => false
-        );
+        ];
 
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
@@ -1493,7 +1430,8 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->setComponentId("keboola.docker-demo");
         $executor->initialize($container, $config, [], true);
 
-        $message = $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($container->getDataDir() . DIRECTORY_SEPARATOR .  'config.json'));
         $expectedConfigFile = [
             "authorization" => [
                 "oauth_api" => [
@@ -1504,6 +1442,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             "image_parameters" => [],
             "action" => "run"
         ];
-        $this->assertEquals(json_encode($expectedConfigFile), trim($message));
+        $this->assertEquals(
+            $expectedConfigFile,
+            json_decode(file_get_contents($container->getDataDir() . DIRECTORY_SEPARATOR . 'config.json'), true)
+        );
+
     }
 }

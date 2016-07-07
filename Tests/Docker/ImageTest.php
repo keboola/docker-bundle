@@ -44,7 +44,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "process_timeout" => 7200,
             "forward_token" => true,
             "forward_token_details" => true,
-            "streaming_logs" => true,
             "default_bucket" => true,
             "configuration_format" => 'json'
         );
@@ -132,7 +131,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             "process_timeout" => 7200,
             "forward_token" => true,
             "forward_token_details" => true,
-            "streaming_logs" => true,
             "configuration_format" => 'json'
         );
         $encryptor = new ObjectEncryptor();

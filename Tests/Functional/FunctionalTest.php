@@ -504,7 +504,7 @@ class FunctionalTests extends KernelTestCase
             }
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
-        
+
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
             $this->temp,
@@ -760,7 +760,6 @@ class FunctionalTests extends KernelTestCase
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/config-dump',
                                     ],
-                                    'streaming_logs' => false,
                             ],
                             'flags' => [],
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',
@@ -879,8 +878,6 @@ class FunctionalTests extends KernelTestCase
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/config-dump',
                                     ],
-                                    'streaming_logs' => false,
-
                             ],
                             'flags' => ['encrypt'],
                             'uri' => 'https://syrup.keboola.com/docker/docker-config-dump',

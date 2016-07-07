@@ -11,7 +11,6 @@ use Keboola\StorageApi\Client;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -76,7 +75,6 @@ class LoggerTests extends KernelTestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["streaming_logs"] = true;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -116,45 +114,6 @@ print "second message to stdout\n";'
         $this->assertTrue($containerHandler->hasInfo("second message to stdout\n"));
         $this->assertTrue($containerHandler->hasError("first message to stderr\n"));
         $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
-    }
-
-    public function testLogStreamingOff()
-    {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["streaming_logs"] = false;
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $handler = new TestHandler();
-        $log->pushHandler($handler);
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log, $containerLog);
-        $container->setId("dummy-testing");
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-            echo "first message to stdout\n";
-            file_put_contents("php://stderr", "first message to stderr\n");
-            sleep(5);
-            error_log("second message to stderr\n");
-            print "second message to stdout\n";'
-        );
-        $container->setDataDir($dataDir);
-
-        $process = $container->run("testsuite", []);
-        $out = $process->getOutput();
-        $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
-        $this->assertFalse($handler->hasErrorRecords());
-        $this->assertFalse($handler->hasInfoRecords());
-        $this->assertFalse($handler->hasInfo('first message to stdout'));
-        $this->assertFalse($handler->hasInfo('second message to stdout'));
-        $this->assertFalse($handler->hasInfo('first message to stderr'));
-        $this->assertFalse($handler->hasInfo('second message to stderr'));
     }
 
     public function testGelfLogUdp()
@@ -464,7 +423,6 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["streaming_logs"] = true;
 
         //start the symfony kernel
         $kernel = static::createKernel();

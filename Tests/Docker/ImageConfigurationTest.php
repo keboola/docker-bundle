@@ -38,12 +38,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "process_timeout" => 3600,
             "forward_token" => false,
             "forward_token_details" => false,
-            "streaming_logs" => true,
             "default_bucket" => false,
             "vendor" => array("a" => "b"),
             "image_parameters" => array("foo" => "bar"),
             "synchronous_actions" => ["test", "test2"],
             "network" => "none",
+            "streaming_logs" => true,
             "logging" => [
                 "type" => "gelf",
                 "verbosity" => [200 => "verbose"],
@@ -63,22 +63,22 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             )
         );
         $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
-        $expectedConfiguration = array(
-            'definition' => array(
+        $expectedConfiguration = [
+            'definition' => [
                 'type' => 'dockerhub',
                 'uri' => 'keboola/docker-demo',
                 'tag' => 'latest',
-            ),
+            ],
             'cpu_shares' => 1024,
             'memory' => '64m',
             'configuration_format' => 'yaml',
             'process_timeout' => 3600,
             'forward_token' => false,
             'forward_token_details' => false,
-            'streaming_logs' => true,
             'default_bucket' => false,
-            'synchronous_actions' => array(),
-        );
+            'synchronous_actions' => [],
+            'streaming_logs' => true,
+        ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
@@ -187,10 +187,10 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "process_timeout" => 3600,
             "forward_token" => false,
             "forward_token_details" => false,
-            "streaming_logs" => true,
             "default_bucket" => true,
             "default_bucket_stage" => "out",
             "synchronous_actions" => [],
+            "streaming_logs" => true,
         ];
 
         $expectedConfiguration = $config;
