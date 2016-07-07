@@ -6,7 +6,6 @@ use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
 class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {

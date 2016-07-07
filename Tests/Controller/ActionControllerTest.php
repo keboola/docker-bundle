@@ -287,7 +287,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('test');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -307,7 +307,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('run');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -325,7 +325,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('timeout');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -342,7 +342,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('usererror');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -359,7 +359,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('apperror');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -377,7 +377,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('invalidjson');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -394,7 +394,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('noresponse');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -414,7 +414,7 @@ class ActionControllerTest extends WebTestCase
         $encryptedPassword = $encryptor->encrypt('password');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -430,7 +430,7 @@ class ActionControllerTest extends WebTestCase
         $container = self::$container;
 
         $request = $this->prepareRequest('decrypt', ["#password" => 'password']);
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -449,7 +449,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('decrypt', ["#password" => "nesmysl"]);
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -474,7 +474,7 @@ class ActionControllerTest extends WebTestCase
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();

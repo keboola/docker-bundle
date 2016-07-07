@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\QuayIO

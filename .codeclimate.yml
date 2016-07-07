@@ -13,7 +13,9 @@ engines:
       CleanCode/ElseExpression:
         enabled: false
       CleanCode/StaticAccess:
-        enabled: false        
+        enabled: false
+      CleanCode/BooleanArgumentFlag:
+        enabled: false
     exclude_fingerprints:
     - fc7cdf1dcd9ffb15b73a2edf2ab992ed
     - e995d923dc507123eca26fc6bbf71d4f

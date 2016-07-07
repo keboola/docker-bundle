@@ -71,7 +71,7 @@ class LoggerTests extends KernelTestCase
         return $dataDir;
     }
 
-    public function testLogStreamingOn()
+    public function testLogs()
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
