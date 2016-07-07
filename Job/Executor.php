@@ -233,7 +233,7 @@ class Executor extends BaseExecutor
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, true);
-                $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
+                $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
 
                 $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
@@ -246,7 +246,7 @@ class Executor extends BaseExecutor
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
                 $executor->initialize($container, $configData, $state, false);
-                $message = $executor->run($container, $containerId, $this->tokenInfo, $configId);
+                $executor->run($container, $containerId, $this->tokenInfo, $configId);
                 $executor->storeOutput($container, $state);
 
                 $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
@@ -254,10 +254,7 @@ class Executor extends BaseExecutor
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
-        if (!$message) {
-            $message = "Docker container processing finished.";
-        }
-        return array("message" => $message);
+        return array("message" => "Docker container processing finished.");
     }
 
     public function cleanup(Job $job)

@@ -43,7 +43,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "image_parameters" => array("foo" => "bar"),
             "synchronous_actions" => ["test", "test2"],
             "network" => "none",
-            "streaming_logs" => true,
             "logging" => [
                 "type" => "gelf",
                 "verbosity" => [200 => "verbose"],
@@ -77,7 +76,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => false,
             'default_bucket' => false,
             'synchronous_actions' => [],
-            'streaming_logs' => true,
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -190,7 +188,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "default_bucket" => true,
             "default_bucket_stage" => "out",
             "synchronous_actions" => [],
-            "streaming_logs" => true,
         ];
 
         $expectedConfiguration = $config;

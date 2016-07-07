@@ -48,12 +48,7 @@ class Image
      * @var bool
      */
     protected $forwardTokenDetails = false;
-
-    /**
-     * @var bool
-     */
-    private $streamingLogs = true;
-
+    
     /**
      * @var bool
      */
@@ -278,24 +273,6 @@ class Image
     }
 
     /**
-     * @param bool $streamingLogs
-     * @return $this
-     */
-    public function setStreamingLogs($streamingLogs)
-    {
-        $this->streamingLogs = $streamingLogs;
-        return $this;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isStreamingLogs()
-    {
-        return $this->streamingLogs;
-    }
-
-    /**
      * @param $imageParameters
      * @return $this
      */
@@ -467,7 +444,7 @@ class Image
     {
         $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
             'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
-            'forward_token_details' => 'setForwardTokenDetails', 'streaming_logs' => 'setStreamingLogs',
+            'forward_token_details' => 'setForwardTokenDetails', 
             'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
             'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
         ];

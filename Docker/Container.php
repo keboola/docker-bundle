@@ -200,20 +200,16 @@ class Container
 
     private function runWithoutLogger(Process $process)
     {
-        if ($this->getImage()->isStreamingLogs()) {
-            $process->run(function ($type, $buffer) {
-                if (mb_strlen($buffer) > 64000) {
-                    $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
-                }
-                if ($type === Process::ERR) {
-                    $this->containerLog->error($buffer);
-                } else {
-                    $this->containerLog->info($buffer);
-                }
-            });
-        } else {
-            $process->run();
-        }
+        $process->run(function ($type, $buffer) {
+            if (mb_strlen($buffer) > 64000) {
+                $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
+            }
+            if ($type === Process::ERR) {
+                $this->containerLog->error($buffer);
+            } else {
+                $this->containerLog->info($buffer);
+            }
+        });
     }
 
     private function runWithLogger(Process $process, $containerName)

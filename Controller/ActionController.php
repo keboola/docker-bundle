@@ -107,9 +107,6 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
             $component["data"]
         );
 
-        // Async actions force streaming logs off!
-        $image->setStreamingLogs(false);
-
         // Limit processing to 30 seconds
         $image->setProcessTimeout(30);
 
@@ -119,7 +116,7 @@ class ActionController extends \Keboola\Syrup\Controller\ApiController
             $logService->getContainerLog()
         );
         $executor->initialize($container, $configData, $state, false, $request->get("action"));
-        $message = $executor->run($container, $containerId, $tokenInfo, $configId);
+        $executor->run($container, $containerId, $tokenInfo, $configId, $message);
         $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
 
         if ($message == '' || !$message) {

@@ -56,7 +56,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(7200, $image->getProcessTimeout());
         $this->assertEquals(true, $image->getForwardToken());
         $this->assertEquals(true, $image->getForwardTokenDetails());
-        $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals(true, $image->isDefaultBucket());
         $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals("master", $image->getTag());
@@ -142,7 +141,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(7200, $image->getProcessTimeout());
         $this->assertEquals(true, $image->getForwardToken());
         $this->assertEquals(true, $image->getForwardTokenDetails());
-        $this->assertEquals(true, $image->isStreamingLogs());
         $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }

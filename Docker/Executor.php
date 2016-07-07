@@ -262,9 +262,9 @@ class Executor
      * @param string $id
      * @param array $tokenInfo Storage API token information as returned by verifyToken()
      * @param string $configId Configuration passed to the container (not used for any KBC work).
-     * @return string Container result message.
+     * @param null $processOutput Output variable to catch process output
      */
-    public function run(Container $container, $id, $tokenInfo, $configId)
+    public function run(Container $container, $id, $tokenInfo, $configId, &$processOutput = null)
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
@@ -300,15 +300,7 @@ class Executor
 
         // run the container
         $process = $container->run($id, $this->configData);
-        $message = trim($process->getOutput());
-        if ($message && !$container->getImage()->isStreamingLogs()) {
-            // trim the result if it is too long
-            if (mb_strlen($message) > 64000) {
-                $message = mb_substr($message, 0, 32000) . " ... " . mb_substr($message, -32000);
-            }
-            return $message;
-        }
-        return "";
+        $processOutput = trim($process->getOutput());
     }
 
 
