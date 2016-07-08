@@ -73,13 +73,18 @@ class LoggerTests extends KernelTestCase
 
     public function testLogs()
     {
+        self::bootKernel();
+        $kernel = self::$kernel;
+        /** @var LoggersService $logService */
+        $logService = $kernel->getContainer()->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
+        $log = $logService->getLog();
+        $containerLog = $logService->getContainerLog();
         $handler = new TestHandler();
         $log->pushHandler($handler);
-        $containerLog = new ContainerLogger("null");
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
@@ -105,6 +110,10 @@ print "second message to stdout\n";'
         $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
+        $records = $handler->getRecords();
+        foreach ($records as $record) {
+            $this->assertEquals('docker-core', $record['app']);
+        }
 
         $records = $containerHandler->getRecords();
         $this->assertEquals(4, count($records));
@@ -114,6 +123,10 @@ print "second message to stdout\n";'
         $this->assertTrue($containerHandler->hasInfo("second message to stdout\n"));
         $this->assertTrue($containerHandler->hasError("first message to stderr\n"));
         $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
+        $records = $containerHandler->getRecords();
+        foreach ($records as $record) {
+            $this->assertEquals('docker', $record['app']);
+        }
     }
 
     public function testGelfLogUdp()
