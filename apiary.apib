@@ -289,7 +289,7 @@ Create an execution job on a specified docker image.
 Sandbox call are handy when developing or troubleshooting Docker images.
 They can dump the `data` folder for you before running the image, before uploading the results back to Storage or event without even having the image configured.
 
-## Sandbox [/sandbox?format={format}]
+## Sandbox [/sandbox]
 
 This job will prepare the `data` folder including serialized configuration file in the given format.
 Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
@@ -298,9 +298,6 @@ This call is useful when developing new docker component to obtain a sample of t
 Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder.
 
 Note: only 50 first rows of each table will be exported.
-
-+ Parameters
-    + format (string) ... format of configuration file and file/table manifests `json` or `yaml`
 
 ### Create a Sandbox job [POST]
 

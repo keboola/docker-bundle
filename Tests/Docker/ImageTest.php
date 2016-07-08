@@ -26,7 +26,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
         $this->assertEquals(1024, $image->getCpuShares());
-        $this->assertEquals('yaml', $image->getConfigFormat());
+        $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals(false, $image->getForwardToken());
         $this->assertEquals(false, $image->getForwardTokenDetails());
         $this->assertEquals(false, $image->isDefaultBucket());
@@ -116,7 +116,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("Keboola\\DockerBundle\\Docker\\Image\\QuayIO", get_class($image));
         $this->assertEquals("64m", $image->getMemory());
         $this->assertEquals(1024, $image->getCpuShares());
-        $this->assertEquals('yaml', $image->getConfigFormat());
+        $this->assertEquals('json', $image->getConfigFormat());
         $this->assertEquals(false, $image->getForwardToken());
         $this->assertEquals(false, $image->getForwardTokenDetails());
 
@@ -193,8 +193,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $image = Image::factory($encryptor, $log, $dummyConfig);
-        $image->setConfigFormat('yaml');
-        $this->assertEquals('yaml', $image->getConfigFormat());
+        $image->setConfigFormat('json');
+        $this->assertEquals('json', $image->getConfigFormat());
         try {
             $image->setConfigFormat('fooBar');
             $this->fail("Invalid format should cause exception.");

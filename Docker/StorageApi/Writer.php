@@ -34,7 +34,7 @@ class Writer
     /**
      * @var
      */
-    protected $format = 'yaml';
+    protected $format = 'json';
 
     /**
      * @return mixed

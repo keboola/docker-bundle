@@ -82,7 +82,7 @@ class Image extends Configuration
             ->integerNode("cpu_shares")->min(0)->defaultValue(1024)->end()
             ->scalarNode("memory")->defaultValue("64m")->end()
             ->scalarNode("configuration_format")
-                ->defaultValue("yaml")
+                ->defaultValue("json")
                 ->validate()
                     ->ifNotInArray(["yaml", "json"])
                     ->thenInvalid("Invalid configuration_format %s.")

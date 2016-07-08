@@ -106,6 +106,7 @@ EOT;
         file_put_contents($root . "/config.yml", $this->getYmlConfigFileTemplate());
 
         $adapter = new Adapter();
+        $adapter->setFormat("yaml");
         $adapter->readFromFile($root . "/config.yml");
 
         $str = $this->getStructure();
@@ -128,7 +129,6 @@ EOT;
         file_put_contents($root . "/config.json", $this->getJsonConfigFileTemplate());
 
         $adapter = new Adapter();
-        $adapter->setFormat("json");
         $adapter->readFromFile($root . "/config.json");
 
         $str = $this->getStructure();
@@ -149,6 +149,7 @@ EOT;
         $fs->mkdir($root);
 
         $adapter = new Adapter();
+        $adapter->setFormat("yaml");
         $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.yml");
 
@@ -170,7 +171,6 @@ EOT;
 
         $adapter = new Adapter();
         $adapter->setConfig($this->getStructure());
-        $adapter->setFormat("json");
         $adapter->writeToFile($root . "/config.json");
 
         $this->assertEquals(file_get_contents($root . "/config.json"), $this->getJsonConfigFileTemplate());

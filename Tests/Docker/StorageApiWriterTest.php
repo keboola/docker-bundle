@@ -117,10 +117,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         file_put_contents($root . "/upload/file2", "test");
         file_put_contents(
             $root . "/upload/file2.manifest",
-            "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: false"
+            "{\"tags\": [\"docker-bundle-test\", \"xxx\"],\"is_public\": false}"
         );
         file_put_contents($root . "/upload/file3", "test");
-        file_put_contents($root . "/upload/file3.manifest", "tags: [\"docker-bundle-test\"]\nis_public: true");
+        file_put_contents($root . "/upload/file3.manifest", "{\"tags\": [\"docker-bundle-test\"],\"is_public\": true}");
 
         $configs = array(
             array(
@@ -212,7 +212,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
-        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test\", \"xxx\"]\nis_public: true");
+        file_put_contents($root . "/upload/file1.manifest", "{\"tags\": [\"docker-bundle-test\", \"xxx\"],\"is_public\": true}");
 
         $configs = array(
             array(
@@ -272,7 +272,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
-        file_put_contents($root . "/upload/file1.manifest", "\tthis is not \n\t \tat all a {valid} yaml");
+        file_put_contents($root . "/upload/file1.manifest", "\tthis is not \n\t \tat all a {valid} json");
 
         $configs = array(
             array(
@@ -283,12 +283,12 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
 
         $writer = new Writer($this->client);
-        $writer->setFormat('yaml');
+        $writer->setFormat('json');
         try {
             $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
             $this->fail("Invalid manifest must raise exception.");
         } catch (UserException $e) {
-            $this->assertContains('yaml', $e->getMessage());
+            $this->assertContains('json', $e->getMessage());
         }
     }
 
@@ -300,7 +300,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1", "test");
-        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
+        file_put_contents($root . "/upload/file1.manifest", "{\"tags\": [\"docker-bundle-test-xxx\"],\"is_public\": true}");
 
         $configs = array(
             array(
@@ -320,7 +320,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteFilesOrphanedManifest()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/file1.manifest", "tags: [\"docker-bundle-test-xxx\"]\nis_public: true");
+        file_put_contents($root . "/upload/file1.manifest", "{\"tags\": [\"docker-bundle-test-xxx\"],\"is_public\": true}");
         $writer = new Writer($this->client);
         $writer->uploadFiles($root . "/upload");
     }
@@ -398,7 +398,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/table2.csv.manifest",
-            "destination: out.c-docker-test.table2\nprimary_key: [\"Id\"]"
+            "{\"destination\": \"out.c-docker-test.table2\",\"primary_key\": [\"Id\"]}"
         );
 
         $configs = array(
@@ -427,7 +427,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
-            "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]"
+            "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\",\"Name\"]}"
         );
 
         $writer = new Writer($this->client);
@@ -449,7 +449,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
-            "destination: out.c-docker-test.table3\nprimary_key: \"Id\""
+            "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": \"Id\"}"
         );
 
         $writer = new Writer($this->client);
@@ -470,7 +470,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-default-test.table3.csv.manifest",
-            "destination: out.c-docker-default-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\""
+            "{\"destination\": \"out.c-docker-default-test.table3\",\"delimiter\": \"\t\",\"enclosure\": \"'\"}"
         );
 
         $writer = new Writer($this->client);
@@ -502,7 +502,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         // TODO: remove the escaped_by parameter as soon as it is removed from manifest
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-redshift-test.table3.csv.manifest",
-            "destination: out.c-docker-redshift-test.table3\ndelimiter: \"\t\"\nenclosure: \"'\"\nescaped_by: \\"
+            "{\"destination\": \"out.c-docker-redshift-test.table3\",\"delimiter\": \"\t\",\"enclosure\": \"'\",\"escaped_by\": \"\\\\\"}"
         );
 
         $writer = new Writer($this->client);
@@ -533,7 +533,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmp->getTmpFolder();
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/table.csv.manifest",
-            "destination: out.c-docker-test.table3\nprimary_key: [\"Id\", \"Name\"]"
+            "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\", \"Name\"]}"
         );
         $writer = new Writer($this->client);
         $writer->uploadTables($root . "/upload");
@@ -796,7 +796,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . "/upload/table6.csv.manifest",
-            "primary_key: [\"Id\", \"Name\"]"
+            "{\"primary_key\": [\"Id\", \"Name\"]}"
         );
 
         $writer = new Writer($this->client);
@@ -834,7 +834,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table8.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-        file_put_contents($root . "/upload/table8.csv.manifest", "primary_key: [\"Id\", \"Name\"]");
+        file_put_contents($root . "/upload/table8.csv.manifest", "{\"primary_key\": [\"Id\", \"Name\"]}");
 
         $writer = new Writer($this->client);
         try {

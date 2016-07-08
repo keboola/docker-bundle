@@ -172,6 +172,7 @@ class ApiController extends BaseApiController
         $params = $this->validateParams($params);
         $params['mode'] = 'sandbox';
 
+        # TODO deprecated, remove later
         $params["format"] = $request->get("format", "yaml");
         if (!in_array($params["format"], ["yaml", "json"])) {
             throw new UserException("Invalid configuration format '{$params["format"]}'.");

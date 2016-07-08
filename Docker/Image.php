@@ -37,7 +37,7 @@ class Image
     /**
      * @var string
      */
-    protected $configFormat = 'yaml';
+    protected $configFormat = 'json';
 
     /**
      * @var bool
