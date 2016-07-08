@@ -7,7 +7,7 @@ namespace Keboola\DockerBundle\Monolog\Processor;
  *  name of events.
  * @package Keboola\DockerBundle\Monolog
  */
-class DockerProcessor
+class DockerContainerProcessor
 {
     /**
      * @param  array $record
@@ -38,7 +38,7 @@ class DockerProcessor
     public function processRecord(array $record)
     {
         $record['component'] = $this->componentName;
-        $record['app'] = 'docker-core';
+        $record['app'] = 'docker';
         return $record;
     }
 }

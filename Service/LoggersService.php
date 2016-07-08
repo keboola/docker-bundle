@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Monolog\Processor\DockerContainerProcessor;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Keboola\Syrup\Monolog\Handler\StorageApiHandler as SyrupStorageApiHandler;
 use Monolog\Logger;
@@ -36,9 +37,12 @@ class LoggersService
 
     public function setComponentId($componentId)
     {
-        $processor = new DockerProcessor($componentId);
         // attach the processor to all handlers and channels
+        $processor = new DockerProcessor($componentId);
         $this->logger->pushProcessor([$processor, 'processRecord']);
+
+        // attach the processor to all handlers and channels
+        $processor = new DockerContainerProcessor($componentId);
         $this->containerLogger->pushProcessor([$processor, 'processRecord']);
     }
 
