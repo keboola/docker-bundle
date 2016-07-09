@@ -204,10 +204,6 @@ class Container
             if (mb_strlen($buffer) > 64000) {
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
-            $p = $this->containerLog->getProcessors();
-            foreach ($p as $proc) {
-                $this->log->info("Processor CN " . get_class($proc[0]));
-            }
             if ($type === Process::ERR) {
                 $this->containerLog->error($buffer);
             } else {
