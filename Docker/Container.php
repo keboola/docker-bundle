@@ -206,7 +206,7 @@ class Container
             }
             $p = $this->containerLog->getProcessors();
             foreach ($p as $proc) {
-                $this->log->debug("Processor CN " . get_class($proc[0]));
+                $this->log->info("Processor CN " . get_class($proc[0]));
             }
             if ($type === Process::ERR) {
                 $this->containerLog->error($buffer);
