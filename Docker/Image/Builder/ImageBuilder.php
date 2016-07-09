@@ -496,6 +496,10 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
             $this->createDockerFile($workingFolder);
+            if ($this->getVersion() == 'master') {
+                $this->logger->debug("Using master branch, caching disabled.");
+                $this->setCache(false);
+            }
             if (!$this->getCache()) {
                 $noCache = ' --no-cache';
             } else {
