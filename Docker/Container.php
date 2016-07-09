@@ -204,6 +204,10 @@ class Container
             if (mb_strlen($buffer) > 64000) {
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
+            $p = $this->containerLog->getProcessors();
+            foreach ($p as $proc) {
+                $this->log->debug("Processor CN " . get_class($proc[0]));
+            }
             if ($type === Process::ERR) {
                 $this->containerLog->error($buffer);
             } else {
@@ -395,7 +399,7 @@ class Container
             }
             $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
         }
-        
+
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
             . " --memory=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
