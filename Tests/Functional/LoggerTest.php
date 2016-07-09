@@ -112,7 +112,8 @@ print "second message to stdout\n";'
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
         foreach ($records as $record) {
-            $this->assertEquals('docker-core', $record['app']);
+            // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
+            $this->assertEquals('docker', $record['app']);
         }
 
         $records = $containerHandler->getRecords();
@@ -125,6 +126,7 @@ print "second message to stdout\n";'
         $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
+            // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
             $this->assertEquals('docker', $record['app']);
         }
     }

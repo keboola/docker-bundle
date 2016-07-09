@@ -38,7 +38,8 @@ class DockerProcessor
     public function processRecord(array $record)
     {
         $record['component'] = $this->componentName;
-        $record['app'] = 'docker-core';
+        // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
+        $record['app'] = 'docker';
         return $record;
     }
 }
