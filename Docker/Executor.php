@@ -164,7 +164,39 @@ class Executor
         $this->tmpFolder = $tmpFolder;
     }
 
-
+    public function createDataDir() {
+        // presunout z containeru
+    }
+    
+    public function loadInputData() {
+        
+    }
+    public function createStateFile() {
+        
+    }
+    public function createConfigFile() {
+        
+    }
+    public function storeOutputData() {
+        
+    }
+    public function runMainContainer() {
+        
+    }
+    public function runProcessor() {
+        
+    }
+    public function moveOutputToInput() {
+        
+    }
+    public function prepareImage() {
+        
+    }
+    public function prepareContainer() {
+        
+    }
+    
+    
     /**
      * Initialize container environment.
      * @param Container $container Docker container.

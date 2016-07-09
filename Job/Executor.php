@@ -197,7 +197,7 @@ class Executor extends BaseExecutor
         switch ($params['mode']) {
             case 'sandbox':
                 $this->logService->getLog()->info("Preparing configuration.", $configData);
-
+ten dummy se zrusi, protoze nebude potreba vytvare image pro datovy adresar
                 // Dummy image and container
                 $dummyConfig = array(
                     "definition" => array(
