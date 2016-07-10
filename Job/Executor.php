@@ -6,8 +6,6 @@ use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\ClientException;
@@ -180,8 +178,9 @@ class Executor extends BaseExecutor
         $oauthCredentialsClient->enableReturnArrays(true);
         $executor = new DockerExecutor(
             $this->storageApi,
-            $this->logService->getLog(),
+            $this->logService,
             $oauthCredentialsClient,
+            $this->encryptor,
             $this->temp->getTmpFolder()
         );
         if ($component && isset($component["id"])) {
@@ -197,64 +196,45 @@ class Executor extends BaseExecutor
         switch ($params['mode']) {
             case 'sandbox':
                 $this->logService->getLog()->info("Preparing configuration.", $configData);
-ten dummy se zrusi, protoze nebude potreba vytvare image pro datovy adresar
                 // Dummy image and container
-                $dummyConfig = array(
-                    "definition" => array(
+                $dummyConfig = [
+                    "definition" => [
                         "type" => "dummy",
                         "uri" => "dummy"
-                    )
-                );
-                $image = Image::factory($this->encryptor, $this->logService->getLog(), $dummyConfig);
-                $image->setConfigFormat($params["format"]);
-                $this->logService->setVerbosity($image->getLoggerVerbosity());
-                $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
-                $executor->initialize($container, $configData, $state, true);
-                $executor->storeDataArchive($container, ['sandbox', 'docker']);
+                    ]
+                ];
+                $executor->initialize($configData, $state, $dummyConfig, true);
+                $executor->storeDataArchive(['sandbox', 'docker']);
                 $message = 'Configuration prepared.';
                 $this->logService->getLog()->info($message);
                 break;
             case 'input':
                 $this->logService->getLog()->info("Preparing image configuration.", $configData);
-
-                $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
-                $this->logService->setVerbosity($image->getLoggerVerbosity());
-                $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
-                $executor->initialize($container, $configData, $state, true);
-                $executor->storeDataArchive($container, ['input', 'docker', $component['id']]);
+                $executor->initialize($configData, $state, $component['data'], true);
+                $executor->storeDataArchive(['input', 'docker', $component['id']]);
                 $message = 'Image configuration prepared.';
                 $this->logService->getLog()->info($message);
                 break;
             case 'dry-run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
-                $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
-                $this->logService->setVerbosity($image->getLoggerVerbosity());
-                $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
-                $executor->initialize($container, $configData, $state, true);
-                $executor->run($container, $containerId, $this->tokenInfo, $configId);
-                $executor->storeDataArchive($container, ['dry-run', 'docker', $component['id']]);
-
+                $executor->initialize($configData, $state, $component['data'], true, 'run');
+                $executor->run($containerId, $this->tokenInfo, $configId);
+                $executor->storeDataArchive(['dry-run', 'docker', $component['id']]);
                 $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
                 break;
             case 'run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-
                 $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
-                $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
-                $this->logService->setVerbosity($image->getLoggerVerbosity());
-                $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
-                $executor->initialize($container, $configData, $state, false);
-                $executor->run($container, $containerId, $this->tokenInfo, $configId);
-                $executor->storeOutput($container, $state);
-
+                $executor->initialize($configData, $state, $component["data"], false, 'run');
+                $executor->run($containerId, $this->tokenInfo, $configId);
+                $executor->storeOutput($state);
                 $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $params['mode']);
         }
-        return array("message" => "Docker container processing finished.");
+        return ["message" => "Docker container processing finished."];
     }
 
     public function cleanup(Job $job)

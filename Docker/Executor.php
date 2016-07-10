@@ -5,12 +5,14 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
+use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\RequestException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -44,13 +46,6 @@ class Executor
     private $currentTmpDir;
 
     /**
-     * Pathname to currently used configuration file.
-     *
-     * @var string
-     */
-    private $currentConfigFile;
-
-    /**
      * Component configuration which will be passed to the container.
      *
      * @var array
@@ -71,6 +66,16 @@ class Executor
      * @var Credentials
      */
     protected $oauthCredentialsClient;
+
+    /**
+     * @var ObjectEncryptor
+     */
+    private $encryptor;
+
+    /**
+     * @var Image
+     */
+    private $mainImage;
 
     /**
      * @return string
@@ -152,117 +157,71 @@ class Executor
 
     /**
      * @param Client $storageApi
-     * @param Logger $log
+     * @param LoggersService|Logger $log
      * @param Credentials $oauthCredentialsClient
+     * @param ObjectEncryptor $encryptor
      * @param string $tmpFolder
      */
-    public function __construct(Client $storageApi, Logger $log, Credentials $oauthCredentialsClient, $tmpFolder)
-    {
+    public function __construct(
+        Client $storageApi,
+        LoggersService $log,
+        Credentials $oauthCredentialsClient,
+        ObjectEncryptor $encryptor,
+        $tmpFolder
+    ) {
         $this->storageApiClient = $storageApi;
-        $this->log = $log;
+        $this->log = $log->getLog();
+        $this->containerLog = $log->getContainerLog();
         $this->oauthCredentialsClient = $oauthCredentialsClient;
+        $this->logService = $log;
         $this->tmpFolder = $tmpFolder;
+        $this->encryptor = $encryptor;
     }
 
-    public function createDataDir() {
-        // presunout z containeru
-    }
-    
-    public function loadInputData() {
-        
-    }
-    public function createStateFile() {
-        
-    }
-    public function createConfigFile() {
-        
-    }
-    public function storeOutputData() {
-        
-    }
-    public function runMainContainer() {
-        
-    }
-    public function runProcessor() {
-        
-    }
-    public function moveOutputToInput() {
-        
-    }
-    public function prepareImage() {
-        
-    }
-    public function prepareContainer() {
-        
-    }
-    
-    
-    /**
-     * Initialize container environment.
-     * @param Container $container Docker container.
-     * @param array $config Configuration injected into docker image.
-     * @param array $state Configuration state
-     * @param bool $sandboxed
-     * @param string $action
-     */
-    public function initialize(Container $container, array $config, array $state, $sandboxed, $action = "run")
+    public function createDataDir()
     {
-        $this->configData = $config;
-        // create temporary working folder and all of its sub-folders
         $fs = new Filesystem();
         $this->currentTmpDir = $this->getTmpFolder();
         $fs->mkdir($this->currentTmpDir);
-        $container->createDataDir($this->currentTmpDir);
 
-        // create configuration file injected into docker
-        $adapter = new Configuration\Container\Adapter($container->getImage()->getConfigFormat());
-        try {
-            $configData = $this->configData;
-            // remove runtime parameters which is not supposed to be passed into the container
-            unset($configData['runtime']);
-            // add image parameters which are supposed to be passed into the container
+        $structure = [
+            $this->currentTmpDir . "/data",
+            $this->currentTmpDir . "/data/in",
+            $this->currentTmpDir . "/data/in/tables",
+            $this->currentTmpDir . "/data/in/files",
+            $this->currentTmpDir . "/data/in/user",
+            $this->currentTmpDir . "/data/out",
+            $this->currentTmpDir . "/data/out/tables",
+            $this->currentTmpDir . "/data/out/files"
+        ];
 
-            if ($sandboxed) {
-                // do not decrypt image parameters on sandboxed calls
-                $configData['image_parameters'] = $container->getImage()->getImageParameters();
-            } else {
-                $configData['image_parameters'] = $container->getImage()->getEncryptor()->decrypt(
-                    $container->getImage()->getImageParameters()
-                );
-            }
+        $fs->mkdir($structure);
+    }
 
-            // read authorization
-            if (isset($configData["authorization"]["oauth_api"]["id"])) {
-                $credentials = $this->getOauthCredentialsClient()->getDetail($this->getComponentId(), $configData["authorization"]["oauth_api"]["id"]);
-                if ($sandboxed) {
-                    $decrypted = $credentials;
-                } else {
-                    $decrypted = $container->getImage()->getEncryptor()->decrypt($credentials);
-                }
-                $configData["authorization"]["oauth_api"]["credentials"] = $decrypted;
-            }
+    public function dropDataDir()
+    {
+        $fs = new Filesystem();
+        $structure = [
+            $this->currentTmpDir . "/in/tables",
+            $this->currentTmpDir . "/in/files",
+            $this->currentTmpDir . "/in/user",
+            $this->currentTmpDir . "/in",
+            $this->currentTmpDir . "/out/files",
+            $this->currentTmpDir . "/out/tables",
+            $this->currentTmpDir . "/out",
+            $this->currentTmpDir
+        ];
+        $finder = new Finder();
+        $finder->files()->in($structure);
+        $fs->remove($finder);
+        $fs->remove($structure);
+    }
 
-            // action
-            $configData["action"] = $action;
-
-            $adapter->setConfig($configData);
-        } catch (InvalidConfigurationException $e) {
-            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
-        } catch (RequestException $e) {
-            throw new UserException("Error loading credentials: " . $e->getMessage(), $e);
-        }
-        $this->currentConfigFile = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
-        $adapter->writeToFile($this->currentConfigFile);
-
-        // Store state
-        $stateAdapter = new Configuration\State\Adapter($container->getImage()->getConfigFormat());
-        $stateAdapter->setConfig($state);
-        $stateFile = $this->currentTmpDir . "/data/in/state" . $stateAdapter->getFileExtension();
-        $stateAdapter->writeToFile($stateFile);
-
+    public function loadInputData()
+    {
         // download source files
         $reader = new Reader($this->getStorageApiClient());
-        $reader->setFormat($container->getImage()->getConfigFormat());
+        $reader->setFormat($this->mainImage->getConfigFormat());
 
         try {
             if (isset($this->configData["storage"]["input"]["tables"]) &&
@@ -288,15 +247,79 @@ class Executor
         }
     }
 
+    public function createStateFile(array $state)
+    {
+        // Store state
+        $stateAdapter = new Configuration\State\Adapter($this->mainImage->getConfigFormat());
+        $stateAdapter->setConfig($state);
+        $stateFile = $this->currentTmpDir . "/data/in/state" . $stateAdapter->getFileExtension();
+        $stateAdapter->writeToFile($stateFile);
+    }
 
-    /**
-     * @param Container $container
-     * @param string $id
-     * @param array $tokenInfo Storage API token information as returned by verifyToken()
-     * @param string $configId Configuration passed to the container (not used for any KBC work).
-     * @param null $processOutput Output variable to catch process output
-     */
-    public function run(Container $container, $id, $tokenInfo, $configId, &$processOutput = null)
+    public function createConfigFile($sandboxed, $action)
+    {
+        // create configuration file injected into docker
+        $adapter = new Configuration\Container\Adapter($this->mainImage->getConfigFormat());
+        try {
+            $configData = $this->configData;
+            // remove runtime parameters which is not supposed to be passed into the container
+            unset($configData['runtime']);
+            // add image parameters which are supposed to be passed into the container
+
+            if ($sandboxed) {
+                // do not decrypt image parameters on sandboxed calls
+                $configData['image_parameters'] = $this->mainImage->getImageParameters();
+            } else {
+                $configData['image_parameters'] = $this->encryptor->decrypt($this->mainImage->getImageParameters());
+            }
+
+            // read authorization
+            if (isset($configData["authorization"]["oauth_api"]["id"])) {
+                $credentials = $this->getOauthCredentialsClient()->getDetail(
+                    $this->getComponentId(),
+                    $configData["authorization"]["oauth_api"]["id"]
+                );
+                if ($sandboxed) {
+                    $decrypted = $credentials;
+                } else {
+                    $decrypted = $this->encryptor->decrypt($credentials);
+                }
+                $configData["authorization"]["oauth_api"]["credentials"] = $decrypted;
+            }
+
+            // action
+            $configData["action"] = $action;
+
+            $fileName = $this->currentTmpDir . "/data/config" . $adapter->getFileExtension();
+            $adapter->setConfig($configData);
+            $adapter->writeToFile($fileName);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
+        } catch (RequestException $e) {
+            throw new UserException("Error loading credentials: " . $e->getMessage(), $e);
+        }
+    }
+
+    public function runMainContainer()
+    {
+
+    }
+    public function runProcessor()
+    {
+
+    }
+    public function moveOutputToInput()
+    {
+
+    }
+
+    public function prepareImage($imageConfiguration)
+    {
+        $image = Image::factory($this->encryptor, $this->log, $imageConfiguration);
+        return $image;
+    }
+
+    public function prepareContainer(Image $image, $id)
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
@@ -312,6 +335,40 @@ class Executor
             (new Process('sudo docker rm ' . escapeshellarg($id)))->run();
         }
 
+        $container = new Container($image, $this->log, $this->containerLog, $this->currentTmpDir);
+        return $container;
+    }
+
+
+    /**
+     * Initialize container environment.
+     * @param array $containerConfig Configuration injected into docker container.
+     * @param array $state Component state.
+     * @param array $imageConfig Definition of the main image.
+     * @param bool $sandboxed True if the container runs sandboxed.
+     * @param string $action Component action.
+     */
+    public function initialize(array $containerConfig, array $state, array $imageConfig, $sandboxed, $action = "run")
+    {
+        $this->configData = $containerConfig;
+        $this->createDataDir();
+        $this->mainImage = $this->prepareImage($imageConfig);
+        $this->logService->setVerbosity($this->mainImage->getLoggerVerbosity());
+        $this->createConfigFile($sandboxed, $action);
+        $this->createStateFile($state);
+        $this->loadInputData();
+    }
+
+
+    /**
+     * @param string $id
+     * @param array $tokenInfo Storage API token information as returned by verifyToken()
+     * @param string $configId Configuration passed to the container (not used for any KBC work).
+     * @param null $processOutput Output variable to catch process output
+     */
+    public function run($id, $tokenInfo, $configId, &$processOutput = null)
+    {
+        $container = $this->prepareContainer($this->mainImage, $id);
         // set environment variables
         $envs = [
             "KBC_RUNID" => $this->getStorageApiClient()->getRunId(),
@@ -319,10 +376,10 @@ class Executor
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $configId,
         ];
-        if ($container->getImage()->getForwardToken()) {
+        if ($this->mainImage->getForwardToken()) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
         }
-        if ($container->getImage()->getForwardTokenDetails()) {
+        if ($this->mainImage->getForwardTokenDetails()) {
             $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
             $envs["KBC_TOKENID"] = $tokenInfo["id"];
             $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
@@ -337,17 +394,16 @@ class Executor
 
 
     /**
-     * @param Container $container
-     * @param mixed $state
+     * @param array $previousState
      * @throws ClientException
      * @throws \Exception
      */
-    public function storeOutput(Container $container, $state = null)
+    public function storeOutput($previousState)
     {
         $this->getLog()->debug("Storing results.");
 
         $writer = new Writer($this->getStorageApiClient());
-        $writer->setFormat($container->getImage()->getConfigFormat());
+        $writer->setFormat($this->mainImage->getConfigFormat());
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
@@ -368,11 +424,13 @@ class Executor
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
         // Get default bucket
-        if ($container->getImage()->isDefaultBucket()) {
+        if ($this->mainImage->isDefaultBucket()) {
             if (!$this->getConfigurationId()) {
                 throw new UserException("Configuration ID not set, but is required for default_bucket option.");
             }
-            $uploadTablesOptions["bucket"] = $container->getImage()->getDefaultBucketStage() . ".c-" . $this->getSanitizedComponentId() . "-" . $this->getConfigurationId();
+            $uploadTablesOptions["bucket"] =
+                $this->mainImage->getDefaultBucketStage() . ".c-" .
+                $this->getSanitizedComponentId() . "-" . $this->getConfigurationId();
             $this->getLog()->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
@@ -392,7 +450,7 @@ class Executor
             $storeState = true;
 
             // Do not store state if `default_bucket` and configurationId not really exists
-            if ($container->getImage()->isDefaultBucket()) {
+            if ($this->mainImage->isDefaultBucket()) {
                 $components = new Components($this->getStorageApiClient());
                 try {
                     $components->getConfiguration($this->getComponentId(), $this->getConfigurationId());
@@ -407,27 +465,26 @@ class Executor
 
             // Store state
             if ($storeState) {
-                if (!$state) {
-                    $state = (object)array();
+                if (!$previousState) {
+                    $previousState = new \stdClass();
                 }
                 $writer->updateState(
                     $this->getComponentId(),
                     $this->getConfigurationId(),
                     $this->currentTmpDir . "/data/out/state",
-                    $state
+                    $previousState
                 );
             }
         }
-        $container->dropDataDir();
+        $this->dropDataDir();
     }
 
 
     /**
      * Archive data directory and save it to Storage, do not actually run the container.
-     * @param Container $container
      * @param array $tags Arbitrary storage tags
      */
-    public function storeDataArchive(Container $container, array $tags)
+    public function storeDataArchive(array $tags)
     {
         $zip = new \ZipArchive();
         $zipFileName = 'data.zip';
@@ -454,7 +511,7 @@ class Executor
         $zip->close();
 
         $writer = new Writer($this->getStorageApiClient());
-        $writer->setFormat($container->getImage()->getConfigFormat());
+        $writer->setFormat($this->mainImage->getConfigFormat());
         // zip archive must be created in special directory, because uploadFiles is recursive
         $writer->uploadFiles(
             $zipDir,

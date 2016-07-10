@@ -115,12 +115,14 @@ class Container
      * @param Image $image
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
+     * @param string $dataDir
      */
-    public function __construct(Image $image, Logger $logger, ContainerLogger $containerLogger)
+    public function __construct(Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDir)
     {
         $this->log = $logger;
         $this->containerLog = $containerLogger;
         $this->setImage($image);
+        $this->dataDir = $dataDir;
     }
 
     /**
@@ -129,16 +131,6 @@ class Container
     public function getDataDir()
     {
         return $this->dataDir;
-    }
-
-    /**
-     * @param string $dataDir
-     * @return $this
-     */
-    public function setDataDir($dataDir)
-    {
-        $this->dataDir = $dataDir;
-        return $this;
     }
 
     /**
@@ -327,51 +319,6 @@ class Container
                 $data
             );
         }
-    }
-
-    /**
-     * @param $root
-     * @return $this
-     */
-    public function createDataDir($root)
-    {
-        $fs = new Filesystem();
-        $structure = array(
-            $root . "/data",
-            $root . "/data/in",
-            $root . "/data/in/tables",
-            $root . "/data/in/files",
-            $root . "/data/in/user",
-            $root . "/data/out",
-            $root . "/data/out/tables",
-            $root . "/data/out/files"
-        );
-
-        $fs->mkdir($structure);
-        $this->setDataDir($root . "/data");
-        return $this;
-    }
-
-    /**
-     * Remove whole directory structure
-     */
-    public function dropDataDir()
-    {
-        $fs = new Filesystem();
-        $structure = array(
-            $this->getDataDir() . "/in/tables",
-            $this->getDataDir() . "/in/files",
-            $this->getDataDir() . "/in/user",
-            $this->getDataDir() . "/in",
-            $this->getDataDir() . "/out/files",
-            $this->getDataDir() . "/out/tables",
-            $this->getDataDir() . "/out",
-            $this->getDataDir()
-        );
-        $finder = new Finder();
-        $finder->files()->in($structure);
-        $fs->remove($finder);
-        $fs->remove($structure);
     }
 
     /**
