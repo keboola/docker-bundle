@@ -9,9 +9,8 @@ use Symfony\Component\Process\Process;
 
 class QuayIO extends Image
 {
-
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getFullImageId()
     {
@@ -21,7 +20,7 @@ class QuayIO extends Image
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));

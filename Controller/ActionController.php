@@ -2,11 +2,8 @@
 
 namespace Keboola\DockerBundle\Controller;
 
-use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\OAuthV2Api\Credentials;
+use Keboola\DockerBundle\Service\Runner;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -15,7 +12,7 @@ class ActionController extends BaseApiController
 {
     /**
      * @param $componentId
-     * @return bool
+     * @return array
      */
     private function getComponent($componentId)
     {
@@ -29,7 +26,7 @@ class ActionController extends BaseApiController
         }
 
         if (!isset($component)) {
-            return false;
+            return [];
         } else {
             return $component;
         }
@@ -46,7 +43,9 @@ class ActionController extends BaseApiController
         if (!$component) {
             throw new HttpException(404, "Component '{$request->get("component")}' not found");
         }
-        if (!isset($component["data"]["synchronous_actions"]) || !in_array($request->get("action"), $component["data"]["synchronous_actions"])) {
+        if (!isset($component["data"]["synchronous_actions"])
+            || !in_array($request->get("action"), $component["data"]["synchronous_actions"])
+        ) {
             throw new HttpException(404, "Action '{$request->get("action")}' not found");
         }
         if ($request->get("action") == 'run') {
@@ -76,49 +75,17 @@ class ActionController extends BaseApiController
 
         $configId = uniqid();
         $state = [];
-
-        $tokenInfo = $this->storageApi->verifyToken();
-
         if (!$this->storageApi->getRunId()) {
             $this->storageApi->setRunId($this->storageApi->generateRunId());
         }
 
-        /** @var LoggersService $logService */
-        $logService = $this->container->get('docker_bundle.loggers');
-        $logService->setComponentId($component['id']);
-
-        $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
-        $oauthCredentialsClient->enableReturnArrays(true);
-        $executor = new Executor(
-            $this->storageApi,
-            $logService->getLog(),
-            $oauthCredentialsClient,
-            $this->temp->getTmpFolder()
-        );
-        $executor->setComponentId($component["id"]);
-
-        $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
-
-        $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
-
-        $image = Image::factory(
-            $this->container->get('syrup.object_encryptor'),
-            $logService->getLog(),
-            $component["data"]
-        );
-
         // Limit processing to 30 seconds
-        $image->setProcessTimeout(30);
+        $component['data']['process_timeout'] = 30;
 
-        $container = new Container(
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog()
-        );
-        $executor->initialize($container, $configData, $state, false, $request->get("action"));
-        $executor->run($container, $containerId, $tokenInfo, $configId, $message);
-        $this->container->get('logger')->info("Docker container '{$component['id']}' finished.");
-
+        /** @var Runner $runner */
+        $runner = $this->container->get('docker_bundle.runner');
+        $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
+        $message = $runner->run($component, $configId, $configData, $state, $request->get("action"), 'run');
         if ($message == '' || !$message) {
             throw new UserException("No response from component.");
         }

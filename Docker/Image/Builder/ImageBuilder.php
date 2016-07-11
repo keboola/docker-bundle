@@ -297,25 +297,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     * @return string
-     */
-    public function getContainerId()
-    {
-        return $this->containerId;
-    }
-
-    /**
-     * @param string $containerId
-     * @return $this
-     */
-    public function setContainerId($containerId)
-    {
-        $this->containerId = $containerId;
-
-        return $this;
-    }
-
-    /**
      * Replace placeholders in a string.
      * @param string $string Arbitrary string
      * @return string
@@ -414,7 +395,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private function initParameters(array $configData)
     {
-
         // set parameter values
         if (isset($configData['parameters']) && is_array($configData['parameters'])) {
             foreach ($configData['parameters'] as $key => $value) {
@@ -465,9 +445,8 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
-        $this->setContainerId($containerId);
         $this->initParameters($configData);
         try {
             if ($this->getLoginUsername()) {
@@ -539,15 +518,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function getFullImageId()
     {
-        if (!$this->getContainerId()) {
-            throw new ApplicationException("Container Id not set");
-        }
         if (!$this->fullImageId) {
-            $this->fullImageId = uniqid('builder-' . $this->getContainerId(). "-");
+            $this->fullImageId = uniqid('builder-');
         }
         return $this->fullImageId;
     }

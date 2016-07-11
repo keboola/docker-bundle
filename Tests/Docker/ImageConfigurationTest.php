@@ -49,7 +49,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "gelf_server_type" => "tcp",
             ]
         );
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
@@ -61,7 +61,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
         $expectedConfiguration = [
             'definition' => [
                 'type' => 'dockerhub',
@@ -85,7 +85,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testTotallyEmptyConfiguration()
     {
-        (new Configuration\Image())->parse(array("config" => array()));
+        (new Configuration\Component())->parse(array("config" => array()));
     }
 
     /**
@@ -102,7 +102,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m"
         );
-        (new Configuration\Image())->parse(array("config" => $config));
+        (new Configuration\Component())->parse(array("config" => $config));
     }
 
     /**
@@ -120,7 +120,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "configuration_format" => "fail"
         );
-        (new Configuration\Image())->parse(array("config" => $config));
+        (new Configuration\Component())->parse(array("config" => $config));
     }
 
     /**
@@ -136,7 +136,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "unknown" => array()
         );
-        (new Configuration\Image())->parse(array("config" => $config));
+        (new Configuration\Component())->parse(array("config" => $config));
     }
 
     /**
@@ -154,7 +154,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "network" => "whatever"
         );
-        (new Configuration\Image())->parse(array("config" => $config));
+        (new Configuration\Component())->parse(array("config" => $config));
     }
 
     public function testBuilderConfiguration()
@@ -191,7 +191,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         ];
 
         $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 }

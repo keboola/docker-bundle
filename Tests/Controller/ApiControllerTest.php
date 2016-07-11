@@ -44,11 +44,11 @@ class ApiControllerTest extends WebTestCase
             ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
-        $indexActionValue = array(
+        $indexActionValue = [
             'components' =>
-                array(
+                [
                     0 =>
-                        array(
+                        [
                             'id' => 'docker-dummy-test',
                             'type' => 'other',
                             'name' => 'Docker Config Dump',
@@ -58,18 +58,18 @@ class ApiControllerTest extends WebTestCase
                             'hasRun' => true,
                             'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
                             'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array(
+                            'data' => [
                                 'definition' =>
-                                    array(
+                                    [
                                         'type' => 'dockerhub',
                                         'uri' => 'keboola/docker-dummy-test',
-                                    ),
-                            ),
+                                    ],
+                            ],
                             'flags' => $flags,
                             'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-                        )
-                )
-        );
+                        ]
+                ]
+        ];
 
         $storageClientStub->expects($this->any())
             ->method("indexAction")
@@ -389,7 +389,7 @@ class ApiControllerTest extends WebTestCase
             $responseData["message"]
         );
     }
-    
+
 
     public function testSaveEncryptedConfig()
     {

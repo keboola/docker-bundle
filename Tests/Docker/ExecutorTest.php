@@ -8,7 +8,10 @@ use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\Docker\Mock\Container as MockContainer;
+use Keboola\DockerBundle\Tests\Docker\Mock\ContainerFactory;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
@@ -81,6 +84,58 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function getLogService()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $logContainer = new ContainerLogger("null");
+        $handler = new TestHandler();
+        $logContainer->pushHandler($handler);
+        $storageApiHandlerStub = $this->getMockBuilder(StorageApiHandler::class)
+            ->disableOriginalConstructor()
+            ->setMethods('handle')->getMock();
+        $storageApiHandlerStub->method('handle')->willReturn(false);
+        $logService = new LoggersService($log, $logContainer, $storageApiHandlerStub);
+        return $logService;
+    }
+
+    public function testCreateAndDropDataDir()
+    {
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
+        $dummyConfig = array(
+            "definition" => array(
+                "type" => "dummy",
+                "uri" => "dummy"
+            )
+        );
+        $encryptor = new ObjectEncryptor();
+        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log, $containerLog);
+        $fs = new Filesystem();
+        $root = "/tmp/docker/" . uniqid("", true);
+        $fs->mkdir($root);
+        $container->createDataDir($root);
+        $structure = array(
+            $root . "/data",
+            $root . "/data/in",
+            $root . "/data/in/tables",
+            $root . "/data/in/files",
+            $root . "/data/out",
+            $root . "/data/out/tables",
+            $root . "/data/out/files"
+        );
+        $this->assertTrue($fs->exists($structure));
+
+        foreach ($structure as $folder) {
+            $fs->touch($folder . "/file");
+        }
+        $container->dropDataDir();
+        $this->assertFalse($fs->exists($root . "/data"));
+    }
+
     public function testDockerHubExecutorRun()
     {
         $imageConfig = [
@@ -118,39 +173,39 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $logContainer = new ContainerLogger("null");
-        $handler = new TestHandler();
-        $logContainer->pushHandler($handler);
 
+        $logService = $this->getLogService();
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $containerFactory = new ContainerFactory($logService->getLog(), $logService->getContainerLog());
+        $oauthClient = new Credentials($this->client->getTokenString());
+        $executor = new Executor(
+            $this->client,
+            $this->getLogService(),
+            $containerFactory,
+            $oauthClient,
+            $encryptor,
+            $this->tmpDir
+        );
 
-        $container = new MockContainer($image, $log, $logContainer);
-
-        $callback = function () use ($container) {
+        $callback = function () use ($executor) {
             $fs = new Filesystem();
             $fs->dumpFile(
-                $container->getDataDir() . "/out/tables/sliced.csv",
+                $executor->getDataDir() . "/out/tables/sliced.csv",
                 "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
             );
             $process = new Process('echo "Processed 1 rows."');
             $process->run();
             return $process;
         };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
+        $containerFactory->setRunMethod($callback);
+        $executor->initialize($config, [], $imageConfig, false, 'run');
+        $executor->run("testsuite", $this->client->verifyToken(), 'test-config');
+        $this->assertTrue(file_exists($executor->getDataDir() . '/out/tables/sliced.csv'));
         $this->assertEquals(
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
+            file_get_contents($executor->getDataDir() . '/out/tables/sliced.csv')
         );
+        
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);

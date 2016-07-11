@@ -6,8 +6,6 @@ use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -30,22 +28,17 @@ class Container
     /**
      * @var string
      */
-    protected $version = 'latest';
-
-    /**
-     * @var string
-     */
     protected $dataDir;
 
     /**
      * @var array
      */
-    protected $environmentVariables = array();
+    protected $environmentVariables = [];
 
     /**
      * @var Logger
      */
-    private $log;
+    private $logger;
 
     /**
      * @var int Docker CLI process timeout
@@ -55,7 +48,7 @@ class Container
     /**
      * @var ContainerLogger
      */
-    private $containerLog;
+    private $containerLogger;
 
     /**
      * @return string
@@ -63,16 +56,6 @@ class Container
     public function getId()
     {
         return $this->id;
-    }
-
-    /**
-     * @param string $id
-     * @return $this
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-        return $this;
     }
 
     /**
@@ -84,45 +67,21 @@ class Container
     }
 
     /**
-     * @param Image $image
-     * @return $this
-     */
-    public function setImage($image)
-    {
-        $this->image = $image;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getVersion()
-    {
-        return $this->version;
-    }
-
-    /**
-     * @param string $version
-     * @return $this
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-        return $this;
-    }
-
-    /**
+     * @param $containerId
      * @param Image $image
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
-     * @param string $dataDir
+     * @param $dataDirectory
+     * @param $environmentVariables
      */
-    public function __construct(Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDir)
+    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, $environmentVariables)
     {
-        $this->log = $logger;
-        $this->containerLog = $containerLogger;
-        $this->setImage($image);
-        $this->dataDir = $dataDir;
+        $this->logger = $logger;
+        $this->containerLogger = $containerLogger;
+        $this->image = $image;
+        $this->dataDir = $dataDirectory;
+        $this->id = $containerId;
+        $this->environmentVariables = $environmentVariables;
     }
 
     /**
@@ -141,53 +100,51 @@ class Container
         return $this->environmentVariables;
     }
 
-    /**
-     * @param array $environmentVariables
-     * @return $this
-     */
-    public function setEnvironmentVariables($environmentVariables)
+    public function cleanUp()
     {
-        $this->environmentVariables = $environmentVariables;
-        return $this;
+        // Check if container not running
+        $process = new Process('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
+        $process->run();
+        if (trim($process->getOutput()) !== '0') {
+            throw new UserException("Container '{$this->id}' already running.");
+        }
+
+        // Check old containers, delete if found
+        $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
+        $process->run();
+        if (trim($process->getOutput()) !== '0') {
+            $this->removeContainer($this->id);
+        }
     }
 
-
     /**
-     * @param string $containerId container id
-     * @param array $configData Configuration (same as the one stored in data config file)
      * @return Process
      * @throws ApplicationException
      */
-    public function run($containerId, array $configData)
+    public function run()
     {
-        if (!$this->getDataDir()) {
-            throw new ApplicationException("Data directory not set.");
-        }
-
-        $this->getImage()->prepare($this, $configData, $containerId);
-        $this->setId($this->getImage()->getFullImageId());
-
-        $process = new Process($this->getRunCommand($containerId));
+        $process = new Process($this->getRunCommand($this->id));
         $process->setTimeout(null);
 
         // create container
         $startTime = time();
         try {
-            $this->log->debug("Executing docker process.");
+            $this->logger->debug("Executing docker process.");
             if ($this->getImage()->getLoggerType() == 'gelf') {
-                $this->runWithLogger($process, $containerId);
+                $this->runWithLogger($process, $this->id);
             } else {
                 $this->runWithoutLogger($process);
             }
-            $this->log->debug("Docker process finished.");
+            $this->logger->debug("Docker process finished.");
 
             if (!$process->isSuccessful()) {
-                $this->handleContainerFailure($process, $containerId, $startTime);
+                $this->handleContainerFailure($process, $this->id, $startTime);
             }
         } finally {
-            $this->removeContainer($containerId);
+            $this->removeContainer($this->id);
         }
-        return $process;
+        $processOutput = trim($process->getOutput());
+        return $processOutput;
     }
 
     private function runWithoutLogger(Process $process)
@@ -197,9 +154,9 @@ class Container
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
             if ($type === Process::ERR) {
-                $this->containerLog->error($buffer);
+                $this->containerLogger->error($buffer);
             } else {
-                $this->containerLog->info($buffer);
+                $this->containerLogger->info($buffer);
             }
         });
     }
@@ -223,10 +180,10 @@ class Container
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
-                $this->setEnvironmentVariables(array_merge(
-                    $this->getEnvironmentVariables(),
+                $this->environmentVariables = array_merge(
+                    $this->environmentVariables,
                     ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
-                ));
+                );
                 $process->setCommandLine($this->getRunCommand($containerName));
                 $process->start();
             },
@@ -234,10 +191,10 @@ class Container
                 if (!$process->isRunning()) {
                     $terminated = true;
                     if (trim($process->getOutput()) != '') {
-                        $this->containerLog->info($process->getOutput());
+                        $this->containerLogger->info($process->getOutput());
                     }
                     if (trim($process->getErrorOutput()) != '') {
-                        $this->containerLog->error($process->getErrorOutput());
+                        $this->containerLogger->error($process->getErrorOutput());
                     }
                 }
             },
@@ -248,9 +205,9 @@ class Container
                 }
                 // host is shortened containerId
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
-                    $this->log->error("Invalid container host " . $event['host'], $event);
+                    $this->logger->error("Invalid container host " . $event['host'], $event);
                 } else {
-                    $this->containerLog->addRawRecord(
+                    $this->containerLogger->addRawRecord(
                         $event['level'],
                         $event['timestamp'],
                         $event['short_message'],
@@ -349,7 +306,7 @@ class Container
             . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
-            . " " . escapeshellarg($this->getId());
+            . " " . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }
 

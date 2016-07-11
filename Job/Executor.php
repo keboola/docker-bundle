@@ -1,21 +1,20 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
-use Keboola\DockerBundle\Docker\Executor as DockerExecutor;
+use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
+use Monolog\Logger;
 use Symfony\Component\Process\Process;
 
 class Executor extends BaseExecutor
@@ -53,30 +52,35 @@ class Executor extends BaseExecutor
     /**
      * @var LoggersService
      */
-    private $logService;
+    private $logger;
 
     /**
-     * @param Temp $temp
+     * @var Runner
+     */
+    private $runner;
+
+    /**
+     * @param Logger $logger
+     * @param Runner $runner
      * @param ObjectEncryptor $encryptor
      * @param ComponentsService $components
      * @param ComponentWrapper $componentWrapper
      * @param ComponentProjectWrapper $componentProjectWrapper
-     * @param LoggersService $logService
      */
     public function __construct(
-        Temp $temp,
+        Logger $logger,
+        Runner $runner,
         ObjectEncryptor $encryptor,
         ComponentsService $components,
         ComponentWrapper $componentWrapper,
-        ComponentProjectWrapper $componentProjectWrapper,
-        LoggersService $logService
+        ComponentProjectWrapper $componentProjectWrapper
     ) {
-        $this->temp = $temp;
         $this->encryptor = $encryptor;
         $this->components = $components->getComponents();
         $this->encryptionComponent = $componentWrapper;
         $this->encryptionComponentProject = $componentProjectWrapper;
-        $this->logService = $logService;
+        $this->logger = $logger;
+        $this->runner = $runner;
     }
 
     /**
@@ -112,7 +116,6 @@ class Executor extends BaseExecutor
             $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
         }
         $params = $job->getParams();
-        $this->temp->setId($job->getId());
         $containerId = null;
         $state = [];
         $configId = null;
@@ -135,7 +138,7 @@ class Executor extends BaseExecutor
             $component = [];
         } else {
             $component = $this->getComponent($params["component"]);
-            $this->logService->setComponentId($component["id"]);
+
             if (!$this->storageApi->getRunId()) {
                 $this->storageApi->setRunId($this->storageApi->generateRunId());
             }
@@ -161,97 +164,31 @@ class Executor extends BaseExecutor
                 }
             }
         }
-        return $this->doExecute($component, $params, $configData, $state);
-    }
-
-    /**
-     * @param $component
-     * @param $params
-     * @param $configData
-     * @param $state
-     * @return array
-     * @throws \Exception
-     */
-    private function doExecute(array $component, array $params, array $configData, array $state)
-    {
-        $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
-        $oauthCredentialsClient->enableReturnArrays(true);
-        $executor = new DockerExecutor(
-            $this->storageApi,
-            $this->logService,
-            $oauthCredentialsClient,
-            $this->encryptor,
-            $this->temp->getTmpFolder()
-        );
-        if ($component && isset($component["id"])) {
-            $executor->setComponentId($component["id"]);
-        }
         if ($params && isset($params["config"])) {
-            $executor->setConfigurationId($params["config"]);
             $configId = $params['config'];
         } else {
             $configId = sha1(serialize($params['configData']));
         }
-
-        switch ($params['mode']) {
-            case 'sandbox':
-                $this->logService->getLog()->info("Preparing configuration.", $configData);
-                // Dummy image and container
-                $dummyConfig = [
-                    "definition" => [
-                        "type" => "dummy",
-                        "uri" => "dummy"
-                    ]
-                ];
-                $executor->initialize($configData, $state, $dummyConfig, true);
-                $executor->storeDataArchive(['sandbox', 'docker']);
-                $message = 'Configuration prepared.';
-                $this->logService->getLog()->info($message);
-                break;
-            case 'input':
-                $this->logService->getLog()->info("Preparing image configuration.", $configData);
-                $executor->initialize($configData, $state, $component['data'], true);
-                $executor->storeDataArchive(['input', 'docker', $component['id']]);
-                $message = 'Image configuration prepared.';
-                $this->logService->getLog()->info($message);
-                break;
-            case 'dry-run':
-                $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
-                $executor->initialize($configData, $state, $component['data'], true, 'run');
-                $executor->run($containerId, $this->tokenInfo, $configId);
-                $executor->storeDataArchive(['dry-run', 'docker', $component['id']]);
-                $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
-                break;
-            case 'run':
-                $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
-                $executor->initialize($configData, $state, $component["data"], false, 'run');
-                $executor->run($containerId, $this->tokenInfo, $configId);
-                $executor->storeOutput($state);
-                $this->logService->getLog()->info("Docker container '{$component['id']}' finished.");
-                break;
-            default:
-                throw new ApplicationException("Invalid run mode " . $params['mode']);
-        }
+        $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode']);
         return ["message" => "Docker container processing finished."];
     }
+
 
     public function cleanup(Job $job)
     {
         $params = $job->getRawParams();
         if (isset($params["component"])) {
             $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
-            $this->logService->getLog()->info("Terminating process");
+            $this->logger->info("Terminating process");
             try {
                 $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
                 $process->run();
                 if (trim($process->getOutput()) !== '0') {
                     (new Process('sudo docker kill ' . escapeshellarg($containerId)))->run();
                 }
-                $this->logService->getLog()->info("Process terminated");
+                $this->logger->info("Process terminated");
             } catch (\Exception $e) {
-                $this->logService->getLog()->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
+                $this->logger->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
             }
         }
     }

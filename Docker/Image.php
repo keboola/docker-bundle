@@ -37,41 +37,10 @@ class Image
     /**
      * @var string
      */
-    protected $configFormat = 'json';
-
-    /**
-     * @var bool
-     */
-    protected $forwardToken = false;
-
-    /**
-     * @var bool
-     */
-    protected $forwardTokenDetails = false;
-
-    /**
-     * @var bool
-     */
-    private $defaultBucket = false;
-
-    /**
-     * @var string
-     */
-    private $defaultBucketStage = "in";
-
-    /**
-     * @var array
-     */
-    private $imageParameters = [];
-
-    /**
-     * @var string
-     */
     private $networkType = 'bridge';
 
     /**
-     *
-     * process timeout in seconds
+     * Process timeout in seconds
      *
      * @var int
      */
@@ -114,7 +83,7 @@ class Image
      */
     public function __construct(ObjectEncryptor $encryptor)
     {
-        $this->setEncryptor($encryptor);
+        $this->encryptor = $encryptor;
     }
 
     /**
@@ -123,35 +92,6 @@ class Image
     public function getEncryptor()
     {
         return $this->encryptor;
-    }
-
-    /**
-     * @param ObjectEncryptor $encryptor
-     * @return $this
-     */
-    public function setEncryptor($encryptor)
-    {
-        $this->encryptor = $encryptor;
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getId()
-    {
-        return $this->id;
-    }
-
-    /**
-     * @param string $id
-     * @return $this
-     */
-    public function setId($id)
-    {
-        $this->id = $id;
-
-        return $this;
     }
 
     /**
@@ -193,29 +133,6 @@ class Image
     }
 
     /**
-     * @return string
-     */
-    public function getConfigFormat()
-    {
-        return $this->configFormat;
-    }
-
-    /**
-     * @param $configFormat
-     * @return $this
-     * @throws \Exception
-     */
-    public function setConfigFormat($configFormat)
-    {
-        if (!in_array($configFormat, ['yaml', 'json'])) {
-            throw new \Exception("Configuration format '{$configFormat}' not supported");
-        }
-        $this->configFormat = $configFormat;
-
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getProcessTimeout()
@@ -232,62 +149,6 @@ class Image
         $this->processTimeout = (int)$timeout;
 
         return $this;
-    }
-
-    /**
-     * @param $forwardToken
-     * @return $this
-     */
-    public function setForwardToken($forwardToken)
-    {
-        $this->forwardToken = $forwardToken;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getForwardToken()
-    {
-        return $this->forwardToken;
-    }
-
-    /**
-     * @param $forwardTokenDetails
-     * @return $this
-     */
-    public function setForwardTokenDetails($forwardTokenDetails)
-    {
-        $this->forwardTokenDetails = $forwardTokenDetails;
-
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function getForwardTokenDetails()
-    {
-        return $this->forwardTokenDetails;
-    }
-
-    /**
-     * @param $imageParameters
-     * @return $this
-     */
-    public function setImageParameters($imageParameters)
-    {
-        $this->imageParameters = $imageParameters;
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function getImageParameters()
-    {
-        return $this->imageParameters;
     }
 
     /**
@@ -325,43 +186,6 @@ class Image
     {
         $this->tag = $tag;
 
-        return $this;
-    }
-
-    /**
-     * @return boolean|string
-     */
-    public function isDefaultBucket()
-    {
-        return $this->defaultBucket;
-    }
-
-    /**
-     * @param boolean|string $defaultBucket
-     * @return $this
-     */
-    public function setDefaultBucket($defaultBucket)
-    {
-        $this->defaultBucket = $defaultBucket;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDefaultBucketStage()
-    {
-        return $this->defaultBucketStage;
-    }
-
-    /**
-     * @param mixed $defaultBucketStage
-     * @return $this
-     */
-    public function setDefaultBucketStage($defaultBucketStage)
-    {
-        $this->defaultBucketStage = $defaultBucketStage;
         return $this;
     }
 
@@ -442,11 +266,8 @@ class Image
      */
     public function fromArray($config = [])
     {
-        $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
-            'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
-            'forward_token_details' => 'setForwardTokenDetails',
-            'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
-            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
+        $fields = ['cpu_shares' => 'setCpuShares', 'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout',
+            'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
         ];
         foreach ($fields as $fieldName => $methodName) {
             if (isset($config[$fieldName])) {
@@ -463,9 +284,9 @@ class Image
      * @param array $config Docker image runtime configuration.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, Logger $logger, $config = [])
+    public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config)
     {
-        $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
+        $processedConfig = (new Configuration\Component())->parse(["config" => $config]);
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
             $instance = new Image\DockerHub($encryptor);
         } else {
@@ -515,13 +336,11 @@ class Image
     /**
      * Prepare the container image so that it can be run.
      *
-     * @param Container $container
      * @param array $configData Configuration (same as the one stored in data config file)
-     * @param string $containerId Container ID
      * @return string Image tag name.
      * @throws \Exception
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
         throw new \Exception("Not implemented");
     }

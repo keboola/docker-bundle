@@ -93,7 +93,7 @@ class PrivateRepository extends Image\QuayIO
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
@@ -103,7 +103,7 @@ class PrivateRepository extends Image\QuayIO
                     "{$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new LoginFailedException($message);
             }
-            $tag = parent::prepare($container, $configData, $containerId);
+            $tag = parent::prepare($configData);
             return $tag;
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
@@ -117,12 +117,12 @@ class PrivateRepository extends Image\QuayIO
     public function fromArray($config = [])
     {
         parent::fromArray($config);
-        if (isset($config["definition"]["repository"])) {
-            if (isset($config["definition"]["repository"]["username"])) {
-                $this->setLoginUsername($config["definition"]["repository"]["username"]);
+        if (isset($config["repository"])) {
+            if (isset($config["repository"]["username"])) {
+                $this->setLoginUsername($config["repository"]["username"]);
             }
-            if (isset($config["definition"]["repository"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
+            if (isset($config["repository"]["#password"])) {
+                $this->setLoginPassword($this->getEncryptor()->decrypt($config["repository"]["#password"]));
             }
         }
         return $this;
