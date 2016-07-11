@@ -120,6 +120,9 @@ class ApiController extends BaseApiController
             } else {
                 $lockName .= "-" . uniqid();
             }
+            if (isset($params["config"]) && !is_scalar($params["config"])) {
+                throw new UserException("Body parameter 'config' is not a number.");
+            }
             $job->setLockName($lockName);
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);
