@@ -268,7 +268,6 @@ class Executor extends BaseExecutor
                 $process->run();
                 if (trim($process->getOutput()) !== '0') {
                     (new Process('sudo docker kill ' . escapeshellarg($containerId)))->run();
-
                 }
                 $this->logService->getLog()->info("Process terminated");
             } catch (\Exception $e) {
