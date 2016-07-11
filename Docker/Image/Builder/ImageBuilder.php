@@ -436,12 +436,10 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                         $this->setRepository($value);
                     } elseif ($key === 'version') {
                         $this->setVersion($value);
-
                         if ($this->getVersion() == 'master') {
                             $this->logger->debug("Using master branch, caching disabled.");
                             $this->setCache(false);
                         }
-
                     } elseif ($key === 'username') {
                         $this->setRepoUsername($value);
                         unset($this->parameters[$key]);
