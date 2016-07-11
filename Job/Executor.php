@@ -190,6 +190,11 @@ class Executor extends BaseExecutor
             } catch (\Exception $e) {
                 $this->logger->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
             }
+            try {
+                (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->run();
+            } catch (\Exception $e) {
+                $this->logService->getLog()->error("Cannot remove container '{$containerId}': " . $e->getMessage());
+            }
         }
     }
 }
