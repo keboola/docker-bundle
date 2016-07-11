@@ -434,6 +434,14 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     // handle special parameters - repository properties cannot be passed through normal parameters
                     if ($key === 'repository') {
                         $this->setRepository($value);
+                    } elseif ($key === 'version') {
+                        $this->setVersion($value);
+
+                        if ($this->getVersion() == 'master') {
+                            $this->logger->debug("Using master branch, caching disabled.");
+                            $this->setCache(false);
+                        }
+
                     } elseif ($key === 'username') {
                         $this->setRepoUsername($value);
                         unset($this->parameters[$key]);
@@ -496,10 +504,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
             $this->createDockerFile($workingFolder);
-            if ($this->getVersion() == 'master') {
-                $this->logger->debug("Using master branch, caching disabled.");
-                $this->setCache(false);
-            }
+
             if (!$this->getCache()) {
                 $noCache = ' --no-cache';
             } else {

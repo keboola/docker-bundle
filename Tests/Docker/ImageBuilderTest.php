@@ -478,12 +478,16 @@ DOCKERFILE;
                         "type" => "git",
                     ],
                     "commands" => [
-                        "{{somewhere}} {{over}} {{the}} {{rainbow}}",
+                        "{{somewhere}} {{over}} {{version}} {{the}} {{rainbow}}",
                     ],
                     "entry_point" => "php /home/run.php --data=/data",
                     "parameters" => [
                         [
                             "name" => "somewhere",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "version",
                             "type" => "string"
                         ],
                         [
@@ -510,7 +514,8 @@ DOCKERFILE;
             ],
             'runtime' => [
                 'the' => 'fox',
-                'rainbow' => 'jumped'
+                'rainbow' => 'jumped',
+                'version' => 'master',
             ]
         ];
         $tempDir = new Temp('docker-test');
@@ -518,7 +523,13 @@ DOCKERFILE;
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
+        /**
+         * @var $image ImageBuilder
+         */
         $image = Image::factory($encryptor, $log, $imageConfig);
+        $this->assertInstanceOf('Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder', $image);
+        $this->assertTrue($image->getCache(), 'caching should be enabled by default');
+
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $config);
@@ -526,13 +537,17 @@ DOCKERFILE;
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
         $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertEquals('master', $image->getVersion(), 'version should be set from runtime parameters');
+        $this->assertFalse($image->getCache(), 'version set to master should disable caching');
+        
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker
 WORKDIR /home
 
+ENV APP_VERSION master
 # Image definition commands
-RUN quick brown fox jumped
+RUN quick brown master fox jumped
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data
 DOCKERFILE;
