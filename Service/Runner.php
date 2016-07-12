@@ -112,23 +112,21 @@ class Runner
     }
 
 
-    private function shouldStoreState($componentId, $defaultBucket, $configurationId)
+    private function shouldStoreState($componentId, $configurationId)
     {
         $storeState = false;
         if ($componentId && $configurationId) {
             $storeState = true;
 
-            // Do not store state if `default_bucket` and configurationId not really exists
-            if ($defaultBucket) {
-                $components = new Components($this->storageClient);
-                try {
-                    $components->getConfiguration($componentId, $configurationId);
-                } catch (ClientException $e) {
-                    if ($e->getStringCode() == 'notFound' && $e->getPrevious()->getCode() == 404) {
-                        $storeState = false;
-                    } else {
-                        throw $e;
-                    }
+            // Do not store state if configuration does not exist
+            $components = new Components($this->storageClient);
+            try {
+                $components->getConfiguration($componentId, $configurationId);
+            } catch (ClientException $e) {
+                if ($e->getStringCode() == 'notFound' && $e->getPrevious()->getCode() == 404) {
+                    $storeState = false;
+                } else {
+                    throw $e;
                 }
             }
         }
@@ -218,12 +216,12 @@ class Runner
         );
         switch ($mode) {
             case 'run':
-                $componentOutput = $this->runComponent($component, $componentId, $configId);
+                $componentOutput = $this->runComponent($componentId, $configId);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($component, $mode);
+                $componentOutput = $this->sandboxComponent($componentId, $mode);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -231,7 +229,7 @@ class Runner
         return $componentOutput;
     }
 
-    public function runComponent($component, $componentId, $configId)
+    public function runComponent($componentId, $configId)
     {
         // initialize
         $this->dataDirectory->createDataDir();
@@ -260,7 +258,7 @@ class Runner
 
         // finalize
         $this->dataLoader->storeOutput();
-        if ($this->shouldStoreState($componentId, $component['default_bucket'], $configId)) {
+        if ($this->shouldStoreState($componentId, $configId)) {
             $this->stateFile->storeStateFile();
         }
         $this->dataDirectory->dropDataDir();
