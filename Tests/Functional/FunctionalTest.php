@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Job\Executor;
+use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -151,7 +152,17 @@ class FunctionalTests extends KernelTestCase
 
     public function testRDocker()
     {
-        $data = [
+        $componentData = [
+            "definition" => [
+                "type" => "quayio",
+                "uri" => "keboola/r-transformation",
+                "tag" => "0.0.14",
+            ],
+            "process_timeout" => 21600,
+            "memory" => "8192m",
+            "configuration_format" => "json",
+        ];
+        $configurationData = [
             'params' => [
                 'component' => 'keboola.r-transformation',
                 'mode' => 'run',
@@ -214,6 +225,21 @@ class FunctionalTests extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
+        $runner = new Runner(
+            $this->temp,
+            $encryptor,
+            $this->getSapiServiceStub(),
+            $this->getLoggerServiceStub()
+        );
+        $runner->run(
+            $componentData,
+            uniqid('test-'),
+            $configurationData,
+            [],
+            'run',
+            'run'
+        );
+
         $componentsService = new ComponentsService($this->getSapiServiceStub());
         $jobExecutor = new Executor(
             $this->temp,
@@ -235,6 +261,8 @@ class FunctionalTests extends KernelTestCase
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
     }
+
+
 
 
     public function testSandbox()
@@ -539,6 +567,111 @@ class FunctionalTests extends KernelTestCase
 
     }
 
+
+    public function testRunnerRDocker()
+    {
+        /*
+        $componentData = [
+            'id' => 'keboola.r-transformation',
+            'data' => [
+                "definition" => [
+                    "type" => "quayio",
+                    "uri" => "keboola/r-transformation",
+                    "tag" => "0.0.14",
+                ],
+                "process_timeout" => 21600,
+                "memory" => "8192m",
+                "configuration_format" => "json"
+            ]
+        ];
+        */
+        $configurationData = [
+            'storage' => [
+                'input' => [
+                    'tables' => [[
+                        'source' => 'in.c-docker-test.source',
+                        'destination' => 'transpose.csv'
+                    ]]
+                ],
+                'output' => [
+                    'tables' => [[
+                        'source' => 'transpose.csv',
+                        'destination' => 'out.c-docker-test.transposed'
+                    ]]
+                ]
+            ],
+            'parameters' => [
+                'script' => [
+                    'data <- read.csv(file = "/data/in/tables/transpose.csv");',
+                    'tdata <- t(data[, !(names(data) %in% ("name"))])',
+                    'colnames(tdata) <- data[["name"]]',
+                    'tdata <- data.frame(column = rownames(tdata), tdata)',
+                    'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)'
+                ]
+            ]
+        ];
+
+        $tokenInfo = $this->client->verifyToken();
+        $encryptor = new ObjectEncryptor();
+        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+        $ecWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        $ecpWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
+
+        // Create buckets
+        if (!$this->client->bucketExists("in.c-docker-test")) {
+            $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker TestSuite");
+        }
+        if (!$this->client->bucketExists("out.c-docker-test")) {
+            $this->client->createBucket("docker-test", Client::STAGE_OUT, "Docker TestSuite");
+        }
+
+        // Create table
+        if (!$this->client->tableExists("in.c-docker-test.source")) {
+            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+            $csv->writeRow(['name', 'oldValue', 'newValue']);
+            $csv->writeRow(['price', '100', '1000']);
+            $csv->writeRow(['size', 'small', 'big']);
+            $csv->writeRow(['age', 'low', 'high']);
+            $csv->writeRow(['kindness', 'no', 'yes']);
+            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        }
+
+        $runner = new Runner(
+            $this->temp,
+            $encryptor,
+            $this->getSapiServiceStub(),
+            $this->getLoggerServiceStub()
+        );
+        $components = $this->getSapiServiceStub()->getClient()->indexAction();
+        $componentData = [];
+        foreach ($components["components"] as $component) {
+            if ($component["id"] == 'keboola.r-transformation') {
+                $componentData = $component;
+                break;
+            }
+        }
+        $runner->run(
+            $componentData,
+            uniqid('test-'),
+            $configurationData,
+            [],
+            'run',
+            'run'
+        );
+
+        $csvData = $this->client->exportTable('out.c-docker-test.transposed');
+        $data = Client::parseCsv($csvData);
+        $this->assertEquals(2, count($data));
+        $this->assertArrayHasKey('column', $data[0]);
+        $this->assertArrayHasKey('price', $data[0]);
+        $this->assertArrayHasKey('size', $data[0]);
+        $this->assertArrayHasKey('age', $data[0]);
+        $this->assertArrayHasKey('kindness', $data[0]);
+    }
 
     public function testHelloWorld()
     {
