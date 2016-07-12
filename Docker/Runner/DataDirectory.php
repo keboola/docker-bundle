@@ -85,7 +85,8 @@ class DataDirectory
         $structure = [
             $this->workingDir . "/data/out",
             $this->workingDir . "/data/out/tables",
-            $this->workingDir . "/data/out/files"
+            $this->workingDir . "/data/out/files",
+            $this->workingDir . "/data/in/user",
         ];
 
         $fs->mkdir($structure);

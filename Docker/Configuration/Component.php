@@ -34,6 +34,9 @@ class Component extends Configuration
 
         $root
             ->children()
+            // todo tady ty dva jsou tady jen kvuli tomu ze jsou nahore a vubec sem nepatri
+            ->integerNode('priority')->end()
+            ->variableNode('parameters')->end()
             ->variableNode('image_parameters')->end()
             ->integerNode('cpu_shares')->min(0)->defaultValue(1024)->end()
             ->scalarNode('memory')->defaultValue('64m')->end()

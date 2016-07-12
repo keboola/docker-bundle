@@ -258,4 +258,55 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->setId("keboola/docker-php-test");
         $container->run("testsuite", []);
     }
+
+    public function testHelloWorld()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+
+        $container = $this->getContainer($imageConfiguration);
+        $container->setId("hello-world");
+        $process = $container->run("testsuite", []);
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertContains("Hello from Docker", trim($process->getOutput()));
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\ApplicationException
+     */
+    public function testException()
+    {
+        $imageConfiguration = array(
+            "definition" => array(
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            )
+        );
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->run("testsuite", []);
+    }
+
+    private function getContainer($imageConfig)
+    {
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+        $image = Image::factory($encryptor, $log, $imageConfig);
+
+        $container = new Container($image, $log, $containerLog);
+        $container->setDataDir($this->temp->getTmpFolder());
+        return $container;
+    }    
 }

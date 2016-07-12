@@ -295,7 +295,7 @@ class Runner
             }
         }
 
-        $this->dataLoader->storeDataArchive(['dry-run', 'docker', $componentId]);
+        $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
         // finalize
         $this->dataDirectory->dropDataDir();
         return $componentOutput;

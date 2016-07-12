@@ -193,7 +193,7 @@ class Executor extends BaseExecutor
             try {
                 (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->run();
             } catch (\Exception $e) {
-                $this->logService->getLog()->error("Cannot remove container '{$containerId}': " . $e->getMessage());
+                $this->logger->error("Cannot remove container '{$containerId}': " . $e->getMessage());
             }
         }
     }
