@@ -52,12 +52,15 @@ class ImageCreator
      */
     public function prepareImages()
     {
-        $images[0] = Image::factory($this->encryptor, $this->logger, $this->mainImage);
-        foreach ($this->processors as $processor) {
-            $priority = $processor['priority'];
-            $images[$priority] = Image::factory($this->encryptor, $this->logger, $processor);
+        foreach ($this->processors['before'] as $processor) {
+            $images[] = Image::factory($this->encryptor, $this->logger, $processor);
         }
-        ksort($images, SORT_ASC);
+        $images[] = Image::factory($this->encryptor, $this->logger, $this->mainImage);
+        foreach ($this->processors['after'] as $processor) {
+            //$priority = $processor['priority'];
+            $images[] = Image::factory($this->encryptor, $this->logger, $processor);
+        }
+        //ksort($images, SORT_ASC);
 
         /** @var Image[] $images */
         foreach ($images as $image) {

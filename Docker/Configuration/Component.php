@@ -15,7 +15,7 @@ class Component extends Configuration
         $root = $treeBuilder->root('image');
         $definition = $root->children()->arrayNode('definition');
         Image::configureNode($definition);
-
+/*
         $definition = $root->children()
                 ->arrayNode('processors')
                     ->prototype('array')
@@ -31,11 +31,11 @@ class Component extends Configuration
                             ->arrayNode('definition');
 
         Image::configureNode($definition);
-
+*/
         $root
             ->children()
             // todo tady ty dva jsou tady jen kvuli tomu ze jsou nahore a vubec sem nepatri
-            ->integerNode('priority')->end()
+  //          ->integerNode('priority')->end()
             ->variableNode('parameters')->end()
             ->variableNode('image_parameters')->end()
             ->integerNode('cpu_shares')->min(0)->defaultValue(1024)->end()

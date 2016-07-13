@@ -204,7 +204,7 @@ class Runner
             $this->encryptor,
             $this->loggerService->getLog(),
             $component,
-            $component['processors'],
+            $configData['processors'],
             $configData
         );
 

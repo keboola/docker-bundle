@@ -71,6 +71,38 @@ class Container extends Configuration
         $root->children()
             ->scalarNode("action");
 
+        $processors = $root->children()
+            ->arrayNode('processors');
+        // processors
+        $definition = $processors
+            ->children()
+            ->arrayNode('before')
+            ->prototype('array')
+            ->children()
+       //     ->integerNode('priority')
+        //    ->isRequired()
+       //     ->validate()
+       //     ->ifInArray([0])
+       //     ->thenInvalid('Priority must be non-zero')
+        //    ->end()
+       //     ->end()
+            ->variableNode('parameters')->end()
+            ->arrayNode('definition')
+        ;
+
+        Image::configureNode($definition);
+
+        $definition = $processors
+            ->children()
+            ->arrayNode('after')
+            ->prototype('array')
+            ->children()
+            ->variableNode('parameters')->end()
+            ->arrayNode('definition')
+        ;
+
+        Image::configureNode($definition);
+
         return $treeBuilder;
     }
 }

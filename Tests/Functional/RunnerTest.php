@@ -161,7 +161,26 @@ class RunnerTest extends KernelTestCase
                     'data$rev <- unlist(lapply(data[["text"]], function(x) { paste(rev(strsplit(x, NULL)[[1]]), collapse=\'\') }))',
                     'write.csv(data, file = "/data/out/tables/texty.csv", row.names = FALSE)',
                 ]
-            ]
+            ],
+            'processors' => [
+                'before' => [
+                    [
+                        "definition" => [
+                            "type" => "quayio",
+                            "uri" => "keboola/processor-unziper",
+                            "tag" => "1.0.0",
+                        ],
+                    ],
+                    [
+                        "definition" => [
+                            "type" => "quayio",
+                            "uri" => "keboola/processor-iconv",
+                            "tag" => "1.0.0",
+                        ],
+                        "parameters" => ['parameters.iconv.sourceEncoding' => 'KBC_PROCESSOR_SOURCE_ENCODING']
+                    ],
+                ],
+            ],
         ];
 
         $componentData = [
@@ -179,25 +198,6 @@ class RunnerTest extends KernelTestCase
                     "type" => "quayio",
                     "uri" => "keboola/r-transformation",
                     "tag" => "0.0.14",
-                ],
-                "processors" => [
-                    [
-                        "definition" => [
-                            "type" => "quayio",
-                            "uri" => "keboola/processor-unziper",
-                            "tag" => "1.0.0",
-                        ],
-                        "priority" => -2
-                    ],
-                    [
-                        "definition" => [
-                            "type" => "quayio",
-                            "uri" => "keboola/processor-iconv",
-                            "tag" => "1.0.0",
-                        ],
-                        "priority" => -1,
-                        "parameters" => ['parameters.iconv.sourceEncoding' => 'KBC_PROCESSOR_SOURCE_ENCODING']
-                    ]
                 ],
             ],
         ];
