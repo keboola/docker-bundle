@@ -99,7 +99,7 @@ class ActionController extends BaseApiController
 
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
 
-        $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
+        $containerId = $this->storageApi->getRunId();
 
         $image = Image::factory(
             $this->container->get('syrup.object_encryptor'),

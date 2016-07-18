@@ -163,18 +163,20 @@ class Executor extends BaseExecutor
                 }
             }
         }
-        return $this->doExecute($component, $params, $configData, $state);
+        return $this->doExecute($component, $params, $configData, $state, $job->getId());
     }
 
     /**
-     * @param $component
-     * @param $params
-     * @param $configData
-     * @param $state
+     * @param array $component
+     * @param array $params
+     * @param array $configData
+     * @param array $state
+     * @param int $jobId
      * @return array
+     * @throws ClientException
      * @throws \Exception
      */
-    private function doExecute(array $component, array $params, array $configData, array $state)
+    private function doExecute(array $component, array $params, array $configData, array $state, $jobId = 0)
     {
         $oauthCredentialsClient = new Credentials($this->storageApi->getTokenString());
         $oauthCredentialsClient->enableReturnArrays(true);
@@ -227,8 +229,8 @@ class Executor extends BaseExecutor
                 break;
             case 'dry-run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-
-                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
+                
+                $containerId = $jobId;
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
@@ -241,7 +243,7 @@ class Executor extends BaseExecutor
             case 'run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
 
-                $containerId = $component["id"] . "-" . $this->storageApi->getRunId();
+                $containerId = $jobId;
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
@@ -261,7 +263,7 @@ class Executor extends BaseExecutor
     {
         $params = $job->getRawParams();
         if (isset($params["component"])) {
-            $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
+            $containerId = $job->getId();
             $this->logService->getLog()->info("Terminating process");
             try {
                 $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
