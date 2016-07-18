@@ -229,8 +229,8 @@ class Executor extends BaseExecutor
                 break;
             case 'dry-run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-                
-                $containerId = $jobId;
+
+                $containerId = $jobId . "_" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
@@ -243,7 +243,7 @@ class Executor extends BaseExecutor
             case 'run':
                 $this->logService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
 
-                $containerId = $jobId;
+                $containerId = $jobId . "_" . $this->storageApi->getRunId();
                 $image = Image::factory($this->encryptor, $this->logService->getLog(), $component["data"]);
                 $this->logService->setVerbosity($image->getLoggerVerbosity());
                 $container = new Container($image, $this->logService->getLog(), $this->logService->getContainerLog());
@@ -263,7 +263,7 @@ class Executor extends BaseExecutor
     {
         $params = $job->getRawParams();
         if (isset($params["component"])) {
-            $containerId = $job->getId();
+            $containerId = $job->getId() . "_" . $this->storageApi->getRunId();
             $this->logService->getLog()->info("Terminating process");
             try {
                 $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
