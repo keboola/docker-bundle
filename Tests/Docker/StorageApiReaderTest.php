@@ -40,7 +40,10 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $fs = new Filesystem();
         $fs->mkdir($this->tmpDir . "/download");
 
-        $this->client = new Client(["token" => STORAGE_API_TOKEN]);
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            "token" => STORAGE_API_TOKEN,
+        ]);
     }
 
     public function tearDown()

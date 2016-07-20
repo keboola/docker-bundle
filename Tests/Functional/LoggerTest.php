@@ -262,7 +262,10 @@ print "second message to stdout\n";'
         $logService->setComponentId('dummy-testing');
         /** @var StorageApiService $sapiService */
         $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
         $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
@@ -331,7 +334,10 @@ print "second message to stdout\n";'
         $logService->setComponentId('dummy-testing');
         /** @var StorageApiService $sapiService */
         $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
         $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $logService->setVerbosity($image->getLoggerVerbosity());
@@ -418,7 +424,10 @@ print "second message to stdout\n";'
         $logService->setComponentId('dummy-testing');
         /** @var StorageApiService $sapiService */
         $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
         $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $logService->setVerbosity($image->getLoggerVerbosity());
@@ -451,7 +460,10 @@ print "second message to stdout\n";'
         $logService->setComponentId('dummy-testing');
         /** @var StorageApiService $sapiService */
         $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client(['token' => STORAGE_API_TOKEN]));
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
         $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $logService->setVerbosity($image->getLoggerVerbosity());

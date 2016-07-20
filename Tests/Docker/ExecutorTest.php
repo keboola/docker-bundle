@@ -49,7 +49,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->temp->initRunFolder();
         $this->tmpDir = $this->temp->getTmpFolder();
 
-        $this->client = new Client(["token" => STORAGE_API_TOKEN]);
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            "token" => STORAGE_API_TOKEN,
+        ]);
 
         // Delete bucket
         if ($this->client->bucketExists("in.c-docker-test")) {
