@@ -44,6 +44,8 @@ class ImageCreator
         $this->logger = $logger;
         $this->mainImage = $mainImage;
         $this->processors = $processors;
+        $this->processors['before'] = empty($this->processors['before']) ? [] : $this->processors['before'];
+        $this->processors['after'] = empty($this->processors['after']) ? [] : $this->processors['after'];
         $this->componentConfig = $componentConfig;
     }
 

@@ -153,6 +153,7 @@ class Runner
         $this->loggerService->setComponentId($componentId);
         $configData = (new Configuration\Container())->parse(['container' => $configData]);
         $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
+        $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
         $configFormat = $component['configuration_format'];
 
         $this->dataDirectory = new DataDirectory($this->temp->getTmpFolder());
