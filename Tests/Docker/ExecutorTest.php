@@ -1449,6 +1449,5 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $expectedConfigFile,
             json_decode(file_get_contents($container->getDataDir() . DIRECTORY_SEPARATOR . 'config.json'), true)
         );
-
     }
 }

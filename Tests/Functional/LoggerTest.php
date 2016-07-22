@@ -393,7 +393,6 @@ print "second message to stdout\n";'
         $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
         $this->assertArrayHasKey('several', $struct['results']['_structure']['with']);
         $this->assertEquals('nested', $struct['results']['_structure']['with']['several']);
-
     }
 
     public function testGelfVerbosityNone()

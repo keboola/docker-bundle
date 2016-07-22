@@ -59,6 +59,5 @@ class QuayIORepositoryTest extends KernelTestCase
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
         # fixing a weird bug
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:1.0.14"))->run();
-
     }
 }

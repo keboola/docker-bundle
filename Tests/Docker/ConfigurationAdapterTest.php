@@ -157,7 +157,6 @@ EOT;
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
-
     }
 
     /**
@@ -177,6 +176,5 @@ EOT;
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
-
     }
 }

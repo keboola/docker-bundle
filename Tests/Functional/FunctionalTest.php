@@ -540,7 +540,6 @@ class FunctionalTests extends KernelTestCase
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
         $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
-
     }
 
 
