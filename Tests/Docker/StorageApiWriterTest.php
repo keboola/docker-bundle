@@ -107,7 +107,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
         $this->clearBucket();
         $this->clearFileUploads();
-0    }
+    }
 
     /**
      * @throws \Keboola\StorageApi\ClientException

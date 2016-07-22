@@ -21,6 +21,5 @@ class OutputFileManifestConfigurationTest extends \PHPUnit_Framework_TestCase
         );
         $processedConfiguration = (new File\Manifest())->parse(array("config" => $config));
         $this->assertEquals($expectedResponse, $processedConfiguration);
-
     }
 }
