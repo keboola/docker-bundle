@@ -165,18 +165,10 @@ class RunnerTest extends KernelTestCase
             'processors' => [
                 'before' => [
                     [
-                        "definition" => [
-                            "type" => "quayio",
-                            "uri" => "keboola/processor-unziper",
-                            "tag" => "1.0.0",
-                        ],
+                        "component" => "keboola.processor.unzipper",
                     ],
                     [
-                        "definition" => [
-                            "type" => "quayio",
-                            "uri" => "keboola/processor-iconv",
-                            "tag" => "1.0.0",
-                        ],
+                        "component" => "keboola.processor.iconv",
                         "parameters" => ['parameters.iconv.sourceEncoding' => 'KBC_PROCESSOR_SOURCE_ENCODING']
                     ],
                 ],
