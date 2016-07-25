@@ -173,7 +173,7 @@ class RunnerTest extends KernelTestCase
                         "definition" => [
                             "component" => "keboola.processor.iconv",
                         ],
-                        "parameters" => ['parameters.iconv.sourceEncoding' => 'KBC_PROCESSOR_SOURCE_ENCODING']
+                        "parameters" => ['source_encoding' => 'CP1250']
                     ],
                 ],
             ],

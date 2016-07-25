@@ -24,20 +24,14 @@ class ContainerCreator
      */
     private $dataDirectory;
 
-    /**
-     * @var array
-     */
-    private $environmentVariables;
-
-    public function __construct(Logger $logger, ContainerLogger $containerLogger, $dataDirectory, $environmentVariables)
+    public function __construct(Logger $logger, ContainerLogger $containerLogger, $dataDirectory)
     {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
         $this->dataDirectory = $dataDirectory;
-        $this->environmentVariables = $environmentVariables;
     }
 
-    public function createContainerFromImage(Image $image, $containerId)
+    public function createContainerFromImage(Image $image, $containerId, $environmentVariables)
     {
         return new Container(
             $containerId,
@@ -45,7 +39,7 @@ class ContainerCreator
             $this->logger,
             $this->containerLogger,
             $this->dataDirectory,
-            $this->environmentVariables
+            $environmentVariables
         );
     }
 }

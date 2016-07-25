@@ -5,7 +5,6 @@ use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
-use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;

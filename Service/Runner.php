@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ComponentParameters;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -170,7 +169,6 @@ class Runner
 
         $this->configFile = new ConfigFile(
             $this->dataDirectory->getDataDir(),
-      //     $configData,
             $componentParameters->getComponentParameters(),
             $authorization->getAuthorization(),
             $action,
@@ -213,8 +211,7 @@ class Runner
         $this->containerCreator = new ContainerCreator(
             $this->loggerService->getLog(),
             $this->loggerService->getContainerLog(),
-            $this->dataDirectory->getDataDir(),
-            $this->environment->getEnvironmentVariables()
+            $this->dataDirectory->getDataDir()
         );
         switch ($mode) {
             case 'run':
@@ -233,31 +230,7 @@ class Runner
 
     public function runComponent($componentId, $configId)
     {
-        // initialize
-        $this->dataDirectory->createDataDir();
-      //  $this->configFile->createConfigFile();
-        $this->stateFile->createStateFile();
-        $this->dataLoader->loadInputData();
-
-        // run images
-        $componentOutput = '';
-        $images = $this->imageCreator->prepareImages();
-        $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
-        $counter = 0;
-        foreach ($images as $priority => $image) {
-            $this->configFile->createConfigFile($image->getConfigData());
-            $containerId = $componentId . '-' . $this->storageClient->getRunId();
-            $container = $this->containerCreator->createContainerFromImage($image, $containerId);
-            $output = $container->run();
-            if ($priority == 0) {
-                // image with priority 0 is main image, only its output is really important
-                $componentOutput = $output;
-            }
-            $counter++;
-            if ($counter < count($images)) {
-                $this->dataDirectory->moveOutputToInput();
-            }
-        }
+        $componentOutput = $this->runImages($componentId);
 
         // finalize
         $this->dataLoader->storeOutput();
@@ -271,36 +244,51 @@ class Runner
 
     public function sandboxComponent($componentId, $mode)
     {
-        // initialize
-        $this->dataDirectory->createDataDir();
-        $this->configFile->createConfigFile();
-        $this->stateFile->createStateFile();
-        $this->dataLoader->loadInputData();
-
-        // run images
         $componentOutput = '';
         if ($mode == 'dry-run') {
-            $images = $this->imageCreator->prepareImages();
-            $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
-            $counter = 0;
-            foreach ($images as $priority => $image) {
-                $containerId = $componentId . '-' . $this->storageClient->getRunId();
-                $container = $this->containerCreator->createContainerFromImage($image, $containerId);
-                $output = $container->run();
-                if ($priority == 0) {
-                    // image with priority 0 is main image, only its output is really important
-                    $componentOutput = $output;
-                }
-                $counter++;
-                if ($counter < count($images)) {
-                    $this->dataDirectory->moveOutputToInput();
-                }
-            }
+            $componentOutput = $this->runImages($componentId);
         }
 
         $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
         // finalize
         $this->dataDirectory->dropDataDir();
+        return $componentOutput;
+    }
+
+    private function runImages($componentId)
+    {
+        // initialize
+        $this->dataDirectory->createDataDir();
+        $this->stateFile->createStateFile();
+        $this->dataLoader->loadInputData();
+
+        $componentOutput = '';
+        $images = $this->imageCreator->prepareImages();
+        $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
+
+        $counter = 0;
+        foreach ($images as $priority => $image) {
+            $this->configFile->createConfigFile($image->getConfigData());
+            $containerId = $componentId . '-' . $this->storageClient->getRunId();
+            if ($image->getIsMain()) {
+                $environmentParameters = [];
+            } else {
+                $environmentParameters = $image->getConfigData()['parameters'];
+            }
+            $container = $this->containerCreator->createContainerFromImage(
+                $image,
+                $containerId,
+                $this->environment->getEnvironmentVariables($environmentParameters)
+            );
+            $output = $container->run();
+            if ($image->getIsMain()) {
+                $componentOutput = $output;
+            }
+            $counter++;
+            if ($counter < count($images)) {
+                $this->dataDirectory->moveOutputToInput();
+            }
+        }
         return $componentOutput;
     }
 }

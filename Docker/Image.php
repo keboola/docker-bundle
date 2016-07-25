@@ -81,6 +81,11 @@ class Image
      */
     private $configData;
 
+    /**
+     * @var bool
+     */
+    private $isMain;
+
 
     /**
      * Constructor (use @see {factory()})
@@ -109,13 +114,10 @@ class Image
 
     /**
      * @param string $memory
-     * @return $this
      */
     public function setMemory($memory)
     {
         $this->memory = $memory;
-
-        return $this;
     }
 
     /**
@@ -128,13 +130,10 @@ class Image
 
     /**
      * @param int $cpuShares
-     * @return $this
      */
     public function setCpuShares($cpuShares)
     {
         $this->cpuShares = $cpuShares;
-
-        return $this;
     }
 
     /**
@@ -152,8 +151,6 @@ class Image
     public function setProcessTimeout($timeout)
     {
         $this->processTimeout = (int)$timeout;
-
-        return $this;
     }
 
     /**
@@ -166,13 +163,10 @@ class Image
 
     /**
      * @param string $imageId
-     * @return $this
      */
     public function setImageId($imageId)
     {
         $this->imageId = $imageId;
-
-        return $this;
     }
 
     /**
@@ -185,13 +179,23 @@ class Image
 
     /**
      * @param string $tag
-     * @return $this
      */
     public function setTag($tag)
     {
         $this->tag = $tag;
+    }
 
-        return $this;
+    /**
+     * @param bool $isMain
+     */
+    public function setIsMain($isMain)
+    {
+        $this->isMain = $isMain;
+    }
+
+    public function getIsMain()
+    {
+        return $this->isMain;
     }
 
     /**
@@ -287,9 +291,10 @@ class Image
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
      * @param Logger $logger Logger instance.
      * @param array $config Docker image runtime configuration.
+     * @param bool $isMain True to mark the image as main image.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config)
+    public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config, $isMain)
     {
         $processedConfig = (new Configuration\Component())->parse(["config" => $config]);
         if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
@@ -323,6 +328,7 @@ class Image
             $instance->setTag($config["definition"]["tag"]);
         }
         $instance->fromArray($processedConfig);
+        $instance->setIsMain($isMain);
 
         return $instance;
     }

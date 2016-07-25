@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Exception\UserException;
 
 class Environment
 {
@@ -34,17 +35,18 @@ class Environment
         $this->forwardTokenDetails = $forwardTokenDetails;
     }
 
-    public function getEnvironmentVariables()
+    public function getEnvironmentVariables($configurationVariables)
     {
+        $envs = $this->getConfigurationVariables($configurationVariables);
         // @todo nebo predavat tokenfino aby se verifyToken nemuselo volat 2x?
         $tokenInfo = $this->storageClient->verifyToken();
         // set environment variables
-        $envs = [
+        $envs = array_merge($envs, [
             "KBC_RUNID" => $this->storageClient->getRunId(),
             "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
-        ];
+        ]);
         if ($this->forwardToken) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
         }
@@ -54,5 +56,25 @@ class Environment
             $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
         }
         return $envs;
+    }
+
+
+    public function getConfigurationVariables($configurationVariables)
+    {
+        $envs = [];
+        foreach ($configurationVariables as $name => $value) {
+            if (is_scalar($value)) {
+                $envs['KBC_PARAMETER_' . $this->sanitizeName($name)] = $value;
+            } else {
+                throw new UserException("Only scalar value is allowed as value for $name.");
+            }
+        }
+        return $envs;
+    }
+
+
+    private function sanitizeName($name)
+    {
+        return strtoupper(preg_replace('@[^a-z]@', '_', strtolower($name)));
     }
 }

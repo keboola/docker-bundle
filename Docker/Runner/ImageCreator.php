@@ -62,12 +62,12 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId)['data'];
-            $image = Image::factory($this->encryptor, $this->logger, $component);
+            $image = Image::factory($this->encryptor, $this->logger, $component, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = Image::factory($this->encryptor, $this->logger, $this->mainImage);
+        $image = Image::factory($this->encryptor, $this->logger, $this->mainImage, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
@@ -75,7 +75,7 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId)['data'];
-            $image = Image::factory($this->encryptor, $this->logger, $component);
+            $image = Image::factory($this->encryptor, $this->logger, $component, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
