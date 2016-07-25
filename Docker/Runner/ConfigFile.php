@@ -17,7 +17,7 @@ class ConfigFile
     /**
      * @var array
      */
-    private $config;
+ //   private $config;
 
     /**
      * @var string
@@ -41,26 +41,26 @@ class ConfigFile
 
     public function __construct(
         $dataDirectory,
-        array $config,
+    //    array $config,
         array $imageParameters,
         array $authorization,
         $action,
         $format
     ) {
         $this->dataDirectory = $dataDirectory;
-        $this->config = $config;
+  //      $this->config = $config;
         $this->format = $format;
         $this->imageParameters = $imageParameters;
         $this->authorization = $authorization;
         $this->action = $action;
     }
 
-    public function createConfigFile()
+    public function createConfigFile($configData)
     {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
         try {
-            $configData = $this->config;
+            //$configData = $this->config;
             // remove runtime parameters which is not supposed to be passed into the container
             unset($configData['runtime']);
 

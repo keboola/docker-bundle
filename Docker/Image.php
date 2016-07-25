@@ -76,6 +76,11 @@ class Image
      */
     private $loggerServerType = 'tcp';
 
+    /**
+     * @var array
+     */
+    private $configData;
+
 
     /**
      * Constructor (use @see {factory()})
@@ -333,6 +338,11 @@ class Image
         return $this->getImageId() . ":" . $this->getTag();
     }
 
+    public function getConfigData()
+    {
+        return $this->configData;
+    }
+
     /**
      * Prepare the container image so that it can be run.
      *
@@ -342,6 +352,7 @@ class Image
      */
     public function prepare(array $configData)
     {
-        throw new \Exception("Not implemented");
+        $this->configData = $configData;
+        //throw new \Exception("Not implemented");
     }
 }

@@ -107,6 +107,7 @@ class PrivateRepository extends Image\DockerHub
      */
     public function prepare(array $configData)
     {
+        parent::prepare($configData);
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();

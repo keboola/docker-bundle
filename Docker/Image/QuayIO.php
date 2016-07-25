@@ -22,6 +22,7 @@ class QuayIO extends Image
      */
     public function prepare(array $configData)
     {
+        parent::prepare($configData);
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
             $process->setTimeout(3600);

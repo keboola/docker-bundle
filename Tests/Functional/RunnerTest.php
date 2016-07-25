@@ -165,10 +165,14 @@ class RunnerTest extends KernelTestCase
             'processors' => [
                 'before' => [
                     [
-                        "component" => "keboola.processor.unzipper",
+                        "definition" => [
+                            "component" => "keboola.processor.unzipper",
+                        ],
                     ],
                     [
-                        "component" => "keboola.processor.iconv",
+                        "definition" => [
+                            "component" => "keboola.processor.iconv",
+                        ],
                         "parameters" => ['parameters.iconv.sourceEncoding' => 'KBC_PROCESSOR_SOURCE_ENCODING']
                     ],
                 ],

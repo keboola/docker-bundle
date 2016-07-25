@@ -170,7 +170,7 @@ class Runner
 
         $this->configFile = new ConfigFile(
             $this->dataDirectory->getDataDir(),
-            $configData,
+      //     $configData,
             $componentParameters->getComponentParameters(),
             $authorization->getAuthorization(),
             $action,
@@ -204,6 +204,7 @@ class Runner
         $this->imageCreator = new ImageCreator(
             $this->encryptor,
             $this->loggerService->getLog(),
+            $this->storageClient,
             $component,
             $configData['processors'],
             $configData
@@ -234,7 +235,7 @@ class Runner
     {
         // initialize
         $this->dataDirectory->createDataDir();
-        $this->configFile->createConfigFile();
+      //  $this->configFile->createConfigFile();
         $this->stateFile->createStateFile();
         $this->dataLoader->loadInputData();
 
@@ -244,6 +245,7 @@ class Runner
         $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
         $counter = 0;
         foreach ($images as $priority => $image) {
+            $this->configFile->createConfigFile($image->getConfigData());
             $containerId = $componentId . '-' . $this->storageClient->getRunId();
             $container = $this->containerCreator->createContainerFromImage($image, $containerId);
             $output = $container->run();

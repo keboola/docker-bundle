@@ -95,6 +95,7 @@ class PrivateRepository extends Image\QuayIO
      */
     public function prepare(array $configData)
     {
+        parent::prepare($configData);
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();
