@@ -2,9 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Doctrine\Bundle\DoctrineCacheBundle\Tests\Functional\FileSystemCacheTest;
-use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Configuration\Input\File;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -19,7 +16,6 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Filesystem\Filesystem;
 
 class RunnerTest extends KernelTestCase
 {
@@ -123,11 +119,11 @@ class RunnerTest extends KernelTestCase
 
     public function testRunnerPipeline()
     {
-        $id1 = $this->client->uploadFile(
+        $this->client->uploadFile(
             ROOT_PATH . DIRECTORY_SEPARATOR . "Tests" . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'texty.zip',
             (new FileUploadOptions())->setTags(["docker-bundle-test", "pipeline"])
         );
-        $id2 = $this->client->uploadFile(
+        $this->client->uploadFile(
             ROOT_PATH . DIRECTORY_SEPARATOR . "Tests" . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'radio.zip',
             (new FileUploadOptions())->setTags(["docker-bundle-test", "pipeline"])
         );
