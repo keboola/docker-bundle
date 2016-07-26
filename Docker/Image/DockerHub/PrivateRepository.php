@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image\DockerHub;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Symfony\Component\Process\Process;
@@ -107,7 +106,7 @@ class PrivateRepository extends Image\DockerHub
      */
     public function prepare(array $configData)
     {
-        parent::prepare($configData);
+        $this->configData = $configData;
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();
@@ -127,9 +126,8 @@ class PrivateRepository extends Image\DockerHub
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config)
     {
-        parent::fromArray($config);
         if (isset($config["definition"]["repository"])) {
             if (isset($config["definition"]["repository"]["username"])) {
                 $this->setLoginUsername($config["definition"]["repository"]["username"]);

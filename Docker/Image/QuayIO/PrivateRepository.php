@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image\QuayIO;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Symfony\Component\Process\Process;
@@ -95,7 +94,7 @@ class PrivateRepository extends Image\QuayIO
      */
     public function prepare(array $configData)
     {
-        parent::prepare($configData);
+        $this->configData = $configData;
         try {
             $process = new Process("sudo docker login {$this->getLoginParams()}");
             $process->run();
@@ -118,12 +117,12 @@ class PrivateRepository extends Image\QuayIO
     public function fromArray($config = [])
     {
         parent::fromArray($config);
-        if (isset($config["repository"])) {
-            if (isset($config["repository"]["username"])) {
-                $this->setLoginUsername($config["repository"]["username"]);
+        if (isset($config['definition']['repository'])) {
+            if (isset($config['definition']['repository']['username'])) {
+                $this->setLoginUsername($config['definition']['repository']['username']);
             }
-            if (isset($config["repository"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["repository"]["#password"]));
+            if (isset($config['definition']['repository']['#password'])) {
+                $this->setLoginPassword($this->getEncryptor()->decrypt($config['definition']['repository']['#password']));
             }
         }
         return $this;

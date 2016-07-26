@@ -536,7 +536,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config)
     {
         parent::fromArray($config);
         if (isset($config["definition"]["build_options"])) {

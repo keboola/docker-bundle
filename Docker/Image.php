@@ -62,6 +62,11 @@ class Image
     protected $encryptor;
 
     /**
+     * @var array
+     */
+    protected $configData;
+
+    /**
      * @var string
      */
     private $loggerType = 'standard';
@@ -75,11 +80,6 @@ class Image
      * @var string
      */
     private $loggerServerType = 'tcp';
-
-    /**
-     * @var array
-     */
-    private $configData;
 
     /**
      * @var bool
@@ -273,7 +273,7 @@ class Image
      * @return Image
      * @throws \Exception
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config)
     {
         $fields = ['cpu_shares' => 'setCpuShares', 'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout',
             'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
@@ -359,6 +359,5 @@ class Image
     public function prepare(array $configData)
     {
         $this->configData = $configData;
-        //throw new \Exception("Not implemented");
     }
 }
