@@ -320,7 +320,7 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            if (strpos($message, 'Error response from daemon: open /dev/mapper/') !== 0) {
+            if (strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) {
                 // in case of this weird docker error, retry to run the container
                 $process = new Process($this->getRunCommand($containerId));
                 $process->setTimeout(null);
