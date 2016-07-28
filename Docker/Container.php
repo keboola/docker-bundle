@@ -320,12 +320,30 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            // syrup will make sure that the actual exception message will be hidden to end-user
-            throw new ApplicationException(
-                "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                null,
-                $data
-            );
+            if (strpos($message, 'Error response from daemon: open /dev/mapper/') !== 0) {
+                // in case of this weird docker error, retry to run the container
+                $process = new Process($this->getRunCommand($containerId));
+                $process->setTimeout(null);
+
+                $this->log->error("Phantom of the opera is here: " . $message, ['inspect' => $inspect]);
+                sleep(random_int(1, 4));
+                try {
+                    $this->removeContainer($containerId);
+                } catch (\Exception $e) {
+                };
+                if ($this->getImage()->getLoggerType() == 'gelf') {
+                    $this->runWithLogger($process, $containerId);
+                } else {
+                    $this->runWithoutLogger($process);
+                }
+            } else {
+                // syrup will make sure that the actual exception message will be hidden to end-user
+                throw new ApplicationException(
+                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    null,
+                    $data
+                );
+            }
         }
     }
 

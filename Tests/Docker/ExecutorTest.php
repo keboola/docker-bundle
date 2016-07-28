@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Configuration\Input\File;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
