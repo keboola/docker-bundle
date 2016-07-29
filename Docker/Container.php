@@ -173,6 +173,7 @@ class Container
             throw new ApplicationException("Data directory not set.");
         }
 
+        $retries = 0;
         do {
             $retry = false;
             $this->getImage()->prepare($this, $configData, $containerId);
@@ -199,6 +200,11 @@ class Container
                 $this->log->error("Phantom of the opera is here: " . $e->getMessage());
                 sleep(random_int(1, 4));
                 $retry = true;
+                $retries++;
+                if ($retries >= 5) {
+                    $this->log->error("Weird error occurred too many times.");
+                    throw new ApplicationException($e->getMessage(), $e);
+                }
             } finally {
                 $this->removeContainer($containerId);
             }
@@ -328,7 +334,8 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            if (strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) {
+            if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
+            (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
