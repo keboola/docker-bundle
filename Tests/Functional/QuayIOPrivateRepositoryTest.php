@@ -49,6 +49,8 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
     public function testDownloadedImageEncryptedPassword()
     {
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-private"))->run();
+        // TODO: remove this once the repo is switchted to latest tag again
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-private:master"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-private | wc -l");
         $process->run();
@@ -85,5 +87,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $this->assertEquals(1, trim($process->getOutput()));
 
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-private"))->run();
+        // TODO: remove this once the repo is switchted to latest tag again
+        (new Process("sudo docker rmi quay.io/keboola/docker-demo-private:master"))->run();
     }
 }
