@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
@@ -172,29 +173,36 @@ class Container
             throw new ApplicationException("Data directory not set.");
         }
 
-        $this->getImage()->prepare($this, $configData, $containerId);
-        $this->setId($this->getImage()->getFullImageId());
+        do {
+            $retry = false;
+            $this->getImage()->prepare($this, $configData, $containerId);
+            $this->setId($this->getImage()->getFullImageId());
 
-        $process = new Process($this->getRunCommand($containerId));
-        $process->setTimeout(null);
+            $process = new Process($this->getRunCommand($containerId));
+            $process->setTimeout(null);
 
-        // create container
-        $startTime = time();
-        try {
-            $this->log->debug("Executing docker process.");
-            if ($this->getImage()->getLoggerType() == 'gelf') {
-                $this->runWithLogger($process, $containerId);
-            } else {
-                $this->runWithoutLogger($process);
+            // create container
+            $startTime = time();
+            try {
+                $this->log->debug("Executing docker process.");
+                if ($this->getImage()->getLoggerType() == 'gelf') {
+                    $this->runWithLogger($process, $containerId);
+                } else {
+                    $this->runWithoutLogger($process);
+                }
+                $this->log->debug("Docker process finished.");
+
+                if (!$process->isSuccessful()) {
+                    $this->handleContainerFailure($process, $containerId, $startTime);
+                }
+            } catch (WeirdException $e) {
+                $this->log->error("Phantom of the opera is here: " . $e->getMessage());
+                sleep(random_int(1, 4));
+                $retry = true;
+            } finally {
+                $this->removeContainer($containerId);
             }
-            $this->log->debug("Docker process finished.");
-
-            if (!$process->isSuccessful()) {
-                $this->handleContainerFailure($process, $containerId, $startTime);
-            }
-        } finally {
-            $this->removeContainer($containerId);
-        }
+        } while ($retry);
         return $process;
     }
 
@@ -321,21 +329,8 @@ class Container
             throw new UserException($message, null, $data);
         } else {
             if (strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) {
-                // in case of this weird docker error, retry to run the container
-                $process = new Process($this->getRunCommand($containerId));
-                $process->setTimeout(null);
-
-                $this->log->error("Phantom of the opera is here: " . $message, ['inspect' => $inspect]);
-                sleep(random_int(1, 4));
-                try {
-                    $this->removeContainer($containerId);
-                } catch (\Exception $e) {
-                };
-                if ($this->getImage()->getLoggerType() == 'gelf') {
-                    $this->runWithLogger($process, $containerId);
-                } else {
-                    $this->runWithoutLogger($process);
-                }
+                // in case of this weird docker error, throw a new exception to retry the container
+                throw new WeirdException($message);
             } else {
                 // syrup will make sure that the actual exception message will be hidden to end-user
                 throw new ApplicationException(
