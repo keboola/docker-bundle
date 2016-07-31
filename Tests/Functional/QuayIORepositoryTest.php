@@ -24,8 +24,6 @@ class QuayIORepositoryTest extends KernelTestCase
     public function testDownloadedImage()
     {
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
-        # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:1.0.14"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
@@ -33,12 +31,11 @@ class QuayIORepositoryTest extends KernelTestCase
         $imageConfig = array(
             "definition" => array(
                 "type" => "quayio",
-                "uri" => "keboola/docker-demo-app",
-                "tag" => "1.0.14"
+                "uri" => "keboola/docker-demo-app"
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "json"
         );
 
         $log = new Logger("null");
@@ -50,14 +47,12 @@ class QuayIORepositoryTest extends KernelTestCase
         $container = new Container($image, $log, $containerLog);
         $image->prepare($container, [], uniqid());
 
-        $this->assertEquals("quay.io/keboola/docker-demo-app:1.0.14", $image->getFullImageId());
+        $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
         $this->assertEquals(1, trim($process->getOutput()));
 
         (new Process("sudo docker rmi quay.io/keboola/docker-demo-app"))->run();
-        # fixing a weird bug
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-app:1.0.14"))->run();
     }
 }

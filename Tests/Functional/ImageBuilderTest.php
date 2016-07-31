@@ -38,7 +38,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php56",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -55,7 +55,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -100,7 +100,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -153,7 +153,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/src2/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         /**
@@ -207,7 +207,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/src2/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -249,7 +249,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -293,7 +293,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $image = Image::factory($encryptor, $log, $imageConfig);
@@ -326,7 +326,7 @@ class ImageBuilderTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "builder",
-                "uri" => "keboola/base-php56",
+                "uri" => "keboola/base-php70",
                 "build_options" => [
                     "repository" => [
                         "uri" => "",
@@ -359,7 +359,7 @@ class ImageBuilderTest extends KernelTestCase
                     "entry_point" => "php /home/run.php --data=/data"
                 ]
             ],
-            "configuration_format" => "yaml",
+            "configuration_format" => "json",
         ];
 
         $configData = [
