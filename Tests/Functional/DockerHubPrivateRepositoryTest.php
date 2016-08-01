@@ -49,7 +49,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
      */
     public function testDownloadedImageEncryptedPassword()
     {
-        (new Process("sudo docker rmi keboolaprivatetest/docker-demo-docker"))->run();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq keboolaprivatetest/docker-demo-docker)"))->run();
 
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");
         $process->run();
@@ -86,6 +86,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $process->run();
         $this->assertEquals(1, trim($process->getOutput()));
 
-        (new Process("sudo docker rmi keboolaprivatetest/docker-demo-docker"))->run();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq keboolaprivatetest/docker-demo-docker)"))->run();
     }
 }
