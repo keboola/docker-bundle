@@ -23,7 +23,7 @@ class QuayIORepositoryTest extends KernelTestCase
      */
     public function testDownloadedImage()
     {
-        (new Process("sudo docker rmi $(sudo docker images -aq quay.io/keboola/docker-demo-app)"))->run();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
