@@ -370,7 +370,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         $dockerFile = '';
         $dockerFile .= "FROM " . $this->getImageId() . "\n";
-        $dockerFile .= "LABEL com.keboola.docker.runner.origin=\"builder\"";
+        $dockerFile .= "LABEL com.keboola.docker.runner.origin=builder\n";
         $dockerFile .= "WORKDIR /home\n";
 
         if ($this->getVersion()) {
