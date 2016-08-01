@@ -374,7 +374,6 @@ class ActionControllerTest extends WebTestCase
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
-
     }
 
     /**

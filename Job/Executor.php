@@ -168,7 +168,7 @@ class Executor extends BaseExecutor
         } else {
             $configId = sha1(serialize($params['configData']));
         }
-        $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode']);
+        $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode'], $job->getId());
         return ["message" => "Docker container processing finished."];
     }
 
@@ -177,7 +177,7 @@ class Executor extends BaseExecutor
     {
         $params = $job->getRawParams();
         if (isset($params["component"])) {
-            $containerId = $params["component"] . "-" . $this->storageApi->getRunId();
+            $containerId = $job->getId() . "-" . $this->storageApi->getRunId();
             $this->logger->info("Terminating process");
             try {
                 $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');

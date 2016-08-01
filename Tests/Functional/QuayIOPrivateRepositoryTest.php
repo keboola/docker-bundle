@@ -29,7 +29,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
             ],
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "json"
         ];
 
         $log = new Logger("null");
@@ -64,7 +64,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
             ],
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "configuration_format" => "yaml"
+            "configuration_format" => "json"
         ];
 
         $log = new Logger("null");

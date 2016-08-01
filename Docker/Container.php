@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
@@ -123,28 +124,40 @@ class Container
      */
     public function run()
     {
-        $process = new Process($this->getRunCommand($this->id));
-        $process->setTimeout(null);
+        $retries = 0;
+        do {
+            $retry = false;
+            $process = new Process($this->getRunCommand($this->id));
+            $process->setTimeout(null);
 
-        // create container
-        $startTime = time();
-        try {
-            $this->logger->debug("Executing docker process.");
-            if ($this->getImage()->getLoggerType() == 'gelf') {
-                $this->runWithLogger($process, $this->id);
-            } else {
-                $this->runWithoutLogger($process);
-            }
-            $this->logger->debug("Docker process finished.");
+            // create container
+            $startTime = time();
+            try {
+                $this->logger->debug("Executing docker process.");
+                if ($this->getImage()->getLoggerType() == 'gelf') {
+                    $this->runWithLogger($process, $this->id);
+                } else {
+                    $this->runWithoutLogger($process);
+                }
+                $this->logger->debug("Docker process finished.");
 
-            if (!$process->isSuccessful()) {
-                $this->handleContainerFailure($process, $this->id, $startTime);
+                if (!$process->isSuccessful()) {
+                    $this->handleContainerFailure($process, $this->id, $startTime);
+                }
+            } catch (WeirdException $e) {
+                $this->logger->error("Phantom of the opera is here: " . $e->getMessage());
+                sleep(random_int(1, 4));
+                $retry = true;
+                $retries++;
+                if ($retries >= 5) {
+                    $this->logger->error("Weird error occurred too many times.");
+                    throw new ApplicationException($e->getMessage(), $e);
+                }
+            } finally {
+                $this->removeContainer($this->id);
             }
-        } finally {
-            $this->removeContainer($this->id);
-        }
-        $processOutput = trim($process->getOutput());
-        return $processOutput;
+        } while ($retry);
+        return $process;
     }
 
     private function runWithoutLogger(Process $process)
@@ -269,6 +282,11 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
+            if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
+            (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
+                // in case of this weird docker error, throw a new exception to retry the container
+                throw new WeirdException($message);
+            } else {
             // syrup will make sure that the actual exception message will be hidden to end-user
             throw new ApplicationException(
                 "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
@@ -276,6 +294,7 @@ class Container
                 $data
             );
         }
+    }
     }
 
     /**

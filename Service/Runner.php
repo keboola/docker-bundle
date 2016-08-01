@@ -142,7 +142,7 @@ class Runner
      * @param $mode
      * @return string
      */
-    public function run(array $component, $configId, array $configData, array $state, $action, $mode)
+    public function run(array $component, $configId, array $configData, array $state, $action, $mode, $jobId)
     {
         $this->loggerService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
         $sandboxed = $mode != 'run';
@@ -215,12 +215,12 @@ class Runner
         );
         switch ($mode) {
             case 'run':
-                $componentOutput = $this->runComponent($componentId, $configId);
+                $componentOutput = $this->runComponent($jobId, $componentId, $configId);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($componentId, $mode);
+                $componentOutput = $this->sandboxComponent($jobId, $componentId, $mode);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -228,9 +228,9 @@ class Runner
         return $componentOutput;
     }
 
-    public function runComponent($componentId, $configId)
+    public function runComponent($jobId, $componentId, $configId)
     {
-        $componentOutput = $this->runImages($componentId);
+        $componentOutput = $this->runImages($jobId);
 
         // finalize
         $this->dataLoader->storeOutput();
@@ -242,11 +242,11 @@ class Runner
         return $componentOutput;
     }
 
-    public function sandboxComponent($componentId, $mode)
+    public function sandboxComponent($jobId, $componentId, $mode)
     {
         $componentOutput = '';
         if ($mode == 'dry-run') {
-            $componentOutput = $this->runImages($componentId);
+            $componentOutput = $this->runImages($jobId);
         }
 
         $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
@@ -255,7 +255,7 @@ class Runner
         return $componentOutput;
     }
 
-    private function runImages($componentId)
+    private function runImages($jobId)
     {
         // initialize
         $this->dataDirectory->createDataDir();
@@ -269,7 +269,7 @@ class Runner
         $counter = 0;
         foreach ($images as $priority => $image) {
             $this->configFile->createConfigFile($image->getConfigData());
-            $containerId = $componentId . '-' . $this->storageClient->getRunId();
+            $containerId = $jobId . '-' . $this->storageClient->getRunId();
             if ($image->getIsMain()) {
                 $environmentParameters = [];
             } else {

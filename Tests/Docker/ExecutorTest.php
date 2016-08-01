@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Configuration\Input\File;
 use Keboola\DockerBundle\Docker\Executor;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -52,7 +51,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->temp->initRunFolder();
         $this->tmpDir = $this->temp->getTmpFolder();
 
-        $this->client = new Client(["token" => STORAGE_API_TOKEN]);
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            "token" => STORAGE_API_TOKEN,
+        ]);
 
         // Delete bucket
         if ($this->client->bucketExists("in.c-docker-test")) {
@@ -1501,6 +1503,5 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             $expectedConfigFile,
             json_decode(file_get_contents($container->getDataDir() . DIRECTORY_SEPARATOR . 'config.json'), true)
         );
-
     }
 }

@@ -85,7 +85,8 @@ class ActionController extends BaseApiController
         /** @var Runner $runner */
         $runner = $this->container->get('docker_bundle.runner');
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
-        $message = $runner->run($component, $configId, $configData, $state, $request->get("action"), 'run');
+        $message = $runner->run($component, $configId, $configData, $state, $request->get("action"), 'run', 0);
+
         if ($message == '' || !$message) {
             throw new UserException("No response from component.");
         }

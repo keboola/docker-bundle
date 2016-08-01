@@ -53,7 +53,6 @@ class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
         $this->verbosity[Logger::CRITICAL] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::ALERT] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::EMERGENCY] = self::VERBOSITY_CAMOUFLAGE;
-
     }
 
     /**

@@ -57,6 +57,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($indexActionValue));
 
         $storageApiClient = new Client([
+            'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
             'userAgent' => 'docker-bundle',
         ]);
@@ -74,6 +75,7 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     protected function getSapiServiceStub($encrypt = true)
     {
         $storageApiClient = new Client([
+            'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
             'userAgent' => 'docker-bundle',
         ]);

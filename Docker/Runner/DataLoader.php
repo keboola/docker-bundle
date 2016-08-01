@@ -2,9 +2,10 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\StorageApi\Reader;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
+use Keboola\InputMapping\Exception\InvalidInputException;
+use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -87,6 +88,8 @@ class DataLoader
             }
         } catch (ClientException $e) {
             throw new UserException('Cannot import data from Storage API: ' . $e->getMessage(), $e);
+        } catch (InvalidInputException $e) {
+            throw new UserException($e->getMessage(), $e);
         }
     }
 

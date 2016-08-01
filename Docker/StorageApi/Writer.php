@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\DockerBundle\Exception\MissingFileException;
+use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
