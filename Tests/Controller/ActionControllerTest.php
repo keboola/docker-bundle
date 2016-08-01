@@ -7,6 +7,7 @@ use Keboola\Syrup\Service\ObjectEncryptor;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Process\Process;
 
 class ActionControllerTest extends WebTestCase
 {
@@ -26,6 +27,13 @@ class ActionControllerTest extends WebTestCase
         //get the DI container
         self::$container = $kernel->getContainer();
     }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
+    }
+
 
     protected function getStorageServiceStubDummy($encrypt = false)
     {
