@@ -153,8 +153,7 @@ class ImageBuilderTest extends KernelTestCase
                         // use other directory than home, that is already used by docker-demo-docker
                         "git clone --depth 1 {{repository}} /home/src2/" .
                             " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
-                        "cd /home/src2/",
-                        "composer install",
+                        "cd /home/src2/ && composer install",
                     ],
                     "entry_point" => "php /home/src2/run.php --data=/data"
                 ]
