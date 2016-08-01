@@ -22,6 +22,12 @@ class ImageBuilderTest extends KernelTestCase
         self::bootKernel();
     }
 
+    public function tearDown()
+    {
+        parent::tearDown();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
+    }
+
     public function testCreatePrivateRepo()
     {
         $process = new Process("sudo docker images | grep builder- | wc -l");

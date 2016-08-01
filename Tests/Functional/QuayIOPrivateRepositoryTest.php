@@ -48,7 +48,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
      */
     public function testDownloadedImageEncryptedPassword()
     {
-        (new Process("sudo docker rmi quay.io/keboola/docker-demo-private"))->run();
+        (new Process("sudo docker rmi $(sudo docker images -aq quay.io/keboola/docker-demo-app)"))->run();
 
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-private | wc -l");
         $process->run();
