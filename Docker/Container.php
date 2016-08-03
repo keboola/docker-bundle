@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
+use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -302,11 +303,18 @@ class Container
             );
         }
 
-        // this catches the timeout from `sudo timeout`
-        if ($process->getExitCode() == 137 && $duration >= $this->getImage()->getProcessTimeout()) {
-            throw new UserException(
-                "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
-            );
+        // killed containers
+        if ($process->getExitCode() == 137) {
+            // this catches the timeout from `sudo timeout`
+            if ($duration >= $this->getImage()->getProcessTimeout()) {
+                throw new UserException(
+                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                );
+            } else {
+                throw new InitializationException(
+                    "Container terminated. Will restart."
+                );
+            }
         }
 
         $message = trim($process->getErrorOutput());
