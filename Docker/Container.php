@@ -10,6 +10,7 @@ use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -207,7 +208,12 @@ class Container
                     throw new ApplicationException($e->getMessage(), $e);
                 }
             } finally {
-                $this->removeContainer($containerId);
+                try {
+                    $this->removeContainer($containerId);
+                } catch (ProcessFailedException $e) {
+                    $this->log->error("Cannot remove container {$containerId}: {$e->getMessage()}");
+                    // continue
+                }
             }
         } while ($retry);
         return $process;
@@ -288,7 +294,13 @@ class Container
     private function handleContainerFailure(Process $process, $containerId, $startTime)
     {
         $duration = time() - $startTime;
-        $inspect = $this->inspectContainer($containerId);
+        try {
+            $inspect = $this->inspectContainer($containerId);
+        } catch (ProcessFailedException $e) {
+            $this->log->error("Cannot inspect container '{$containerId}' on failure: " . $e->getMessage());
+            $inspect = [];
+            // continue
+        }
 
         if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
             $data = [
