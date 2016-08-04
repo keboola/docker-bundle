@@ -271,16 +271,16 @@ class Executor
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($id) . ' | wc -l');
-        $process->run();
+        $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
             throw new UserException("Container '{$id}' already running.");
         }
 
         // Check old containers, delete if found
         $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($id) . ' | wc -l');
-        $process->run();
+        $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
-            (new Process('sudo docker rm ' . escapeshellarg($id)))->run();
+            (new Process('sudo docker rm ' . escapeshellarg($id)))->mustRun();
         }
 
         // set environment variables

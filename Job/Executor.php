@@ -267,16 +267,16 @@ class Executor extends BaseExecutor
             $this->logService->getLog()->info("Terminating process");
             try {
                 $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
-                $process->run();
+                $process->mustRun();
                 if (trim($process->getOutput()) !== '0') {
-                    (new Process('sudo docker kill ' . escapeshellarg($containerId)))->run();
+                    (new Process('sudo docker kill ' . escapeshellarg($containerId)))->mustRun();
                 }
                 $this->logService->getLog()->info("Process terminated");
             } catch (\Exception $e) {
                 $this->logService->getLog()->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
             }
             try {
-                (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->run();
+                (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->mustRun();
             } catch (\Exception $e) {
                 $this->logService->getLog()->error("Cannot remove container '{$containerId}': " . $e->getMessage());
             }

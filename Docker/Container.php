@@ -466,7 +466,7 @@ class Container
     {
         $process = new Process($this->getRemoveCommand($containerId));
         $process->setTimeout($this->dockerCliTimeout);
-        $process->run();
+        $process->mustRun();
     }
 
     /**
@@ -477,7 +477,7 @@ class Container
     {
         $process = new Process($this->getInspectCommand($containerId));
         $process->setTimeout($this->dockerCliTimeout);
-        $process->run();
+        $process->mustRun();
         $inspect = json_decode($process->getOutput(), true);
         return array_pop($inspect);
     }
