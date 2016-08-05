@@ -178,6 +178,9 @@ class Container
         $retries = 0;
         do {
             $retry = false;
+            if ($retries > 0) {
+                $containerId .= '.' . $retries;
+            }
             $this->getImage()->prepare($this, $configData, $containerId);
             $this->setId($this->getImage()->getFullImageId());
 
