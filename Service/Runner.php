@@ -230,6 +230,11 @@ class Runner
 
     public function runComponent($jobId, $componentId, $configId)
     {
+        // initialize
+        $this->dataDirectory->createDataDir();
+        $this->stateFile->createStateFile();
+        $this->dataLoader->loadInputData();
+
         $componentOutput = $this->runImages($jobId);
 
         // finalize
@@ -244,9 +249,22 @@ class Runner
 
     public function sandboxComponent($jobId, $componentId, $mode)
     {
+        // initialize
+        $this->dataDirectory->createDataDir();
+        $this->stateFile->createStateFile();
+        $this->dataLoader->loadInputData();
+
         $componentOutput = '';
         if ($mode == 'dry-run') {
             $componentOutput = $this->runImages($jobId);
+        } else {
+            // Sandbox - get config file for main image
+            $images = $this->imageCreator->prepareImages();
+            foreach ($images as $priority => $image) {
+                if ($image->getIsMain()) {
+                    $this->configFile->createConfigFile($image->getConfigData());
+                }
+            }
         }
 
         $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
@@ -257,11 +275,6 @@ class Runner
 
     private function runImages($jobId)
     {
-        // initialize
-        $this->dataDirectory->createDataDir();
-        $this->stateFile->createStateFile();
-        $this->dataLoader->loadInputData();
-
         $componentOutput = '';
         $images = $this->imageCreator->prepareImages();
         $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());

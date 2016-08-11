@@ -150,13 +150,13 @@ class DataLoader
     {
         $zip = new \ZipArchive();
         $zipFileName = 'data.zip';
-        $zipDir = $this->dataDirectory . DIRECTORY_SEPARATOR . 'zip';
+        $zipDir = $this->dataDirectory . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'zip';
         $fs = new Filesystem();
         $fs->mkdir($zipDir);
         $zip->open($zipDir. DIRECTORY_SEPARATOR . $zipFileName, \ZipArchive::CREATE);
         $finder = new Finder();
         /** @var SplFileInfo $item */
-        foreach ($finder->in($this->dataDirectory . DIRECTORY_SEPARATOR . '..') as $item) {
+        foreach ($finder->in($this->dataDirectory) as $item) {
             if ($item->getPathname() == $zipDir) {
                 continue;
             }
