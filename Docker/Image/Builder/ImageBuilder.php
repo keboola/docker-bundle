@@ -449,35 +449,35 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
-    /**
+    protected function pullImage()
+    {
+        try {
+            $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
+            $process->setTimeout(3600);
+            $process->mustRun();
+        } catch (\Exception $e) {
+            throw new BuildException(
+                "Failed to pull parent image {$this->getImageId()}, error: " . $e->getMessage(),
+                $e
+            );
+        }
+    }
+
+    protected function login()
+    {
+        if ($this->getLoginUsername()) {
+            parent::login();
+        }
+    }
+
+    /*
      * @inheritdoc
      */
     public function prepare(array $configData)
     {
-        $this->initParameters($configData);
         try {
-            if ($this->getLoginUsername()) {
-                // Login to docker repository
-                $process = new Process("sudo docker login {$this->getLoginParams()}");
-                $process->run();
-                if ($process->getExitCode() != 0) {
-                    $message = "Login failed (code: {$process->getExitCode()}): " .
-                        "{$process->getOutput()} / {$process->getErrorOutput()}";
-                    throw new LoginFailedException($message);
-                }
-            }
-
-            try {
-                $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
-                $process->setTimeout(3600);
-                $process->mustRun();
-            } catch (\Exception $e) {
-                throw new BuildException(
-                    "Failed to get parent container {$this->getImageId()}, error: " . $e->getMessage(),
-                    $e
-                );
-            }
-
+            $this->initParameters($configData);
+            parent::prepare($configData);
             $temp = new Temp('docker');
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();

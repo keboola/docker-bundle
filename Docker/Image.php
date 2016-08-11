@@ -8,7 +8,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 
-class Image
+abstract class Image
 {
     /**
      *
@@ -297,31 +297,30 @@ class Image
     public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config, $isMain)
     {
         $processedConfig = (new Configuration\Component())->parse(["config" => $config]);
-        if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
-            $instance = new Image\DockerHub($encryptor);
+        if (empty($processedConfig["definition"]["type"])) {
+            $type = '';
         } else {
-            if (isset($processedConfig["definition"]["type"]) &&
-                $processedConfig["definition"]["type"] == "dockerhub-private"
-            ) {
+            $type = $processedConfig["definition"]["type"];
+        }
+        switch ($type) {
+            case "dockerhub":
+                $instance = new Image\DockerHub($encryptor);
+                break;
+            case "quayio":
+                $instance = new Image\QuayIO($encryptor);
+                break;
+            case "dockerhub-private":
                 $instance = new Image\DockerHub\PrivateRepository($encryptor);
-            } elseif (isset($processedConfig["definition"]["type"]) &&
-                $processedConfig["definition"]["type"] == "quayio-private"
-            ) {
+                break;
+            case "quayio-private":
                 $instance = new Image\QuayIO\PrivateRepository($encryptor);
-            } else {
-                if (isset($processedConfig["definition"]["type"]) &&
-                    $processedConfig["definition"]["type"] == "builder"
-                ) {
-                    $instance = new Image\Builder\ImageBuilder($encryptor);
-                    $instance->setLogger($logger);
-                } elseif (isset($processedConfig["definition"]["type"]) &&
-                    $processedConfig["definition"]["type"] == "quayio"
-                ) {
-                    $instance = new Image\QuayIO($encryptor);
-                } else {
-                    $instance = new self($encryptor);
-                }
-            }
+                break;
+            case $type == "builder":
+                $instance = new Image\Builder\ImageBuilder($encryptor);
+                $instance->setLogger($logger);
+                break;
+            default:
+                throw new ApplicationException("Unknown image type: " . $type);
         }
         $instance->setImageId($config["definition"]["uri"]);
         if (isset($config["definition"]["tag"])) {
@@ -349,11 +348,12 @@ class Image
         return $this->configData;
     }
 
+    abstract protected function pullImage();
+
     /**
      * Prepare the container image so that it can be run.
      *
      * @param array $configData Configuration (same as the one stored in data config file)
-     * @return string Image tag name.
      * @throws \Exception
      */
     public function prepare(array $configData)

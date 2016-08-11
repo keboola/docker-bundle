@@ -101,22 +101,25 @@ class PrivateRepository extends Image\DockerHub
         return join(" ", $logoutParams);
     }
 
+    protected function login()
+    {
+        $process = new Process("sudo docker login {$this->getLoginParams()}");
+        $process->run();
+        if ($process->getExitCode() != 0) {
+            $message = "Login failed (code: {$process->getExitCode()}): " .
+                "{$process->getOutput()} / {$process->getErrorOutput()}";
+            throw new LoginFailedException($message);
+        }
+    }
+
     /**
      * @inheritdoc
      */
     public function prepare(array $configData)
     {
-        $this->configData = $configData;
         try {
-            $process = new Process("sudo docker login {$this->getLoginParams()}");
-            $process->run();
-            if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): " .
-                    "{$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new LoginFailedException($message);
-            }
-            $tag = parent::prepare($configData);
-            return $tag;
+            $this->login();
+            parent::prepare($configData);
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
         }
@@ -128,12 +131,15 @@ class PrivateRepository extends Image\DockerHub
      */
     public function fromArray(array $config)
     {
+        parent::fromArray($config);
         if (isset($config["definition"]["repository"])) {
             if (isset($config["definition"]["repository"]["username"])) {
                 $this->setLoginUsername($config["definition"]["repository"]["username"]);
             }
             if (isset($config["definition"]["repository"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
+                $this->setLoginPassword(
+                    $this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"])
+                );
             }
             if (isset($config["definition"]["repository"]["server"])) {
                 $this->setLoginServer($config["definition"]["repository"]["server"]);

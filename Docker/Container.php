@@ -73,10 +73,10 @@ class Container
      * @param Image $image
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
-     * @param $dataDirectory
-     * @param $environmentVariables
+     * @param string $dataDirectory
+     * @param array $environmentVariables
      */
-    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, $environmentVariables)
+    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, array $environmentVariables)
     {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
