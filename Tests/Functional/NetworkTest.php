@@ -21,17 +21,17 @@ class NetworkTest extends KernelTestCase
      */
     private $temp;
 
-    private function getContainer($imageConfig)
+    private function getContainer($imageConfig, $componentConfig)
     {
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare($componentConfig);
 
-        $container = new Container($image, $log, $containerLog);
-        $container->setDataDir($this->temp->getTmpFolder());
+        $container = new Container('docker-network-test', $image, $log, $containerLog, $this->temp->getTmpFolder(), []);
         return $container;
     }
 
@@ -47,11 +47,12 @@ class NetworkTest extends KernelTestCase
     public function tearDown()
     {
         parent::tearDown();
-        // clean temporary folder
         $fs = new Filesystem();
         $fs->remove($this->temp->getTmpFolder());
 
-        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
+        (new Process(
+            "sudo docker rmi -f $(sudo docker images -a -q --filter \"label=com.keboola.docker.runner.origin=builder\")"
+        ))->run();
     }
 
 
@@ -69,13 +70,11 @@ class NetworkTest extends KernelTestCase
                     "entry_point" => "ping -W 10 -c 1 www.example.com"
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "bridge",
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
-        $process = $container->run("testsuite", []);
+        $container = $this->getContainer($imageConfig, []);
+        $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("64 bytes from", $process->getOutput());
     }
@@ -95,14 +94,12 @@ class NetworkTest extends KernelTestCase
                     "entry_point" => "ping -W 10 -c 1 www.example.com"
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "none"
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
+        $container = $this->getContainer($imageConfig, []);
         try {
-            $container->run("testsuite", []);
+            $container->run();
             $this->fail("Ping must fail");
         } catch (ApplicationException $e) {
             $this->assertContains("unknown host www.example.com", $e->getMessage());
@@ -130,14 +127,12 @@ class NetworkTest extends KernelTestCase
                     ]
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "bridge"
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
+        $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         try {
-            $container->run("testsuite", ['runtime' => ['network' => 'none']]);
+            $container->run();
             $this->fail("Ping must fail");
         } catch (ApplicationException $e) {
             $this->assertContains("unknown host www.example.com", $e->getMessage());
@@ -165,14 +160,12 @@ class NetworkTest extends KernelTestCase
                     ]
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "bridge"
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
+        $container = $this->getContainer($imageConfig, ['runtime' => []]);
         // parameter is not defined in image, must be ignored
-        $process = $container->run("testsuite", ['runtime' => []]);
+        $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("64 bytes from", $process->getOutput());
     }
@@ -191,14 +184,12 @@ class NetworkTest extends KernelTestCase
                     "entry_point" => "ping -W 10 -c 1 www.example.com",
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "bridge"
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
+        $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         // parameter is not defined in image, must be ignored
-        $process = $container->run("testsuite", ['runtime' => ['network' => 'none']]);
+        $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("64 bytes from", $process->getOutput());
     }
@@ -224,13 +215,11 @@ class NetworkTest extends KernelTestCase
                     ]
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "none",
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
-        $process = $container->run("testsuite", ['runtime' => ['network' => 'bridge']]);
+        $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'bridge']]);
+        $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("64 bytes from", $process->getOutput());
     }
@@ -256,14 +245,11 @@ class NetworkTest extends KernelTestCase
                     ]
                 ]
             ],
-            "configuration_format" => "yaml",
             "network" => "none",
         ];
 
-        $container = $this->getContainer($imageConfig);
-        $container->setId("network-bridge-test");
         try {
-            $container->run("testsuite", ['runtime' => ['network' => 'fooBar']]);
+            $this->getContainer($imageConfig, ['runtime' => ['network' => 'fooBar']]);
             $this->fail("Invalid network must fail.");
         } catch (ApplicationException $e) {
             $this->assertContains('not supported', $e->getMessage());

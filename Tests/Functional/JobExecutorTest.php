@@ -241,6 +241,7 @@ class JobExecutorTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
+        $this->assertGreaterThan(500, $files[0]['sizeBytes']);
         $this->assertLessThan(4000, $files[0]['sizeBytes']);
     }
 
