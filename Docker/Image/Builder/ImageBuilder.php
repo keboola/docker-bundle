@@ -351,6 +351,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         $dockerFile = '';
         $dockerFile .= "FROM " . $this->getImageId() . "\n";
+        $dockerFile .= "LABEL com.keboola.docker.runner.origin=builder\n";
         $dockerFile .= "WORKDIR /home\n";
 
         if ($this->getVersion()) {
@@ -469,7 +470,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             try {
                 $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
                 $process->setTimeout(3600);
-                $process->run();
+                $process->mustRun();
             } catch (\Exception $e) {
                 throw new BuildException(
                     "Failed to get parent container {$this->getImageId()}, error: " . $e->getMessage(),
@@ -515,7 +516,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         } finally {
             if ($this->getLoginUsername()) {
                 // Logout from docker repository
-                (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
+                (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
             }
         }
     }

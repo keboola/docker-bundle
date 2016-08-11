@@ -56,6 +56,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker
+LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
 # Image definition commands
@@ -110,6 +111,7 @@ DOCKERFILE;
         $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
             'FROM keboolaprivatetest/docker-demo-docker
+LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
 ENV APP_VERSION 1.0.2
@@ -178,6 +180,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
             'FROM keboolaprivatetest/docker-demo-docker
+LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
 # Image definition commands
@@ -407,6 +410,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker
+LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
 # Repository initialization
@@ -539,10 +543,11 @@ DOCKERFILE;
         $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $this->assertEquals('master', $image->getVersion(), 'version should be set from runtime parameters');
         $this->assertFalse($image->getCache(), 'version set to master should disable caching');
-        
+
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker
+LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
 ENV APP_VERSION master

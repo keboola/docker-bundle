@@ -12,6 +12,7 @@ use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class NetworkTest extends KernelTestCase
 {
@@ -49,6 +50,8 @@ class NetworkTest extends KernelTestCase
         // clean temporary folder
         $fs = new Filesystem();
         $fs->remove($this->temp->getTmpFolder());
+
+        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
     }
 
 

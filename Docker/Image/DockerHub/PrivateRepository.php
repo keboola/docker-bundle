@@ -118,7 +118,7 @@ class PrivateRepository extends Image\DockerHub
             $tag = parent::prepare($configData);
             return $tag;
         } finally {
-            (new Process("sudo docker logout {$this->getLogoutParams()}"))->run();
+            (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
         }
     }
 

@@ -15,6 +15,7 @@ use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class LoggerTests extends KernelTestCase
 {
@@ -69,6 +70,12 @@ class LoggerTests extends KernelTestCase
         $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'test.php', $contents);
 
         return $dataDir;
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
     }
 
     public function testLogs()

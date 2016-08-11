@@ -6,7 +6,9 @@ use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
+use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
+use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -14,8 +16,7 @@ use Keboola\Syrup\Exception\UserException;
 class Container
 {
     /**
-     *
-     * Image Id
+     * Container ID
      *
      * @var string
      */
@@ -105,14 +106,14 @@ class Container
     {
         // Check if container not running
         $process = new Process('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->run();
+        $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
             throw new UserException("Container '{$this->id}' already running.");
         }
 
         // Check old containers, delete if found
         $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->run();
+        $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
             $this->removeContainer($this->id);
         }
@@ -133,6 +134,9 @@ class Container
             // create container
             $startTime = time();
             try {
+                if ($retries > 0) {
+                    $this->id .= '.' . $retries;
+                }
                 $this->logger->debug("Executing docker process.");
                 if ($this->getImage()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
@@ -154,7 +158,12 @@ class Container
                     throw new ApplicationException($e->getMessage(), $e);
                 }
             } finally {
-                $this->removeContainer($this->id);
+                try {
+                    $this->removeContainer($this->id);
+                } catch (ProcessFailedException $e) {
+                    $this->logger->error("Cannot remove container {$this->id}: {$e->getMessage()}");
+                    // continue
+                }
             }
         } while ($retry);
         return $process;
@@ -235,7 +244,12 @@ class Container
     private function handleContainerFailure(Process $process, $containerId, $startTime)
     {
         $duration = time() - $startTime;
-        $inspect = $this->inspectContainer($containerId);
+        try {
+            $inspect = $this->inspectContainer($containerId);
+        } catch (ProcessFailedException $e) {
+            $this->logger->error("Cannot inspect container '{$containerId}' on failure: " . $e->getMessage());
+            $inspect = [];
+        }
 
         if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
             $data = [
@@ -250,11 +264,16 @@ class Container
             );
         }
 
-        // this catches the timeout from `sudo timeout`
-        if ($process->getExitCode() == 137 && $duration >= $this->getImage()->getProcessTimeout()) {
-            throw new UserException(
-                "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
-            );
+        // killed containers
+        if ($process->getExitCode() == 137) {
+            // this catches the timeout from `sudo timeout`
+            if ($duration >= $this->getImage()->getProcessTimeout()) {
+                throw new UserException(
+                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                );
+            } else {
+                throw new InitializationException("Container terminated. Will restart.");
+            }
         }
 
         $message = trim($process->getErrorOutput());
@@ -283,18 +302,18 @@ class Container
             throw new UserException($message, null, $data);
         } else {
             if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
-            (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
+                (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
-            // syrup will make sure that the actual exception message will be hidden to end-user
-            throw new ApplicationException(
-                "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                null,
-                $data
-            );
+                // syrup will make sure that the actual exception message will be hidden to end-user
+                throw new ApplicationException(
+                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    null,
+                    $data
+                );
+            }
         }
-    }
     }
 
     /**
@@ -361,7 +380,7 @@ class Container
     {
         $process = new Process($this->getRemoveCommand($containerId));
         $process->setTimeout($this->dockerCliTimeout);
-        $process->run();
+        $process->mustRun();
     }
 
     /**
@@ -372,7 +391,7 @@ class Container
     {
         $process = new Process($this->getInspectCommand($containerId));
         $process->setTimeout($this->dockerCliTimeout);
-        $process->run();
+        $process->mustRun();
         $inspect = json_decode($process->getOutput(), true);
         return array_pop($inspect);
     }
