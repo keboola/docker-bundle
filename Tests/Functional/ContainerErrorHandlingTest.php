@@ -33,10 +33,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
 
-        $container = new Container($image, $log, $containerLog);
-        $container->setDataDir($dataDir);
+        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
         return $container;
     }
 
@@ -63,8 +62,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
         $container = $this->getContainer($this->getImageConfiguration(), $dataDir);
-        $container->setId("keboola/docker-php-test");
-        $process = $container->run(uniqid(), []);
+        $process = $container->run();
 
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Keboola Space Program", trim($process->getOutput()));
@@ -75,10 +73,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $dataDir = $this->createScript($temp, '<?php this would be a parse error');
         $container = $this->getContainer($this->getImageConfiguration(), $dataDir);
-        $container->setId("keboola/docker-php-test");
 
         try {
-            $container->run(uniqid(), []);
+            $container->run();
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('Parse error', $e->getMessage());
@@ -91,10 +88,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
         $container = $this->getContainer($this->getImageConfiguration(), $dataDir);
-        $container->setId("keboola/docker-php-test");
 
         try {
-            $container->run(uniqid(), []);
+            $container->run();
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -107,10 +103,9 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
         $container = $this->getContainer($this->getImageConfiguration(), $dataDir);
-        $container->setId("keboola/docker-php-test");
 
         try {
-            $container->run(uniqid(), []);
+            $container->run();
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('graceful error', $e->getMessage());
@@ -122,7 +117,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
         $container = $this->getContainer($this->getImageConfiguration(), $dataDir);
-        $container->setId("keboola/docker-php-test");
         $value = '123 ščř =-\'"321';
         $container->setEnvironmentVariables(['KBC_TOKENID' => $value]);
 
@@ -181,14 +175,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log, $containerLog);
-        $container->setId("odinuv/docker-php-test");
-
+        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
-        $container->setDataDir($dataDir);
-        $containerId = uniqid();
-        $container->run($containerId, []);
+        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
+        $container->run();
     }
 
     public function testInvalidDirectory()
@@ -205,10 +195,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log, $containerLog);
+        $temp = new Temp('docker');
+        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $container = new Container('container-error-test', $image, $log, $containerLog, $temp->getTmpFolder(), []);
         try {
-            $container->run(uniqid(), []);
+            $container->run();
             $this->fail("Must raise an exception when data directory is not set.");
         } catch (ApplicationException $e) {
             $this->assertContains('directory', $e->getMessage());
@@ -228,7 +219,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
         $container = $this->getContainer($imageConfiguration, $dataDir);
         try {
-            $container->run(uniqid(), []);
+            $container->run();
             $this->fail("Must raise an exception for invalid immage");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
@@ -255,22 +246,21 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             print "finished";'
         );
         $container = $this->getContainer($imageConfiguration, $dataDir);
-        $container->setId("keboola/docker-php-test");
-        $container->run("testsuite", []);
+        $container->run();
     }
 
     public function testHelloWorld()
     {
-        $imageConfiguration = array(
-            "definition" => array(
+        $temp = new Temp();
+        $imageConfiguration = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "hello-world"
-            )
-        );
+            ]
+        ];
 
-        $container = $this->getContainer($imageConfiguration);
-        $container->setId("hello-world");
-        $process = $container->run("testsuite", []);
+        $container = $this->getContainer($imageConfiguration, $temp->getTmpFolder());
+        $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
     }
@@ -280,33 +270,25 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
      */
     public function testException()
     {
-        $imageConfiguration = array(
-            "definition" => array(
+        $temp = new Temp();
+        $imageConfiguration = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "hello-world"
-            )
-        );
+            ]
+        ];
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfiguration);
-        $container = new Container($image, $log, $containerLog);
-        $container->run("testsuite", []);
+        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $container = new Container('container-error-test', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        try {
+            $container->run();
+            $this->fail("Must raise an exception");
+        } catch (ApplicationException $e) {
+            throw $e;
+        }
     }
-
-    private function getContainer($imageConfig)
-    {
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new Container($image, $log, $containerLog);
-        $container->setDataDir($this->temp->getTmpFolder());
-        return $container;
-    }    
 }
