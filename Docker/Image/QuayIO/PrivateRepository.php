@@ -89,22 +89,24 @@ class PrivateRepository extends Image\QuayIO
         return join(" ", $logoutParams);
     }
 
+    protected function login() {
+        $process = new Process("sudo docker login {$this->getLoginParams()}");
+        $process->run();
+        if ($process->getExitCode() != 0) {
+            $message = "Login failed (code: {$process->getExitCode()}): " .
+                "{$process->getOutput()} / {$process->getErrorOutput()}";
+            throw new LoginFailedException($message);
+        }
+    }
+
     /**
      * @inheritdoc
      */
     public function prepare(array $configData)
     {
-        $this->configData = $configData;
         try {
-            $process = new Process("sudo docker login {$this->getLoginParams()}");
-            $process->run();
-            if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): " .
-                    "{$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new LoginFailedException($message);
-            }
-            $tag = parent::prepare($configData);
-            return $tag;
+            $this->login();
+            parent::prepare($configData);
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
         }

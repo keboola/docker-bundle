@@ -17,18 +17,17 @@ class QuayIO extends Image
         return "quay.io/" . $this->getImageId() . ":" . $this->getTag();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function prepare(array $configData)
+    protected function pullImage()
     {
-        parent::prepare($configData);
         try {
             $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
             $process->setTimeout(3600);
             $process->run();
         } catch (\Exception $e) {
-            throw new ApplicationException("Failed to prepare container {$this->getFullImageId()}, error: ".$e->getMessage(), $e);
+            throw new ApplicationException(
+                "Failed to prepare container {$this->getFullImageId()}, error: ".$e->getMessage(),
+                $e
+            );
         }
 
         if (!$process->isSuccessful()) {
