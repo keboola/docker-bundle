@@ -343,6 +343,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             // https://git-scm.com/docs/git-credential-store
             $fileName = '.git-credentials';
             $parts = parse_url($this->getRepository());
+            if (empty($parts['scheme'])) {
+                throw new BuildParameterException("Invalid repository address: use https:// URL.");
+            }
             $credentials =
                 $parts['scheme'] . '://' .
                 urlencode($this->getRepoUsername()) . ':' . urlencode($this->getRepoPassword()) . '@' .
