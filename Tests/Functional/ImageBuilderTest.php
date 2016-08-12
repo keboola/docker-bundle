@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
@@ -36,8 +35,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -82,8 +79,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -125,8 +120,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -176,8 +169,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -222,8 +213,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -266,8 +255,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -313,8 +300,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -381,8 +366,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -418,14 +401,8 @@ class ImageBuilderTest extends KernelTestCase
 
     public function testCreateInvalidUrl()
     {
-        $process = new Process("sudo docker images | grep builder- | wc -l");
-        $process->run();
-        $oldCount = intval(trim($process->getOutput()));
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -471,10 +448,9 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, $configData, uniqid());
+            $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());

@@ -57,6 +57,23 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
+
+    public function testHelloWorld()
+    {
+        $temp = new Temp();
+        $imageConfiguration = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "hello-world"
+            ]
+        ];
+
+        $container = $this->getContainer($imageConfiguration, $temp->getTmpFolder());
+        $process = $container->run();
+        $this->assertEquals(0, $process->getExitCode());
+        $this->assertContains("Hello from Docker", trim($process->getOutput()));
+    }
+
     public function testSuccess()
     {
         $temp = new Temp('docker');
@@ -81,7 +98,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $this->assertContains('Parse error', $e->getMessage());
         }
     }
-
 
     public function testGraceful()
     {
@@ -247,48 +263,5 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         );
         $container = $this->getContainer($imageConfiguration, $dataDir);
         $container->run();
-    }
-
-    public function testHelloWorld()
-    {
-        $temp = new Temp();
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "hello-world"
-            ]
-        ];
-
-        $container = $this->getContainer($imageConfiguration, $temp->getTmpFolder());
-        $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("Hello from Docker", trim($process->getOutput()));
-    }
-
-    /**
-     * @expectedException \Keboola\Syrup\Exception\ApplicationException
-     */
-    public function testException()
-    {
-        $temp = new Temp();
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "hello-world"
-            ]
-        ];
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        $container = new Container('container-error-test', $image, $log, $containerLog, $temp->getTmpFolder(), []);
-        try {
-            $container->run();
-            $this->fail("Must raise an exception");
-        } catch (ApplicationException $e) {
-            throw $e;
-        }
     }
 }
