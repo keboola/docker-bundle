@@ -220,7 +220,7 @@ class Runner
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($jobId, $componentId, $mode);
+                $componentOutput = $this->sandboxComponent($jobId, $componentId, $configData, $mode);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -247,7 +247,7 @@ class Runner
         return $componentOutput;
     }
 
-    public function sandboxComponent($jobId, $componentId, $mode)
+    public function sandboxComponent($jobId, $componentId, $configData, $mode)
     {
         // initialize
         $this->dataDirectory->createDataDir();
@@ -258,13 +258,7 @@ class Runner
         if ($mode == 'dry-run') {
             $componentOutput = $this->runImages($jobId);
         } else {
-            // Sandbox - get config file for main image
-            $images = $this->imageCreator->prepareImages();
-            foreach ($images as $priority => $image) {
-                if ($image->getIsMain()) {
-                    $this->configFile->createConfigFile($image->getConfigData());
-                }
-            }
+            $this->configFile->createConfigFile($configData);
         }
 
         $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
@@ -295,7 +289,7 @@ class Runner
             );
             $output = $container->run();
             if ($image->getIsMain()) {
-                $componentOutput = $output;
+                $componentOutput = $output->getOutput();
             }
             $counter++;
             if ($counter < count($images)) {

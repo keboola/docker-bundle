@@ -340,7 +340,17 @@ abstract class Image
     }
 
     abstract protected function pullImage();
-    abstract protected function getFullImageId();
+
+    /**
+     *
+     * Returns image id with tag
+     *
+     * @return string
+     */
+    public function getFullImageId()
+    {
+        return $this->getImageId() . ":" . $this->getTag();
+    }
 
     /**
      * Prepare the container image so that it can be run.

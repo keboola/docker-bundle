@@ -30,17 +30,6 @@ class DockerHub extends Image
     }
 
     /**
-     *
-     * Returns image id with tag
-     *
-     * @return string
-     */
-    public function getFullImageId()
-    {
-        return $this->getImageId() . ":" . $this->getTag();
-    }
-
-    /**
      * @inheritdoc
      */
     public function prepare(array $configData)
