@@ -117,7 +117,6 @@ class ImageBuilderTest extends KernelTestCase
         $this->assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 
-
     public function testCreatePrivateRepoPrivateHub()
     {
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -414,6 +413,71 @@ class ImageBuilderTest extends KernelTestCase
             $this->fail("Invalid repository must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('Cannot access the repository', $e->getMessage());
+        }
+    }
+
+    public function testCreateInvalidUrl()
+    {
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $oldCount = intval(trim($process->getOutput()));
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = [
+            "definition" => [
+                "type" => "builder",
+                "uri" => "keboola/base-php70",
+                "build_options" => [
+                    "repository" => [
+                        "uri" => "",
+                        "type" => "git",
+                    ],
+                    "commands" => [
+                        "git clone --depth 1 {{repository}} /home/" .
+                        " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                        "cd /home/",
+                        "composer install"
+                    ],
+                    "parameters" => [
+                        [
+                            "name" => "repository",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "username",
+                            "type" => "string"
+                        ],
+                        [
+                            "name" => "#password",
+                            "type" => "string"
+                        ],
+                    ],
+                    "entry_point" => "php /home/run.php --data=/data"
+                ]
+            ],
+            "configuration_format" => "json",
+        ];
+
+        $configData = [
+            'runtime' => [
+                'repository' => 'git@github.com:keboola/docker-bundle.git',
+                'username' => GIT_PRIVATE_USERNAME,
+                '#password' => GIT_PRIVATE_PASSWORD,
+            ]
+        ];
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log, $containerLog);
+        try {
+            $image->prepare($container, $configData, uniqid());
+            $this->fail("Invalid repository address must fail");
+        } catch (UserException $e) {
+            $this->assertContains('Invalid repository address', $e->getMessage());
         }
     }
 }
