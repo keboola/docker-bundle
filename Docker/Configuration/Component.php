@@ -13,7 +13,7 @@ class Component extends Configuration
     {
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root('image');
-        $definition = $root->children()->arrayNode('definition');
+        $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 /*
         $definition = $root->children()
