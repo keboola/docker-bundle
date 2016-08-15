@@ -696,60 +696,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(in_array('downloaded', $file['tags']));
     }
 
-    public function testUpdateStateNoChange()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{"state": "aabb"}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->never())
-            ->method("apiPut")
-            ;
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
-    }
-
-    public function testUpdateStateChange()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{"state": "aabbcc"}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
-            ->with(
-                $this->equalTo("storage/components/test/configs/test"),
-                $this->equalTo(["state" => '{"state":"aabbcc"}'])
-            );
-
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
-    }
-
-    public function testUpdateStateChangeToEmpty()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
-            ->with($this->equalTo("storage/components/test/configs/test"), $this->equalTo(["state" => '{}']))
-            ;
-
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
-    }
-
     public function testWriteTableToDefaultBucket()
     {
         $root = $this->tmp->getTmpFolder();

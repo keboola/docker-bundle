@@ -207,7 +207,7 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
             file_get_contents($executor->getDataDir() . '/out/tables/sliced.csv')
         );
-        
+
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -835,59 +835,9 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $executor->initialize($container, $config, [], false);
     }
 
-    public function testExecutorStoreEmptyStateFile()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json",
-            "process_timeout" => 1,
-            "forward_token_details" => true
-        ];
-
-        $config = [
-            "storage" => [],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ]
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $callback = function () use ($container) {
-            $process = new Process('sleep 1');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $this->assertFileExists($this->tmpDir . "/data/in/state.json");
-        $this->assertEquals(
-            new \stdClass(),
-            json_decode(file_get_contents($this->tmpDir . "/data/in/state.json"), false)
-        );
-    }
-
     public function testExecutorStoreNonEmptyStateFile()
     {
+        // todo z tohohle jeste otestovat shouldStoreState metodu
         $imageConfig = [
             "definition" => [
                 "type" => "dockerhub",

@@ -3,8 +3,10 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
-use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
+use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
@@ -71,13 +73,23 @@ class StateFile
         if (!$previousState) {
             $previousState = new \stdClass();
         }
-        $writer = new Writer($this->storageClient);
 
-        $writer->updateState(
-            $this->componentId,
-            $this->configurationId,
-            $this->dataDirectory . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state',
-            $previousState
-        );
+        $stateAdapter = new Adapter($this->format);
+        $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state'
+            . $stateAdapter->getFileExtension();
+        $fs = new Filesystem();
+        if ($fs->exists($fileName)) {
+            $currentState = $stateAdapter->readFromFile($fileName);
+        } else {
+            $currentState = [];
+        }
+        if (serialize($currentState) != serialize($previousState)) {
+            $components = new Components($this->storageClient);
+            $configuration = new Configuration();
+            $configuration->setComponentId($this->componentId);
+            $configuration->setConfigurationId($this->configurationId);
+            $configuration->setState($currentState);
+            $components->updateConfiguration($configuration);
+        }
     }
 }

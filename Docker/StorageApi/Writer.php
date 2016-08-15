@@ -443,33 +443,4 @@ class Writer
             }
         }
     }
-
-    /**
-     *
-     * Read state file from disk and if it's different from previous state update in Storage
-     *
-     * @param $componentId
-     * @param $configurationId
-     * @param $file
-     * @param $previousState
-     */
-    public function updateState($componentId, $configurationId, $file, $previousState)
-    {
-        $adapter = new Adapter($this->getFormat());
-        $fileName = $file . $adapter->getFileExtension();
-        $fs = new Filesystem();
-        if ($fs->exists($fileName)) {
-            $currentState = $adapter->readFromFile($fileName);
-        } else {
-            $currentState = array();
-        }
-        if (serialize($currentState) != serialize($previousState)) {
-            $components = new Components($this->getClient());
-            $configuration = new Configuration();
-            $configuration->setComponentId($componentId);
-            $configuration->setConfigurationId($configurationId);
-            $configuration->setState($currentState);
-            $components->updateConfiguration($configuration);
-        }
-    }
 }
