@@ -101,43 +101,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         return $logService;
     }
 
-    public function testCreateAndDropDataDir()
-    {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $dummyConfig = array(
-            "definition" => array(
-                "type" => "dummy",
-                "uri" => "dummy"
-            )
-        );
-        $encryptor = new ObjectEncryptor();
-        $container = new Container(Image::factory($encryptor, $log, $dummyConfig), $log, $containerLog);
-        $fs = new Filesystem();
-        $root = "/tmp/docker/" . uniqid("", true);
-        $fs->mkdir($root);
-        $container->createDataDir($root);
-        $structure = array(
-            $root . "/data",
-            $root . "/data/in",
-            $root . "/data/in/tables",
-            $root . "/data/in/files",
-            $root . "/data/out",
-            $root . "/data/out/tables",
-            $root . "/data/out/files"
-        );
-        $this->assertTrue($fs->exists($structure));
-
-        foreach ($structure as $folder) {
-            $fs->touch($folder . "/file");
-        }
-        $container->dropDataDir();
-        $this->assertFalse($fs->exists($root . "/data"));
-    }
-
     public function testDockerHubExecutorRun()
     {
         $imageConfig = [
