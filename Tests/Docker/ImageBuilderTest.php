@@ -531,7 +531,7 @@ DOCKERFILE;
          * @var $image ImageBuilder
          */
         $image = Image::factory($encryptor, $log, $imageConfig, true);
-        $this->assertInstanceOf('Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder', $image);
+        $this->assertInstanceOf(ImageBuilder::class, $image);
         $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
