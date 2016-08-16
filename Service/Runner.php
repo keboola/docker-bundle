@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\ContainerCreator;
@@ -69,11 +71,6 @@ class Runner
     private $dataLoader;
 
     /**
-     * @var ContainerCreator
-     */
-    private $containerCreator;
-
-    /**
      * @var ImageCreator
      */
     private $imageCreator;
@@ -104,11 +101,22 @@ class Runner
         $this->loggerService = $loggersService;
     }
 
-    public function getSanitizedComponentId($componentId)
+    private function getSanitizedComponentId($componentId)
     {
         return preg_replace('/[^a-zA-Z0-9-]/i', '-', $componentId);
     }
 
+    private function createContainerFromImage(Image $image, $containerId, $environmentVariables)
+    {
+        return new Container(
+            $containerId,
+            $image,
+            $this->loggerService->getLog(),
+            $this->loggerService->getContainerLog(),
+            $this->dataDirectory->getDataDir(),
+            $environmentVariables
+        );
+    }
 
     private function shouldStoreState($componentId, $configurationId)
     {
@@ -210,11 +218,6 @@ class Runner
             $configData
         );
 
-        $this->containerCreator = new ContainerCreator(
-            $this->loggerService->getLog(),
-            $this->loggerService->getContainerLog(),
-            $this->dataDirectory->getDataDir()
-        );
         switch ($mode) {
             case 'run':
                 $componentOutput = $this->runComponent($jobId, $componentId, $configId);
@@ -284,7 +287,7 @@ class Runner
             } else {
                 $environmentParameters = $image->getConfigData()['parameters'];
             }
-            $container = $this->containerCreator->createContainerFromImage(
+            $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
                 $this->environment->getEnvironmentVariables($environmentParameters)
