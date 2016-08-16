@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Monolog\Logger;
-use Symfony\Component\Config\Definition\Builder\NodeBuilder;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Component extends Configuration

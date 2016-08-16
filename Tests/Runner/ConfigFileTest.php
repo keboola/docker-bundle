@@ -107,8 +107,4 @@ SAMPLE;
         $this->assertArrayNotHasKey('foo', $config['parameters']);
         $this->assertArrayNotHasKey('baz', $config['parameters']);
     }
-
-
-
-
 }

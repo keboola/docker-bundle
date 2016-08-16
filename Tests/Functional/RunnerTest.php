@@ -22,7 +22,6 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Validator\Constraints\Null;
 
 class RunnerTest extends KernelTestCase
 {

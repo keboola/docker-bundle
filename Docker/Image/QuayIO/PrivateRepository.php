@@ -89,7 +89,8 @@ class PrivateRepository extends Image\QuayIO
         return join(" ", $logoutParams);
     }
 
-    protected function login() {
+    protected function login()
+    {
         $process = new Process("sudo docker login {$this->getLoginParams()}");
         $process->run();
         if ($process->getExitCode() != 0) {
@@ -124,7 +125,9 @@ class PrivateRepository extends Image\QuayIO
                 $this->setLoginUsername($config['definition']['repository']['username']);
             }
             if (isset($config['definition']['repository']['#password'])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config['definition']['repository']['#password']));
+                $this->setLoginPassword(
+                    $this->getEncryptor()->decrypt($config['definition']['repository']['#password'])
+                );
             }
         }
         return $this;

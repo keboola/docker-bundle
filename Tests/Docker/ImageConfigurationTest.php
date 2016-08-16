@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Image;
 
 class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 {

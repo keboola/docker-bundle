@@ -2,9 +2,11 @@
 
 namespace Keboola\DockerBundle\Exception;
 
+use Keboola\Syrup\Exception\UserException;
+
 /**
  * Class LoginFailedException
  */
-class OutOfMemoryException extends \Keboola\Syrup\Exception\UserException
+class OutOfMemoryException extends UserException
 {
 }

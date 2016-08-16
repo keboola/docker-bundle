@@ -100,7 +100,6 @@ EOF;
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $temp = new Temp();
         $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
         $container = new Container('docker-container-test', $image, $log, $containerLog, '/tmp', $envs);

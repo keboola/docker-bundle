@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Controller;
 
-use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Service\Runner;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;

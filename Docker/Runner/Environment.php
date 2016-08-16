@@ -38,7 +38,7 @@ class Environment
     public function getEnvironmentVariables($configurationVariables)
     {
         $envs = $this->getConfigurationVariables($configurationVariables);
-        // @todo nebo predavat tokenfino aby se verifyToken nemuselo volat 2x?
+        // @todo possibly pass tokenInfo so that verifyToken does not have to be called twice
         $tokenInfo = $this->storageClient->verifyToken();
         // set environment variables
         $envs = array_merge($envs, [

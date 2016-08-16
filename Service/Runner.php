@@ -7,7 +7,6 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
-use Keboola\DockerBundle\Docker\Runner\ContainerCreator;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
@@ -144,8 +143,9 @@ class Runner
      * @param $configId
      * @param array $configData
      * @param array $state
-     * @param $action
-     * @param $mode
+     * @param string $action
+     * @param string $mode
+     * @param string $jobId
      * @return string
      */
     public function run(array $component, $configId, array $configData, array $state, $action, $mode, $jobId)

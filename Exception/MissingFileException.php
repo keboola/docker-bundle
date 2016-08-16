@@ -2,9 +2,11 @@
 
 namespace Keboola\DockerBundle\Exception;
 
+use Keboola\Syrup\Exception\UserException;
+
 /**
  * Class ManifestMismatchException
  */
-class MissingFileException extends \Keboola\Syrup\Exception\UserException
+class MissingFileException extends UserException
 {
 }

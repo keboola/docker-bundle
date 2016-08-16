@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Process\Process;
