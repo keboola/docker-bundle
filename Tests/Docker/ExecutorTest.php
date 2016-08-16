@@ -101,234 +101,10 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         return $logService;
     }
 
-    public function testDockerHubExecutorRun()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml",
-        ];
-
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test"
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
-                        ]
-                    ]
-                ]
-            ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ]
-        ];
-
-
-        $logService = $this->getLogService();
-        $encryptor = new ObjectEncryptor();
-        $containerFactory = new ContainerFactory($logService->getLog(), $logService->getContainerLog());
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor(
-            $this->client,
-            $this->getLogService(),
-            $containerFactory,
-            $oauthClient,
-            $encryptor,
-            $this->tmpDir
-        );
-
-        $callback = function () use ($executor) {
-            $fs = new Filesystem();
-            $fs->dumpFile(
-                $executor->getDataDir() . "/out/tables/sliced.csv",
-                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
-            );
-            $process = new Process('echo "Processed 1 rows."');
-            $process->run();
-            return $process;
-        };
-        $containerFactory->setRunMethod($callback);
-        $executor->initialize($config, [], $imageConfig, false, 'run');
-        $executor->run("testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertTrue(file_exists($executor->getDataDir() . '/out/tables/sliced.csv'));
-        $this->assertEquals(
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-            file_get_contents($executor->getDataDir() . '/out/tables/sliced.csv')
-        );
-
-        $ret = $container->getRunCommand('test');
-        // make sure that the token is NOT forwarded by default
-        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
-    }
-
-
     public function testQuayIOExecutorRun()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "quayio",
-                "uri" => "keboola/docker-demo-app"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml",
-        ];
 
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test"
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
-                        ]
-                    ]
-                ]
-            ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ]
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $logContainer = new ContainerLogger("null");
-        $logContainer->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $logContainer);
-
-        $callback = function () use ($container) {
-            $fs = new Filesystem();
-            $fs->dumpFile(
-                $container->getDataDir() . "/out/tables/sliced.csv",
-                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
-            );
-            $process = new Process('echo "Processed 1 rows."');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
-        $this->assertEquals(
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
-        );
-        $ret = $container->getRunCommand('test');
-        // make sure that the token is NOT forwarded by default
-        $this->assertNotContains(STORAGE_API_TOKEN, $ret);
-    }
-
-    public function testDockerHubPrivateExecutorRun()
-    {
-        $encryptor = new ObjectEncryptor();
-        $wrapper = new ComponentWrapper(md5(uniqid()));
-        $wrapper->setComponentId(123);
-        $encryptor->pushWrapper($wrapper);
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub-private",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => [
-                    "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
-                    "username" => DOCKERHUB_PRIVATE_USERNAME
-                ]
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml",
-        ];
-
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test"
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
-                        ]
-                    ]
-                ]
-            ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ]
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $logContainer = new ContainerLogger("null");
-        $logContainer->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $logContainer);
-
-        $callback = function () use ($container) {
-            $fs = new Filesystem();
-            $fs->dumpFile(
-                $container->getDataDir() . "/out/tables/sliced.csv",
-                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
-            );
-            $process = new Process('echo "Processed 1 rows."');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $this->assertTrue(file_exists($container->getDataDir() . '/out/tables/sliced.csv'));
-        $this->assertEquals(
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-            file_get_contents($container->getDataDir() . '/out/tables/sliced.csv')
-        );
+        //@todo tohle nekam dat
         $ret = $container->getRunCommand('test');
         // make sure that the token is NOT forwarded by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret);
@@ -396,338 +172,6 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
     }
 
-
-    public function testExecutorInvalidOutputMapping()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml"
-        ];
-
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test"
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out",
-                            // erroneous lines
-                            "primary_key" => "col1",
-                            "incremental" => 1
-                        ]
-                    ]
-                ]
-            ],
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        try {
-            $executor->initialize($container, $config, [], false);
-            $this->fail("Invalid configuration must raise UserException.");
-        } catch (UserException $e) {
-        }
-    }
-
-
-    public function testExecutorInvalidInputMapping()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml"
-        ];
-
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test",
-                            // erroneous lines
-                            "foo" => "bar"
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
-                        ]
-                    ]
-                ]
-            ],
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        try {
-            $executor->initialize($container, $config, [], false);
-            $this->fail("Invalid configuration must raise UserException.");
-        } catch (UserException $e) {
-        }
-    }
-
-
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage Error in configuration: Invalid type for path
-     */
-    public function testExecutorInvalidInputMapping2()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml"
-        ];
-
-        $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
-                        [
-                            "source" => "in.c-docker-test.test",
-                            // erroneous lines
-                            "columns" => [
-                                [
-                                    "value" => "id",
-                                    "label" => "id"
-                                ],
-                                [
-                                    "value" => "col1",
-                                    "label" => "col1"
-                                ]
-                            ]
-                        ]
-                    ]
-                ],
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
-                        ]
-                    ]
-                ]
-            ],
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-    }
-
-    public function testExecutorStoreNonEmptyStateFile()
-    {
-        // todo z tohohle jeste otestovat shouldStoreState metodu
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json",
-            "process_timeout" => 1,
-            "forward_token_details" => true
-        ];
-
-        $config = [
-            "storage" => [],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ]
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $callback = function () use ($container) {
-            $process = new Process('sleep 1');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, ["lastUpdate" => "today"], false);
-        $this->assertFileExists($this->tmpDir . "/data/in/state.json");
-        $this->assertEquals(
-            "{\n    \"lastUpdate\": \"today\"\n}",
-            file_get_contents($this->tmpDir . "/data/in/state.json")
-        );
-    }
-
-    public function testExecutorDefinitionParameters()
-    {
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "configuration_format" => "yaml",
-        ];
-
-        $config = [
-            "storage" => [
-            ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ],
-            "runtime" => [
-                "foo" => "bar",
-                "baz" => "next"
-            ]
-        ];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, $config, [], false);
-        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
-        $this->assertFileExists($configFile);
-        $config = Yaml::parse($configFile);
-        $this->assertEquals('id', $config['parameters']['primary_key_column']);
-        $this->assertEquals('text', $config['parameters']['data_column']);
-        $this->assertEquals('4', $config['parameters']['string_length']);
-        // volatile parameters must not get stored
-        $this->assertArrayNotHasKey('foo', $config['parameters']);
-        $this->assertArrayNotHasKey('baz', $config['parameters']);
-    }
-
-    public function testExecutorDefaultBucket()
-    {
-        $client = $this->client;
-        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
-            $client->dropTable("in.c-docker-demo-whatever.sliced");
-        }
-        if ($client->bucketExists("in.c-docker-demo-whatever")) {
-            $client->dropBucket("in.c-docker-demo-whatever");
-        }
-
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "yaml",
-            "default_bucket" => true
-        ];
-
-        $config = [];
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig);
-
-        $container = new MockContainer($image, $log, $containerLog);
-        $callback = function () use ($container) {
-            $fs = new Filesystem();
-            $fs->dumpFile(
-                $container->getDataDir() . "/out/tables/sliced.csv",
-                "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
-            );
-            $process = new Process('echo "Processed 1 rows."');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->setConfigurationId("whatever");
-        $executor->setComponentId("docker-demo");
-        $executor->initialize($container, $config, [], false);
-        $executor->run($container, "testsuite", $this->client->verifyToken(), 'test-config');
-        $executor->storeOutput($container, null);
-        $this->assertTrue($client->tableExists("in.c-docker-demo-whatever.sliced"));
-
-        if ($client->tableExists("in.c-docker-demo-whatever.sliced")) {
-            $client->dropTable("in.c-docker-demo-whatever.sliced");
-        }
-        if ($client->bucketExists("in.c-docker-demo-whatever")) {
-            $client->dropBucket("in.c-docker-demo-whatever");
-        }
-    }
-
     public function testExecutorDefaultBucketWithDot()
     {
         $client = $this->client;
@@ -790,63 +234,27 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testExecutorImageParametersEncrypt()
+    public function testExecutorStoreNonEmptyStateFile()
     {
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $encrypted = $encryptor->encrypt('someString');
-
+        // todo z tohohle jeste otestovat shouldStoreState metodu
         $imageConfig = [
             "definition" => [
                 "type" => "dockerhub",
-                "uri" => "keboola/docker-config-encrypt-verify"
+                "uri" => "keboola/docker-demo"
             ],
-            "configuration_format" => "yaml",
-            "image_parameters" => [
-                "foo" => "bar",
-                "baz" => [
-                    "lily" => "pond"
-                ],
-                "#encrypted" => $encrypted
-            ]
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json",
+            "process_timeout" => 1,
+            "forward_token_details" => true
         ];
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog ->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new MockContainer($image, $log, $containerLog);
-
-        $oauthClient = new Credentials($this->client->getTokenString());
-        $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, [], [], false);
-        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
-        $this->assertFileExists($configFile);
-        $config = Yaml::parse($configFile);
-        $this->assertEquals('bar', $config['image_parameters']['foo']);
-        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
-    }
-
-    public function testExecutorImageParametersNoEncrypt()
-    {
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $encrypted = $encryptor->encrypt('someString');
-
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-config-encrypt-verify"
-            ],
-            "configuration_format" => "yaml",
-            "image_parameters" => [
-                "foo" => "bar",
-                "baz" => [
-                    "lily" => "pond"
-                ],
-                "#encrypted" => $encrypted
+        $config = [
+            "storage" => [],
+            "parameters" => [
+                "primary_key_column" => "id",
+                "data_column" => "text",
+                "string_length" => "4"
             ]
         ];
 
@@ -854,19 +262,31 @@ class ExecutorTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
+
+        $encryptor = new ObjectEncryptor();
         $image = Image::factory($encryptor, $log, $imageConfig);
+
         $container = new MockContainer($image, $log, $containerLog);
+
+        $callback = function () use ($container) {
+            $process = new Process('sleep 1');
+            $process->run();
+            return $process;
+        };
+
+        $container->setRunMethod($callback);
 
         $oauthClient = new Credentials($this->client->getTokenString());
         $executor = new Executor($this->client, $log, $oauthClient, $this->tmpDir);
-        $executor->initialize($container, [], [], true);
-        $configFile = $this->tmpDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'config.yml';
-        $this->assertFileExists($configFile);
-        $config = Yaml::parse($configFile);
-        $this->assertEquals('bar', $config['image_parameters']['foo']);
-        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
+        $executor->initialize($container, $config, ["lastUpdate" => "today"], false);
+        $this->assertFileExists($this->tmpDir . "/data/in/state.json");
+        $this->assertEquals(
+            "{\n    \"lastUpdate\": \"today\"\n}",
+            file_get_contents($this->tmpDir . "/data/in/state.json")
+        );
     }
+
+
 
     public function testGetSanitizedComponentId()
     {
