@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
@@ -24,58 +25,30 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     private $tmp;
 
-    /**
-     * @throws \Exception
-     * @throws \Keboola\StorageApi\ClientException
-     */
     protected function clearBucket()
     {
-        // Delete tables and bucket
-        if ($this->client->bucketExists("out.c-docker-test")) {
-            foreach ($this->client->listTables("out.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
+        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
+            try {
+                $this->client->dropBucket($bucket, ['force' => true]);
+            } catch (ClientException $e) {
+                if ($e->getCode() != 404) {
+                    throw $e;
+                }
             }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-test");
-        }
-
-        if ($this->client->bucketExists("out.c-docker-redshift-test")) {
-            foreach ($this->client->listTables("out.c-docker-redshift-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-redshift-test");
-        }
-
-        if ($this->client->bucketExists("out.c-docker-default-test")) {
-            foreach ($this->client->listTables("out.c-docker-default-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-default-test");
         }
     }
 
-    /**
-     *
-     */
     protected function clearFileUploads()
     {
         // Delete file uploads
         $options = new ListFilesOptions();
-        $options->setTags(array("docker-bundle-test"));
+        $options->setTags(['docker-bundle-test']);
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
-            $this->client->deleteFile($file["id"]);
+            $this->client->deleteFile($file['id']);
         }
     }
 
-    /**
-     *
-     */
     public function setUp()
     {
         // Create folders
@@ -83,23 +56,20 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->tmp->initRunFolder();
         $root = $this->tmp->getTmpFolder();
         $fs = new Filesystem();
-        $fs->mkdir($root . DIRECTORY_SEPARATOR . "upload");
-        $fs->mkdir($root . DIRECTORY_SEPARATOR . "download");
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . 'upload');
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . 'download');
 
-        $this->client = new Client(array(
+        $this->client = new Client([
             'url' => STORAGE_API_URL,
-            "token" => STORAGE_API_TOKEN,
-        ));
+            'token' => STORAGE_API_TOKEN,
+        ]);
         $this->clearBucket();
         $this->clearFileUploads();
-        $this->client->createBucket("docker-redshift-test", 'out', '', 'redshift');
+        $this->client->createBucket('docker-redshift-test', 'out', '', 'redshift');
 
-        $this->client->createBucket("docker-default-test", 'out');
+        $this->client->createBucket('docker-default-test', 'out');
     }
 
-    /**
-     *
-     */
     public function tearDown()
     {
         // Delete local files
