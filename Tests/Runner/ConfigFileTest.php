@@ -12,12 +12,6 @@ use Keboola\Temp\Temp;
 
 class ConfigFileTest extends \PHPUnit_Framework_TestCase
 {
-
-    public function setUp()
-    {
-        parent::setUp();
-    }
-
     public function testConfig()
     {
         $temp = new Temp();
