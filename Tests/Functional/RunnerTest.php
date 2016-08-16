@@ -10,6 +10,8 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\BaseWrapper;
@@ -20,6 +22,7 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Validator\Constraints\Null;
 
 class RunnerTest extends KernelTestCase
 {
@@ -187,11 +190,6 @@ class RunnerTest extends KernelTestCase
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
-            'longDescription' => null,
-            'hasUI' => false,
-            'hasRun' => true,
-            'ico32' => '',
-            'ico64' => '',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -245,11 +243,6 @@ class RunnerTest extends KernelTestCase
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
-            'longDescription' => null,
-            'hasUI' => false,
-            'hasRun' => true,
-            'ico32' => '',
-            'ico64' => '',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -260,7 +253,8 @@ class RunnerTest extends KernelTestCase
                             'type' => 'git'
                         ],
                         'commands' => [],
-                        'entry_point' => 'cat /data/config.json',
+                        // also attempt to pass the token to verify that it does not work
+                        'entry_point' => 'cat /data/config.json && echo $KBC_TOKEN',
                     ],
                 ],
                 'configuration_format' => 'json',
@@ -288,6 +282,8 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals(1, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
+        // verify that the token is not passed by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
@@ -311,11 +307,6 @@ class RunnerTest extends KernelTestCase
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
-            'longDescription' => null,
-            'hasUI' => false,
-            'hasRun' => true,
-            'ico32' => '',
-            'ico64' => '',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -403,11 +394,6 @@ class RunnerTest extends KernelTestCase
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
-            'longDescription' => null,
-            'hasUI' => false,
-            'hasRun' => true,
-            'ico32' => '',
-            'ico64' => '',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -431,5 +417,130 @@ class RunnerTest extends KernelTestCase
 
         $this->assertTrue($this->client->tableExists('out.c-keboola-docker-demo-app-test-config.sliced'));
         $this->client->dropBucket('out.c-keboola-docker-demo-app-test-config', ['force' => true]);
+    }
+
+    public function testGetSanitizedComponentId()
+    {
+        $runner = $this->getRunner(new NullHandler());
+        $reflection = new \ReflectionMethod($runner, 'getSanitizedComponentId');
+        $reflection->setAccessible(true);
+
+
+        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex-generic'));
+        $this->assertEquals('ex-generic', $reflection->invoke($runner, 'ex-generic'));
+        $this->assertEquals('keboola.ex.generic', $reflection->invoke($runner, 'keboola.ex.generic'));
+    }
+
+    public function testExecutorStoreState()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $configuration->setState(json_encode(['foo' => 'bar']));
+        $component->addConfiguration($configuration);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            'test-configuration',
+            [],
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
+    }
+
+    public function testExecutorNoStoreState()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            'test-configuration',
+            [],
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $component = new Components($this->client);
+        try {
+            $component->getConfiguration('docker-demo', 'test-configuration');
+            $this->fail("Configuration should not exist");
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
     }
 }
