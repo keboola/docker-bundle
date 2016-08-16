@@ -119,12 +119,13 @@ class RunnerTest extends KernelTestCase
 
     public function testRunnerPipeline()
     {
+        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . "Tests" . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->client->uploadFile(
-            ROOT_PATH . DIRECTORY_SEPARATOR . "Tests" . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'texty.zip',
+            $dataDir . 'texty.zip',
             (new FileUploadOptions())->setTags(["docker-bundle-test", "pipeline"])
         );
         $this->client->uploadFile(
-            ROOT_PATH . DIRECTORY_SEPARATOR . "Tests" . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'radio.zip',
+            $dataDir . 'radio.zip',
             (new FileUploadOptions())->setTags(["docker-bundle-test", "pipeline"])
         );
 

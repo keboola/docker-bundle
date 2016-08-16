@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\UserException;

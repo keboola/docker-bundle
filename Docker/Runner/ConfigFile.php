@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
-use Keboola\OAuthV2Api\Exception\RequestException;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
