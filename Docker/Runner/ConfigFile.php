@@ -25,7 +25,7 @@ class ConfigFile
     private $imageParameters;
 
     /**
-     * @var array
+     * @var Authorization
      */
     private $authorization;
 
@@ -37,7 +37,7 @@ class ConfigFile
     public function __construct(
         $dataDirectory,
         array $imageParameters,
-        array $authorization,
+        Authorization $authorization,
         $action,
         $format
     ) {
@@ -57,12 +57,12 @@ class ConfigFile
             unset($configData['runtime']);
 
             $configData['image_parameters'] = $this->imageParameters;
-            $configData["authorization"] = $this->authorization;
+            $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
 
             // action
-            $configData["action"] = $this->action;
+            $configData['action'] = $this->action;
 
-            $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . "config" . $adapter->getFileExtension();
+            $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'config' . $adapter->getFileExtension();
             $adapter->setConfig($configData);
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {

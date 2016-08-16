@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ComponentParameters;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -132,7 +134,6 @@ class Runner
         return $storeState;
     }
 
-
     /**
      * @param array $component
      * @param $configId
@@ -164,13 +165,18 @@ class Runner
             $configId,
             $configFormat
         );
-        $componentParameters = new ComponentParameters($this->encryptor, $component['image_parameters'], $sandboxed);
         $authorization = new Authorization($this->oauthClient, $this->encryptor, $componentId, $sandboxed);
 
+        if ($sandboxed) {
+            // do not decrypt image parameters on sandboxed calls
+            $imageParameters = $component['image_parameters'];
+        } else {
+            $imageParameters = $this->encryptor->decrypt($component['image_parameters']);
+        }
         $this->configFile = new ConfigFile(
             $this->dataDirectory->getDataDir(),
-            $componentParameters->getComponentParameters(),
-            $authorization->getAuthorization(),
+            $imageParameters,
+            $authorization,
             $action,
             $configFormat
         );

@@ -36,21 +36,21 @@ class Authorization
         $this->oauthClient->enableReturnArrays(true);
     }
 
-    public function getAuthorization()
+    public function getAuthorization($configData)
     {
         // read authorization
         $data = [];
-        if (isset($configData["oauth_api"]["id"])) {
+        if (isset($configData['oauth_api']['id'])) {
             $credentials = $this->oauthClient->getDetail(
                 $this->componentId,
-                $configData["oauth_api"]["id"]
+                $configData['oauth_api']['id']
             );
             if ($this->sandboxed) {
                 $decrypted = $credentials;
             } else {
                 $decrypted = $this->encryptor->decrypt($credentials);
             }
-            $data["oauth_api"]["credentials"] = $decrypted;
+            $data['oauth_api']['credentials'] = $decrypted;
         }
         return $data;
     }
