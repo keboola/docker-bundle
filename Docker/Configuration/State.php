@@ -1,21 +1,19 @@
 <?php
-namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Keboola\DockerBundle\Docker\Configuration;
+namespace Keboola\DockerBundle\Docker\Configuration;
 
 class State
 {
     /**
-     *
      * Mocked parsing method
      *
      * @param $configurations
-     * @return array
+     * @return object
      */
     public function parse($configurations)
     {
         if (!$configurations["config"]) {
-            return (object) array();
+            return (object) [];
         }
         return $configurations["config"];
     }

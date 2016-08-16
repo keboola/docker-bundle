@@ -12,32 +12,11 @@ class Component extends Configuration
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('image');
+        $root = $treeBuilder->root('component');
         $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
-/*
-        $definition = $root->children()
-                ->arrayNode('processors')
-                    ->prototype('array')
-                        ->children()
-                            ->integerNode('priority')
-                                ->isRequired()
-                                ->validate()
-                                    ->ifInArray([0])
-                                    ->thenInvalid('Priority must be non-zero')
-                                ->end()
-                            ->end()
-                            ->variableNode('parameters')->end()
-                            ->arrayNode('definition');
 
-        Image::configureNode($definition);
-*/
-        $root
-            ->children()
-            // todo tady ty dva jsou tady jen kvuli tomu ze jsou nahore a vubec sem nepatri
-  //          ->integerNode('priority')->end()
-            ->variableNode('parameters')->end()
-            ->variableNode('image_parameters')->end()
+        $root->children()
             ->integerNode('cpu_shares')->min(0)->defaultValue(1024)->end()
             ->scalarNode('memory')->defaultValue('64m')->end()
             ->scalarNode('configuration_format')
@@ -51,6 +30,7 @@ class Component extends Configuration
             ->booleanNode('forward_token')->defaultValue(false)->end()
             ->booleanNode('forward_token_details')->defaultValue(false)->end()
             ->booleanNode('default_bucket')->defaultValue(false)->end()
+            ->variableNode('image_parameters')->end()
             ->scalarNode('network')
                 ->validate()
                     ->ifNotInArray(['none', 'bridge'])
@@ -96,7 +76,7 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
-        ;
+        ->end();
 
         return $treeBuilder;
     }

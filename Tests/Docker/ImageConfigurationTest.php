@@ -90,7 +90,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "image.definition.type": Invalid image type "whatever".
+     * @expectedExceptionMessage Invalid configuration for path "component.definition.type": Invalid image type "whatever".
      */
     public function testWrongDefinitionType()
     {
@@ -107,7 +107,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "image.configuration_format": Invalid configuration_format "fail".
+     * @expectedExceptionMessage Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".
      */
     public function testWrongConfigurationFormat()
     {
@@ -125,7 +125,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Unrecognized option "unknown" under "image"
+     * @expectedExceptionMessage Unrecognized option "unknown" under "component"
      */
     public function testExtraConfigurationField()
     {
@@ -141,7 +141,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "image.network": Invalid network type "whatever".
+     * @expectedExceptionMessage Invalid configuration for path "component.network": Invalid network type "whatever".
      */
     public function testWrongNetwokType()
     {

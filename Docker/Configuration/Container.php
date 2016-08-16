@@ -66,13 +66,15 @@ class Container extends Configuration
                 ->arrayNode("oauth_api")
                 ->children()
                     ->scalarNode("id")->end()
-                    ->variableNode("credentials");
-
+                    ->variableNode("credentials")
+                ->end()
+            ->end()
+        ->end();
 
         // action
-        $root->children()
-            ->scalarNode("action");
+        $root->children()->scalarNode("action")->end();
 
+        // processors
         $root->children()
             ->arrayNode('processors')
                 ->children()
