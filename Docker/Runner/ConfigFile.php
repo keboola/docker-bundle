@@ -15,11 +15,6 @@ class ConfigFile
     private $dataDirectory;
 
     /**
-     * @var array
-     */
- //   private $config;
-
-    /**
      * @var string
      */
     private $format;
@@ -41,14 +36,12 @@ class ConfigFile
 
     public function __construct(
         $dataDirectory,
-    //    array $config,
         array $imageParameters,
         array $authorization,
         $action,
         $format
     ) {
         $this->dataDirectory = $dataDirectory;
-  //      $this->config = $config;
         $this->format = $format;
         $this->imageParameters = $imageParameters;
         $this->authorization = $authorization;
@@ -60,7 +53,6 @@ class ConfigFile
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
         try {
-            //$configData = $this->config;
             // remove runtime parameters which is not supposed to be passed into the container
             unset($configData['runtime']);
 
@@ -75,8 +67,6 @@ class ConfigFile
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);
-        } catch (RequestException $e) {
-            throw new UserException("Error loading credentials: " . $e->getMessage(), $e);
         }
     }
 }

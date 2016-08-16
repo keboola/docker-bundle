@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\StorageApi\Client;
 use Keboola\Temp\Temp;
-use MyProject\Proxies\__CG__\stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends \PHPUnit_Framework_TestCase

@@ -59,7 +59,7 @@ class Environment
     }
 
 
-    public function getConfigurationVariables($configurationVariables)
+    private function getConfigurationVariables($configurationVariables)
     {
         $envs = [];
         foreach ($configurationVariables as $name => $value) {
