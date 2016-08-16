@@ -3,10 +3,7 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
-use Keboola\DockerBundle\Docker\Runner\ComponentParameters;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\ContainerCreator;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
@@ -210,7 +207,6 @@ class Runner
             $this->loggerService->getLog(),
             $this->storageClient,
             $component,
-            $configData['processors'],
             $configData
         );
 
@@ -283,7 +279,7 @@ class Runner
         foreach ($images as $priority => $image) {
             $this->configFile->createConfigFile($image->getConfigData());
             $containerId = $jobId . '-' . $this->storageClient->getRunId();
-            if ($image->getIsMain()) {
+            if ($image->isMain()) {
                 $environmentParameters = [];
             } else {
                 $environmentParameters = $image->getConfigData()['parameters'];
@@ -294,7 +290,7 @@ class Runner
                 $this->environment->getEnvironmentVariables($environmentParameters)
             );
             $output = $container->run();
-            if ($image->getIsMain()) {
+            if ($image->isMain()) {
                 $componentOutput = $output->getOutput();
             }
             $counter++;

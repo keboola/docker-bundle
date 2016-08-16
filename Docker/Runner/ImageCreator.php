@@ -28,7 +28,12 @@ class ImageCreator
     /**
      * @var array
      */
-    private $processors;
+    private $before;
+
+    /**
+     * @var array
+     */
+    private $after;
 
     /**
      * @var array
@@ -40,16 +45,14 @@ class ImageCreator
         Logger $logger,
         Client $storageClient,
         array $mainImage,
-        array $processors,
         array $componentConfig
     ) {
         $this->encryptor = $encryptor;
         $this->logger = $logger;
         $this->mainImage = $mainImage;
-        $this->processors = $processors;
         $this->storageClient = $storageClient;
-        $this->processors['before'] = empty($this->processors['before']) ? [] : $this->processors['before'];
-        $this->processors['after'] = empty($this->processors['after']) ? [] : $this->processors['after'];
+        $this->before = empty($componentConfig['processors']['before']) ? [] : $componentConfig['processors']['before'];
+        $this->after = empty($componentConfig['processors']['after']) ? [] : $componentConfig['processors']['after'];
         $this->componentConfig = $componentConfig;
     }
 
@@ -58,7 +61,7 @@ class ImageCreator
      */
     public function prepareImages()
     {
-        foreach ($this->processors['before'] as $processor) {
+        foreach ($this->before as $processor) {
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId)['data'];
@@ -71,7 +74,7 @@ class ImageCreator
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
-        foreach ($this->processors['after'] as $processor) {
+        foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId)['data'];

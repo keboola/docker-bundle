@@ -193,7 +193,7 @@ abstract class Image
         $this->isMain = $isMain;
     }
 
-    public function getIsMain()
+    public function isMain()
     {
         return $this->isMain;
     }
