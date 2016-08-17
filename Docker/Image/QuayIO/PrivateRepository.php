@@ -117,7 +117,7 @@ class PrivateRepository extends Image\QuayIO
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config = [])
     {
         parent::fromArray($config);
         if (isset($config['definition']['repository'])) {

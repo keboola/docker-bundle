@@ -56,7 +56,11 @@ class ConfigFile
             unset($configData['runtime']);
 
             $configData['image_parameters'] = $this->imageParameters;
-            $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
+            if (!empty($configData['authorization'])) {
+                $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
+            } else {
+                $configData['authorization'] = [];
+            }
 
             // action
             $configData['action'] = $this->action;

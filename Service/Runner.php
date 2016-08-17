@@ -150,12 +150,15 @@ class Runner
      */
     public function run(array $component, $configId, array $configData, array $state, $action, $mode, $jobId)
     {
+        $component['id'] = empty($component['id']) ? '' : $component['id'];
+        $component['data'] = empty($component['data']) ? [] : $component['data'];
         $this->loggerService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-        $sandboxed = $mode != 'run';
         $componentId = $component['id'];
         $component = (new Configuration\Component())->parse(['config' => $component['data']]);
         $component['image_parameters'] = empty($component['image_parameters']) ? [] : $component['image_parameters'];
         $this->loggerService->setComponentId($componentId);
+
+        $sandboxed = $mode != 'run';
         $configData = (new Configuration\Container())->parse(['container' => $configData]);
         $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
         $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
