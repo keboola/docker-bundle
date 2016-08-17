@@ -72,6 +72,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $process = $container->run();
         $this->assertEquals(0, $process->getExitCode());
         $this->assertContains("Hello from Docker", trim($process->getOutput()));
+        unset($process);
+        unset($temp);
     }
 
     public function testSuccess()
