@@ -297,11 +297,10 @@ abstract class Image
     public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config, $isMain)
     {
         $processedConfig = (new Configuration\Component())->parse(["config" => $config]);
-        if (empty($processedConfig["definition"]["type"])) {
-            $type = '';
-        } else {
-            $type = $processedConfig["definition"]["type"];
+        if (empty($processedConfig["definition"]) || empty($processedConfig["definition"]["type"])) {
+            throw new ApplicationException("Image definition is empty or invalid.", null, $processedConfig);
         }
+        $type = $processedConfig["definition"]["type"];
         switch ($type) {
             case "dockerhub":
                 $instance = new Image\DockerHub($encryptor);

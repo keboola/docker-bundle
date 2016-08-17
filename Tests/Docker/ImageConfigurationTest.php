@@ -81,14 +81,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     */
-    public function testTotallyEmptyConfiguration()
-    {
-        (new Configuration\Component())->parse(array("config" => array()));
-    }
-
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
      * @expectedExceptionMessage Invalid configuration for path "component.definition.type": Invalid image type "whatever".
      */
     public function testWrongDefinitionType()

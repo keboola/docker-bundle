@@ -4,9 +4,9 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -32,8 +32,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $encryptor = new ObjectEncryptor();
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger('null');
-        $containerLog->pushHandler(new NullHandler());
 
         $image = [
             'definition' => [
@@ -67,11 +65,8 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId('keboola.docker-demo');
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger('null');
-        $containerLog->pushHandler(new NullHandler());
 
         $image = [
             'definition' => [
@@ -108,11 +103,8 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId('keboola.docker-demo');
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger('null');
-        $containerLog->pushHandler(new NullHandler());
 
         $image = [
             'definition' => [
@@ -148,8 +140,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
 
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger('null');
-        $containerLog->pushHandler(new NullHandler());
 
         $image = [
             'definition' => [
@@ -175,13 +165,26 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('quay.io/keboola/docker-demo-app:latest', $images[0]->getFullImageId());
     }
 
+    public function testInvalidDefinition()
+    {
+        $encryptor = new ObjectEncryptor();
+        $log = new Logger('null');
+        $log->pushHandler(new NullHandler());
+
+        $imageCreator = new ImageCreator($encryptor, $log, $this->client, [], []);
+        try {
+            $imageCreator->prepareImages();
+            $this->fail("Invalid image definition must fail.");
+        } catch (ApplicationException $e) {
+            $this->assertContains('definition is empty', $e->getMessage());
+        }
+    }
+
     public function testCreateImageProcessors()
     {
         $encryptor = new ObjectEncryptor();
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger('null');
-        $containerLog->pushHandler(new NullHandler());
 
         $image = [
             'definition' => [
