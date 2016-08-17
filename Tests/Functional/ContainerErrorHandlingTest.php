@@ -194,27 +194,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container->run();
     }
 
-    public function testInvalidDirectory()
-    {
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/non-existent"
-            ]
-        ];
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        try {
-            $image->prepare([]);
-            $this->fail("Must raise an exception when data directory is not set.");
-        } catch (ApplicationException $e) {
-            $this->assertContains('directory', $e->getMessage());
-        }
-    }
-
     public function testInvalidImage()
     {
         $temp = new Temp('docker');

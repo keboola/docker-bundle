@@ -427,7 +427,7 @@ class RunnerTest extends KernelTestCase
 
         $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex-generic'));
         $this->assertEquals('ex-generic', $reflection->invoke($runner, 'ex-generic'));
-        $this->assertEquals('keboola.ex.generic', $reflection->invoke($runner, 'keboola.ex.generic'));
+        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex.generic'));
     }
 
     public function testExecutorStoreState()
