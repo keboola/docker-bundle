@@ -20,14 +20,14 @@ class DockerHub extends Image
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
+        $process->setTimeout(3600);
         try {
-            $proxy->call(function () {
-                $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
-                $process->setTimeout(3600);
+            $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
         } catch (\Exception $e) {
-            throw new ApplicationException("Failed to prepare container {$this->getFullImageId()}, error: ".$e->getMessage(), $e);
+            throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
         }
     }
 }

@@ -497,10 +497,10 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $retryPolicy = new SimpleRetryPolicy(3);
             $backOffPolicy = new ExponentialBackOffPolicy(10000);
             $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+            $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
+            $process->setTimeout(3600);
             try {
-                $proxy->call(function () {
-                    $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
-                    $process->setTimeout(3600);
+                $proxy->call(function () use ($process) {
                     $process->mustRun();
                 });
             } catch (\Exception $e) {
