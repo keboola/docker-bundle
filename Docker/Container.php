@@ -137,13 +137,13 @@ class Container
                 if ($retries > 0) {
                     $this->id .= '.' . $retries;
                 }
-                $this->logger->debug("Executing docker process.");
+                $this->logger->debug("Executing docker process {$this->getImage()->getFullImageId()}.");
                 if ($this->getImage()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
                 } else {
                     $this->runWithoutLogger($process);
                 }
-                $this->logger->debug("Docker process finished.");
+                $this->logger->debug("Docker process {$this->getImage()->getFullImageId()} finished.");
 
                 if (!$process->isSuccessful()) {
                     $this->handleContainerFailure($process, $this->id, $startTime);
@@ -161,7 +161,7 @@ class Container
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->error("Cannot remove container {$this->id}: {$e->getMessage()}");
+                    $this->logger->error("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
                     // continue
                 }
             }
@@ -247,7 +247,7 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->error("Cannot inspect container '{$containerId}' on failure: " . $e->getMessage());
+            $this->logger->error("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
             $inspect = [];
         }
 
@@ -269,10 +269,10 @@ class Container
             // this catches the timeout from `sudo timeout`
             if ($duration >= $this->getImage()->getProcessTimeout()) {
                 throw new UserException(
-                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
                 );
             } else {
-                throw new InitializationException("Container terminated. Will restart.");
+                throw new InitializationException("{$this->getImage()->getFullImageId()} container terminated. Will restart.");
             }
         }
 
@@ -297,7 +297,8 @@ class Container
 
         if ($process->getExitCode() == 1) {
             $data["container"] = [
-                "id" => $this->getId()
+                "id" => $this->getId(),
+                "image" => $this->getImage()->getFullImageId()
             ];
             throw new UserException($message, null, $data);
         } else {
@@ -308,7 +309,7 @@ class Container
             } else {
                 // syrup will make sure that the actual exception message will be hidden to end-user
                 throw new ApplicationException(
-                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
                     $data
                 );
