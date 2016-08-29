@@ -22,7 +22,7 @@ class DockerHub extends Image
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         try {
             $proxy->call(function () {
-                $process = new Process("sudo docker pull x" . escapeshellarg($this->getFullImageId()));
+                $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
                 $process->setTimeout(3600);
                 $process->mustRun();
             });
