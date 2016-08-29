@@ -11,6 +11,9 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class ImageBuilder extends Image\DockerHub\PrivateRepository
@@ -491,10 +494,15 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 }
             }
 
+            $retryPolicy = new SimpleRetryPolicy(3);
+            $backOffPolicy = new ExponentialBackOffPolicy(10000);
+            $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
             try {
-                $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
-                $process->setTimeout(3600);
-                $process->mustRun();
+                $proxy->call(function () {
+                    $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
+                    $process->setTimeout(3600);
+                    $process->mustRun();
+                });
             } catch (\Exception $e) {
                 throw new BuildException(
                     "Failed to get parent container {$this->getImageId()}, error: " . $e->getMessage(),

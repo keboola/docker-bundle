@@ -11,7 +11,8 @@
         "keboola/oauth-v2-php-client": "~1.0.0",
         "keboola/storage-api-client": "~4.5",
         "keboola/gelf-server": "~1.0",
-        "keboola/input-mapping": "^1.1"
+        "keboola/input-mapping": "^1.1",
+        "vkartaviy/retry": "~0.2.2"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.2",
