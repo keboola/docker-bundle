@@ -335,7 +335,7 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage Running container exceeded the timeout of 30 seconds.
+     * @expectedExceptionMessageRegExp /exceeded the timeout of 30 seconds/
      */
     public function testTimeout()
     {
