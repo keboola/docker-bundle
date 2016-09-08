@@ -176,6 +176,12 @@ class RunnerTest extends KernelTestCase
                     ],
                     [
                         'definition' => [
+                            'component' => 'keboola.processor.move-files',
+                        ],
+                        'parameters' => ['direction' => 'tables']
+                    ],
+                    [
+                        'definition' => [
                             'component' => 'keboola.processor.iconv',
                         ],
                         'parameters' => ['source_encoding' => 'CP1250']
