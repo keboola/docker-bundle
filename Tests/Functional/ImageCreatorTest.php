@@ -223,7 +223,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(3, $images);
-        $this->assertEquals('quay.io/keboola/processor-unziper:3.0.0', $images[0]->getFullImageId());
+        $this->assertEquals('quay.io/keboola/processor-unziper:3.0.4', $images[0]->getFullImageId());
         $this->assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
         $this->assertEquals('quay.io/keboola/processor-iconv:1.0.2', $images[2]->getFullImageId());
         $this->assertFalse($images[0]->isMain());
