@@ -6,5 +6,5 @@ use Keboola\DockerBundle\Docker\Configuration;
 
 class Adapter extends Configuration\Adapter
 {
-    protected $configClass = '\Keboola\DockerBundle\Docker\Configuration\Container';
+    protected $configClass = Configuration\Container::class;
 }

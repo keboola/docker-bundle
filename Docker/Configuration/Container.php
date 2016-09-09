@@ -16,6 +16,7 @@ class Container extends Configuration
         $root
             ->children()
                 ->variableNode("parameters")->end()
+                ->variableNode("runtime")->end()
                 ->variableNode("image_parameters")
         ;
         $storage = $root
@@ -65,12 +66,45 @@ class Container extends Configuration
                 ->arrayNode("oauth_api")
                 ->children()
                     ->scalarNode("id")->end()
-                    ->variableNode("credentials");
-
+                    ->variableNode("credentials")
+                ->end()
+            ->end()
+        ->end();
 
         // action
+        $root->children()->scalarNode("action")->end();
+
+        // processors
         $root->children()
-            ->scalarNode("action");
+            ->arrayNode('processors')
+                ->children()
+                    ->arrayNode('before')
+                        ->prototype('array')
+                            ->children()
+                                ->variableNode('parameters')->end()
+                                ->arrayNode('definition')
+                                    ->children()
+                                        ->scalarNode('component')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                    ->arrayNode('before')
+                        ->prototype('array')
+                            ->children()
+                                ->variableNode('parameters')->end()
+                                ->arrayNode('definition')
+                                    ->children()
+                                        ->scalarNode('component')->end()
+                                    ->end()
+                                ->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
 
         return $treeBuilder;
     }

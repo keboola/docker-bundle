@@ -2,12 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker\Image\Builder;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\DockerBundle\Exception\LoginFailedException;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
@@ -300,25 +297,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     * @return string
-     */
-    public function getContainerId()
-    {
-        return $this->containerId;
-    }
-
-    /**
-     * @param string $containerId
-     * @return $this
-     */
-    public function setContainerId($containerId)
-    {
-        $this->containerId = $containerId;
-
-        return $this;
-    }
-
-    /**
      * Replace placeholders in a string.
      * @param string $string Arbitrary string
      * @return string
@@ -421,7 +399,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private function initParameters(array $configData)
     {
-
         // set parameter values
         if (isset($configData['parameters']) && is_array($configData['parameters'])) {
             foreach ($configData['parameters'] as $key => $value) {
@@ -475,41 +452,40 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
-    /**
+    protected function pullImage()
+    {
+        $retryPolicy = new SimpleRetryPolicy(3);
+        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
+        $process->setTimeout(3600);
+        try {
+            $proxy->call(function () use ($process) {
+                $process->mustRun();
+            });
+        } catch (\Exception $e) {
+            throw new BuildException(
+                "Failed to pull parent image {$this->getImageId()}, error: " . $e->getMessage(),
+                $e
+            );
+        }
+    }
+
+    protected function login()
+    {
+        if ($this->getLoginUsername()) {
+            parent::login();
+        }
+    }
+
+    /*
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
-        $this->setContainerId($containerId);
-        $this->initParameters($configData);
         try {
-            if ($this->getLoginUsername()) {
-                // Login to docker repository
-                $process = new Process("sudo docker login {$this->getLoginParams()}");
-                $process->run();
-                if ($process->getExitCode() != 0) {
-                    $message = "Login failed (code: {$process->getExitCode()}): " .
-                        "{$process->getOutput()} / {$process->getErrorOutput()}";
-                    throw new LoginFailedException($message);
-                }
-            }
-
-            $retryPolicy = new SimpleRetryPolicy(3);
-            $backOffPolicy = new ExponentialBackOffPolicy(10000);
-            $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-            $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
-            $process->setTimeout(3600);
-            try {
-                $proxy->call(function () use ($process) {
-                    $process->mustRun();
-                });
-            } catch (\Exception $e) {
-                throw new BuildException(
-                    "Failed to get parent container {$this->getImageId()}, error: " . $e->getMessage(),
-                    $e
-                );
-            }
-
+            $this->initParameters($configData);
+            parent::prepare($configData);
             $temp = new Temp('docker');
             $temp->initRunFolder();
             $workingFolder = $temp->getTmpFolder();
@@ -554,15 +530,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function getFullImageId()
     {
-        if (!$this->getContainerId()) {
-            throw new ApplicationException("Container Id not set");
-        }
         if (!$this->fullImageId) {
-            $this->fullImageId = uniqid('builder-' . $this->getContainerId(). "-");
+            $this->fullImageId = uniqid('builder-');
         }
         return $this->fullImageId;
     }
@@ -572,7 +545,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config)
     {
         parent::fromArray($config);
         if (isset($config["definition"]["build_options"])) {

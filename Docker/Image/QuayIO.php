@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Retry\BackOff\ExponentialBackOffPolicy;
@@ -12,19 +11,15 @@ use Symfony\Component\Process\Process;
 
 class QuayIO extends Image
 {
-
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getFullImageId()
     {
         return "quay.io/" . $this->getImageId() . ":" . $this->getTag();
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function prepare(Container $container, array $configData, $containerId)
+    protected function pullImage()
     {
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);

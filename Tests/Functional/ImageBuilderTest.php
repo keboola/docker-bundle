@@ -2,11 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Handler\NullHandler;
@@ -16,7 +14,6 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilderTest extends KernelTestCase
 {
-
     public function setUp()
     {
         self::bootKernel();
@@ -25,7 +22,9 @@ class ImageBuilderTest extends KernelTestCase
     public function tearDown()
     {
         parent::tearDown();
-        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
+        (new Process(
+            "sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"
+        ))->run();
     }
 
     public function testCreatePrivateRepo()
@@ -36,8 +35,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -64,9 +61,8 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
-        $image->prepare($container, [], uniqid());
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -83,8 +79,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -109,9 +103,8 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
-        $image->prepare($container, [], uniqid());
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -127,8 +120,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -160,12 +151,8 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        /**
-         * @var Image\Builder\ImageBuilder $image
-         */
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
-        $image->prepare($container, [], uniqid());
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -182,8 +169,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -214,10 +199,9 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare([]);
             $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('not found', $e->getMessage());
@@ -229,8 +213,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -256,10 +238,9 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
@@ -274,8 +255,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -300,10 +279,9 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "json",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
@@ -322,8 +300,6 @@ class ImageBuilderTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -376,9 +352,8 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
-        $image->prepare($container, $configData, uniqid());
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep builder- | wc -l");
@@ -391,8 +366,6 @@ class ImageBuilderTest extends KernelTestCase
     {
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -417,10 +390,9 @@ class ImageBuilderTest extends KernelTestCase
             "configuration_format" => "yaml",
         ];
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, [], uniqid());
+            $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('Cannot access the repository', $e->getMessage());
@@ -429,14 +401,8 @@ class ImageBuilderTest extends KernelTestCase
 
     public function testCreateInvalidUrl()
     {
-        $process = new Process("sudo docker images | grep builder- | wc -l");
-        $process->run();
-        $oldCount = intval(trim($process->getOutput()));
-
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -482,10 +448,9 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $container = new Container($image, $log, $containerLog);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
-            $image->prepare($container, $configData, uniqid());
+            $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());

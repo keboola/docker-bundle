@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image\DockerHub;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Symfony\Component\Process\Process;
@@ -102,21 +101,25 @@ class PrivateRepository extends Image\DockerHub
         return join(" ", $logoutParams);
     }
 
+    protected function login()
+    {
+        $process = new Process("sudo docker login {$this->getLoginParams()}");
+        $process->run();
+        if ($process->getExitCode() != 0) {
+            $message = "Login failed (code: {$process->getExitCode()}): " .
+                "{$process->getOutput()} / {$process->getErrorOutput()}";
+            throw new LoginFailedException($message);
+        }
+    }
+
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
         try {
-            $process = new Process("sudo docker login {$this->getLoginParams()}");
-            $process->run();
-            if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): " .
-                    "{$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new LoginFailedException($message);
-            }
-            $tag = parent::prepare($container, $configData, $containerId);
-            return $tag;
+            $this->login();
+            parent::prepare($configData);
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
         }
@@ -126,7 +129,7 @@ class PrivateRepository extends Image\DockerHub
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config)
     {
         parent::fromArray($config);
         if (isset($config["definition"]["repository"])) {
@@ -134,7 +137,9 @@ class PrivateRepository extends Image\DockerHub
                 $this->setLoginUsername($config["definition"]["repository"]["username"]);
             }
             if (isset($config["definition"]["repository"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
+                $this->setLoginPassword(
+                    $this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"])
+                );
             }
             if (isset($config["definition"]["repository"]["server"])) {
                 $this->setLoginServer($config["definition"]["repository"]["server"]);

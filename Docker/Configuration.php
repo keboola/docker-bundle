@@ -1,25 +1,20 @@
 <?php
+
 namespace Keboola\DockerBundle\Docker;
 
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\Processor;
 
-class Configuration implements ConfigurationInterface
+abstract class Configuration implements ConfigurationInterface
 {
 
     /**
      * @return TreeBuilder
      */
-    public function getConfigTreeBuilder()
-    {
-        $treeBuilder = new TreeBuilder();
-        $treeBuilder->root("configuration");
-        return $treeBuilder;
-    }
+    abstract public function getConfigTreeBuilder();
 
     /**
-     *
      * Shortcut method for processing configurations
      *
      * @param $configurations

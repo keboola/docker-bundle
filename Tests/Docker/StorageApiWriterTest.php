@@ -2,9 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
@@ -24,58 +24,30 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
      */
     private $tmp;
 
-    /**
-     * @throws \Exception
-     * @throws \Keboola\StorageApi\ClientException
-     */
     protected function clearBucket()
     {
-        // Delete tables and bucket
-        if ($this->client->bucketExists("out.c-docker-test")) {
-            foreach ($this->client->listTables("out.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
+        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
+            try {
+                $this->client->dropBucket($bucket, ['force' => true]);
+            } catch (ClientException $e) {
+                if ($e->getCode() != 404) {
+                    throw $e;
+                }
             }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-test");
-        }
-
-        if ($this->client->bucketExists("out.c-docker-redshift-test")) {
-            foreach ($this->client->listTables("out.c-docker-redshift-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-redshift-test");
-        }
-
-        if ($this->client->bucketExists("out.c-docker-default-test")) {
-            foreach ($this->client->listTables("out.c-docker-default-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-default-test");
         }
     }
 
-    /**
-     *
-     */
     protected function clearFileUploads()
     {
         // Delete file uploads
         $options = new ListFilesOptions();
-        $options->setTags(array("docker-bundle-test"));
+        $options->setTags(['docker-bundle-test']);
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
-            $this->client->deleteFile($file["id"]);
+            $this->client->deleteFile($file['id']);
         }
     }
 
-    /**
-     *
-     */
     public function setUp()
     {
         // Create folders
@@ -83,23 +55,20 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->tmp->initRunFolder();
         $root = $this->tmp->getTmpFolder();
         $fs = new Filesystem();
-        $fs->mkdir($root . DIRECTORY_SEPARATOR . "upload");
-        $fs->mkdir($root . DIRECTORY_SEPARATOR . "download");
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . 'upload');
+        $fs->mkdir($root . DIRECTORY_SEPARATOR . 'download');
 
-        $this->client = new Client(array(
+        $this->client = new Client([
             'url' => STORAGE_API_URL,
-            "token" => STORAGE_API_TOKEN,
-        ));
+            'token' => STORAGE_API_TOKEN,
+        ]);
         $this->clearBucket();
         $this->clearFileUploads();
-        $this->client->createBucket("docker-redshift-test", 'out', '', 'redshift');
+        $this->client->createBucket('docker-redshift-test', 'out', '', 'redshift');
 
-        $this->client->createBucket("docker-default-test", 'out');
+        $this->client->createBucket('docker-default-test', 'out');
     }
 
-    /**
-     *
-     */
     public function tearDown()
     {
         // Delete local files
@@ -694,60 +663,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue(in_array('downloaded', $file['tags']));
         $file = $this->client->getFile($id2);
         $this->assertTrue(in_array('downloaded', $file['tags']));
-    }
-
-    public function testUpdateStateNoChange()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{"state": "aabb"}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->never())
-            ->method("apiPut")
-            ;
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
-    }
-
-    public function testUpdateStateChange()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{"state": "aabbcc"}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
-            ->with(
-                $this->equalTo("storage/components/test/configs/test"),
-                $this->equalTo(["state" => '{"state":"aabbcc"}'])
-            );
-
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
-    }
-
-    public function testUpdateStateChangeToEmpty()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/test.json", '{}');
-
-        $sapiStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
-            ->with($this->equalTo("storage/components/test/configs/test"), $this->equalTo(["state" => '{}']))
-            ;
-
-        $writer = new Writer($sapiStub);
-        $writer->setFormat("json");
-        $writer->updateState("test", "test", $root . "/upload/test", ["state" => "aabb"]);
     }
 
     public function testWriteTableToDefaultBucket()

@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Image\QuayIO;
 
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Symfony\Component\Process\Process;
@@ -90,21 +89,25 @@ class PrivateRepository extends Image\QuayIO
         return join(" ", $logoutParams);
     }
 
+    protected function login()
+    {
+        $process = new Process("sudo docker login {$this->getLoginParams()}");
+        $process->run();
+        if ($process->getExitCode() != 0) {
+            $message = "Login failed (code: {$process->getExitCode()}): " .
+                "{$process->getOutput()} / {$process->getErrorOutput()}";
+            throw new LoginFailedException($message);
+        }
+    }
+
     /**
      * @inheritdoc
      */
-    public function prepare(Container $container, array $configData, $containerId)
+    public function prepare(array $configData)
     {
         try {
-            $process = new Process("sudo docker login {$this->getLoginParams()}");
-            $process->run();
-            if ($process->getExitCode() != 0) {
-                $message = "Login failed (code: {$process->getExitCode()}): " .
-                    "{$process->getOutput()} / {$process->getErrorOutput()}";
-                throw new LoginFailedException($message);
-            }
-            $tag = parent::prepare($container, $configData, $containerId);
-            return $tag;
+            $this->login();
+            parent::prepare($configData);
         } finally {
             (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
         }
@@ -114,15 +117,17 @@ class PrivateRepository extends Image\QuayIO
      * @param array $config
      * @return $this
      */
-    public function fromArray($config = [])
+    public function fromArray(array $config = [])
     {
         parent::fromArray($config);
-        if (isset($config["definition"]["repository"])) {
-            if (isset($config["definition"]["repository"]["username"])) {
-                $this->setLoginUsername($config["definition"]["repository"]["username"]);
+        if (isset($config['definition']['repository'])) {
+            if (isset($config['definition']['repository']['username'])) {
+                $this->setLoginUsername($config['definition']['repository']['username']);
             }
-            if (isset($config["definition"]["repository"]["#password"])) {
-                $this->setLoginPassword($this->getEncryptor()->decrypt($config["definition"]["repository"]["#password"]));
+            if (isset($config['definition']['repository']['#password'])) {
+                $this->setLoginPassword(
+                    $this->getEncryptor()->decrypt($config['definition']['repository']['#password'])
+                );
             }
         }
         return $this;

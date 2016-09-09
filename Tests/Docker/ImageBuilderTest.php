@@ -44,7 +44,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -99,7 +99,7 @@ DOCKERFILE;
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -168,7 +168,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
@@ -229,7 +229,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         /** @var ImageBuilder $image */
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke(
@@ -296,7 +296,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -349,7 +349,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -398,7 +398,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -460,7 +460,7 @@ DOCKERFILE;
         $log->pushHandler(new NullHandler());
 
         try {
-            Image::factory($encryptor, $log, $imageConfig);
+            Image::factory($encryptor, $log, $imageConfig, true);
             $this->fail("Invalid repository should fail.");
         } catch (InvalidConfigurationException $e) {
             $this->assertContains('Invalid repository_type', $e->getMessage());
@@ -530,8 +530,8 @@ DOCKERFILE;
         /**
          * @var $image ImageBuilder
          */
-        $image = Image::factory($encryptor, $log, $imageConfig);
-        $this->assertInstanceOf('Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder', $image);
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $this->assertInstanceOf(ImageBuilder::class, $image);
         $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
