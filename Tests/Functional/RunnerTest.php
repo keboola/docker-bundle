@@ -601,4 +601,69 @@ class RunnerTest extends KernelTestCase
             $this->assertContains('Unrecognized option "filterByRunId"', $e->getMessage());
         }
     }
+
+    public function testExecutorDefaultBucketNoStage()
+    {
+        // Create bucket
+        if (!$this->client->bucketExists('in.c-docker-test')) {
+            $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
+        }
+
+        // Create table
+        if (!$this->client->tableExists('in.c-docker-test.test')) {
+            $csv = new CsvFile($this->temp->getTmpFolder() . '/upload.csv');
+            $csv->writeRow(['id', 'text']);
+            $csv->writeRow(['test', 'test']);
+            $this->client->createTableAsync('in.c-docker-test', 'test', $csv);
+            $this->client->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
+            unset($csv);
+        }
+
+        $configurationData = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-test.test',
+                            'destination' => 'source.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'primary_key_column' => 'id',
+                'data_column' => 'text',
+                'string_length' => '4',
+            ]
+        ];
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app',
+                ],
+                'configuration_format' => 'json',
+                'default_bucket' => true,
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            'test-config',
+            $configurationData,
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $this->assertTrue($this->client->tableExists('in.c-keboola-docker-demo-app-test-config.sliced'));
+        $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
+    }
 }
