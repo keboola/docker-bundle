@@ -15,6 +15,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
@@ -357,8 +358,6 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
     }
 
-
-
     public function testExecutorDefaultBucketWithDot()
     {
         // Create bucket
@@ -547,6 +546,59 @@ class RunnerTest extends KernelTestCase
             if ($e->getCode() != 404) {
                 throw $e;
             }
+        }
+    }
+
+    public function testExecutorInvalidConfiguration()
+    {
+        $configurationData = [
+            'storage' => [
+                'input' => [
+                    'files' => [
+                        [
+                            'tags' => ['tde'],
+                            /* unrecognized option -> */
+                            'filterByRunId' => true,
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'mode' => true,
+                'credentials' => 'tde-exporter-tde-bug-32',
+            ]
+        ];
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app',
+                ],
+                'configuration_format' => 'json',
+                'default_bucket' => true,
+                'default_bucket_stage' => 'out',
+            ],
+        ];
+
+        try {
+            $runner->run(
+                $componentData,
+                'test-config',
+                $configurationData,
+                [],
+                'run',
+                'run',
+                '1234567'
+            );
+            $this->fail("Invalid configuration must fail.");
+        } catch (UserException $e) {
+            $this->assertContains('Unrecognized option "filterByRunId"', $e->getMessage());
         }
     }
 }

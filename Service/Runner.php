@@ -21,6 +21,7 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Runner
 {
@@ -159,7 +160,11 @@ class Runner
         $this->loggerService->setComponentId($componentId);
 
         $sandboxed = $mode != 'run';
-        $configData = (new Configuration\Container())->parse(['container' => $configData]);
+        try {
+            $configData = (new Configuration\Container())->parse(['container' => $configData]);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
         $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
         $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
         $configFormat = $component['configuration_format'];
