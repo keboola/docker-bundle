@@ -9,28 +9,28 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     public function testConfiguration()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "vendor" => array("a" => "b"),
-            "image_parameters" => array("foo" => "bar"),
+            "vendor" => ["a" => "b"],
+            "image_parameters" => ["foo" => "bar"],
             "synchronous_actions" => ["test", "test2"],
             "network" => "none",
             "logging" => [
                 "type" => "gelf",
                 "verbosity" => [200 => "verbose"]
             ]
-        );
-        $expectedConfiguration = array(
-            "definition" => array(
+        ];
+        $expectedConfiguration = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo",
                 "tag" => "latest"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
@@ -38,8 +38,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "forward_token" => false,
             "forward_token_details" => false,
             "default_bucket" => false,
-            "vendor" => array("a" => "b"),
-            "image_parameters" => array("foo" => "bar"),
+            "default_bucket_stage" => "in",
+            "vendor" => ["a" => "b"],
+            "image_parameters" => ["foo" => "bar"],
             "synchronous_actions" => ["test", "test2"],
             "network" => "none",
             "logging" => [
@@ -47,20 +48,20 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "verbosity" => [200 => "verbose"],
                 "gelf_server_type" => "tcp",
             ]
-        );
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+        ];
+        $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
     public function testEmptyConfiguration()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            )
-        );
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+            ]
+        ];
+        $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $expectedConfiguration = [
             'definition' => [
                 'type' => 'dockerhub',
@@ -75,6 +76,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => false,
             'default_bucket' => false,
             'synchronous_actions' => [],
+            'default_bucket_stage' => 'in'
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
