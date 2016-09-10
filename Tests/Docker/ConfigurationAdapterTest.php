@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Tests\Docker\Mock\Configuration\Adapter;
 use Symfony\Component\Filesystem\Filesystem;
 

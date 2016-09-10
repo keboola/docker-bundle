@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration;
 
+use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\SplFileInfo;

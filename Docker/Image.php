@@ -8,7 +8,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Monolog\Logger;
 
-abstract class Image
+class Image
 {
     /**
      *
@@ -37,10 +37,41 @@ abstract class Image
     /**
      * @var string
      */
+    protected $configFormat = 'json';
+
+    /**
+     * @var bool
+     */
+    protected $forwardToken = false;
+
+    /**
+     * @var bool
+     */
+    protected $forwardTokenDetails = false;
+
+    /**
+     * @var bool
+     */
+    private $defaultBucket = false;
+
+    /**
+     * @var string
+     */
+    private $defaultBucketStage = "in";
+
+    /**
+     * @var array
+     */
+    private $imageParameters = [];
+
+    /**
+     * @var string
+     */
     private $networkType = 'bridge';
 
     /**
-     * Process timeout in seconds
+     *
+     * process timeout in seconds
      *
      * @var int
      */
@@ -62,11 +93,6 @@ abstract class Image
     protected $encryptor;
 
     /**
-     * @var array
-     */
-    protected $configData;
-
-    /**
      * @var string
      */
     private $loggerType = 'standard';
@@ -81,11 +107,6 @@ abstract class Image
      */
     private $loggerServerType = 'tcp';
 
-    /**
-     * @var bool
-     */
-    private $isMain;
-
 
     /**
      * Constructor (use @see {factory()})
@@ -93,7 +114,7 @@ abstract class Image
      */
     public function __construct(ObjectEncryptor $encryptor)
     {
-        $this->encryptor = $encryptor;
+        $this->setEncryptor($encryptor);
     }
 
     /**
@@ -102,6 +123,35 @@ abstract class Image
     public function getEncryptor()
     {
         return $this->encryptor;
+    }
+
+    /**
+     * @param ObjectEncryptor $encryptor
+     * @return $this
+     */
+    public function setEncryptor($encryptor)
+    {
+        $this->encryptor = $encryptor;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     /**
@@ -114,10 +164,13 @@ abstract class Image
 
     /**
      * @param string $memory
+     * @return $this
      */
     public function setMemory($memory)
     {
         $this->memory = $memory;
+
+        return $this;
     }
 
     /**
@@ -130,10 +183,36 @@ abstract class Image
 
     /**
      * @param int $cpuShares
+     * @return $this
      */
     public function setCpuShares($cpuShares)
     {
         $this->cpuShares = $cpuShares;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConfigFormat()
+    {
+        return $this->configFormat;
+    }
+
+    /**
+     * @param $configFormat
+     * @return $this
+     * @throws \Exception
+     */
+    public function setConfigFormat($configFormat)
+    {
+        if (!in_array($configFormat, ['yaml', 'json'])) {
+            throw new \Exception("Configuration format '{$configFormat}' not supported");
+        }
+        $this->configFormat = $configFormat;
+
+        return $this;
     }
 
     /**
@@ -151,6 +230,64 @@ abstract class Image
     public function setProcessTimeout($timeout)
     {
         $this->processTimeout = (int)$timeout;
+
+        return $this;
+    }
+
+    /**
+     * @param $forwardToken
+     * @return $this
+     */
+    public function setForwardToken($forwardToken)
+    {
+        $this->forwardToken = $forwardToken;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getForwardToken()
+    {
+        return $this->forwardToken;
+    }
+
+    /**
+     * @param $forwardTokenDetails
+     * @return $this
+     */
+    public function setForwardTokenDetails($forwardTokenDetails)
+    {
+        $this->forwardTokenDetails = $forwardTokenDetails;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getForwardTokenDetails()
+    {
+        return $this->forwardTokenDetails;
+    }
+
+    /**
+     * @param $imageParameters
+     * @return $this
+     */
+    public function setImageParameters($imageParameters)
+    {
+        $this->imageParameters = $imageParameters;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getImageParameters()
+    {
+        return $this->imageParameters;
     }
 
     /**
@@ -163,10 +300,13 @@ abstract class Image
 
     /**
      * @param string $imageId
+     * @return $this
      */
     public function setImageId($imageId)
     {
         $this->imageId = $imageId;
+
+        return $this;
     }
 
     /**
@@ -179,23 +319,50 @@ abstract class Image
 
     /**
      * @param string $tag
+     * @return $this
      */
     public function setTag($tag)
     {
         $this->tag = $tag;
+
+        return $this;
     }
 
     /**
-     * @param bool $isMain
+     * @return boolean|string
      */
-    public function setIsMain($isMain)
+    public function isDefaultBucket()
     {
-        $this->isMain = $isMain;
+        return $this->defaultBucket;
     }
 
-    public function isMain()
+    /**
+     * @param boolean|string $defaultBucket
+     * @return $this
+     */
+    public function setDefaultBucket($defaultBucket)
     {
-        return $this->isMain;
+        $this->defaultBucket = $defaultBucket;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDefaultBucketStage()
+    {
+        return $this->defaultBucketStage;
+    }
+
+    /**
+     * @param mixed $defaultBucketStage
+     * @return $this
+     */
+    public function setDefaultBucketStage($defaultBucketStage)
+    {
+        $this->defaultBucketStage = $defaultBucketStage;
+        return $this;
     }
 
     /**
@@ -273,10 +440,13 @@ abstract class Image
      * @return Image
      * @throws \Exception
      */
-    public function fromArray(array $config)
+    public function fromArray($config = [])
     {
-        $fields = ['cpu_shares' => 'setCpuShares', 'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout',
-            'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
+        $fields = ['id' => 'setId', 'configuration_format' => 'setConfigFormat', 'cpu_shares' => 'setCpuShares',
+            'memory' => 'setMemory', 'process_timeout' => 'setProcessTimeout', 'forward_token' => 'setForwardToken',
+            'forward_token_details' => 'setForwardTokenDetails',
+            'default_bucket' => 'setDefaultBucket', 'default_bucket_stage' => 'setDefaultBucketStage',
+            'image_parameters' => 'setImageParameters', 'network' => 'setNetworkType', 'logging' => 'setLoggerOptions'
         ];
         foreach ($fields as $fieldName => $methodName) {
             if (isset($config[$fieldName])) {
@@ -291,54 +461,45 @@ abstract class Image
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
      * @param Logger $logger Logger instance.
      * @param array $config Docker image runtime configuration.
-     * @param bool $isMain True to mark the image as main image.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, Logger $logger, array $config, $isMain)
+    public static function factory(ObjectEncryptor $encryptor, Logger $logger, $config = [])
     {
-        $processedConfig = (new Configuration\Component())->parse(["config" => $config]);
-        if (empty($processedConfig["definition"]) || empty($processedConfig["definition"]["type"])) {
-            throw new ApplicationException("Image definition is empty or invalid.", null, $processedConfig);
-        }
-        $type = $processedConfig["definition"]["type"];
-        switch ($type) {
-            case "dockerhub":
-                $instance = new Image\DockerHub($encryptor);
-                break;
-            case "quayio":
-                $instance = new Image\QuayIO($encryptor);
-                break;
-            case "dockerhub-private":
+        $processedConfig = (new Configuration\Image())->parse(array("config" => $config));
+        if (isset($processedConfig["definition"]["type"]) && $processedConfig["definition"]["type"] == "dockerhub") {
+            $instance = new Image\DockerHub($encryptor);
+        } else {
+            if (isset($processedConfig["definition"]["type"]) &&
+                $processedConfig["definition"]["type"] == "dockerhub-private"
+            ) {
                 $instance = new Image\DockerHub\PrivateRepository($encryptor);
-                break;
-            case "quayio-private":
+            } elseif (isset($processedConfig["definition"]["type"]) &&
+                $processedConfig["definition"]["type"] == "quayio-private"
+            ) {
                 $instance = new Image\QuayIO\PrivateRepository($encryptor);
-                break;
-            case $type == "builder":
-                $instance = new Image\Builder\ImageBuilder($encryptor);
-                $instance->setLogger($logger);
-                break;
-            default:
-                throw new ApplicationException("Unknown image type: " . $type);
+            } else {
+                if (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "builder"
+                ) {
+                    $instance = new Image\Builder\ImageBuilder($encryptor);
+                    $instance->setLogger($logger);
+                } elseif (isset($processedConfig["definition"]["type"]) &&
+                    $processedConfig["definition"]["type"] == "quayio"
+                ) {
+                    $instance = new Image\QuayIO($encryptor);
+                } else {
+                    $instance = new self($encryptor);
+                }
+            }
         }
         $instance->setImageId($config["definition"]["uri"]);
         if (isset($config["definition"]["tag"])) {
             $instance->setTag($config["definition"]["tag"]);
         }
         $instance->fromArray($processedConfig);
-        $instance->setIsMain($isMain);
 
         return $instance;
     }
-
-
-
-    public function getConfigData()
-    {
-        return $this->configData;
-    }
-
-    abstract protected function pullImage();
 
     /**
      *
@@ -354,12 +515,14 @@ abstract class Image
     /**
      * Prepare the container image so that it can be run.
      *
+     * @param Container $container
      * @param array $configData Configuration (same as the one stored in data config file)
+     * @param string $containerId Container ID
+     * @return string Image tag name.
      * @throws \Exception
      */
-    public function prepare(array $configData)
+    public function prepare(Container $container, array $configData, $containerId)
     {
-        $this->configData = $configData;
-        $this->pullImage();
+        throw new \Exception("Not implemented");
     }
 }

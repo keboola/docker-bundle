@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Image;
 
 class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 {
@@ -48,7 +49,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "gelf_server_type" => "tcp",
             ]
         );
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
@@ -60,7 +61,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo"
             )
         );
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $expectedConfiguration = [
             'definition' => [
                 'type' => 'dockerhub',
@@ -81,7 +82,15 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.definition.type": Invalid image type "whatever".
+     */
+    public function testTotallyEmptyConfiguration()
+    {
+        (new Configuration\Image())->parse(array("config" => array()));
+    }
+
+    /**
+     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
+     * @expectedExceptionMessage Invalid configuration for path "image.definition.type": Invalid image type "whatever".
      */
     public function testWrongDefinitionType()
     {
@@ -93,12 +102,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "cpu_shares" => 1024,
             "memory" => "64m"
         );
-        (new Configuration\Component())->parse(array("config" => $config));
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".
+     * @expectedExceptionMessage Invalid configuration for path "image.configuration_format": Invalid configuration_format "fail".
      */
     public function testWrongConfigurationFormat()
     {
@@ -111,12 +120,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "configuration_format" => "fail"
         );
-        (new Configuration\Component())->parse(array("config" => $config));
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Unrecognized option "unknown" under "component"
+     * @expectedExceptionMessage Unrecognized option "unknown" under "image"
      */
     public function testExtraConfigurationField()
     {
@@ -127,12 +136,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "unknown" => array()
         );
-        (new Configuration\Component())->parse(array("config" => $config));
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     /**
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.network": Invalid network type "whatever".
+     * @expectedExceptionMessage Invalid configuration for path "image.network": Invalid network type "whatever".
      */
     public function testWrongNetwokType()
     {
@@ -145,7 +154,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "memory" => "64m",
             "network" => "whatever"
         );
-        (new Configuration\Component())->parse(array("config" => $config));
+        (new Configuration\Image())->parse(array("config" => $config));
     }
 
     public function testBuilderConfiguration()
@@ -182,7 +191,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         ];
 
         $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Image())->parse(array("config" => $config));
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 }

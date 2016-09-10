@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -34,19 +33,17 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
         $handler2 = new TestHandler();
         $logContainer->pushHandler($handler2);
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
-        $containerId = 'docker-test123456789';
-        $temp = new Temp();
-        $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root);
-        $dataDirectory->createDataDir();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
-        // Create a stub for the Container
+        // Create a stub for the SomeClass class.
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([$containerId, $image, $log, $logContainer, $dataDirectory->getDataDir(), []])
+            ->setConstructorArgs([$image, $log, $logContainer])
             ->setMethods(['getRunCommand'])
             ->getMock();
 
+        $temp = new Temp();
+        $root = $temp->getTmpFolder();
+        $containerId = 'docker-test57992dc6cefbf';
         $container->method('getRunCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
@@ -54,6 +51,7 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
             ));
 
         /** @var Container $container */
+        $container->createDataDir($root);
         $config = [
             'storage' => [
                 'input' => [
@@ -86,7 +84,7 @@ id,text,some_other_column
 EOF;
         file_put_contents($root . "/data/in/tables/in.c-main.data.csv", $dataFile);
 
-        $container->run();
+        $container->run($containerId, []);
         $this->assertTrue($handler1->hasErrorThatContains('Phantom of the opera'));
         $this->assertTrue($handler2->hasInfoThatContains('Processed 2 rows.'));
     }
@@ -112,19 +110,17 @@ EOF;
         $handler2 = new TestHandler();
         $logContainer->pushHandler($handler2);
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
-        $containerId = 'docker-test123456789';
-        $temp = new Temp();
-        $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root);
-        $dataDirectory->createDataDir();
+        $image = Image::factory($encryptor, $log, $imageConfig);
 
-        // Create a stub for the Container
+        // Create a stub for the SomeClass class.
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([$containerId, $image, $log, $logContainer, $dataDirectory->getDataDir(), []])
+            ->setConstructorArgs([$image, $log, $logContainer])
             ->setMethods(['getRunCommand'])
             ->getMock();
 
+        $temp = new Temp();
+        $root = $temp->getTmpFolder();
+        $containerId = 'docker-test57992dc6cefbf';
         $container->method('getRunCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
@@ -137,6 +133,7 @@ EOF;
             ));
 
         /** @var Container $container */
+        $container->createDataDir($root);
         $config = [
             'storage' => [
                 'input' => [
@@ -170,7 +167,7 @@ EOF;
         file_put_contents($root . "/data/in/tables/in.c-main.data.csv", $dataFile);
 
         try {
-            $container->run();
+            $container->run($containerId, []);
             $this->fail("Too many errors must fail");
         } catch (ApplicationException $e) {
         }

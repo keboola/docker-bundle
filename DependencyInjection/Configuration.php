@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $treeBuilder->root('keboola_docker');
+        $rootNode = $treeBuilder->root('keboola_docker');
 
         // Here you should define the parameters that are allowed to
         // configure your bundle. See the documentation linked above for

@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
+use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Retry\BackOff\ExponentialBackOffPolicy;
@@ -11,7 +12,10 @@ use Symfony\Component\Process\Process;
 
 class DockerHub extends Image
 {
-    protected function pullImage()
+    /**
+     * @inheritdoc
+     */
+    public function prepare(Container $container, array $configData, $containerId)
     {
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
@@ -25,14 +29,5 @@ class DockerHub extends Image
         } catch (\Exception $e) {
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepare(array $configData)
-    {
-        parent::prepare($configData);
-        $this->pullImage();
     }
 }

@@ -2,6 +2,7 @@
 namespace Keboola\DockerBundle\Docker\Configuration\Output\File;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Configuration\Output\File;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 

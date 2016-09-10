@@ -2,11 +2,9 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-use Keboola\Syrup\Exception\ApplicationException;
-
 /**
  * Class LoginFailedException
  */
-class LoginFailedException extends ApplicationException
+class LoginFailedException extends \Keboola\Syrup\Exception\ApplicationException
 {
 }

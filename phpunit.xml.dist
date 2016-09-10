@@ -17,7 +17,6 @@
     <testsuite name="API Test Suite">
         <directory>Tests/Docker</directory>
         <directory>Tests/Job</directory>
-        <directory>Tests/Runner</directory>
     </testsuite>
 
     <filter>

@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -38,8 +39,9 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $containerLog->pushHandler(new NullHandler());
 
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
-        $image->prepare([]);
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log, $containerLog);
+        $image->prepare($container, [], uniqid());
     }
 
     /**
@@ -54,28 +56,29 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = [
-            "definition" => [
+        $imageConfig = array(
+            "definition" => array(
                 "type" => "dockerhub-private",
                 "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => [
+                "repository" => array(
                     "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
                     "username" => DOCKERHUB_PRIVATE_USERNAME,
                     "server" => DOCKERHUB_PRIVATE_SERVER
-                ]
-            ],
+                )
+            ),
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json"
-        ];
+        );
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
-        $image->prepare([]);
+        $image = Image::factory($encryptor, $log, $imageConfig);
+        $container = new Container($image, $log, $containerLog);
+        $image->prepare($container, [], uniqid());
 
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $image->getFullImageId());
 

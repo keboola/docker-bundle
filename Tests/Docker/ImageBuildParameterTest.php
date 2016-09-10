@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\BuilderParameter;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;

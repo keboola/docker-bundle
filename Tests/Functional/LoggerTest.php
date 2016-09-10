@@ -75,9 +75,7 @@ class LoggerTests extends KernelTestCase
     public function tearDown()
     {
         parent::tearDown();
-        (new Process(
-            "sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"
-        ))->run();
+        (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
     }
 
     public function testLogs()
@@ -97,8 +95,9 @@ class LoggerTests extends KernelTestCase
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        $image->prepare([]);
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -108,8 +107,9 @@ sleep(5);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $dataDir, []);
-        $process = $container->run();
+        $container->setDataDir($dataDir);
+
+        $process = $container->run("testsuite", []);
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
@@ -152,11 +152,12 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
-        $process = $container->run();
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
+        $process = $container->run("testsuite" . uniqid(), []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $records = $handler->getRecords();
@@ -188,11 +189,12 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
-        $process = $container->run();
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
+        $process = $container->run("testsuite" . uniqid(), []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $records = $handler->getRecords();
@@ -224,11 +226,12 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
-        $process = $container->run();
+        $image = Image::factory($encryptor, $log, $imageConfiguration);
+        $container = new Container($image, $log, $containerLog);
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
+        $process = $container->run("testsuite" . uniqid(), []);
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         $records = $handler->getRecords();
@@ -271,20 +274,12 @@ print "second message to stdout\n";'
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
-        $container->run();
-
+        $container->run("testsuite" . uniqid(), []);
         sleep(5); // give storage a little timeout to realize that events are in
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
@@ -351,20 +346,13 @@ print "second message to stdout\n";'
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
-        $image->prepare([]);
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $logService->setVerbosity($image->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
-        $container->run();
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
+        $container->run("testsuite" . uniqid(), []);
         sleep(5); // give storage a little timeout to realize that events are in
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
@@ -374,7 +362,7 @@ print "second message to stdout\n";'
         $info = [];
         $warn = [];
         $exception = [];
-        $structure = [];
+        $struct = [];
         foreach ($events as $event) {
             if ($event['type'] == 'error') {
                 $error[] = $event['message'];
@@ -389,7 +377,7 @@ print "second message to stdout\n";'
                 $exception = $event;
             }
             if ($event['message'] == 'A warning message.') {
-                $structure = $event;
+                $struct = $event;
             }
         }
         $this->assertCount(1, $warn);
@@ -410,8 +398,8 @@ print "second message to stdout\n";'
         $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
         $this->assertContains('full_message', $exception['results']);
         $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
-        $this->assertArrayHasKey('several', $structure['results']['_structure']['with']);
-        $this->assertEquals('nested', $structure['results']['_structure']['with']['several']);
+        $this->assertArrayHasKey('several', $struct['results']['_structure']['with']);
+        $this->assertEquals('nested', $struct['results']['_structure']['with']['several']);
     }
 
     public function testGelfVerbosityNone()
@@ -447,20 +435,13 @@ print "second message to stdout\n";'
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
-        $image->prepare([]);
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
         $logService->setVerbosity($image->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
-        $container->run();
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
+        $container->setDataDir($temp->getTmpFolder());
 
+        $container->run("testsuite" . uniqid(), []);
         sleep(5); // give storage a little timeout to realize that events are in
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
@@ -490,7 +471,10 @@ print "second message to stdout\n";'
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration);
+        $logService->setVerbosity($image->getLoggerVerbosity());
+        $container = new Container($image, $logService->getLog(), $logService->getContainerLog());
+        $container->setId("dummy-testing");
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -500,19 +484,9 @@ sleep(5);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $dataDir,
-            []
-        );
-        $container->run();
+        $container->setDataDir($dataDir);
 
+        $container->run("testsuite" . uniqid(), []);
         sleep(5); // give storage a little timeout to realize that events are in
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]

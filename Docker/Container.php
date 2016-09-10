@@ -8,6 +8,8 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -16,7 +18,8 @@ use Keboola\Syrup\Exception\UserException;
 class Container
 {
     /**
-     * Container ID
+     *
+     * Image Id
      *
      * @var string
      */
@@ -30,17 +33,22 @@ class Container
     /**
      * @var string
      */
+    protected $version = 'latest';
+
+    /**
+     * @var string
+     */
     protected $dataDir;
 
     /**
      * @var array
      */
-    protected $environmentVariables = [];
+    protected $environmentVariables = array();
 
     /**
      * @var Logger
      */
-    private $logger;
+    private $log;
 
     /**
      * @var int Docker CLI process timeout
@@ -50,7 +58,7 @@ class Container
     /**
      * @var ContainerLogger
      */
-    private $containerLogger;
+    private $containerLog;
 
     /**
      * @return string
@@ -58,6 +66,16 @@ class Container
     public function getId()
     {
         return $this->id;
+    }
+
+    /**
+     * @param string $id
+     * @return $this
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+        return $this;
     }
 
     /**
@@ -69,21 +87,43 @@ class Container
     }
 
     /**
-     * @param $containerId
+     * @param Image $image
+     * @return $this
+     */
+    public function setImage($image)
+    {
+        $this->image = $image;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param string $version
+     * @return $this
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+        return $this;
+    }
+
+    /**
      * @param Image $image
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
-     * @param string $dataDirectory
-     * @param array $environmentVariables
      */
-    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, array $environmentVariables)
+    public function __construct(Image $image, Logger $logger, ContainerLogger $containerLogger)
     {
-        $this->logger = $logger;
-        $this->containerLogger = $containerLogger;
-        $this->image = $image;
-        $this->dataDir = $dataDirectory;
-        $this->id = $containerId;
-        $this->environmentVariables = $environmentVariables;
+        $this->log = $logger;
+        $this->containerLog = $containerLogger;
+        $this->setImage($image);
     }
 
     /**
@@ -95,6 +135,16 @@ class Container
     }
 
     /**
+     * @param string $dataDir
+     * @return $this
+     */
+    public function setDataDir($dataDir)
+    {
+        $this->dataDir = $dataDir;
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getEnvironmentVariables()
@@ -102,66 +152,69 @@ class Container
         return $this->environmentVariables;
     }
 
-    public function cleanUp()
+    /**
+     * @param array $environmentVariables
+     * @return $this
+     */
+    public function setEnvironmentVariables($environmentVariables)
     {
-        // Check if container not running
-        $process = new Process('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->mustRun();
-        if (trim($process->getOutput()) !== '0') {
-            throw new UserException("Container '{$this->id}' already running.");
-        }
-
-        // Check old containers, delete if found
-        $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->mustRun();
-        if (trim($process->getOutput()) !== '0') {
-            $this->removeContainer($this->id);
-        }
+        $this->environmentVariables = $environmentVariables;
+        return $this;
     }
 
+
     /**
+     * @param string $containerId container id
+     * @param array $configData Configuration (same as the one stored in data config file)
      * @return Process
      * @throws ApplicationException
      */
-    public function run()
+    public function run($containerId, array $configData)
     {
+        if (!$this->getDataDir()) {
+            throw new ApplicationException("Data directory not set.");
+        }
+
         $retries = 0;
         do {
             $retry = false;
-            $process = new Process($this->getRunCommand($this->id));
+            if ($retries > 0) {
+                $containerId .= '.' . $retries;
+            }
+            $this->getImage()->prepare($this, $configData, $containerId);
+            $this->setId($this->getImage()->getFullImageId());
+
+            $process = new Process($this->getRunCommand($containerId));
             $process->setTimeout(null);
 
             // create container
             $startTime = time();
             try {
-                if ($retries > 0) {
-                    $this->id .= '.' . $retries;
-                }
-                $this->logger->debug("Executing docker process {$this->getImage()->getFullImageId()}.");
+                $this->log->debug("Executing docker process.");
                 if ($this->getImage()->getLoggerType() == 'gelf') {
-                    $this->runWithLogger($process, $this->id);
+                    $this->runWithLogger($process, $containerId);
                 } else {
                     $this->runWithoutLogger($process);
                 }
-                $this->logger->debug("Docker process {$this->getImage()->getFullImageId()} finished.");
+                $this->log->debug("Docker process finished.");
 
                 if (!$process->isSuccessful()) {
-                    $this->handleContainerFailure($process, $this->id, $startTime);
+                    $this->handleContainerFailure($process, $containerId, $startTime);
                 }
             } catch (WeirdException $e) {
-                $this->logger->error("Phantom of the opera is here: " . $e->getMessage());
+                $this->log->error("Phantom of the opera is here: " . $e->getMessage());
                 sleep(random_int(1, 4));
                 $retry = true;
                 $retries++;
                 if ($retries >= 5) {
-                    $this->logger->error("Weird error occurred too many times.");
+                    $this->log->error("Weird error occurred too many times.");
                     throw new ApplicationException($e->getMessage(), $e);
                 }
             } finally {
                 try {
-                    $this->removeContainer($this->id);
+                    $this->removeContainer($containerId);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->error("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
+                    $this->log->error("Cannot remove container {$containerId}: {$e->getMessage()}");
                     // continue
                 }
             }
@@ -176,9 +229,9 @@ class Container
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
             if ($type === Process::ERR) {
-                $this->containerLogger->error($buffer);
+                $this->containerLog->error($buffer);
             } else {
-                $this->containerLogger->info($buffer);
+                $this->containerLog->info($buffer);
             }
         });
     }
@@ -202,10 +255,10 @@ class Container
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
-                $this->environmentVariables = array_merge(
-                    $this->environmentVariables,
+                $this->setEnvironmentVariables(array_merge(
+                    $this->getEnvironmentVariables(),
                     ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
-                );
+                ));
                 $process->setCommandLine($this->getRunCommand($containerName));
                 $process->start();
             },
@@ -213,10 +266,10 @@ class Container
                 if (!$process->isRunning()) {
                     $terminated = true;
                     if (trim($process->getOutput()) != '') {
-                        $this->containerLogger->info($process->getOutput());
+                        $this->containerLog->info($process->getOutput());
                     }
                     if (trim($process->getErrorOutput()) != '') {
-                        $this->containerLogger->error($process->getErrorOutput());
+                        $this->containerLog->error($process->getErrorOutput());
                     }
                 }
             },
@@ -227,9 +280,9 @@ class Container
                 }
                 // host is shortened containerId
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
-                    $this->logger->error("Invalid container host " . $event['host'], $event);
+                    $this->log->error("Invalid container host " . $event['host'], $event);
                 } else {
-                    $this->containerLogger->addRawRecord(
+                    $this->containerLog->addRawRecord(
                         $event['level'],
                         $event['timestamp'],
                         $event['short_message'],
@@ -247,8 +300,9 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->error("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
+            $this->log->error("Cannot inspect container '{$containerId}' on failure: " . $e->getMessage());
             $inspect = [];
+            // continue
         }
 
         if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
@@ -269,10 +323,12 @@ class Container
             // this catches the timeout from `sudo timeout`
             if ($duration >= $this->getImage()->getProcessTimeout()) {
                 throw new UserException(
-                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                    "Running container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
                 );
             } else {
-                throw new InitializationException("{$this->getImage()->getFullImageId()} container terminated. Will restart.");
+                throw new InitializationException(
+                    "Container terminated. Will restart."
+                );
             }
         }
 
@@ -297,24 +353,68 @@ class Container
 
         if ($process->getExitCode() == 1) {
             $data["container"] = [
-                "id" => $this->getId(),
-                "image" => $this->getImage()->getFullImageId()
+                "id" => $this->getId()
             ];
             throw new UserException($message, null, $data);
         } else {
             if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
-                (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
+            (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
                 // syrup will make sure that the actual exception message will be hidden to end-user
                 throw new ApplicationException(
-                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    "Container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
                     $data
                 );
             }
         }
+    }
+
+    /**
+     * @param $root
+     * @return $this
+     */
+    public function createDataDir($root)
+    {
+        $fs = new Filesystem();
+        $structure = array(
+            $root . "/data",
+            $root . "/data/in",
+            $root . "/data/in/tables",
+            $root . "/data/in/files",
+            $root . "/data/in/user",
+            $root . "/data/out",
+            $root . "/data/out/tables",
+            $root . "/data/out/files"
+        );
+
+        $fs->mkdir($structure);
+        $this->setDataDir($root . "/data");
+        return $this;
+    }
+
+    /**
+     * Remove whole directory structure
+     */
+    public function dropDataDir()
+    {
+        $fs = new Filesystem();
+        $structure = array(
+            $this->getDataDir() . "/in/tables",
+            $this->getDataDir() . "/in/files",
+            $this->getDataDir() . "/in/user",
+            $this->getDataDir() . "/in",
+            $this->getDataDir() . "/out/files",
+            $this->getDataDir() . "/out/tables",
+            $this->getDataDir() . "/out",
+            $this->getDataDir()
+        );
+        $finder = new Finder();
+        $finder->files()->in($structure);
+        $fs->remove($finder);
+        $fs->remove($structure);
     }
 
     /**
@@ -346,7 +446,7 @@ class Container
             . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
-            . " " . escapeshellarg($this->getImage()->getFullImageId());
+            . " " . escapeshellarg($this->getId());
         return $command;
     }
 
