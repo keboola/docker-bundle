@@ -4,6 +4,10 @@ namespace Keboola\DockerBundle\Docker\Image\QuayIO;
 
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\Syrup\Exception\ApplicationException;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\QuayIO
@@ -89,27 +93,34 @@ class PrivateRepository extends Image\QuayIO
         return join(" ", $logoutParams);
     }
 
-    protected function login()
-    {
-        $process = new Process("sudo docker login {$this->getLoginParams()}");
-        $process->run();
-        if ($process->getExitCode() != 0) {
-            $message = "Login failed (code: {$process->getExitCode()}): " .
-                "{$process->getOutput()} / {$process->getErrorOutput()}";
-            throw new LoginFailedException($message);
-        }
-    }
-
     /**
-     * @inheritdoc
+     * Run docker login and docker pull in DinD, login/logout race conditions
      */
-    public function prepare(array $configData)
+    protected function pullImage()
     {
+        $retryPolicy = new SimpleRetryPolicy(3);
+        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $command = "sudo docker run --rm -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock " .
+            "docker:1.11-dind sh -c '" .
+            "docker login " . $this->getLoginParams() .  " " .
+            "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
+            "&& docker logout " . $this->getLogoutParams() .
+            "'";
+        $process = new Process($command);
+        $process->setTimeout(3600);
         try {
-            $this->login();
-            parent::prepare($configData);
-        } finally {
-            (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
+            $proxy->call(function () use ($process) {
+                $process->mustRun();
+            });
+        } catch (\Exception $e) {
+            if (strpos($process->getOutput(), "Username: EOF") !== false) {
+                throw new LoginFailedException($process->getOutput());
+            }
+            if (strpos($process->getErrorOutput(), "unauthorized: authentication required") !== false) {
+                throw new LoginFailedException($process->getErrorOutput());
+            }
+            throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
     }
 

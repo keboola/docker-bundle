@@ -42,6 +42,40 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
     }
 
     /**
+     * @expectedException \Keboola\DockerBundle\Exception\LoginFailedException
+     */
+    public function testInvalidCredentials()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = array(
+            "definition" => array(
+                "type" => "quayio-private",
+                "uri" => "keboola/docker-demo-private",
+                "repository" => [
+                    "username" => QUAYIO_PRIVATE_USERNAME . "_invalid",
+                    "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD),
+                    "server" => DOCKERHUB_PRIVATE_SERVER
+                ]
+
+            ),
+            "cpu_shares" => 1024,
+            "memory" => "64m",
+            "configuration_format" => "json"
+        );
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
+        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image->prepare([]);
+    }
+
+
+    /**
      * Try do download private image using credentials
      */
     public function testDownloadedImageEncryptedPassword()
