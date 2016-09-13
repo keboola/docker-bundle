@@ -461,12 +461,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-            "docker:1.11-dind sh -c '" .
-            "docker login " . $this->getLoginParams() .  " " .
-            "&& docker pull " . escapeshellarg($this->getImageId()) . " " .
-            "&& docker logout " . $this->getLogoutParams() .
-            "'";
+        if ($this->getLoginUsername()) {
+            $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
+                "docker:1.11-dind sh -c '" .
+                "docker login " . $this->getLoginParams() . " " .
+                "&& docker pull " . escapeshellarg($this->getImageId()) . " " .
+                "&& docker logout " . $this->getLogoutParams() .
+                "'";
+        } else {
+            $command = "sudo docker pull " . escapeshellarg($this->getImageId());
+        }
         $process = new Process($command);
         $process->setTimeout(3600);
         try {
