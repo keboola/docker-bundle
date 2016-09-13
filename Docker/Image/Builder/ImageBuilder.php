@@ -452,12 +452,22 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
+
+    /**
+     * Run docker login and docker pull in DinD, login/logout race conditions
+     */
     protected function pullImage()
     {
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $process = new Process("sudo docker pull " . escapeshellarg($this->getImageId()));
+        $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
+            "docker:1.11-dind sh -c '" .
+            "docker login " . $this->getLoginParams() .  " " .
+            "&& docker pull " . escapeshellarg($this->getImageId()) . " " .
+            "&& docker logout " . $this->getLogoutParams() .
+            "'";
+        $process = new Process($command);
         $process->setTimeout(3600);
         try {
             $proxy->call(function () use ($process) {
@@ -465,16 +475,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             });
         } catch (\Exception $e) {
             throw new BuildException(
-                "Failed to pull parent image {$this->getImageId()}, error: " . $e->getMessage(),
+                "Failed to pull parent image {$this->getImageId()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
                 $e
             );
-        }
-    }
-
-    protected function login()
-    {
-        if ($this->getLoginUsername()) {
-            parent::login();
         }
     }
 
@@ -521,11 +524,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             throw $e;
         } catch (\Exception $e) {
             throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
-        } finally {
-            if ($this->getLoginUsername()) {
-                // Logout from docker repository
-                (new Process("sudo docker logout {$this->getLogoutParams()}"))->mustRun();
-            }
         }
     }
 
