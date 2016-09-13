@@ -26,13 +26,4 @@ class DockerHub extends Image
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepare(array $configData)
-    {
-        parent::prepare($configData);
-        $this->pullImage();
-    }
 }
