@@ -113,7 +113,7 @@ class PrivateRepository extends Image\DockerHub
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $command = "sudo docker run --rm -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock " .
+        $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
             "docker:1.11-dind sh -c '" .
             "docker login " . $this->getLoginParams() .  " " .
             "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
