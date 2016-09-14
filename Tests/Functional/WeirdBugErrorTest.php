@@ -87,7 +87,7 @@ EOF;
         file_put_contents($root . "/data/in/tables/in.c-main.data.csv", $dataFile);
 
         $container->run();
-        $this->assertTrue($handler1->hasErrorThatContains('Phantom of the opera'));
+        $this->assertTrue($handler1->hasDebugThatContains('Phantom of the opera'));
         $this->assertTrue($handler2->hasInfoThatContains('Processed 2 rows.'));
     }
 
