@@ -204,7 +204,7 @@ class ImageBuilderTest extends KernelTestCase
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
-            $this->assertContains('Username: EOF', $e->getMessage());
+            $this->assertContains('not found', $e->getMessage());
         }
     }
 
