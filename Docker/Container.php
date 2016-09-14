@@ -149,19 +149,19 @@ class Container
                     $this->handleContainerFailure($process, $this->id, $startTime);
                 }
             } catch (WeirdException $e) {
-                $this->logger->error("Phantom of the opera is here: " . $e->getMessage());
+                $this->debug->error("Phantom of the opera is here: " . $e->getMessage());
                 sleep(random_int(1, 4));
                 $retry = true;
                 $retries++;
                 if ($retries >= 5) {
-                    $this->logger->error("Weird error occurred too many times.");
+                    $this->debug->error("Weird error occurred too many times.");
                     throw new ApplicationException($e->getMessage(), $e);
                 }
             } finally {
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->error("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
+                    $this->debug->error("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
                     // continue
                 }
             }
@@ -227,7 +227,7 @@ class Container
                 }
                 // host is shortened containerId
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
-                    $this->logger->error("Invalid container host " . $event['host'], $event);
+                    $this->debug->error("Invalid container host " . $event['host'], $event);
                 } else {
                     $this->containerLogger->addRawRecord(
                         $event['level'],
@@ -247,7 +247,7 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->error("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
+            $this->debug->error("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
             $inspect = [];
         }
 

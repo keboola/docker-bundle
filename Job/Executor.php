@@ -187,12 +187,12 @@ class Executor extends BaseExecutor
                 }
                 $this->logger->info("Process terminated");
             } catch (\Exception $e) {
-                $this->logger->error("Cannot terminate container '{$containerId}': " . $e->getMessage());
+                $this->logger->debug("Cannot terminate container '{$containerId}': " . $e->getMessage());
             }
             try {
                 (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->mustRun();
             } catch (\Exception $e) {
-                $this->logger->error("Cannot remove container '{$containerId}': " . $e->getMessage());
+                $this->logger->debug("Cannot remove container '{$containerId}': " . $e->getMessage());
             }
         }
     }
