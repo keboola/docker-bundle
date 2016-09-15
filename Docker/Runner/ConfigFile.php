@@ -59,7 +59,10 @@ class ConfigFile
             if (!empty($configData['authorization'])) {
                 $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
             } else {
-                $configData['authorization'] = [];
+                unset($configData['authorization']);
+            }
+            if (empty($configData['storage'])) {
+                unset($configData['storage']);
             }
 
             // action
