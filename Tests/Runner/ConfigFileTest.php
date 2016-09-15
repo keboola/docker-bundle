@@ -107,22 +107,10 @@ SAMPLE;
         $this->assertArrayNotHasKey('baz', $config['parameters']);
     }
 
-
-    public function testEmptyStorage()
+    public function testEmptyConfig()
     {
         $imageConfig = [];
-
-        $configData = [
-            "storage" => [
-            ],
-            "authorization" => [
-            ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
-            ],
-        ];
+        $configData = [];
 
         $temp = new Temp();
         $encryptor = new ObjectEncryptor();
@@ -136,12 +124,11 @@ SAMPLE;
         $config->createConfigFile($configData);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
-        $this->assertEquals('id', $config['parameters']['primary_key_column']);
-        $this->assertEquals('text', $config['parameters']['data_column']);
-        $this->assertEquals('4', $config['parameters']['string_length']);
-        // volatile parameters must not get stored
         $this->assertArrayNotHasKey('storage', $config);
         $this->assertArrayNotHasKey('authorization', $config);
+        $this->assertArrayNotHasKey('parameters', $config);
+        $this->assertArrayHasKey('image_parameters', $config);
+        $this->assertArrayHasKey('action', $config);
+        $this->assertEquals('run', $config['action']);
     }
-
 }
