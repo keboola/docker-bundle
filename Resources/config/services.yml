@@ -2,17 +2,17 @@ services:
 
     syrup.components:
         class: Keboola\DockerBundle\Service\ComponentsService
-        arguments: [@syrup.storage_api]
+        arguments: ["@syrup.storage_api"]
 
     syrup.encryption.component_wrapper:
         class: Keboola\DockerBundle\Encryption\ComponentWrapper
-        arguments: [%encryption_key%]
+        arguments: ["%encryption_key%"]
         tags:
             - { name: syrup.encryption.wrapper }
 
     syrup.encryption.component_project_wrapper:
         class: Keboola\DockerBundle\Encryption\ComponentProjectWrapper
-        arguments: [%encryption_key%]
+        arguments: ["%encryption_key%"]
         tags:
             - { name: syrup.encryption.wrapper }
 
@@ -28,15 +28,15 @@ services:
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
-        arguments: [%app_name%, @syrup.object_encryptor, @syrup.storage_api]
+        arguments: ["%app_name%", "@syrup.object_encryptor", "@syrup.storage_api"]
 
     docker_bundle.loggers:
         class: Keboola\DockerBundle\Service\LoggersService
-        arguments: [@logger, @docker_bundle.monolog.logger, @docker_bundle.monolog.sapi_handler]
+        arguments: ["@logger", "@docker_bundle.monolog.logger", "@docker_bundle.monolog.sapi_handler"]
 
     docker_bundle.monolog.logger:
         class: Keboola\DockerBundle\Monolog\ContainerLogger
-        arguments: [@logger]
+        arguments: ["@logger"]
         tags:
             - { name: monolog.logger, channel: container }
 
@@ -46,8 +46,8 @@ services:
 
     docker_bundle.monolog.sapi_handler:
         class: Keboola\DockerBundle\Monolog\Handler\StorageApiHandler
-        arguments: [%app_name%, @syrup.storage_api]
+        arguments: ["%app_name%", "@syrup.storage_api"]
 
     docker_bundle.runner:
         class: Keboola\DockerBundle\Service\Runner
-        arguments: [@syrup.temp, @syrup.object_encryptor, @syrup.storage_api, @docker_bundle.loggers]
+        arguments: ["@syrup.temp", "@syrup.object_encryptor", "@syrup.storage_api", "@docker_bundle.loggers"]
