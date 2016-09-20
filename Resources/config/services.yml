@@ -19,12 +19,12 @@ services:
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
         arguments:
-          - @logger
-          - @docker_bundle.runner
-          - @syrup.object_encryptor
-          - @syrup.components
-          - @syrup.encryption.component_wrapper
-          - @syrup.encryption.component_project_wrapper
+          - "@logger"
+          - "@docker_bundle.runner"
+          - "@syrup.object_encryptor"
+          - "@syrup.components"
+          - "@syrup.encryption.component_wrapper"
+          - "@syrup.encryption.component_project_wrapper"
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
