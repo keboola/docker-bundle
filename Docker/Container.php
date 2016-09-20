@@ -128,15 +128,16 @@ class Container
         $retries = 0;
         do {
             $retry = false;
+            if ($retries > 0) {
+                $this->id .= '.' . $retries;
+            }
+
             $process = new Process($this->getRunCommand($this->id));
             $process->setTimeout(null);
 
             // create container
             $startTime = time();
             try {
-                if ($retries > 0) {
-                    $this->id .= '.' . $retries;
-                }
                 $this->logger->debug("Executing docker process {$this->getImage()->getFullImageId()}.");
                 if ($this->getImage()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
