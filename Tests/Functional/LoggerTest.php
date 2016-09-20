@@ -537,4 +537,62 @@ print "second message to stdout\n";'
         $this->assertEquals("first message to stdout\n", $info[0]);
         $this->assertEquals("second message to stdout\n", $info[1]);
     }
+
+    public function testRunnerLogs()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+
+        //start the symfony kernel
+        $kernel = static::createKernel();
+        $kernel->boot();
+        $serviceContainer = $kernel->getContainer();
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $serviceContainer->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+
+        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image->prepare([]);
+        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->getLog()->notice("Test Notice");
+        $logService->getLog()->error("Test Error");
+        $logService->getLog()->info("Test Info");
+        $logService->getLog()->warn("Test Warn");
+        $logService->getLog()->debug("Test Debug");
+
+        sleep(5); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        $this->assertCount(3, $events);
+        $error = [];
+        $info = [];
+        $warn = [];
+        foreach ($events as $event) {
+            if ($event['type'] == 'error') {
+                $error[] = $event['message'];
+            }
+            if ($event['type'] == 'warn') {
+                $warn[] = $event['message'];
+            }
+            if ($event['type'] == 'info') {
+                $info[] = $event['message'];
+            }
+        }
+        $this->assertCount(1, $error);
+        $this->assertEquals("Test Error", $error[0]);
+        $this->assertCount(1, $info);
+        $this->assertEquals("Test Warn", $warn[0]);
+        $this->assertCount(1, $warn);
+        $this->assertEquals("Test Info", $info[0]);
+    }
 }

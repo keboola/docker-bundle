@@ -138,31 +138,31 @@ class Container
             // create container
             $startTime = time();
             try {
-                $this->logger->debug("Executing docker process {$this->getImage()->getFullImageId()}.");
+                $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
                 if ($this->getImage()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
                 } else {
                     $this->runWithoutLogger($process);
                 }
-                $this->logger->debug("Docker process {$this->getImage()->getFullImageId()} finished.");
+                $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 
                 if (!$process->isSuccessful()) {
                     $this->handleContainerFailure($process, $this->id, $startTime);
                 }
             } catch (WeirdException $e) {
-                $this->logger->debug("Phantom of the opera is here: " . $e->getMessage());
+                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
                 sleep(random_int(1, 4));
                 $retry = true;
                 $retries++;
                 if ($retries >= 5) {
-                    $this->logger->debug("Weird error occurred too many times.");
+                    $this->logger->notice("Weird error occurred too many times.");
                     throw new ApplicationException($e->getMessage(), $e);
                 }
             } finally {
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->debug("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
+                    $this->logger->notice("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
                     // continue
                 }
             }
@@ -228,7 +228,7 @@ class Container
                 }
                 // host is shortened containerId
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
-                    $this->logger->debug("Invalid container host " . $event['host'], $event);
+                    $this->logger->notice("Invalid container host " . $event['host'], $event);
                 } else {
                     $this->containerLogger->addRawRecord(
                         $event['level'],
@@ -248,7 +248,7 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->debug("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
+            $this->logger->notice("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
             $inspect = [];
         }
 

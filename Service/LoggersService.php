@@ -26,13 +26,15 @@ class LoggersService
             $this->containerLogger->pushProcessor($processor);
         }
 
-        // copy all handlers to ContainerLogger except storageHandler, which is overridden
+        // copy all handlers to ContainerLogger
         foreach ($this->logger->getHandlers() as $handler) {
-            if (!is_a($handler, SyrupStorageApiHandler::class)) {
-                $this->containerLogger->pushHandler($handler);
+            $this->containerLogger->pushHandler($handler);
+            // set level of notice to none on runner level
+            if (is_a($handler, StorageApiHandler::class)) {
+                /** @var StorageApiHandler $handler */
+                $handler->setVerbosity([Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE]);
             }
         }
-        $this->containerLogger->pushHandler($this->sapiHandler);
     }
 
     public function setComponentId($componentId)
