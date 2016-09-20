@@ -90,7 +90,7 @@ class Container extends Configuration
                             ->end()
                         ->end()
                     ->end()
-                    ->arrayNode('before')
+                    ->arrayNode('after')
                         ->prototype('array')
                             ->children()
                                 ->variableNode('parameters')->end()
