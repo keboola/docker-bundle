@@ -211,7 +211,7 @@ class Runner
             $configData['storage'],
             $defaultBucketName,
             $configFormat,
-            $component['input_format']
+            $component['staging_storage']
         );
         $this->environment = new Environment(
             $this->storageClient,

@@ -48,9 +48,9 @@ class DataLoader
     private $format;
 
     /**
-     * @var string
+     * @var array
      */
-    private $storage;
+    private $stagingStorage;
 
     public function __construct(
         Client $storageClient,
@@ -59,7 +59,7 @@ class DataLoader
         array $storageConfig,
         $defaultBucketName,
         $format,
-        $storage = 'local'
+        array $stagingStorage = []
     ) {
         $this->storageClient = $storageClient;
         $this->logger = $logger;
@@ -67,7 +67,7 @@ class DataLoader
         $this->storageConfig = $storageConfig;
         $this->defaultBucketName = $defaultBucketName;
         $this->format = $format;
-        $this->storage = $storage;
+        $this->stagingStorage = $stagingStorage;
     }
 
     public function loadInputData()
@@ -82,7 +82,7 @@ class DataLoader
                 $reader->downloadTables(
                     $this->storageConfig['input']['tables'],
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
-                    $this->storage
+                    isset($this->stagingStorage['input'])?$this->stagingStorage['input']:'local'
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&

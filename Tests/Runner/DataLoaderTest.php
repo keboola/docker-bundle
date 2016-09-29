@@ -47,7 +47,14 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), [], 'in.c-docker-demo-whatever', 'json');
+        $dataLoader = new DataLoader(
+            $this->client,
+            $log,
+            $data->getDataDir(),
+            [],
+            'in.c-docker-demo-whatever',
+            'json'
+        );
         $dataLoader->storeOutput();
 
         $this->assertTrue($this->client->tableExists('in.c-docker-demo-whatever.sliced'));
@@ -210,7 +217,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         );
         $this->client->createTable('in.c-docker-test', 'test', new CsvFile($filePath));
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, '', 'json', 's3');
+        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, '', 'json', ['input' => 's3']);
         $dataLoader->loadInputData();
 
         $manifest = json_decode(

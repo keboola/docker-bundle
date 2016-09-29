@@ -48,7 +48,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "verbosity" => [200 => "verbose"],
                 "gelf_server_type" => "tcp",
             ],
-            "staging_storage" => "local"
+            "staging_storage" => [
+                "input" => "local"
+            ]
         ];
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
@@ -78,7 +80,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'default_bucket' => false,
             'synchronous_actions' => [],
             'default_bucket_stage' => 'in',
-            'staging_storage' => 'local'
+            'staging_storage' => [
+                'input' => 'local'
+            ]
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -156,7 +160,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
         $this->expectExceptionMessage(
-            'The value "whatever" is not allowed for path "component.staging_storage". Permissible values: "local", "s3"'
+            'The value "whatever" is not allowed for path "component.staging_storage.input". Permissible values: "local", "s3"'
         );
         $config = array(
             "definition" => array(
@@ -165,7 +169,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
-            "staging_storage" => "whatever"
+            "staging_storage" => [
+                "input" => "whatever"
+            ]
         );
         (new Configuration\Component())->parse(array("config" => $config));
     }
@@ -201,7 +207,9 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "default_bucket" => true,
             "default_bucket_stage" => "out",
             "synchronous_actions" => [],
-            "staging_storage" => "local"
+            "staging_storage" => [
+                "input" => "local"
+            ]
         ];
 
         $expectedConfiguration = $config;

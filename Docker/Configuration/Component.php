@@ -76,9 +76,14 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
-            ->enumNode('staging_storage')
-                ->values(['local', 's3'])
-                ->defaultValue('local')
+            ->arrayNode('staging_storage')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->enumNode('input')
+                        ->values(['local', 's3'])
+                        ->defaultValue('local')
+                    ->end()
+                ->end()
             ->end()
         ->end();
 
