@@ -76,6 +76,10 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
+            ->enumNode('input_format')
+                ->values(['csv', 's3'])
+                ->defaultValue('csv')
+            ->end()
         ->end();
 
         return $treeBuilder;

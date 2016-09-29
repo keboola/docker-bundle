@@ -47,13 +47,19 @@ class DataLoader
      */
     private $format;
 
+    /**
+     * @var string
+     */
+    private $inputFormat;
+
     public function __construct(
         Client $storageClient,
         Logger $logger,
         $dataDirectory,
         array $storageConfig,
         $defaultBucketName,
-        $format
+        $format,
+        $inputFormat = 'csv'
     ) {
         $this->storageClient = $storageClient;
         $this->logger = $logger;
@@ -61,6 +67,7 @@ class DataLoader
         $this->storageConfig = $storageConfig;
         $this->defaultBucketName = $defaultBucketName;
         $this->format = $format;
+        $this->inputFormat = $inputFormat;
     }
 
     public function loadInputData()
@@ -74,7 +81,8 @@ class DataLoader
                 $this->logger->debug('Downloading source tables.');
                 $reader->downloadTables(
                     $this->storageConfig['input']['tables'],
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables'
+                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
+                    $this->inputFormat
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&

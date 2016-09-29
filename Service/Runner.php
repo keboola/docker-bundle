@@ -210,7 +210,8 @@ class Runner
             $this->dataDirectory->getDataDir(),
             $configData['storage'],
             $defaultBucketName,
-            $configFormat
+            $configFormat,
+            $component['input_format']
         );
         $this->environment = new Environment(
             $this->storageClient,
