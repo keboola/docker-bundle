@@ -76,9 +76,9 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
-            ->enumNode('input_format')
-                ->values(['csv', 's3'])
-                ->defaultValue('csv')
+            ->enumNode('staging_storage')
+                ->values(['local', 's3'])
+                ->defaultValue('local')
             ->end()
         ->end();
 
