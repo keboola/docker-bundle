@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "6aad6d63de680ad9c1dfb8a77aced5e9",
-    "content-hash": "512ca2364a26d552d9346e9f62721b55",
+    "hash": "f07ac1a1ac5e3929f807ea6fc2c9c9f0",
+    "content-hash": "54ff11522c2031c8b1c6edcadd374836",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1624,17 +1624,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "611f50669eba8454b37960350f1708c7dbad20d8"
+                "reference": "a4bad5a237903ec729f3a69e1de6162b61a2d7c5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/611f50669eba8454b37960350f1708c7dbad20d8",
-                "reference": "611f50669eba8454b37960350f1708c7dbad20d8",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/a4bad5a237903ec729f3a69e1de6162b61a2d7c5",
+                "reference": "a4bad5a237903ec729f3a69e1de6162b61a2d7c5",
                 "shasum": ""
             },
             "require": {
@@ -1668,7 +1668,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2016-09-29 04:58:15"
+            "time": "2016-09-29 11:57:50"
         },
         {
             "name": "keboola/oauth-v2-php-client",
