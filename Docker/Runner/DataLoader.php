@@ -82,7 +82,7 @@ class DataLoader
                 $reader->downloadTables(
                     $this->storageConfig['input']['tables'],
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
-                    isset($this->stagingStorage['input'])?$this->stagingStorage['input']:'local'
+                    isset($this->stagingStorage['input']) ? $this->stagingStorage['input'] : 'local'
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&
