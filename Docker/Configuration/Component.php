@@ -76,6 +76,15 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
+            ->arrayNode('staging_storage')
+                ->addDefaultsIfNotSet()
+                ->children()
+                    ->enumNode('input')
+                        ->values(['local', 's3'])
+                        ->defaultValue('local')
+                    ->end()
+                ->end()
+            ->end()
         ->end();
 
         return $treeBuilder;
