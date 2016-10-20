@@ -371,7 +371,7 @@ class Writer
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
             // TODO component name!
-            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Bundle");
+            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
         }
 
         if ($this->client->tableExists($config["destination"])) {
