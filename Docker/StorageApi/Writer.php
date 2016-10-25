@@ -371,13 +371,15 @@ class Writer
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
             // TODO component name!
-            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Bundle");
+            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
         }
 
         if ($this->client->tableExists($config["destination"])) {
+            $tableInfo = $this->getClient()->getTable($config["destination"]);
+            $this->validateAgainstTable($tableInfo, $config);
+
             if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
                 // Index columns
-                $tableInfo = $this->getClient()->getTable($config["destination"]);
                 if (!in_array($config["delete_where_column"], $tableInfo["indexedColumns"])) {
                     $this->getClient()->markTableColumnAsIndexed(
                         $config["destination"],
@@ -436,6 +438,21 @@ class Writer
                         $this->getClient()->addFileTag($file["id"], $tag);
                     }
                 }
+            }
+        }
+    }
+
+    public function validateAgainstTable($tableInfo = [], $config = [])
+    {
+        // primary key
+        if (count($config["primary_key"]) > 0 || count($tableInfo["primaryKey"]) > 0) {
+            if (count(array_diff($tableInfo["primaryKey"], $config["primary_key"])) > 0 ||
+                count(array_diff($config["primary_key"], $tableInfo["primaryKey"])) > 0
+            ) {
+                $pkMapping = join(", ", $config["primary_key"]);
+                $pkTable = join(", ", $tableInfo["primaryKey"]);
+                $message = "Output mapping does not match destination table: primary key '{$pkMapping}' does not match '{$pkTable}' in '{$config["destination"]}'.";
+                throw new UserException($message);
             }
         }
     }

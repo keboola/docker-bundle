@@ -27,12 +27,8 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     protected function clearBucket()
     {
         foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
-            try {
+            if ($this->client->bucketExists($bucket)) {
                 $this->client->dropBucket($bucket, ['force' => true]);
-            } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
-                    throw $e;
-                }
             }
         }
     }
@@ -50,6 +46,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
+
         // Create folders
         $this->tmp = new Temp();
         $this->tmp->initRunFolder();
@@ -759,6 +756,84 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $this->fail("Empty destination with invalid table name must cause exception.");
         } catch (UserException $e) {
             $this->assertContains('valid table identifier', $e->getMessage());
+        }
+    }
+
+
+    public function testWriteTableOutputMappingWithPk()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+    }
+
+    public function testWriteTableOutputMappingWithPkOverwrite()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+    }
+
+    public function testWriteTableOutputMappingWithPkMismatch()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client);
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+
+        $writer = new Writer($this->client);
+        try {
+            $writer->uploadTables(
+                $root . "/upload",
+                [
+                    "mapping" => [
+                        [
+                            "source" => "table9.csv",
+                            "destination" => "out.c-docker-test.table9",
+                            "primary_key" => ["Id", "Name"]
+                        ]
+                    ]
+                ]
+            );
+            $this->fail("Exception not caught");
+        } catch (UserException $e) {
         }
     }
 }
