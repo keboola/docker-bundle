@@ -26,8 +26,12 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     protected function clearBucket()
     {
         foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
-            if ($this->client->bucketExists($bucket)) {
+            try {
                 $this->client->dropBucket($bucket, ['force' => true]);
+            } catch (ClientException $e) {
+                if ($e->getCode() != 404) {
+                    throw $e;
+                }
             }
         }
     }
@@ -45,7 +49,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-
         // Create folders
         $this->tmp = new Temp();
         $this->tmp->initRunFolder();
