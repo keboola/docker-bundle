@@ -26,7 +26,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     protected function clearBucket()
     {
-        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
+        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test', 'in.c-docker-test'] as $bucket) {
             try {
                 $this->client->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -759,6 +759,63 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $this->fail("Empty destination with invalid table name must cause exception.");
         } catch (UserException $e) {
             $this->assertContains('valid table identifier', $e->getMessage());
+        }
+    }
+
+    public function testValidateAgainstTable()
+    {
+        $tableInfo = [
+            "primaryKey" => ["Id"]
+        ];
+
+        $writer = new Writer($this->client);
+        $writer->validateAgainstTable(
+            $tableInfo,
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        );
+    }
+
+    public function testValidateAgainstTableEmptyPK()
+    {
+        $tableInfo = [
+            "primaryKey" => []
+        ];
+
+        $writer = new Writer($this->client);
+        $writer->validateAgainstTable(
+            $tableInfo,
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => []
+            ]
+        );
+    }
+
+    public function testValidateAgainstTableMismatch()
+    {
+        $tableInfo = [
+            "primaryKey" => ["Id"]
+        ];
+
+        $writer = new Writer($this->client);
+        try {
+            $writer->validateAgainstTable(
+                $tableInfo,
+                [
+                    "source" => "table9.csv",
+                    "destination" => "out.c-docker-test.table9",
+                    "primary_key" => ["Id", "Name"]
+                ]
+            );
+            $this->fail("Exception not caught");
+        } catch (UserException $e) {
+            $message = "Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'.";
+            $this->assertEquals($message, $e->getMessage());
         }
     }
 }

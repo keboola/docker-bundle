@@ -79,4 +79,30 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         (new Table())->parse(array("config" => array()));
     }
+
+    /**
+     *
+     */
+    public function testPrimaryKeyEmtpyString()
+    {
+        $config = array(
+            "source" => "test",
+            "destination" => "in.c-main.test",
+            "primary_key" => array(""),
+        );
+
+        $expectedArray = array(
+            "source" => "test",
+            "destination" => "in.c-main.test",
+            "primary_key" => array(""),
+            "incremental" => false,
+            "delete_where_values" => array(),
+            "delete_where_operator" => "eq",
+            "delimiter" => ",",
+            "enclosure" => "\"",
+            "escaped_by" => ""
+        );
+        $processedConfiguration = (new Table())->parse(array("config" => $config));
+        $this->assertEquals($expectedArray, $processedConfiguration);
+    }
 }

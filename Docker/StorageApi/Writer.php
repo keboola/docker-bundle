@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Event;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
@@ -375,6 +376,16 @@ class Writer
         }
 
         if ($this->client->tableExists($config["destination"])) {
+            $tableInfo = $this->getClient()->getTable($config["destination"]);
+            try {
+                $this->validateAgainstTable($tableInfo, $config);
+            } catch (UserException $e) {
+                $event = new Event();
+                $event->setMessage($e->getMessage());
+                $event->setRunId($this->getClient()->getRunId());
+                $event->setType(Event::TYPE_WARN);
+                $this->getClient()->createEvent($event);
+            }
             if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
@@ -436,6 +447,21 @@ class Writer
                         $this->getClient()->addFileTag($file["id"], $tag);
                     }
                 }
+            }
+        }
+    }
+
+    public function validateAgainstTable($tableInfo = [], $config = [])
+    {
+        // primary key
+        if (count($config["primary_key"]) > 0 || count($tableInfo["primaryKey"]) > 0) {
+            if (count(array_diff($tableInfo["primaryKey"], $config["primary_key"])) > 0 ||
+                count(array_diff($config["primary_key"], $tableInfo["primaryKey"])) > 0
+            ) {
+                $pkMapping = join(", ", $config["primary_key"]);
+                $pkTable = join(", ", $tableInfo["primaryKey"]);
+                $message = "Output mapping does not match destination table: primary key '{$pkMapping}' does not match '{$pkTable}' in '{$config["destination"]}'.";
+                throw new UserException($message);
             }
         }
     }
