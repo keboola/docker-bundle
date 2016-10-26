@@ -21,7 +21,12 @@ class Manifest extends Configuration
             ->children()
                 ->scalarNode("destination")->end()
                 ->booleanNode("incremental")->defaultValue(false)->end()
-                ->arrayNode("primary_key")->prototype("scalar")->end()->end()
+                ->arrayNode("primary_key")
+                    ->prototype("scalar")
+                        // TODO: turn this on when all manifests will not produce array with an empty string
+                        // ->cannotBeEmpty()
+                    ->end()
+                ->end()
                 ->scalarNode("delete_where_column")->end()
                 ->arrayNode("delete_where_values")->prototype("scalar")->end()->end()
                 ->scalarNode("delete_where_operator")
