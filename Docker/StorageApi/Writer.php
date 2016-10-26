@@ -450,4 +450,19 @@ class Writer
             }
         }
     }
+
+    public function validateAgainstTable($tableInfo = [], $config = [])
+    {
+        // primary key
+        if (count($config["primary_key"]) > 0 || count($tableInfo["primaryKey"]) > 0) {
+            if (count(array_diff($tableInfo["primaryKey"], $config["primary_key"])) > 0 ||
+                count(array_diff($config["primary_key"], $tableInfo["primaryKey"])) > 0
+            ) {
+                $pkMapping = join(", ", $config["primary_key"]);
+                $pkTable = join(", ", $tableInfo["primaryKey"]);
+                $message = "Output mapping does not match destination table: primary key '{$pkMapping}' does not match '{$pkTable}' in '{$config["destination"]}'.";
+                throw new UserException($message);
+            }
+        }
+    }
 }
