@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
@@ -759,81 +758,60 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-
-    public function testWriteTableOutputMappingWithPk()
+    public function testValidateAgainstTable()
     {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+        $tableInfo = [
+            "primaryKey" => ["Id"]
+        ];
 
         $writer = new Writer($this->client);
-        $writer->uploadTables($root . "/upload", ["mapping" => [
+        $writer->validateAgainstTable(
+            $tableInfo,
             [
                 "source" => "table9.csv",
                 "destination" => "out.c-docker-test.table9",
                 "primary_key" => ["Id"]
             ]
-        ]]);
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+        );
     }
 
-    public function testWriteTableOutputMappingWithPkOverwrite()
+    public function testValidateAgainstTableEmptyPK()
     {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+        $tableInfo = [
+            "primaryKey" => []
+        ];
 
         $writer = new Writer($this->client);
-        $writer->uploadTables($root . "/upload", ["mapping" => [
+        $writer->validateAgainstTable(
+            $tableInfo,
             [
                 "source" => "table9.csv",
                 "destination" => "out.c-docker-test.table9",
-                "primary_key" => ["Id"]
+                "primary_key" => []
             ]
-        ]]);
-
-        $writer = new Writer($this->client);
-        $writer->uploadTables($root . "/upload", ["mapping" => [
-            [
-                "source" => "table9.csv",
-                "destination" => "out.c-docker-test.table9",
-                "primary_key" => ["Id"]
-            ]
-        ]]);
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-
-        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+        );
     }
 
-    public function testWriteTableOutputMappingWithPkMismatch()
+    public function testValidateAgainstTableMismatch()
     {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-
-        $writer = new Writer($this->client);
-        $writer->uploadTables($root . "/upload", ["mapping" => [
-            [
-                "source" => "table9.csv",
-                "destination" => "out.c-docker-test.table9",
-                "primary_key" => ["Id"]
-            ]
-        ]]);
+        $tableInfo = [
+            "primaryKey" => ["Id"]
+        ];
 
         $writer = new Writer($this->client);
         try {
-            $writer->uploadTables(
-                $root . "/upload",
+            $writer->validateAgainstTable(
+                $tableInfo,
                 [
-                    "mapping" => [
-                        [
-                            "source" => "table9.csv",
-                            "destination" => "out.c-docker-test.table9",
-                            "primary_key" => ["Id", "Name"]
-                        ]
-                    ]
+                    "source" => "table9.csv",
+                    "destination" => "out.c-docker-test.table9",
+                    "primary_key" => ["Id", "Name"]
                 ]
             );
             $this->fail("Exception not caught");
         } catch (UserException $e) {
+            $message = "Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'.";
+            $this->assertEquals($message, $e->getMessage());
         }
     }
 }

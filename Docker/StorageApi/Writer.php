@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Event;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
@@ -376,7 +377,15 @@ class Writer
 
         if ($this->client->tableExists($config["destination"])) {
             $tableInfo = $this->getClient()->getTable($config["destination"]);
-            $this->validateAgainstTable($tableInfo, $config);
+            try {
+                $this->validateAgainstTable($tableInfo, $config);
+            } catch (UserException $e) {
+                $event = new Event();
+                $event->setMessage($e->getMessage());
+                $event->setRunId($this->getClient()->getRunId());
+                $event->setType(Event::TYPE_WARN);
+                $this->getClient()->createEvent($event);
+            }
 
             if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
                 // Index columns
