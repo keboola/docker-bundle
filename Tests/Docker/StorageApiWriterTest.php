@@ -26,7 +26,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
 
     protected function clearBucket()
     {
-        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test'] as $bucket) {
+        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test', 'in.c-docker-test'] as $bucket) {
             try {
                 $this->client->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
