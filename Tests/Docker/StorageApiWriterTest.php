@@ -10,6 +10,9 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Exception\UserException;
+use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
@@ -105,7 +108,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
@@ -155,7 +158,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
@@ -193,7 +196,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
 
@@ -229,7 +232,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->setFormat('json');
         try {
             $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
@@ -253,7 +256,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->setFormat('json');
         try {
             $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
@@ -280,7 +283,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
                 "is_public" => false
             )
         );
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
     }
 
@@ -292,7 +295,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/file1.manifest", "{\"tags\": [\"docker-bundle-test-xxx\"],\"is_public\": true}");
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->uploadFiles($root . "/upload");
     }
 
@@ -308,7 +311,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
@@ -329,7 +332,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
@@ -350,7 +353,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         try {
             $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
@@ -379,7 +382,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
@@ -401,7 +404,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\",\"Name\"]}"
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload");
 
@@ -423,7 +426,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": \"Id\"}"
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         try {
             $writer->uploadTables($root . "/upload");
             $this->fail('Invalid table manifest must cause exception');
@@ -444,7 +447,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "{\"destination\": \"out.c-docker-default-test.table3\",\"delimiter\": \"\\t\",\"enclosure\": \"'\"}"
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload");
 
@@ -476,7 +479,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "{\"destination\": \"out.c-docker-redshift-test.table3\",\"delimiter\": \"\\t\",\"enclosure\": \"'\",\"escaped_by\": \"\\\\\"}"
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload");
 
@@ -506,7 +509,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $root . DIRECTORY_SEPARATOR . "upload/table.csv.manifest",
             "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\", \"Name\"]}"
         );
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->uploadTables($root . "/upload");
     }
 
@@ -525,7 +528,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
                 "destination" => "out.c-docker-test.table1"
             )
         );
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
     }
 
@@ -534,7 +537,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/out.c-docker-test.table4.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload");
 
@@ -551,7 +554,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/out.c-docker-test.table4", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload");
 
@@ -579,7 +582,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
@@ -618,7 +621,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
@@ -655,7 +658,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             (new FileUploadOptions())->setTags(array("docker-bundle-test"))
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $configuration = [["tags" => ["docker-bundle-test"], "processed_tags" => ['downloaded']]];
         $writer->tagFiles($configuration);
 
@@ -671,7 +674,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
         file_put_contents($root . "/upload/table2.csv", "\"Id\",\"Name2\"\n\"test2\",\"test2\"\n");
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["bucket" => "in.c-docker-test"]);
 
@@ -692,7 +695,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table5.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ['bucket' => 'out.c-docker-test']);
 
@@ -716,7 +719,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "{\"primary_key\": [\"Id\", \"Name\"]}"
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ['bucket' => 'out.c-docker-test']);
 
@@ -738,7 +741,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs, 'bucket' => 'out.c-docker-test']);
 
@@ -753,7 +756,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         file_put_contents($root . "/upload/table8.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
         file_put_contents($root . "/upload/table8.csv.manifest", "{\"primary_key\": [\"Id\", \"Name\"]}");
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         try {
             $writer->uploadTables($root . "/upload", ["mapping" => []]);
             $this->fail("Empty destination with invalid table name must cause exception.");
@@ -768,7 +771,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "primaryKey" => ["Id"]
         ];
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->validateAgainstTable(
             $tableInfo,
             [
@@ -785,7 +788,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "primaryKey" => []
         ];
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->validateAgainstTable(
             $tableInfo,
             [
@@ -802,7 +805,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             "primaryKey" => ["Id"]
         ];
 
-        $writer = new Writer($this->client);
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         try {
             $writer->validateAgainstTable(
                 $tableInfo,
@@ -817,5 +820,87 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $message = "Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'.";
             $this->assertEquals($message, $e->getMessage());
         }
+    }
+
+
+    public function testWriteTableOutputMappingWithPk()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+    }
+
+    public function testWriteTableOutputMappingWithPkOverwrite()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer->uploadTables($root . "/upload", ["mapping" => [
+            [
+                "source" => "table9.csv",
+                "destination" => "out.c-docker-test.table9",
+                "primary_key" => ["Id"]
+            ]
+        ]]);
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+    }
+
+    public function testWriteTableOutputMappingWithPkMismatch()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $handler = new TestHandler();
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
+        $writer->uploadTables(
+            $root . "/upload",
+            [
+                "mapping" => [
+                    [
+                        "source" => "table9.csv",
+                        "destination" => "out.c-docker-test.table9",
+                        "primary_key" => ["Id"]
+                    ]
+                ]
+            ]
+        );
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
+        $writer->uploadTables(
+            $root . "/upload",
+            [
+                "mapping" => [
+                    [
+                        "source" => "table9.csv",
+                        "destination" => "out.c-docker-test.table9",
+                        "primary_key" => ["Id", "Name"]
+                    ]
+                ]
+            ]
+        );
+        $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
     }
 }

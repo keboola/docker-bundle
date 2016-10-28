@@ -10,8 +10,8 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Event;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -28,6 +28,11 @@ class Writer
      * @var Client
      */
     protected $client;
+
+    /**
+     * @var Logger
+     */
+    protected $logger;
 
     /**
      * @var
@@ -73,11 +78,34 @@ class Writer
     }
 
     /**
-     * @param Client $client
+     * @return Logger
      */
-    public function __construct(Client $client)
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @param Logger $logger
+     * @return $this
+     */
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+
+        return $this;
+    }
+
+    /**
+     * Writer constructor.
+     *
+     * @param Client $client
+     * @param Logger $logger
+     */
+    public function __construct(Client $client, Logger $logger)
     {
         $this->setClient($client);
+        $this->setLogger($logger);
     }
 
     /**
@@ -380,11 +408,11 @@ class Writer
             try {
                 $this->validateAgainstTable($tableInfo, $config);
             } catch (UserException $e) {
-                $event = new Event();
-                $event->setMessage($e->getMessage());
-                $event->setRunId($this->getClient()->getRunId());
-                $event->setType(Event::TYPE_WARN);
-                $this->getClient()->createEvent($event);
+                try {
+                    $this->getLogger()->warn($e->getMessage());
+                } catch (\Exception $e) {
+                    // ignore
+                }
             }
             if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
                 // Index columns

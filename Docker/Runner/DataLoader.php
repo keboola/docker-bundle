@@ -109,7 +109,7 @@ class DataLoader
     {
         $this->logger->debug("Storing results.");
 
-        $writer = new Writer($this->storageClient);
+        $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->format);
 
         $outputTablesConfig = [];
@@ -180,7 +180,7 @@ class DataLoader
         }
         $zip->close();
 
-        $writer = new Writer($this->storageClient);
+        $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->format);
         // zip archive must be created in special directory, because uploadFiles is recursive
         $writer->uploadFiles(
