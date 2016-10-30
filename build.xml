@@ -41,7 +41,9 @@
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
             <env key="QUAYIO_PRIVATE_USERNAME" value="${quayio-private-username}"/>
             <env key="QUAYIO_PRIVATE_PASSWORD" value="${quayio-private-password}"/>
-
+            <env key="AWS_ECR_ACCESS_KEY_ID" value="${aws-ecr-access-key-id}"/>
+            <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
+            <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>
             <arg value="--configuration"/>
             <arg path="phpunit.xml.dist"/>
         </exec>
@@ -59,6 +61,9 @@
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
             <env key="QUAYIO_PRIVATE_USERNAME" value="${quayio-private-username}"/>
             <env key="QUAYIO_PRIVATE_PASSWORD" value="${quayio-private-password}"/>
+            <env key="AWS_ECR_ACCESS_KEY_ID" value="${aws-ecr-access-key-id}"/>
+            <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
+            <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>
             <arg value="--configuration"/>
             <arg path="phpunit-full.xml.dist"/>
         </exec>
