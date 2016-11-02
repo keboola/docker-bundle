@@ -2,11 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests\Controller;
 
-use Keboola\DockerBundle\Controller\PublicController;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\HttpFoundation\Request;
 
 class PublicControllerTest extends WebTestCase
 {
