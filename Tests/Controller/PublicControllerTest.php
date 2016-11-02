@@ -137,124 +137,36 @@ class PublicControllerTest extends WebTestCase
             }'
         );
 
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-
-
-        ];
-        $parameters = [
-            "component" => "docker-encrypt"
-        ];
-
-        $request = Request::create("/docker/docker-encrypt/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("error", $responseData["status"]);
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
         $this->assertEquals(
             "This API call is only supported for components that use the 'encrypt' flag.",
-            $responseData["message"]
+            $response["message"]
         );
     }
 
     public function testEncryptWithoutComponent()
     {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'CONTENT_TYPE' => 'application/json'
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
 
-        ];
-        $parameters = [
-        ];
-
-        $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("value1", $response["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($response["#key2"], 0, 16));
         $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
-    }
-
-    public function testEncryptGenericDecryptComponentSpecific()
-    {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'CONTENT_TYPE' => 'application/json'
-
-        ];
-        $parameters = [
-        ];
-
-        $request = Request::create("/docker/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::Encrypted==", substr($result["#key2"], 0, 16));
-
-        $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
-    }
-
-    public function testEncryptComponentSpecificDecryptGeneric()
-    {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'CONTENT_TYPE' => 'application/json'
-
-        ];
-        $parameters = [
-            "component" => "docker-config-encrypt-verify"
-        ];
-        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
-        $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
+        $this->assertCount(2, $response);
     }
 }
