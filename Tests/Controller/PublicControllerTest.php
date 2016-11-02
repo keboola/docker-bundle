@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\PublicController;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,120 +29,121 @@ class PublicControllerTest extends WebTestCase
 
     public function testEncrypt()
     {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'CONTENT_TYPE' => 'application/json'
-
-        ];
-        $parameters = [
-            "component" => "docker-config-encrypt-verify"
-        ];
-        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
-        $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("value1", $response["key1"]);
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($response["#key2"], 0, 25));
+        $cryptoWrapper = self::$container->get("syrup.encryption.component_wrapper");
+        $cryptoWrapper->setComponentId('docker-config-encrypt-verify');
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($cryptoWrapper);
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
+        $this->assertCount(2, $response);
     }
 
     public function testEncryptJsonHeaderWithCharset()
     {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'CONTENT_TYPE' => 'application/json; charset=UTF-8'
-
-        ];
-        $parameters = [
-            "component" => "docker-config-encrypt-verify"
-        ];
-        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result["#key2"], 0, 25));
-        $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json; charset=UTF-8'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("value1", $response["key1"]);
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($response["#key2"], 0, 25));
+        $cryptoWrapper = self::$container->get("syrup.encryption.component_wrapper");
+        $cryptoWrapper->setComponentId('docker-config-encrypt-verify');
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($cryptoWrapper);
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
+        $this->assertCount(2, $response);
     }
 
     public function testEncryptPlaintextHeaderWithCharset()
     {
-        $content = 'value';
-        $server = [
-            'CONTENT_TYPE' => 'text/plain; charset=UTF-8'
-
-        ];
-        $parameters = [
-            "component" => "docker-config-encrypt-verify"
-        ];
-        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = $response->getContent();
-        $this->assertEquals("KBC::ComponentEncrypted==", substr($result, 0, 25));
-        $encryptor = self::$container->get("syrup.object_encryptor");
-        $this->assertEquals("value", $encryptor->decrypt($result));
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'text/plain; charset=UTF-8'],
+            'value'
+        );
+        $response = $client->getResponse()->getContent();
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("KBC::ComponentEncrypted==", substr($response, 0, 25));
+        $cryptoWrapper = self::$container->get("syrup.encryption.component_wrapper");
+        $cryptoWrapper->setComponentId('docker-config-encrypt-verify');
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($cryptoWrapper);
+        $this->assertEquals("value", $encryptor->decrypt($response));
     }
 
-    /**
-     * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessage Incorrect Content-Type header.
-     */
     public function testEncryptInvalidHeader()
     {
-        $content = 'value';
-        $server = [
-            'CONTENT_TYPE' => 'someotherheader;'
-
-        ];
-        $parameters = [
-            "component" => "docker-config-encrypt-verify"
-        ];
-        $request = Request::create("/docker/docker-config-encrypt-verify/encrypt", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new PublicController();
-
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $ctrl->encryptAction($request);
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'someotherheader;'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Incorrect Content-Type header.', $response['message']);
     }
 
     public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
     {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+
         $content = '
         {
             "key1": "value1",
             "#key2": "value2"
         }';
         $server = [
-            'CONTENT_TYPE' => 'application/json'
+
 
         ];
         $parameters = [

@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ApiController;
-use Keboola\Syrup\Exception\UserException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -83,207 +82,169 @@ class ApiControllerTest extends WebTestCase
 
     public function testRun()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "keboola.r-transformation"
-        ];
-        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->runAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
     public function testSandbox()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [];
-        $request = Request::create("/docker/sandbox", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->sandboxAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/sandbox',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
 
     public function testInput()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "keboola.r-transformation"
-        ];
-        $request = Request::create("/docker/keboola.r-transformation/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->inputAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/input',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
     public function testDryRun()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "keboola.r-transformation"
-        ];
-        $request = Request::create("/docker/keboola.r-transformation/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->dryRunAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/dry-run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
-
 
     public function testInvalidComponentInput()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "invalid-component"
-        ];
-        $request = Request::create("/docker/invalid-component/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        try {
-            $ctrl->preExecute($request);
-            $ctrl->runAction($request);
-            $this->fail("Invalid component should raise exception.");
-        } catch (UserException $e) {
-        }
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/invalid-component/input',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
     }
-
 
     public function testInvalidComponentRun()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "invalid-component"
-        ];
-        $request = Request::create("/docker/invalid-component/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        try {
-            $ctrl->preExecute($request);
-            $ctrl->runAction($request);
-            $this->fail("Invalid component should raise exception.");
-        } catch (UserException $e) {
-        }
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/invalid-component/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
     }
 
     public function testInvalidComponentDryRun()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "invalid-component"
-        ];
-        $request = Request::create("/docker/invalid-component/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        try {
-            $ctrl->preExecute($request);
-            $ctrl->runAction($request);
-            $this->fail("Invalid component should raise exception.");
-        } catch (UserException $e) {
-        }
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/invalid-component/dry-run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
     }
 
     public function testInvalidBody1()
     {
-        $content = '
-        {
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "keboola.r-transformation"
-        ];
-        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        try {
-            $ctrl->preExecute($request);
-            $ctrl->runAction($request);
-            $this->fail("Invalid body should raise exception.");
-        } catch (UserException $e) {
-        }
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Specify \'config\' or \'configData\'.', $response['message']);
     }
 
     public function testBodyOverload()
     {
-        $content = '
-        {
-            "config": "dummy",
-            "configData": {
-                "foo": "bar"
-            }
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "keboola.r-transformation"
-        ];
-        $request = Request::create("/docker/keboola.r-transformation/run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $ctrl->runAction($request);
-        $response = $ctrl->dryRunAction($request);
-        $this->assertEquals(202, $response->getStatusCode());
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "config": "dummy",
+                "configData": {
+                    "foo": "bar"
+                }
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
     }
 
     public function testEncryptProject()
@@ -296,7 +257,6 @@ class ApiControllerTest extends WebTestCase
         $server = [
             'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
             'CONTENT_TYPE' => 'application/json'
-
         ];
         $parameters = [
             "component" => "docker-dummy-test"
@@ -312,10 +272,8 @@ class ApiControllerTest extends WebTestCase
         );
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
-
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
-
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
         $response = $ctrl->encryptConfigAction($request);
@@ -330,63 +288,45 @@ class ApiControllerTest extends WebTestCase
 
     public function testInputDisabledByEncrypt()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test"
-        ];
-        $request = Request::create("/docker/docker-dummy-test/input", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
-
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->inputAction($request);
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("error", $responseData["status"]);
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/input',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            '{
+                "config": "dummy"
+             }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
         $this->assertEquals(
             "This API call is not supported for components that use the 'encrypt' flag.",
-            $responseData["message"]
+            $response["message"]
         );
     }
 
     public function testDryRunDisabledByEncrypt()
     {
-        $content = '
-        {
-            "config": "dummy"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test"
-        ];
-        $request = Request::create("/docker/docker-dummy-test/dry-run", 'POST', $parameters, [], [], $server, $content);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
-
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->dryRunAction($request);
-        $this->assertEquals(400, $response->getStatusCode());
-        $responseData = json_decode($response->getContent(), true);
-        $this->assertEquals("error", $responseData["status"]);
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/dry-run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            '{
+                "config": "dummy"
+             }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
         $this->assertEquals(
             "This API call is not supported for components that use the 'encrypt' flag.",
-            $responseData["message"]
+            $response["message"]
         );
     }
 
@@ -407,11 +347,10 @@ class ApiControllerTest extends WebTestCase
                 }
             }'
         ];
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
         $container = self::$container;
+        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
+        $container->get('request_stack')->push($request);
+        $ctrl = new ApiController();
 
         $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
@@ -500,11 +439,10 @@ class ApiControllerTest extends WebTestCase
                 }
             }'
         ];
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
         $container = self::$container;
+        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
+        $container->get('request_stack')->push($request);
+        $ctrl = new ApiController();
 
         $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
@@ -585,11 +523,10 @@ class ApiControllerTest extends WebTestCase
             }',
             "changeDescription" => "added or removed something"
         ];
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
         $container = self::$container;
+        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
+        $container->get('request_stack')->push($request);
+        $ctrl = new ApiController();
 
         $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
