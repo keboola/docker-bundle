@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Image;
 
 use Aws\Credentials\Credentials;
 use Aws\Ecr\EcrClient;
+use Aws\Ecr\Exception\EcrException;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -70,16 +71,17 @@ class AWSElasticContainerRegistry extends Image
             'region' => 'us-east-1',
             'version' => '2015-09-21'
         ));
+        try {
+            $authorization = $ecrClient->getAuthorizationToken([]);
+        } catch (EcrException $e) {
+            throw new LoginFailedException($e->getMessage());
+        }
+        // decode token and extract user
+        list($user, $token) = explode(":", base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
 
-        var_dump($_ENV);
-
-        $token = $ecrClient->getAuthorizationToken();
-        var_dump($token);
-        die();
-        // Login
-        $loginParams[] = "--username=AWS";
+        $loginParams[] = "--username=" . escapeshellarg($user);
         $loginParams[] = "--password=" . escapeshellarg($token);
-        $loginParams[] = escapeshellarg($this->getImageId());
+        $loginParams[] = escapeshellarg($authorization->get('authorizationData')[0]['proxyEndpoint']);
         return join(" ", $loginParams);
     }
 
@@ -101,8 +103,7 @@ class AWSElasticContainerRegistry extends Image
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        var_dump($this->getLoginParams());
-        die();
+
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
             "docker:1.11-dind sh -c '" .
             "docker login " . $this->getLoginParams() .  " " .

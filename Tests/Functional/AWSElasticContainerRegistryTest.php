@@ -91,7 +91,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "type" => "aws-ecr",
                 "uri" => AWS_ECR_REGISTRY_URI,
                 "repository" => [
-                    "aws_access_key_id" => AWS_ECR_ACCESS_KEY_ID . "_invalid",
+                    "aws_access_key_id" => AWS_ECR_ACCESS_KEY_ID,
                     "#aws_secret_access_key" => $encryptor->encrypt(AWS_ECR_SECRET_ACCESS_KEY)
                 ]
             ],
