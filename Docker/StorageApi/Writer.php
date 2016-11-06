@@ -331,6 +331,9 @@ class Writer
                     be done until all images are updated not to use the parameter.
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
+                if ($config["primary_key"] == [""]) {
+                    $config["primary_key"] = [];
+                }
                 $this->uploadTable($file->getPathname(), $config);
             } catch (ClientException $e) {
                 throw new UserException(
