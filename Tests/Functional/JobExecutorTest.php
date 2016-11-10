@@ -84,7 +84,8 @@ class JobExecutorTest extends KernelTestCase
             $this->temp,
             $encryptor,
             $storageServiceStub,
-            $loggersServiceStub
+            $loggersServiceStub,
+            "dummy"
         );
         $componentsService = new ComponentsService($storageServiceStub);
 

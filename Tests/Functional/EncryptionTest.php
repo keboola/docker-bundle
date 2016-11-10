@@ -87,7 +87,8 @@ class EncryptionTests extends KernelTestCase
             $this->temp,
             $encryptor,
             $storageServiceStub,
-            $loggersServiceStub
+            $loggersServiceStub,
+            "dummy"
         );
 
         // mock components
