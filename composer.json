@@ -8,7 +8,7 @@
         "keboola/syrup": "^5.0",
         "keboola/php-utils": "~1.0.0",
         "symfony/symfony": "~2.8.0",
-        "keboola/oauth-v2-php-client": "~1.0.0",
+        "keboola/oauth-v2-php-client": "~2.0.0",
         "keboola/storage-api-client": "~4.5",
         "keboola/gelf-server": "~1.0",
         "keboola/input-mapping": "^1.2",

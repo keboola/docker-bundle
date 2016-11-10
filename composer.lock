@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "0f256b91d51c07ab939d28b0cc81356b",
-    "content-hash": "91bf1036ba2589f634bd7c261c0c8d2e",
+    "hash": "e10fad47fd7839a72f03d452fb84f9ad",
+    "content-hash": "7a6dda6a7721f918da53863a120ca170",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1718,16 +1718,16 @@
         },
         {
             "name": "keboola/oauth-v2-php-client",
-            "version": "1.0.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/oauth-v2-php-client.git",
-                "reference": "56050606cbd749b594ab78b5df36126dc46b8069"
+                "reference": "9386b2850b77df42e9bf39dcd01ba8595ddb7a9a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/56050606cbd749b594ab78b5df36126dc46b8069",
-                "reference": "56050606cbd749b594ab78b5df36126dc46b8069",
+                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/9386b2850b77df42e9bf39dcd01ba8595ddb7a9a",
+                "reference": "9386b2850b77df42e9bf39dcd01ba8595ddb7a9a",
                 "shasum": ""
             },
             "require": {
@@ -1753,7 +1753,7 @@
                 }
             ],
             "description": "Keboola OAuth v2 API Client",
-            "time": "2016-04-28 23:06:57"
+            "time": "2016-11-09 16:08:28"
         },
         {
             "name": "keboola/php-encryption",

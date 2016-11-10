@@ -86,17 +86,21 @@ class Runner
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
+     * @param string $oauthApiUrl
      */
     public function __construct(
         Temp $temp,
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
-        LoggersService $loggersService
+        LoggersService $loggersService,
+        $oauthApiUrl
     ) {
         $this->temp = $temp;
         $this->encryptor = $encryptor;
         $this->storageClient = $storageApi->getClient();
-        $this->oauthClient = new Credentials($this->storageClient->getTokenString());
+        $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
+            'url' => $oauthApiUrl
+        ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
     }

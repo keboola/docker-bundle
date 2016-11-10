@@ -121,7 +121,8 @@ class RunnerTest extends KernelTestCase
             $this->temp,
             $encryptor,
             $storageServiceStub,
-            $loggersServiceStub
+            $loggersServiceStub,
+            "dummy"
         );
         return $runner;
     }
