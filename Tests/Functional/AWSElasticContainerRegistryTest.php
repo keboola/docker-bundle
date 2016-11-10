@@ -49,15 +49,13 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID . "_invalid");
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+
         $imageConfig = array(
             "definition" => array(
                 "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI,
-                "repository" => [
-                    "aws_access_key_id" => AWS_ECR_ACCESS_KEY_ID . "_invalid",
-                    "#aws_secret_access_key" => $encryptor->encrypt(AWS_ECR_SECRET_ACCESS_KEY)
-                ]
-
+                "uri" => AWS_ECR_REGISTRY_URI
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -75,9 +73,9 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
 
 
     /**
-     * Try do download private image using credentials
+     * Try to download image
      */
-    public function testDownloadedImageEncryptedPassword()
+    public function testDownloadedImage()
     {
         (new Process("sudo docker rmi -f $(sudo docker images -aq " . AWS_ECR_REGISTRY_URI . ")"))->run();
 
@@ -86,14 +84,14 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+
         $imageConfig = [
             "definition" => [
                 "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI,
-                "repository" => [
-                    "aws_access_key_id" => AWS_ECR_ACCESS_KEY_ID,
-                    "#aws_secret_access_key" => $encryptor->encrypt(AWS_ECR_SECRET_ACCESS_KEY)
-                ]
+                "uri" => AWS_ECR_REGISTRY_URI
             ],
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -116,4 +114,12 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
 
         (new Process("sudo docker rmi " . AWS_ECR_REGISTRY_URI))->run();
     }
+
+    public function tearDown()
+    {
+        // remove env variables
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
+    }
+
 }

@@ -15,59 +15,12 @@ use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistry extends Image
 {
-    protected $awsAccessKeyId;
-    protected $awsSecretKey;
-
-    /**
-     * @return mixed
-     */
-    public function getAwsAccessKeyId()
-    {
-        return $this->awsAccessKeyId;
-    }
-
-    /**
-     * @param mixed $awsAccessKeyId
-     * @return $this
-     */
-    public function setAwsAccessKeyId($awsAccessKeyId)
-    {
-        $this->awsAccessKeyId = $awsAccessKeyId;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAwsSecretKey()
-    {
-        return $this->awsSecretKey;
-    }
-
-    /**
-     * @param mixed $awsSecretKey
-     * @return $this
-     */
-    public function setAwsSecretKey($awsSecretKey)
-    {
-        $this->awsSecretKey = $awsSecretKey;
-
-        return $this;
-    }
-
     /**
      * @return string
      */
     public function getLoginParams()
     {
-        if (!$this->getAwsSecretKey() || !$this->getAwsAccessKeyId()) {
-            throw new LoginFailedException("Missing AWS Access Key or Secret Key.");
-        }
-
-        $awsCredentials = new Credentials($this->getAwsAccessKeyId(), $this->getAwsSecretKey());
         $ecrClient = new EcrClient(array(
-            'credentials' => $awsCredentials,
             'region' => 'us-east-1',
             'version' => '2015-09-21'
         ));
@@ -122,25 +75,5 @@ class AWSElasticContainerRegistry extends Image
             }
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
-    }
-
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function fromArray(array $config)
-    {
-        parent::fromArray($config);
-        if (isset($config["definition"]["repository"])) {
-            if (isset($config["definition"]["repository"]["aws_access_key_id"])) {
-                $this->setAwsAccessKeyId($config["definition"]["repository"]["aws_access_key_id"]);
-            }
-            if (isset($config["definition"]["repository"]["#aws_secret_access_key"])) {
-                $this->setAwsSecretKey(
-                    $this->getEncryptor()->decrypt($config["definition"]["repository"]["#aws_secret_access_key"])
-                );
-            }
-        }
-        return $this;
     }
 }

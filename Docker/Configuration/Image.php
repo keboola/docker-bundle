@@ -32,8 +32,6 @@ class Image extends Configuration
                     ->scalarNode('username')->end()
                     ->scalarNode('#password')->end()
                     ->scalarNode('server')->end()
-                    ->scalarNode('aws_access_key_id')->end()
-                    ->scalarNode('#aws_secret_access_key')->end()
                 ->end()
             ->end()
             ->arrayNode('build_options')
