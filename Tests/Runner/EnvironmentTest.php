@@ -29,6 +29,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
         $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
+        $this->assertArrayNotHasKey('KBC_URL', $envs);
         $this->assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayNotHasKey('KBC_TOKENID', $envs);
         $this->assertArrayNotHasKey('KBC_TOKENDESC', $envs);
@@ -42,6 +43,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
         $this->assertArrayHasKey('KBC_TOKEN', $envs);
+        $this->assertArrayHasKey('KBC_URL', $envs);
         $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
         $this->assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayNotHasKey('KBC_TOKENID', $envs);
@@ -56,6 +58,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
         $this->assertArrayHasKey('KBC_TOKEN', $envs);
+        $this->assertArrayHasKey('KBC_URL', $envs);
         $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayHasKey('KBC_TOKENID', $envs);
@@ -70,6 +73,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
         $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
+        $this->assertArrayNotHasKey('KBC_URL', $envs);
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayHasKey('KBC_TOKENID', $envs);
         $this->assertArrayHasKey('KBC_TOKENDESC', $envs);
@@ -87,6 +91,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($envs['KBC_PARAMETER_KBC_CONFIGID'], 'barFoo');
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
         $this->assertArrayHasKey('KBC_TOKEN', $envs);
+        $this->assertArrayHasKey('KBC_URL', $envs);
         $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayHasKey('KBC_TOKENID', $envs);

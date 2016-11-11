@@ -49,6 +49,7 @@ class Environment
         ]);
         if ($this->forwardToken) {
             $envs["KBC_TOKEN"] = $tokenInfo["token"];
+            $envs["KBC_URL"] = $this->storageClient->getApiUrl();
         }
         if ($this->forwardTokenDetails) {
             $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
