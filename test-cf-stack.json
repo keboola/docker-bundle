@@ -1,0 +1,119 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for testing provisioning-bundle",
+  "Parameters": {
+    "KeboolaStack": {
+      "Type": "String",
+      "Description": "All resources will be tagged by this value."
+    }
+  },
+  "Resources": {
+    "DockerRunnerRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": "docker-testing",
+        "RepositoryPolicyText": {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "najlos-test",
+              "Effect": "Allow",
+              "Principal": {
+                  "AWS": {
+                    "Fn::GetAtt": [
+                      "DockerRunnerUser",
+                      "Arn"
+                    ]
+                  }
+              },
+              "Action": [
+                  "ecr:PutImage",
+                  "ecr:InitiateLayerUpload",
+                  "ecr:UploadLayerPart",
+                  "ecr:CompleteLayerUpload",
+                  "ecr:GetDownloadUrlForLayer",
+                  "ecr:BatchGetImage",
+                  "ecr:BatchCheckLayerAvailability"
+              ]
+            }
+          ]
+        }
+      },
+      "DependsOn": [
+        "DockerRunnerUser"
+      ]
+    },
+    "DockerRunnerUser": {
+      "Type": "AWS::IAM::User",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "Owner",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+          "UserName": {
+              "Ref": "DockerRunnerUser"
+          }
+      },
+      "DependsOn": [
+        "DockerRunnerUser"
+      ]
+    }
+  },
+  "Outputs": {
+    "RepositoryUrl": {
+        "Value": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ".dkr.ecr.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".amazonaws.com/",
+                {
+                  "Ref": "DockerRunnerRepository"      
+                }
+            ]
+          ]
+        }
+    },
+    "Region": {
+        "Value": {
+            "Ref": "AWS::Region"
+        }
+    },
+    "AccessKeyId": {
+        "Value": {
+            "Ref": "AccessKey"
+        }
+    },
+    "AccessKeySecret": {
+        "Value": {
+            "Fn::GetAtt": ["AccessKey", "SecretAccessKey"]
+        }
+    }
+  }
+}
