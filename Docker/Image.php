@@ -314,6 +314,9 @@ abstract class Image
             case "quayio-private":
                 $instance = new Image\QuayIO\PrivateRepository($encryptor);
                 break;
+            case "aws-ecr":
+                $instance = new Image\AWSElasticContainerRegistry($encryptor);
+                break;
             case $type == "builder":
                 $instance = new Image\Builder\ImageBuilder($encryptor);
                 $instance->setLogger($logger);
