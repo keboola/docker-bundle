@@ -1,0 +1,133 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Stack for creating ECR repository and a push user",
+  "Parameters": {
+    "KeboolaStack": {
+      "Type": "String",
+      "Description": "All resources will be tagged by this value."
+    },
+    "VendorId": {
+      "Type": "String",
+      "Description": "Vendor identifier, eg. keboola"
+    },
+    "ApplicationId": {
+      "Type": "String",
+      "Description": "Application identifier, eg. ex-slack"
+    }
+  },
+  "Resources": {
+    "ECRRepository": {
+      "Type": "AWS::ECR::Repository",
+      "Properties": {
+        "RepositoryName": {
+          "Fn::Join": [
+            "/",
+            [
+              {
+                "Ref": "VendorId"
+              },
+              {
+                "Ref": "ApplicationId"
+              }
+            ]
+          ]
+        },
+        "RepositoryPolicyText": {
+          "Version": "2008-10-17",
+          "Statement": [
+            {
+              "Sid": "repository-push-user",
+              "Effect": "Allow",
+              "Principal": {
+                  "AWS": {
+                    "Fn::GetAtt": [
+                      "RepositoryPushUser",
+                      "Arn"
+                    ]
+                  }
+              },
+              "Action": [
+                  "ecr:*",
+              ]
+            }
+          ]
+        }
+      },
+      "DependsOn": [
+        "RepositoryPushUser"
+      ]
+    },
+    "RepositoryPushUser": {
+      "Type": "AWS::IAM::User",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "Owner",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetAuthorizationToken"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "AccessKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+          "UserName": {
+              "Ref": "RepositoryPushUser"
+          }
+      },
+      "DependsOn": [
+        "RepositoryPushUser"
+      ]
+    }
+  },
+  "Outputs": {
+    "RepositoryUrl": {
+        "Value": {
+            "Fn::Join": [
+              "",
+              [
+                {
+                  "Ref": "AWS::AccountId"
+                },
+                ".dkr.ecr.",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ".amazonaws.com/",
+                {
+                  "Ref": "ECRRepository"
+                }
+            ]
+          ]
+        }
+    },
+    "Region": {
+        "Value": {
+            "Ref": "AWS::Region"
+        }
+    },
+    "AccessKeyId": {
+        "Value": {
+            "Ref": "AccessKey"
+        }
+    },
+    "AccessKeySecret": {
+        "Value": {
+            "Fn::GetAtt": ["AccessKey", "SecretAccessKey"]
+        }
+    }
+  }
+}
