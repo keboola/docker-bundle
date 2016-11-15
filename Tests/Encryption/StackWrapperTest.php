@@ -22,8 +22,8 @@ class StackWrapperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("mySecretValue", $stackWrapper->decrypt($encrypted));
 
         $dataDecrypted = $jsonWrapper->decrypt($encrypted);
-        $this->arrayHasKey("stacks", $dataDecrypted);
-        $this->arrayHasKey("my-stack", $dataDecrypted["stacks"]);
+        $this->assertArrayHasKey("stacks", $dataDecrypted);
+        $this->assertArrayHasKey("my-stack", $dataDecrypted["stacks"]);
     }
 
     public function testMissingStacks()
@@ -77,9 +77,9 @@ class StackWrapperTest extends \PHPUnit_Framework_TestCase
         $encrypted = $stack2Wrapper->add("whatever2", $encrypted);
 
         $decrypted = $jsonWrapper->decrypt($encrypted);
-        $this->arrayHasKey("stacks", $decrypted);
-        $this->arrayHasKey("my-stack-1", $decrypted["stacks"]);
-        $this->arrayHasKey("my-stack-2", $decrypted["stacks"]);
+        $this->assertArrayHasKey("stacks", $decrypted);
+        $this->assertArrayHasKey("my-stack-1", $decrypted["stacks"]);
+        $this->assertArrayHasKey("my-stack-2", $decrypted["stacks"]);
         $this->assertEquals("whatever1", $stack1Wrapper->decrypt($encrypted));
         $this->assertEquals("whatever2", $stack2Wrapper->decrypt($encrypted));
     }
