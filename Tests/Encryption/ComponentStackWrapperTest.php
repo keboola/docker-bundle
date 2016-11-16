@@ -24,7 +24,7 @@ class ComponentStackWrapperTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("mySecretValue", $componentStackWrapper->decrypt($encrypted));
 
         $dataDecrypted = $jsonWrapper->decrypt($encrypted);
-        $this->arrayHasKey("component", $dataDecrypted);
+        $this->assertArrayHasKey("component", $dataDecrypted);
         $this->assertEquals("vendor.my-component", $dataDecrypted["component"]);
     }
 
@@ -81,9 +81,9 @@ class ComponentStackWrapperTest extends \PHPUnit_Framework_TestCase
         $encrypted = $componentStack2Wrapper->add("whatever2", $encrypted);
 
         $decrypted = $jsonWrapper->decrypt($encrypted);
-        $this->arrayHasKey("stacks", $decrypted);
-        $this->arrayHasKey("my-stack-1", $decrypted["stacks"]);
-        $this->arrayHasKey("my-stack-2", $decrypted["stacks"]);
+        $this->assertArrayHasKey("stacks", $decrypted);
+        $this->assertArrayHasKey("my-stack-1", $decrypted["stacks"]);
+        $this->assertArrayHasKey("my-stack-2", $decrypted["stacks"]);
         $this->assertEquals("whatever1", $componentStack1Wrapper->decrypt($encrypted));
         $this->assertEquals("whatever2", $componentStack2Wrapper->decrypt($encrypted));
     }
