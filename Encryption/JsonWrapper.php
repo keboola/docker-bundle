@@ -16,7 +16,7 @@ class JsonWrapper extends BaseWrapper
      */
     public function decrypt($encryptedData)
     {
-        $jsonString = $this->getEncryptor()->Decrypt(base64_decode($encryptedData), $this->getKey());
+        $jsonString = parent::decrypt($encryptedData);
         $decoder = new JsonDecode();
         try {
             $data = $decoder->decode($jsonString, 'json', ['json_decode_associative' => true]);
