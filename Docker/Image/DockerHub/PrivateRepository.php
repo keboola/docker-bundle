@@ -16,7 +16,6 @@ class PrivateRepository extends Image\DockerHub
     protected $loginPassword;
     protected $loginServer;
 
-
     /**
      * @return mixed
      */

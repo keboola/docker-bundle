@@ -29,6 +29,7 @@ class Image extends Configuration
             ->scalarNode('tag')->defaultValue('latest')->end()
             ->arrayNode('repository')
                 ->children()
+                    ->scalarNode('region')->end()
                     ->scalarNode('username')->end()
                     ->scalarNode('#password')->end()
                     ->scalarNode('server')->end()

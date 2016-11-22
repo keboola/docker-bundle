@@ -25,7 +25,10 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI
+                "uri" => AWS_ECR_REGISTRY_URI,
+                "repository" => [
+                    "region" => AWS_ECR_REGISTRY_REGION
+                ]
             ],
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -55,7 +58,10 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $imageConfig = array(
             "definition" => array(
                 "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI
+                "uri" => AWS_ECR_REGISTRY_URI,
+                "repository" => [
+                    "region" => AWS_ECR_REGISTRY_REGION
+                ]
             ),
             "cpu_shares" => 1024,
             "memory" => "64m",
@@ -70,7 +76,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig, true);
         $image->prepare([]);
     }
-
 
     /**
      * Try to download image
@@ -91,7 +96,10 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $imageConfig = [
             "definition" => [
                 "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI
+                "uri" => AWS_ECR_REGISTRY_URI,
+                "repository" => [
+                    "region" => AWS_ECR_REGISTRY_REGION
+                ]
             ],
             "cpu_shares" => 1024,
             "memory" => "64m",

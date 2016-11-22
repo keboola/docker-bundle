@@ -98,4 +98,17 @@ class AWSElasticContainerRegistry extends Image
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
     }
+
+    /**
+     * @param array $config
+     * @return $this
+     */
+    public function fromArray(array $config)
+    {
+        parent::fromArray($config);
+        if (isset($config["definition"]["repository"]["region"])) {
+            $this->setAwsRegion($config["definition"]["repository"]["region"]);
+        }
+        return $this;
+    }
 }
