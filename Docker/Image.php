@@ -316,6 +316,9 @@ abstract class Image
                 break;
             case "aws-ecr":
                 $instance = new Image\AWSElasticContainerRegistry($encryptor);
+                if (isset($_ENV["AWS_REGION"])) {
+                    $instance->setAwsRegion($_ENV["AWS_REGION"]);
+                }
                 break;
             case $type == "builder":
                 $instance = new Image\Builder\ImageBuilder($encryptor);

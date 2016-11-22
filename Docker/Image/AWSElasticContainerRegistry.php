@@ -15,13 +15,35 @@ use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistry extends Image
 {
+
+    protected $awsRegion = 'us-east-1';
+
+    /**
+     * @return string
+     */
+    public function getAwsRegion()
+    {
+        return $this->awsRegion;
+    }
+
+    /**
+     * @param string $awsRegion
+     * @return $this
+     */
+    public function setAwsRegion($awsRegion)
+    {
+        $this->awsRegion = $awsRegion;
+
+        return $this;
+    }
+
     /**
      * @return string
      */
     public function getLoginParams()
     {
         $ecrClient = new EcrClient(array(
-            'region' => 'us-east-1',
+            'region' => $this->getAwsRegion(),
             'version' => '2015-09-21'
         ));
         try {
