@@ -41,6 +41,9 @@ defined('QUAYIO_PRIVATE_PASSWORD')
 defined('AWS_ECR_REGISTRY_URI')
 || define('AWS_ECR_REGISTRY_URI', getenv('AWS_ECR_REGISTRY_URI') ?: 'foobar.amazon.com');
 
+defined('AWS_ECR_REGISTRY_REGION')
+|| define('AWS_ECR_REGISTRY_REGION', getenv('AWS_ECR_REGISTRY_REGION') ?: 'up-north-01');
+
 defined('AWS_ECR_ACCESS_KEY_ID')
 || define('AWS_ECR_ACCESS_KEY_ID', getenv('AWS_ECR_ACCESS_KEY_ID') ?: 'key');
 
