@@ -47,6 +47,8 @@
             <env key="AWS_ECR_REGISTRY_REGION" value="${aws-ecr-registry-region}"/>
             <arg value="--configuration"/>
             <arg path="phpunit.xml.dist"/>
+            <arg value="--stop-on-error"/>
+            <arg value="--stop-on-failure"/>
         </exec>
     </target>
 
@@ -68,6 +70,8 @@
             <env key="AWS_ECR_REGISTRY_REGION" value="${aws-ecr-registry-region}"/>
             <arg value="--configuration"/>
             <arg path="phpunit-full.xml.dist"/>
+            <arg value="--stop-on-error"/>
+            <arg value="--stop-on-failure"/>
         </exec>
     </target>
 
