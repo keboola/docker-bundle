@@ -50,7 +50,7 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
         $container->method('getRunCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
-                'sudo timeout --signal=SIGKILL 60 docker run --volume="' . $root . '/data/":/data --memory="64m" --memory-swap="64m" --cpu-shares="1024" --net="bridge" --name="'. $containerId . '" "keboola/docker-demo-app:' . $tag . '"'
+                'sudo timeout --signal=SIGKILL 60 docker run --volume="' . $root . '/data/":/data --memory="64m" --memory-swap="64m" --cpu-shares="1024" --net="bridge" --user=`id -u` --name="'. $containerId . '" "keboola/docker-demo-app:' . $tag . '"'
             ));
 
         /** @var Container $container */
@@ -133,7 +133,7 @@ EOF;
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
                 'sh -c -e \'echo "failed: (125) docker: Error response from daemon: open /dev/mapper/docker-202:1-283379-999e9139632af567c234d87fecd9f08c01834303e83dfcfe758a62db66932182: no such file or directory." && exit 125\'',
-                'sudo timeout --signal=SIGKILL 60 docker run --volume="' . $root . '/data/":/data --memory="64m" --memory-swap="64m" --cpu-shares="1024" --net="bridge" --name="'. $containerId . '" "keboola/docker-demo-app:' . $tag . '"'
+                'sudo timeout --signal=SIGKILL 60 docker run --volume="' . $root . '/data/":/data --memory="64m" --memory-swap="64m" --cpu-shares="1024" --net="bridge" --user=`id -u` --name="'. $containerId . '" "keboola/docker-demo-app:' . $tag . '"'
             ));
 
         /** @var Container $container */
