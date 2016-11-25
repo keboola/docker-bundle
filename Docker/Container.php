@@ -345,7 +345,6 @@ class Container
             . " --memory-swap=" . escapeshellarg($this->getImage()->getMemory())
             . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
             . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
-            . " --user=`id -u`"
             . $envs
             . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getImage()->getFullImageId());

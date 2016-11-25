@@ -103,7 +103,7 @@ EOF;
         $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
         $container = new Container('docker-container-test', $image, $log, $containerLog, '/tmp', $envs);
-        $expected = "sudo timeout --signal=SIGKILL 3600 docker run --volume='/tmp':/data --memory='64m' --memory-swap='64m' --cpu-shares='1024' --net='bridge' --user=`id -u` -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
+        $expected = "sudo timeout --signal=SIGKILL 3600 docker run --volume='/tmp':/data --memory='64m' --memory-swap='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
