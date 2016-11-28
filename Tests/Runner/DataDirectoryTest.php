@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Process\Process;
 
 class DataDirectoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -42,5 +43,15 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($fs->exists($dataDir->getDataDir() . '/in/tables/someTable.csv'));
         $this->assertFalse($fs->exists($dataDir->getDataDir() . '/out/files/someFile.txt'));
         $this->assertFalse($fs->exists($dataDir->getDataDir() . '/out/tables/someTable.csv'));
+    }
+
+    public function testDropSubfolder()
+    {
+        $temp = new Temp();
+        $dataDir = new DataDirectory($temp->getTmpFolder());
+        $dataDir->createDataDir();
+        $command = "sudo docker run --volume={$dataDir->getDataDir()}:/data alpine sh -c 'mkdir -p /data/out/tables/subfolder && echo \"x\" > /data/out/tables/subfolder/x'";
+        (new Process($command))->mustRun();
+        $dataDir->dropDataDir();
     }
 }
