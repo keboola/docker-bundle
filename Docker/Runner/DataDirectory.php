@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Process;
 
 class DataDirectory
 {
@@ -50,6 +51,11 @@ class DataDirectory
 
     public function dropDataDir()
     {
+        // normalize user permissions
+        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
+        $command = "sudo docker run --volume=" . $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R'";
+        (new Process($command))->mustRun();
+
         $fs = new Filesystem();
         $finder = new Finder();
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
