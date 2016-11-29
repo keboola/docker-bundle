@@ -32,22 +32,29 @@ class Environment
      */
     private $configParameters;
 
+    /**
+     * @var bool
+     */
+    private $injectEnvironment;
+
     public function __construct(Client $storageClient, $configId, array $component, array $configParameters)
     {
         $this->storageClient = $storageClient;
         $this->configId = $configId;
         $this->forwardToken = $component['forward_token'];
         $this->forwardTokenDetails = $component['forward_token_details'];
-        if ($component['inject_environment']) {
-            $this->configParameters = $configParameters;
-        } else {
-            $this->configParameters = [];
-        }
+        $this->injectEnvironment = $component['inject_environment'];
+        $this->configParameters = $configParameters;
     }
 
     public function getEnvironmentVariables()
     {
-        $envs = $this->getConfigurationVariables($this->configParameters);
+        if ($this->injectEnvironment) {
+            $configParameters = $this->configParameters;
+        } else {
+            $configParameters = [];
+        }
+        $envs = $this->getConfigurationVariables($configParameters);
         // @todo possibly pass tokenInfo so that verifyToken does not have to be called twice
         $tokenInfo = $this->storageClient->verifyToken();
         // set environment variables

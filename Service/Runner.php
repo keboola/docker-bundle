@@ -76,11 +76,6 @@ class Runner
     private $imageCreator;
 
     /**
-     * @var Environment
-     */
-    private $environment;
-
-    /**
      * Runner constructor.
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
@@ -287,7 +282,7 @@ class Runner
 
         $counter = 0;
         foreach ($images as $priority => $image) {
-            $this->environment = new Environment(
+            $environment = new Environment(
                 $this->storageClient,
                 $configId,
                 $component,
@@ -299,7 +294,7 @@ class Runner
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
-                $this->environment->getEnvironmentVariables()
+                $environment->getEnvironmentVariables()
             );
             $output = $container->run();
             if ($image->isMain()) {
