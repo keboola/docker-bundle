@@ -23,7 +23,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "logging" => [
                 "type" => "gelf",
                 "verbosity" => [200 => "verbose"]
-            ]
+            ],
+            "inject_environment" => true,
         ];
         $expectedConfiguration = [
             "definition" => [
@@ -50,7 +51,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             ],
             "staging_storage" => [
                 "input" => "local"
-            ]
+            ],
+            "inject_environment" => true,
         ];
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
@@ -82,7 +84,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'default_bucket_stage' => 'in',
             'staging_storage' => [
                 'input' => 'local'
-            ]
+            ],
+            'inject_environment' => false,
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -209,7 +212,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "synchronous_actions" => [],
             "staging_storage" => [
                 "input" => "local"
-            ]
+            ],
+            "inject_environment" => false,
         ];
 
         $expectedConfiguration = $config;
