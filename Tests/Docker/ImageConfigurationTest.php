@@ -142,7 +142,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
      * @expectedExceptionMessage Invalid configuration for path "component.network": Invalid network type "whatever".
      */
-    public function testWrongNetwokType()
+    public function testWrongNetworkType()
     {
         $config = array(
             "definition" => array(

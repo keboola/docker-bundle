@@ -217,12 +217,6 @@ class Runner
             $configFormat,
             $component['staging_storage']
         );
-        $this->environment = new Environment(
-            $this->storageClient,
-            $configId,
-            $component['forward_token'],
-            $component['forward_token_details']
-        );
         $this->imageCreator = new ImageCreator(
             $this->encryptor,
             $this->loggerService->getLog(),
@@ -233,12 +227,12 @@ class Runner
 
         switch ($mode) {
             case 'run':
-                $componentOutput = $this->runComponent($jobId, $componentId, $configId);
+                $componentOutput = $this->runComponent($jobId, $configId, $component);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($jobId, $componentId, $configData, $mode);
+                $componentOutput = $this->sandboxComponent($jobId, $configData, $mode, $configId, $component);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -246,26 +240,26 @@ class Runner
         return $componentOutput;
     }
 
-    public function runComponent($jobId, $componentId, $configId)
+    public function runComponent($jobId, $configId, $component)
     {
         // initialize
         $this->dataDirectory->createDataDir();
         $this->stateFile->createStateFile();
         $this->dataLoader->loadInputData();
 
-        $componentOutput = $this->runImages($jobId);
+        $componentOutput = $this->runImages($jobId, $configId, $component);
 
         // finalize
         $this->dataLoader->storeOutput();
-        if ($this->shouldStoreState($componentId, $configId)) {
+        if ($this->shouldStoreState($component['id'], $configId)) {
             $this->stateFile->storeStateFile();
         }
         $this->dataDirectory->dropDataDir();
-        $this->loggerService->getLog()->info("Docker container '$componentId' finished.");
+        $this->loggerService->getLog()->info("Docker container '" . $component['id'] . "' finished.");
         return $componentOutput;
     }
 
-    public function sandboxComponent($jobId, $componentId, $configData, $mode)
+    public function sandboxComponent($jobId, $configData, $mode, $configId, $component)
     {
         // initialize
         $this->dataDirectory->createDataDir();
@@ -274,18 +268,18 @@ class Runner
 
         $componentOutput = '';
         if ($mode == 'dry-run') {
-            $componentOutput = $this->runImages($jobId);
+            $componentOutput = $this->runImages($jobId, $configId, $component);
         } else {
             $this->configFile->createConfigFile($configData);
         }
 
-        $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
+        $this->dataLoader->storeDataArchive([$mode, 'docker', $component['id']]);
         // finalize
         $this->dataDirectory->dropDataDir();
         return $componentOutput;
     }
 
-    private function runImages($jobId)
+    private function runImages($jobId, $configId, $component)
     {
         $componentOutput = '';
         $images = $this->imageCreator->prepareImages();
@@ -293,17 +287,19 @@ class Runner
 
         $counter = 0;
         foreach ($images as $priority => $image) {
+            $this->environment = new Environment(
+                $this->storageClient,
+                $configId,
+                $component,
+                $image->getConfigData()['parameters']
+            );
+
             $this->configFile->createConfigFile($image->getConfigData());
             $containerId = $jobId . '-' . $this->storageClient->getRunId();
-            if ($image->isMain()) {
-                $environmentParameters = [];
-            } else {
-                $environmentParameters = $image->getConfigData()['parameters'];
-            }
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
-                $this->environment->getEnvironmentVariables($environmentParameters)
+                $this->environment->getEnvironmentVariables()
             );
             $output = $container->run();
             if ($image->isMain()) {

@@ -15,6 +15,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
@@ -253,7 +254,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -298,6 +299,56 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
     }
 
+    public function testImageParametersEnvironment()
+    {
+        $configurationData = [
+            'parameters' => [
+                'foo' => 'bar'
+            ]
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptor);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        // also attempt to pass the token to verify that it does not work
+                        'entry_point' => 'echo KBC_PARAMETER_FOO=$KBC_PARAMETER_FOO',
+                    ],
+                ],
+                'configuration_format' => 'json',
+                'inject_environment' => true,
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            uniqid('test-'),
+            $configurationData,
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $this->assertContains('KBC_PARAMETER_FOO=bar', $ret[0]['message']);
+    }
+
     public function testImageParametersNoDecrypt()
     {
         $configurationData = [
@@ -318,7 +369,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -464,7 +515,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -515,7 +566,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',

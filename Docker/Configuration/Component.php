@@ -28,6 +28,7 @@ class Component extends Configuration
             ->integerNode('process_timeout')->min(0)->defaultValue(3600)->end()
             ->booleanNode('forward_token')->defaultValue(false)->end()
             ->booleanNode('forward_token_details')->defaultValue(false)->end()
+            ->booleanNode('inject_environment')->defaultValue(false)->end()
             ->booleanNode('default_bucket')->defaultValue(false)->end()
             ->variableNode('image_parameters')->end()
             ->scalarNode('network')

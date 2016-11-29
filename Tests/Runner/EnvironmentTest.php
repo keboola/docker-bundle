@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Exception\UserException;
 
 class EnvironmentTest extends \PHPUnit_Framework_TestCase
 {
@@ -23,8 +24,13 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorEnvs()
     {
-        $environment = new Environment($this->client, 'config-test-id', false, false);
-        $envs = $environment->getEnvironmentVariables([]);
+        $component = [
+            'forward_token' => false,
+            'forward_token_details' => false,
+            'inject_environment' => false,
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -37,8 +43,13 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardToken()
     {
-        $environment = new Environment($this->client, 'config-test-id', true, false);
-        $envs = $environment->getEnvironmentVariables([]);
+        $component = [
+            'forward_token' => true,
+            'forward_token_details' => false,
+            'inject_environment' => false,
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -52,8 +63,13 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardTokenAndDetails()
     {
-        $environment = new Environment($this->client, 'config-test-id', true, true);
-        $envs = $environment->getEnvironmentVariables([]);
+        $component = [
+            'forward_token' => true,
+            'forward_token_details' => true,
+            'inject_environment' => false,
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -67,8 +83,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardDetails()
     {
-        $environment = new Environment($this->client, 'config-test-id', false, true);
-        $envs = $environment->getEnvironmentVariables([]);
+        $component = [
+            'forward_token' => false,
+            'forward_token_details' => true,
+            'inject_environment' => false,
+        ];
+        $parameters = [
+            'myVariable' => 'fooBar',
+            'KBC_CONFIGID' => 'barFoo',
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -77,12 +102,23 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayHasKey('KBC_TOKENID', $envs);
         $this->assertArrayHasKey('KBC_TOKENDESC', $envs);
+        $this->assertArrayNotHasKey('KBC_PARAMETER_MYVARIABLE', $envs);
+        $this->assertArrayNotHasKey('KBC_PARAMETER_KBC_CONFIGID', $envs);
     }
 
     public function testExecutorVariables()
     {
-        $environment = new Environment($this->client, 'config-test-id', true, true);
-        $envs = $environment->getEnvironmentVariables(['myVariable' => 'fooBar', 'KBC_CONFIGID' => 'barFoo']);
+        $component = [
+            'forward_token' => true,
+            'forward_token_details' => true,
+            'inject_environment' => true,
+        ];
+        $parameters = [
+            'myVariable' => 'fooBar',
+            'KBC_CONFIGID' => 'barFoo',
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertArrayHasKey('KBC_PARAMETER_MYVARIABLE', $envs);
@@ -96,5 +132,27 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
         $this->assertArrayHasKey('KBC_TOKENID', $envs);
         $this->assertArrayHasKey('KBC_TOKENDESC', $envs);
+    }
+
+    public function testExecutorVariablesInvalid()
+    {
+        $component = [
+            'forward_token' => true,
+            'forward_token_details' => true,
+            'inject_environment' => true,
+        ];
+        $parameters = [
+            'myVariable' => 'fooBar',
+            'KBC_CONFIGID' => 'barFoo',
+            'nested' => [
+                'variable' => 'not allowed'
+            ]
+        ];
+        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        try {
+            $environment->getEnvironmentVariables();
+        } catch (UserException $e) {
+            $this->assertContains('Only scalar value is allowed as value', $e->getMessage());
+        }
     }
 }
