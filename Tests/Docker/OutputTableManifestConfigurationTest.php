@@ -19,6 +19,7 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
         $expectedArray = array(
             "destination" => "in.c-main.test",
             "primary_key" => array(),
+            "columns" => array(),
             "incremental" => false,
             "delete_where_values" => array(),
             "delete_where_operator" => "eq",
@@ -40,6 +41,7 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
             "destination" => "in.c-main.test",
             "incremental" => true,
             "primary_key" => array("Id", "Name"),
+            "columns" => array("Id", "Name", "status"),
             "delete_where_column" => "status",
             "delete_where_values" => array("val1", "val2"),
             "delete_where_operator" => "ne",

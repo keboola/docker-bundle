@@ -11,6 +11,7 @@ use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
@@ -417,7 +418,7 @@ class Writer
                     // ignore
                 }
             }
-            if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
+            if (!empty($config["delete_where_column"])) {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
                 if (!in_array($config["delete_where_column"], $tableInfo["indexedColumns"])) {
@@ -438,12 +439,28 @@ class Writer
             $options = array(
                 "incremental" => $config["incremental"]
             );
+            // headless csv file
+            if (!empty($config["columns"])) {
+                $options["columns"] = $config["columns"];
+                $options["withoutHeaders"] = true;
+            }
             $this->client->writeTableAsync($config["destination"], $csvFile, $options);
         } else {
             $options = array(
                 "primaryKey" => join(",", array_unique($config["primary_key"]))
             );
-            $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
+            // headless csv file
+            if (!empty($config["columns"])) {
+                $tmp = new Temp();
+                $headerCsvFile = new CsvFile($tmp->createFile($tableName . '.header.csv'));
+                $headerCsvFile->writeRow($config["columns"]);
+                $this->client->createTableAsync($bucketId, $tableName, $headerCsvFile, $options);
+                $options["columns"] = $config["columns"];
+                $options["withoutHeaders"] = true;
+                $this->client->writeTableAsync($config["destination"], $csvFile, $options);
+            } else {
+                $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
+            }
         }
     }
 
