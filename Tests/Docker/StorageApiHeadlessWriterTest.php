@@ -2,14 +2,16 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
+use Keboola\Syrup\Exception\UserException;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -202,44 +204,5 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $table = $this->client->parseCsv(file_get_contents($downloadedFile));
         $this->assertCount(1, $table);
         $this->assertEquals([["Id" => "test", "Name" => "test"]], $table);
-    }
-
-    public function testWriteTableOutputMappingExistingTable()
-    {
-        $csvFile = new CsvFile($this->tmp->createFile('header')->getPathname());
-        $csvFile->writeRow(["Id", "Name"]);
-        $this->client->createTable("out.c-docker-test", "table", $csvFile);
-        $tables = $this->client->listTables("out.c-docker-test");
-        $this->assertCount(1, $tables);
-        $table = $this->client->getTable("out.c-docker-test.table");
-        $this->assertEquals(["Id", "Name"], $table["columns"]);
-
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
-
-        $configs = array(
-            array(
-                "source" => "table.csv",
-                "destination" => "out.c-docker-test.table",
-                "columns" => ["Id","Name"]
-            )
-        );
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
-
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
-
-        $tables = $this->client->listTables("out.c-docker-test");
-        $this->assertCount(1, $tables);
-        $table = $this->client->getTable("out.c-docker-test.table");
-        $this->assertEquals(["Id", "Name"], $table["columns"]);
-
-        $exporter = new TableExporter($this->client);
-        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
-        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
-        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
-        $this->assertCount(2, $table);
-        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
-        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
     }
 }
