@@ -6,13 +6,11 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Exception\UserException;
 use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 
