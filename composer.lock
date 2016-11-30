@@ -1920,16 +1920,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "4.16.0",
+            "version": "4.17.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "e250f3476defacb1b20f49e5752fc3a625852611"
+                "reference": "c83a91456c7f6effdf8346d467789624f7b69a2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/e250f3476defacb1b20f49e5752fc3a625852611",
-                "reference": "e250f3476defacb1b20f49e5752fc3a625852611",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c83a91456c7f6effdf8346d467789624f7b69a2d",
+                "reference": "c83a91456c7f6effdf8346d467789624f7b69a2d",
                 "shasum": ""
             },
             "require": {
@@ -1944,7 +1944,8 @@
                 "ext-pdo_pgsql": "*",
                 "keboola/php-csv-db-import": "^2.2",
                 "phpunit/phpunit": "^5.6",
-                "psr/log": "~1.0"
+                "psr/log": "~1.0",
+                "squizlabs/php_codesniffer": "^2.7"
             },
             "type": "library",
             "autoload": {
@@ -1958,7 +1959,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2016-10-22 10:35:49"
+            "time": "2016-11-25 09:53:59"
         },
         {
             "name": "keboola/syrup",
