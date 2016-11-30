@@ -418,7 +418,7 @@ class Writer
                     // ignore
                 }
             }
-            if (isset($config["delete_where_column"]) && $config["delete_where_column"] != '') {
+            if (!empty($config["delete_where_column"])) {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
                 if (!in_array($config["delete_where_column"], $tableInfo["indexedColumns"])) {
@@ -440,7 +440,7 @@ class Writer
                 "incremental" => $config["incremental"]
             );
             // headless csv file
-            if (isset($config["columns"]) && count($config["columns"])) {
+            if (!empty($config["columns"])) {
                 $options["columns"] = $config["columns"];
                 $options["withoutHeaders"] = true;
             }
@@ -450,7 +450,7 @@ class Writer
                 "primaryKey" => join(",", array_unique($config["primary_key"]))
             );
             // headless csv file
-            if (isset($config["columns"]) && count($config["columns"])) {
+            if (!empty($config["columns"])) {
                 $tmp = new Temp();
                 $headerCsvFile = new CsvFile($tmp->createFile($tableName . '.header.csv'));
                 $headerCsvFile->writeRow($config["columns"]);
