@@ -29,7 +29,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
     protected function clearBucket()
     {
-        foreach (['out.c-docker-test', 'out.c-docker-default-test', 'out.c-docker-redshift-test', 'in.c-docker-test'] as $bucket) {
+        foreach (['out.c-docker-test'] as $bucket) {
             try {
                 $this->client->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -67,8 +67,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         ]);
         $this->clearBucket();
         $this->clearFileUploads();
-        $this->client->createBucket('docker-redshift-test', 'out', '', 'redshift');
-        $this->client->createBucket('docker-default-test', 'out');
+        $this->client->createBucket('docker-test', 'out');
     }
 
     public function tearDown()
@@ -83,12 +82,12 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteTableOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table1.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+        file_put_contents($root . "/upload/table.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
         $configs = array(
             array(
-                "source" => "table1.csv",
-                "destination" => "out.c-docker-test.table1",
+                "source" => "table.csv",
+                "destination" => "out.c-docker-test.table",
                 "columns" => ["Id","Name"]
             )
         );
@@ -99,19 +98,26 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
-        $table = $this->client->getTable("out.c-docker-test.table1");
+        $table = $this->client->getTable("out.c-docker-test.table");
         $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(2, $table);
+        $this->assertEquals([["Id" => "test", "Name" => "test"], ["Id" => "aabb", "Name" => "ccdd"]], $table);
     }
 
     public function testWriteTableOutputMappingEmptyFile()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table1", "");
+        file_put_contents($root . "/upload/table", "");
 
         $configs = array(
             array(
-                "source" => "table1",
-                "destination" => "out.c-docker-test.table1",
+                "source" => "table",
+                "destination" => "out.c-docker-test.table",
                 "columns" => ["Id","Name"]
             )
         );
@@ -119,8 +125,14 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
         $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
 
-        $table = $this->client->getTable("out.c-docker-test.table1");
+        $table = $this->client->getTable("out.c-docker-test.table");
         $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(0, $table);
     }
 
     public function testWriteTableOutputMappingAndManifest()
@@ -153,18 +165,25 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $table = $this->client->getTable("out.c-docker-test.table");
         $this->assertEquals(array(), $table["primaryKey"]);
         $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(1, $table);
+        $this->assertEquals([["Id" => "test", "Name" => "test"]], $table);
     }
 
     public function testWriteTableManifest()
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table.csv",
             "\"test\",\"test\"\n"
         );
         file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
-            "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\":[\"Id\",\"Name\"],\"columns\":[\"Id\",\"Name\"]}"
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table.csv.manifest",
+            "{\"destination\": \"out.c-docker-test.table\",\"primary_key\":[\"Id\",\"Name\"],\"columns\":[\"Id\",\"Name\"]}"
         );
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
@@ -173,9 +192,16 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
-        $table = $this->client->getTable("out.c-docker-test.table3");
+        $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
+        $table = $this->client->getTable("out.c-docker-test.table");
         $this->assertEquals(array("Id", "Name"), $table["primaryKey"]);
         $this->assertEquals(array("Id", "Name"), $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(1, $table);
+        $this->assertEquals([["Id" => "test", "Name" => "test"]], $table);
     }
 }
