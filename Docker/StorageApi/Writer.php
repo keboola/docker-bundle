@@ -401,7 +401,7 @@ class Writer
         $tableName = $tableIdParts[2];
 
         if (is_dir($source) && empty($config["columns"])) {
-            throw new UserException("Sliced table columns specification missing.");
+            throw new UserException("Sliced file '" . basename($source) . "': columns specification missing.");
         }
 
         // Create bucket if not exists

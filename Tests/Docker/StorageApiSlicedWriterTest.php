@@ -154,7 +154,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
             $this->fail("Exception not caught");
         } catch (UserException $e) {
-            $this->assertEquals("Sliced table columns specification missing.", $e->getMessage());
+            $this->assertEquals("Sliced file 'table': columns specification missing.", $e->getMessage());
         }
     }
 
