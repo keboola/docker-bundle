@@ -279,14 +279,17 @@ class Runner
         $componentOutput = '';
         $images = $this->imageCreator->prepareImages();
         $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
+        $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
         foreach ($images as $priority => $image) {
             $environment = new Environment(
-                $this->storageClient,
                 $configId,
                 $component,
-                $image->getConfigData()['parameters']
+                $image->getConfigData()['parameters'],
+                $tokenInfo,
+                $this->storageClient->getRunId(),
+                $this->storageClient->getApiUrl()
             );
 
             $this->configFile->createConfigFile($image->getConfigData());

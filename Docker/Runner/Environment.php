@@ -8,11 +8,6 @@ use Keboola\Syrup\Exception\UserException;
 class Environment
 {
     /**
-     * @var Client
-     */
-    private $storageClient;
-
-    /**
      * @var string
      */
     private $configId;
@@ -37,14 +32,31 @@ class Environment
      */
     private $injectEnvironment;
 
-    public function __construct(Client $storageClient, $configId, array $component, array $configParameters)
+    /**
+     * @var array
+     */
+    private $tokenInfo;
+
+    /**
+     * @var string
+     */
+    private $runId;
+
+    /**
+     * @var string
+     */
+    private $url;
+
+    public function __construct($configId, array $component, array $configParameters, array $tokenInfo, $runId, $url)
     {
-        $this->storageClient = $storageClient;
         $this->configId = $configId;
         $this->forwardToken = $component['forward_token'];
         $this->forwardTokenDetails = $component['forward_token_details'];
         $this->injectEnvironment = $component['inject_environment'];
         $this->configParameters = $configParameters;
+        $this->tokenInfo = $tokenInfo;
+        $this->runId = $runId;
+        $this->url = $url;
     }
 
     public function getEnvironmentVariables()
@@ -55,23 +67,21 @@ class Environment
             $configParameters = [];
         }
         $envs = $this->getConfigurationVariables($configParameters);
-        // @todo possibly pass tokenInfo so that verifyToken does not have to be called twice
-        $tokenInfo = $this->storageClient->verifyToken();
         // set environment variables
         $envs = array_merge($envs, [
-            "KBC_RUNID" => $this->storageClient->getRunId(),
-            "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
+            "KBC_RUNID" => $this->runId,
+            "KBC_PROJECTID" => $this->tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
         ]);
         if ($this->forwardToken) {
-            $envs["KBC_TOKEN"] = $tokenInfo["token"];
-            $envs["KBC_URL"] = $this->storageClient->getApiUrl();
+            $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
+            $envs["KBC_URL"] = $this->url;
         }
         if ($this->forwardTokenDetails) {
-            $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
-            $envs["KBC_TOKENID"] = $tokenInfo["id"];
-            $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
+            $envs["KBC_PROJECTNAME"] = $this->tokenInfo["owner"]["name"];
+            $envs["KBC_TOKENID"] = $this->tokenInfo["id"];
+            $envs["KBC_TOKENDESC"] = $this->tokenInfo["description"];
         }
         return $envs;
     }

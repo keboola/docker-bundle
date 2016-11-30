@@ -29,7 +29,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => false,
             'inject_environment' => false,
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -48,7 +48,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => false,
             'inject_environment' => false,
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -68,7 +68,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'forward_token_details' => true,
             'inject_environment' => false,
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, []);
+        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -92,7 +92,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -117,7 +117,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -148,7 +148,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
                 'variable' => 'not allowed'
             ]
         ];
-        $environment = new Environment($this->client, 'config-test-id', $component, $parameters);
+        $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
         try {
             $environment->getEnvironmentVariables();
         } catch (UserException $e) {
