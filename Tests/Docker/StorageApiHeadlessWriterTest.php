@@ -106,7 +106,8 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
         $table = $this->client->parseCsv(file_get_contents($downloadedFile));
         $this->assertCount(2, $table);
-        $this->assertEquals([["Id" => "test", "Name" => "test"], ["Id" => "aabb", "Name" => "ccdd"]], $table);
+        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
+        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
     }
 
     public function testWriteTableOutputMappingEmptyFile()
