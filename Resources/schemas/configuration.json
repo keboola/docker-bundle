@@ -169,6 +169,13 @@
                     },
                     "type": "array"
                   },
+                  "columns": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+
                   "delete_where_column": {
                     "type": "string"
                   },
