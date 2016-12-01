@@ -9,11 +9,12 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
+use Keboola\Syrup\Exception\UserException;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 
-class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
+class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Client
@@ -80,7 +81,9 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteTableOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+        mkdir($root . "/upload/table.csv");
+        file_put_contents($root . "/upload/table.csv/part1", "\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table.csv/part2", "\"aabb\",\"ccdd\"\n");
 
         $configs = array(
             array(
@@ -111,7 +114,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
     public function testWriteTableOutputMappingEmptyFile()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table", "");
+        mkdir($root . "/upload/table");
 
         $configs = array(
             array(
@@ -134,74 +137,25 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(0, $table);
     }
 
-    public function testWriteTableOutputMappingAndManifest()
+    public function testWriteTableOutputMappingMissingHeaders()
     {
         $root = $this->tmp->getTmpFolder();
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/table2.csv",
-            "\"test\",\"test\"\n"
-        );
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/table2.csv.manifest",
-            "{\"destination\": \"out.c-docker-test.table2\",\"primary_key\":[\"Id\"],\"columns\":[\"a\",\"b\"]}"
-        );
+        mkdir($root . "/upload/table");
 
         $configs = array(
             array(
-                "source" => "table2.csv",
-                "destination" => "out.c-docker-test.table",
-                "columns" => ["Id", "Name"]
+                "source" => "table",
+                "destination" => "out.c-docker-test.table"
             )
         );
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
-
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
-
-        $tables = $this->client->listTables("out.c-docker-test");
-        $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
-        $table = $this->client->getTable("out.c-docker-test.table");
-        $this->assertEquals(array(), $table["primaryKey"]);
-        $this->assertEquals(["Id", "Name"], $table["columns"]);
-
-        $exporter = new TableExporter($this->client);
-        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
-        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
-        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
-        $this->assertCount(1, $table);
-        $this->assertEquals([["Id" => "test", "Name" => "test"]], $table);
-    }
-
-    public function testWriteTableManifest()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table.csv",
-            "\"test\",\"test\"\n"
-        );
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table.csv.manifest",
-            "{\"destination\": \"out.c-docker-test.table\",\"primary_key\":[\"Id\",\"Name\"],\"columns\":[\"Id\",\"Name\"]}"
-        );
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
-
-        $writer->uploadTables($root . "/upload");
-
-        $tables = $this->client->listTables("out.c-docker-test");
-        $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-test.table', $tables[0]["id"]);
-        $table = $this->client->getTable("out.c-docker-test.table");
-        $this->assertEquals(array("Id", "Name"), $table["primaryKey"]);
-        $this->assertEquals(array("Id", "Name"), $table["columns"]);
-
-        $exporter = new TableExporter($this->client);
-        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
-        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
-        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
-        $this->assertCount(1, $table);
-        $this->assertEquals([["Id" => "test", "Name" => "test"]], $table);
+        try {
+            $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
+            $this->fail("Exception not caught");
+        } catch (UserException $e) {
+            $this->assertEquals("Sliced file 'table': columns specification missing.", $e->getMessage());
+        }
     }
 
     public function testWriteTableOutputMappingExistingTable()
@@ -215,7 +169,129 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["Id", "Name"], $table["columns"]);
 
         $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+        mkdir($root . "/upload/table.csv");
+        file_put_contents($root . "/upload/table.csv/part1", "\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table.csv/part2", "\"aabb\",\"ccdd\"\n");
+
+        $configs = array(
+            array(
+                "source" => "table.csv",
+                "destination" => "out.c-docker-test.table",
+                "columns" => ["Id","Name"]
+            )
+        );
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $table = $this->client->getTable("out.c-docker-test.table");
+        $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(2, $table);
+        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
+        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
+    }
+
+
+    public function testWriteTableOutputMappingDifferentDelimiterEnclosure()
+    {
+        $root = $this->tmp->getTmpFolder();
+        mkdir($root . "/upload/table.csv");
+        file_put_contents($root . "/upload/table.csv/part1", "'test'|'test'\n");
+        file_put_contents($root . "/upload/table.csv/part2", "'aabb'|'ccdd'\n");
+
+        $configs = array(
+            array(
+                "source" => "table.csv",
+                "destination" => "out.c-docker-test.table",
+                "columns" => ["Id","Name"],
+                "delimiter" => "|",
+                "enclosure" => "'"
+            )
+        );
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $table = $this->client->getTable("out.c-docker-test.table");
+        $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(2, $table);
+        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
+        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
+    }
+
+
+    public function testWriteTableOutputMappingCombination()
+    {
+        $root = $this->tmp->getTmpFolder();
+        mkdir($root . "/upload/table.csv");
+        file_put_contents($root . "/upload/table.csv/part1", "\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table.csv/part2", "\"aabb\",\"ccdd\"\n");
+        file_put_contents($root . "/upload/table2.csv", "\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
+
+        $configs = array(
+            array(
+                "source" => "table.csv",
+                "destination" => "out.c-docker-test.table",
+                "columns" => ["Id","Name"]
+            ),
+            array(
+                "source" => "table2.csv",
+                "destination" => "out.c-docker-test.table2",
+                "columns" => ["Id","Name"]
+            )
+        );
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs]);
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(2, $tables);
+        $table = $this->client->getTable("out.c-docker-test.table");
+        $this->assertEquals(["Id", "Name"], $table["columns"]);
+        $table = $this->client->getTable("out.c-docker-test.table2");
+        $this->assertEquals(["Id", "Name"], $table["columns"]);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(2, $table);
+        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
+        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
+
+        $exporter = new TableExporter($this->client);
+        $downloadedFile = $this->tmp->getTmpFolder() . DIRECTORY_SEPARATOR . "download.csv";
+        $exporter->exportTable('out.c-docker-test.table2', $downloadedFile, []);
+        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
+        $this->assertCount(2, $table);
+        $this->assertContains(["Id" => "test", "Name" => "test"], $table);
+        $this->assertContains(["Id" => "aabb", "Name" => "ccdd"], $table);
+    }
+
+    public function testWriteTableOutputMappingCompression()
+    {
+        $root = $this->tmp->getTmpFolder();
+        mkdir($root . "/upload/table.csv");
+        file_put_contents($root . "/upload/table.csv/part1", "\"test\",\"test\"\n");
+        file_put_contents($root . "/upload/table.csv/part2", "\"aabb\",\"ccdd\"\n");
+        exec("gzip " . $root . "/upload/table.csv/part1");
+        exec("gzip " . $root . "/upload/table.csv/part2");
 
         $configs = array(
             array(

@@ -122,7 +122,7 @@ class Writer
 
         $finder = new Finder();
         /** @var SplFileInfo[] $files */
-        $files = $finder->files()->notName("*.manifest")->in($source);
+        $files = $finder->files()->notName("*.manifest")->in($source)->depth(0);
 
         $outputMappingFiles = array();
         if (isset($configuration["mapping"])) {
@@ -246,7 +246,7 @@ class Writer
         $finder = new Finder();
 
         /** @var SplFileInfo[] $files */
-        $files = $finder->files()->notName("*.manifest")->in($source);
+        $files = $finder->notName("*.manifest")->in($source)->depth(0);
 
         $outputMappingTables = array();
         if (isset($configuration["mapping"])) {
@@ -395,11 +395,14 @@ class Writer
      */
     protected function uploadTable($source, $config = array())
     {
-        $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
         $tableIdParts = explode(".", $config["destination"]);
         $bucketId = $tableIdParts[0] . "." . $tableIdParts[1];
         $bucketName = substr($tableIdParts[1], 2);
         $tableName = $tableIdParts[2];
+
+        if (is_dir($source) && empty($config["columns"])) {
+            throw new UserException("Sliced file '" . basename($source) . "': columns specification missing.");
+        }
 
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
@@ -444,7 +447,14 @@ class Writer
                 $options["columns"] = $config["columns"];
                 $options["withoutHeaders"] = true;
             }
-            $this->client->writeTableAsync($config["destination"], $csvFile, $options);
+            if (is_dir($source)) {
+                $options["delimiter"] = $config["delimiter"];
+                $options["enclosure"] = $config["enclosure"];
+                $this->writeSlicedTable($source, $config["destination"], $options);
+            } else {
+                $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
+                $this->client->writeTableAsync($config["destination"], $csvFile, $options);
+            }
         } else {
             $options = array(
                 "primaryKey" => join(",", array_unique($config["primary_key"]))
@@ -457,11 +467,52 @@ class Writer
                 $this->client->createTableAsync($bucketId, $tableName, $headerCsvFile, $options);
                 $options["columns"] = $config["columns"];
                 $options["withoutHeaders"] = true;
-                $this->client->writeTableAsync($config["destination"], $csvFile, $options);
+                if (is_dir($source)) {
+                    $options["delimiter"] = $config["delimiter"];
+                    $options["enclosure"] = $config["enclosure"];
+                    $this->writeSlicedTable($source, $config["destination"], $options);
+                } else {
+                    $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
+                    $this->client->writeTableAsync($config["destination"], $csvFile, $options);
+                }
             } else {
+                $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
         }
+    }
+
+    /**
+     *
+     * Uploads a sliced table to storage api. Takes all files from the $source folder
+     *
+     * @param $source Slices folder
+     * @param $destination Destination table
+     * @param $options WriteTable options
+     */
+    protected function writeSlicedTable($source, $destination, $options)
+    {
+        $finder = new Finder();
+        $slices = $finder->files()->in($source)->depth(0);
+        $sliceFiles = [];
+        foreach ($slices as $slice) {
+            $sliceFiles[] = $slice->getPathname();
+        }
+        if (count($sliceFiles) === 0) {
+            return;
+        }
+
+        // upload slices
+        $fileUploadOptions = new FileUploadOptions();
+        $fileUploadOptions
+                ->setIsSliced(true)
+                ->setFileName(basename($source))
+        ;
+        $uploadFileId = $this->client->uploadSlicedFile($sliceFiles, $fileUploadOptions);
+
+        // write table
+        $options["dataFileId"] = $uploadFileId;
+        $this->client->writeTableAsyncDirect($destination, $options);
     }
 
     /**
@@ -471,7 +522,7 @@ class Writer
     protected function getManifestFiles($dir)
     {
         $finder = new Finder();
-        $manifests = $finder->files()->name("*.manifest")->in($dir);
+        $manifests = $finder->files()->name("*.manifest")->in($dir)->depth(0);
         $manifestNames = [];
         /** @var SplFileInfo $manifest */
         foreach ($manifests as $manifest) {
