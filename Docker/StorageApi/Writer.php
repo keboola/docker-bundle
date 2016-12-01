@@ -122,7 +122,7 @@ class Writer
 
         $finder = new Finder();
         /** @var SplFileInfo[] $files */
-        $files = $finder->files()->notName("*.manifest")->in($source);
+        $files = $finder->files()->notName("*.manifest")->in($source)->depth(0);
 
         $outputMappingFiles = array();
         if (isset($configuration["mapping"])) {
@@ -493,7 +493,7 @@ class Writer
     protected function writeSlicedTable($source, $destination, $options)
     {
         $finder = new Finder();
-        $slices = $finder->files()->in($source);
+        $slices = $finder->files()->in($source)->depth(0);
         $sliceFiles = [];
         foreach ($slices as $slice) {
             $sliceFiles[] = $slice->getPathname();
@@ -522,7 +522,7 @@ class Writer
     protected function getManifestFiles($dir)
     {
         $finder = new Finder();
-        $manifests = $finder->files()->name("*.manifest")->in($dir);
+        $manifests = $finder->files()->name("*.manifest")->in($dir)->depth(0);
         $manifestNames = [];
         /** @var SplFileInfo $manifest */
         foreach ($manifests as $manifest) {
