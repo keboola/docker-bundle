@@ -21,6 +21,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "source" => "data.csv",
             "destination" => "in.c-main.test",
             "primary_key" => array(),
+            "columns" => array(),
             "incremental" => false,
             "delete_where_values" => array(),
             "delete_where_operator" => "eq",
@@ -43,6 +44,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "destination" => "in.c-main.test",
             "incremental" => true,
             "primary_key" => array("Id", "Name"),
+            "columns" => array("Id", "Name", "status"),
             "delete_where_column" => "status",
             "delete_where_values" => array("val1", "val2"),
             "delete_where_operator" => "ne",
@@ -83,7 +85,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
     /**
      *
      */
-    public function testPrimaryKeyEmtpyString()
+    public function testPrimaryKeyEmptyString()
     {
         $config = array(
             "source" => "test",
@@ -95,6 +97,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "source" => "test",
             "destination" => "in.c-main.test",
             "primary_key" => array(""),
+            "columns" => array(),
             "incremental" => false,
             "delete_where_values" => array(),
             "delete_where_operator" => "eq",
