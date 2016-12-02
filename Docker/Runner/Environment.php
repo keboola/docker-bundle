@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\StorageApi\Client;
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\Syrup\Exception\UserException;
 
 class Environment
@@ -13,24 +13,9 @@ class Environment
     private $configId;
 
     /**
-     * @var bool
-     */
-    private $forwardToken;
-
-    /**
-     * @var bool
-     */
-    private $forwardTokenDetails;
-
-    /**
      * @var array
      */
     private $configParameters;
-
-    /**
-     * @var bool
-     */
-    private $injectEnvironment;
 
     /**
      * @var array
@@ -47,13 +32,16 @@ class Environment
      */
     private $url;
 
-    public function __construct($configId, array $component, array $configParameters, array $tokenInfo, $runId, $url)
+    /**
+     * @var Component
+     */
+    private $component;
+
+    public function __construct($configId, Component $component, array $config, array $tokenInfo, $runId, $url)
     {
         $this->configId = $configId;
-        $this->forwardToken = $component['forward_token'];
-        $this->forwardTokenDetails = $component['forward_token_details'];
-        $this->injectEnvironment = $component['inject_environment'];
-        $this->configParameters = $configParameters;
+        $this->component = $component;
+        $this->configParameters = $config;
         $this->tokenInfo = $tokenInfo;
         $this->runId = $runId;
         $this->url = $url;
@@ -61,7 +49,7 @@ class Environment
 
     public function getEnvironmentVariables()
     {
-        if ($this->injectEnvironment) {
+        if ($this->component->injectEnvironment()) {
             $configParameters = $this->configParameters;
         } else {
             $configParameters = [];
@@ -74,18 +62,17 @@ class Environment
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
         ]);
-        if ($this->forwardToken) {
+        if ($this->component->forwardToken()) {
             $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
             $envs["KBC_URL"] = $this->url;
         }
-        if ($this->forwardTokenDetails) {
+        if ($this->component->forwardTokenDetails()) {
             $envs["KBC_PROJECTNAME"] = $this->tokenInfo["owner"]["name"];
             $envs["KBC_TOKENID"] = $this->tokenInfo["id"];
             $envs["KBC_TOKENDESC"] = $this->tokenInfo["description"];
         }
         return $envs;
     }
-
 
     private function getConfigurationVariables($configurationVariables)
     {
@@ -99,7 +86,6 @@ class Environment
         }
         return $envs;
     }
-
 
     private function sanitizeName($name)
     {

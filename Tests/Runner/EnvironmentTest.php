@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
@@ -24,11 +25,14 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorEnvs()
     {
-        $component = [
+        $component = new Component([
+            'definition' => [
+                'type' => 'dockerhub'
+            ],
             'forward_token' => false,
             'forward_token_details' => false,
             'inject_environment' => false,
-        ];
+        ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);

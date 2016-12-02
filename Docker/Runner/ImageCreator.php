@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
@@ -21,9 +22,9 @@ class ImageCreator
     private $logger;
 
     /**
-     * @var array
+     * @var Component
      */
-    private $mainImage;
+    private $mainComponent;
 
     /**
      * @var array
@@ -44,12 +45,12 @@ class ImageCreator
         ObjectEncryptor $encryptor,
         Logger $logger,
         Client $storageClient,
-        array $mainImage,
+        Component $mainComponent,
         array $componentConfig
     ) {
         $this->encryptor = $encryptor;
         $this->logger = $logger;
-        $this->mainImage = $mainImage;
+        $this->mainComponent = $mainComponent;
         $this->storageClient = $storageClient;
         $this->before = empty($componentConfig['processors']['before']) ? [] : $componentConfig['processors']['before'];
         $this->after = empty($componentConfig['processors']['after']) ? [] : $componentConfig['processors']['after'];
@@ -70,7 +71,7 @@ class ImageCreator
             $images[] = $image;
         }
 
-        $image = Image::factory($this->encryptor, $this->logger, $this->mainImage, true);
+        $image = Image::factory($this->encryptor, $this->logger, $this->mainComponent, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
@@ -87,7 +88,8 @@ class ImageCreator
     }
 
     /**
-     * @param $id
+     * @param string $id
+     * @return Component
      */
     protected function getComponent($id)
     {
@@ -101,6 +103,6 @@ class ImageCreator
         if (!isset($component)) {
             throw new UserException("Component '{$id}' not found.");
         }
-        return $component;
+        return new Component($component);
     }
 }

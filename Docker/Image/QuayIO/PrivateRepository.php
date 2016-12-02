@@ -2,9 +2,11 @@
 
 namespace Keboola\DockerBundle\Docker\Image\QuayIO;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -16,8 +18,25 @@ class PrivateRepository extends Image\QuayIO
     protected $loginPassword;
     protected $loginServer = "quay.io";
 
+    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    {
+        parent::__construct($encryptor, $component);
+        $config = $component->getImageDefinition();
+        if (isset($config['repository'])) {
+            if (isset($config['repository']['username'])) {
+                $this->loginUsername = $config['repository']['username'];
+            }
+            if (isset($config['repository']['server'])) {
+                $this->loginServer = $config['repository']['server'];
+            }
+            if (isset($config['repository']['#password'])) {
+                $this->loginPassword = $this->getEncryptor()->decrypt($config['repository']['#password']);
+            }
+        }
+    }
+
     /**
-     * @return mixed
+     * @return string
      */
     public function getLoginUsername()
     {
@@ -25,18 +44,7 @@ class PrivateRepository extends Image\QuayIO
     }
 
     /**
-     * @param mixed $loginUsername
-     * @return $this
-     */
-    public function setLoginUsername($loginUsername)
-    {
-        $this->loginUsername = $loginUsername;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
+     * @return string
      */
     public function getLoginPassword()
     {
@@ -44,18 +52,7 @@ class PrivateRepository extends Image\QuayIO
     }
 
     /**
-     * @param mixed $loginPassword
-     * @return $this
-     */
-    public function setLoginPassword($loginPassword)
-    {
-        $this->loginPassword = $loginPassword;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
+     * @return string
      */
     public function getLoginServer()
     {
@@ -122,25 +119,5 @@ class PrivateRepository extends Image\QuayIO
             }
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
-    }
-
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function fromArray(array $config = [])
-    {
-        parent::fromArray($config);
-        if (isset($config['definition']['repository'])) {
-            if (isset($config['definition']['repository']['username'])) {
-                $this->setLoginUsername($config['definition']['repository']['username']);
-            }
-            if (isset($config['definition']['repository']['#password'])) {
-                $this->setLoginPassword(
-                    $this->getEncryptor()->decrypt($config['definition']['repository']['#password'])
-                );
-            }
-        }
-        return $this;
     }
 }

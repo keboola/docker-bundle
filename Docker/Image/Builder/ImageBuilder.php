@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Image\Builder;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
@@ -81,13 +82,34 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     protected $fullImageId;
 
-    /**
-     * Constructor
-     * @param ObjectEncryptor $encryptor
-     */
-    public function __construct(ObjectEncryptor $encryptor)
+    public function __construct(ObjectEncryptor $encryptor, Component $component)
     {
-        parent::__construct($encryptor);
+        parent::__construct($encryptor, $component);
+        $config = $component->getImageDefinition();
+        if (isset($config["build_options"])) {
+            if (isset($config["build_options"]["repository"]["username"])) {
+                $this->repoUsername = $config["build_options"]["repository"]["username"];
+            }
+            if (isset($config["build_options"]["repository"]["#password"])) {
+                $this->repoPassword =
+                    $this->getEncryptor()->decrypt($config["build_options"]["repository"]["#password"]);
+            }
+            $this->repository = $config["build_options"]["repository"]["uri"];
+            $this->repositoryType = $config["build_options"]["repository"]["type"];
+            $this->entryPoint = $config["build_options"]["entry_point"];
+            if (isset($config["build_options"]["commands"])) {
+                $this->setCommands($config["build_options"]["commands"]);
+            }
+            if (isset($config["build_options"]["parameters"])) {
+                $this->setParameters($config["build_options"]["parameters"]);
+            }
+            if (isset($config["build_options"]["version"])) {
+                $this->version = $config["build_options"]["version"];
+            }
+            if (isset($config["build_options"]["cache"])) {
+                $this->cache = $config["build_options"]["cache"];
+            }
+        }
     }
 
 
@@ -99,7 +121,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $this->logger = $log;
     }
 
-
     /**
      * @return string
      */
@@ -107,18 +128,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repoUsername;
     }
-
-
-    /**
-     * @param string $repoUsername
-     * @return $this
-     */
-    public function setRepoUsername($repoUsername)
-    {
-        $this->repoUsername = $repoUsername;
-        return $this;
-    }
-
 
     /**
      * @return string
@@ -128,18 +137,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->repoPassword;
     }
 
-
-    /**
-     * @param mixed $repoPassword
-     * @return $this
-     */
-    public function setRepoPassword($repoPassword)
-    {
-        $this->repoPassword = $repoPassword;
-        return $this;
-    }
-
-
     /**
      * @return string
      */
@@ -147,18 +144,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->repository;
     }
-
-
-    /**
-     * @param string $repository
-     * @return $this
-     */
-    public function setRepository($repository)
-    {
-        $this->repository = $repository;
-        return $this;
-    }
-
 
     /**
      * @return string
@@ -168,18 +153,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->repositoryType;
     }
 
-
-    /**
-     * @param string $repositoryType
-     * @return $this
-     */
-    public function setRepositoryType($repositoryType)
-    {
-        $this->repositoryType = $repositoryType;
-        return $this;
-    }
-
-
     /**
      * @return string
      */
@@ -187,18 +160,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     {
         return $this->entryPoint;
     }
-
-
-    /**
-     * @param string $entryPoint
-     * @return $this
-     */
-    public function setEntryPoint($entryPoint)
-    {
-        $this->entryPoint = $entryPoint;
-        return $this;
-    }
-
 
     /**
      * @return array
@@ -208,21 +169,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->commands;
     }
 
-
     /**
      * @param array $commands
-     * @return $this
      */
-    public function setCommands(array $commands)
+    private function setCommands(array $commands)
     {
         $this->commands = [];
         foreach ($commands as $command) {
             $this->commands[] = $command;
         }
-
-        return $this;
     }
-
 
     /**
      * @return BuilderParameter[]
@@ -232,12 +188,10 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->parameters;
     }
 
-
     /**
      * @param array $parameters
-     * @return $this
      */
-    public function setParameters(array $parameters)
+    private function setParameters(array $parameters)
     {
         $this->parameters = [];
         foreach ($parameters as $parameter) {
@@ -252,10 +206,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 empty($parameter['values']) ? [] : $parameter['values']
             );
         }
-
-        return $this;
     }
-
 
     /**
      * @return string
@@ -265,35 +216,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $this->version;
     }
 
-
-    /**
-     * @param string $version
-     * @return $this
-     */
-    public function setVersion($version)
-    {
-        $this->version = $version;
-        return $this;
-    }
-
-
     /**
      * @return bool
      */
     public function getCache()
     {
         return $this->cache;
-    }
-
-
-    /**
-     * @param bool $cache
-     * @return $this
-     */
-    public function setCache($cache)
-    {
-        $this->cache = $cache;
-        return $this;
     }
 
     /**
@@ -417,22 +345,22 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     $this->parameters[$key]->setValue($value);
                     // handle special parameters - repository properties cannot be passed through normal parameters
                     if ($key === 'repository') {
-                        $this->setRepository($value);
+                        $this->repository = $value;
                     } elseif ($key === 'version') {
-                        $this->setVersion($value);
+                        $this->version = $value;
                         if ($this->getVersion() == 'master') {
                             $this->logger->debug("Using master branch, caching disabled.");
-                            $this->setCache(false);
+                            $this->cache = false;
                         }
                     } elseif ($key === 'username') {
-                        $this->setRepoUsername($value);
+                        $this->repoUsername = $value;
                         unset($this->parameters[$key]);
                     } elseif ($key === '#password') {
-                        $this->setRepoPassword($value);
+                        $this->repoPassword = $value;
                         unset($this->parameters[$key]);
                     } elseif ($key === 'network') {
                         $this->logger->info("Overriding image network configuration setting with runtime value $value.");
-                        $this->setNetworkType($value);
+                        $this->component->setNetworkType($value);
                     }
                 }
             }
@@ -451,7 +379,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
         }
     }
-
 
     /**
      * Run docker login and docker pull in DinD, login/logout race conditions
@@ -540,41 +467,5 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $this->fullImageId = uniqid('builder-');
         }
         return $this->fullImageId;
-    }
-
-    /**
-     * Set configuration from array.
-     * @param array $config
-     * @return $this
-     */
-    public function fromArray(array $config)
-    {
-        parent::fromArray($config);
-        if (isset($config["definition"]["build_options"])) {
-            if (isset($config["definition"]["build_options"]["repository"]["username"])) {
-                $this->setRepoUsername($config["definition"]["build_options"]["repository"]["username"]);
-            }
-            if (isset($config["definition"]["build_options"]["repository"]["#password"])) {
-                $this->setRepoPassword(
-                    $this->getEncryptor()->decrypt($config["definition"]["build_options"]["repository"]["#password"])
-                );
-            }
-            $this->setRepository($config["definition"]["build_options"]["repository"]["uri"]);
-            $this->setRepositoryType($config["definition"]["build_options"]["repository"]["type"]);
-            $this->setEntryPoint($config["definition"]["build_options"]["entry_point"]);
-            if (isset($config["definition"]["build_options"]["commands"])) {
-                $this->setCommands($config["definition"]["build_options"]["commands"]);
-            }
-            if (isset($config["definition"]["build_options"]["parameters"])) {
-                $this->setParameters($config["definition"]["build_options"]["parameters"]);
-            }
-            if (isset($config["definition"]["build_options"]["version"])) {
-                $this->setVersion($config["definition"]["build_options"]["version"]);
-            }
-            if (isset($config["definition"]["build_options"]["cache"])) {
-                $this->setCache($config["definition"]["build_options"]["cache"]);
-            }
-        }
-        return $this;
     }
 }
