@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -33,7 +34,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfig), true);
         $image->prepare([]);
 
         $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, $envs);
@@ -43,17 +44,19 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     private function getImageConfiguration()
     {
         return [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app.git",
-                        "type" => "git"
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                            "type" => "git"
+                        ],
+                        "commands" => [],
+                        "entry_point" => "php /data/test.php"
                     ],
-                    "commands" => [],
-                    "entry_point" => "php /data/test.php"
-                ],
+                ]
             ]
         ];
     }
@@ -63,9 +66,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp();
         $temp->initRunFolder();
         $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "hello-world"
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "hello-world"
+                ]
             ]
         ];
 
@@ -144,13 +149,14 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['process_timeout'] = 5;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php echo "done";');
         $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
@@ -161,7 +167,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $benchmarkDuration = time() - $benchmarkStartTime;
 
         // actual test
-        $image->setProcessTimeout(5);
         $dataDir = $this->createScript($temp, '<?php sleep(20);');
         $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
         $testStartTime = time();
@@ -174,7 +179,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             // test should last longer than benchmark
             $this->assertGreaterThan($benchmarkDuration, $testDuration);
             // test shouldn't last longer than benchmark plus process timeout (plus a safety margin)
-            $this->assertLessThan($benchmarkDuration + $image->getProcessTimeout() + 5, $testDuration);
+            $this->assertLessThan(
+                $benchmarkDuration + $image->getSourceComponent()->getProcessTimeout() + 5,
+                $testDuration
+            );
         }
     }
 
@@ -188,7 +196,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
         $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
@@ -199,9 +207,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/non-existent"
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/non-existent"
+                ]
             ]
         ];
 
@@ -222,7 +232,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["memory"] = "32m";
+        $imageConfiguration["data"]["memory"] = "32m";
 
         $dataDir = $this->createScript(
             $temp,

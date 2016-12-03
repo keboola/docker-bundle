@@ -86,6 +86,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 'input' => 'local'
             ],
             'inject_environment' => false,
+            'image_parameters' => [],
+            'network' => 'bridge',
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -96,15 +98,15 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testWrongDefinitionType()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "whatever",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m"
-        );
-        (new Configuration\Component())->parse(array("config" => $config));
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
     }
 
     /**
@@ -113,16 +115,16 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testWrongConfigurationFormat()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "fail"
-        );
-        (new Configuration\Component())->parse(array("config" => $config));
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
     }
 
     /**
@@ -131,14 +133,14 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testExtraConfigurationField()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
-            "unknown" => array()
-        );
-        (new Configuration\Component())->parse(array("config" => $config));
+            ],
+            "unknown" => []
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
     }
 
     /**
@@ -147,16 +149,16 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testWrongNetworkType()
     {
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "network" => "whatever"
-        );
-        (new Configuration\Component())->parse(array("config" => $config));
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
     }
 
     public function testWrongStagingStorageType()
@@ -165,18 +167,18 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->expectExceptionMessage(
             'The value "whatever" is not allowed for path "component.staging_storage.input". Permissible values: "local", "s3"'
         );
-        $config = array(
-            "definition" => array(
+        $config = [
+            "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
-            ),
+            ],
             "cpu_shares" => 1024,
             "memory" => "64m",
             "staging_storage" => [
                 "input" => "whatever"
             ]
-        );
-        (new Configuration\Component())->parse(array("config" => $config));
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
     }
 
     public function testBuilderConfiguration()
@@ -214,10 +216,12 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "input" => "local"
             ],
             "inject_environment" => false,
+            "image_parameters" => [],
+            "network" => "bridge",
         ];
 
         $expectedConfiguration = $config;
-        $processedConfiguration = (new Configuration\Component())->parse(array("config" => $config));
+        $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
 }

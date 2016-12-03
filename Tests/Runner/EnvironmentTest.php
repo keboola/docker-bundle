@@ -26,12 +26,15 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     public function testExecutorEnvs()
     {
         $component = new Component([
-            'definition' => [
-                'type' => 'dockerhub'
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => false,
+                'forward_token_details' => false,
+                'inject_environment' => false,
             ],
-            'forward_token' => false,
-            'forward_token_details' => false,
-            'inject_environment' => false,
         ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
@@ -47,11 +50,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardToken()
     {
-        $component = [
-            'forward_token' => true,
-            'forward_token_details' => false,
-            'inject_environment' => false,
-        ];
+        $component = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => true,
+                'forward_token_details' => false,
+                'inject_environment' => false,
+            ],
+        ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -67,11 +76,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardTokenAndDetails()
     {
-        $component = [
-            'forward_token' => true,
-            'forward_token_details' => true,
-            'inject_environment' => false,
-        ];
+        $component = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => true,
+                'forward_token_details' => true,
+                'inject_environment' => false,
+            ],
+        ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -87,11 +102,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorForwardDetails()
     {
-        $component = [
-            'forward_token' => false,
-            'forward_token_details' => true,
-            'inject_environment' => false,
-        ];
+        $component = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => false,
+                'forward_token_details' => true,
+                'inject_environment' => false,
+            ],
+        ]);
         $parameters = [
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
@@ -112,11 +133,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorVariables()
     {
-        $component = [
-            'forward_token' => true,
-            'forward_token_details' => true,
-            'inject_environment' => true,
-        ];
+        $component = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => true,
+                'forward_token_details' => true,
+                'inject_environment' => true,
+            ],
+        ]);
         $parameters = [
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
@@ -140,11 +167,17 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorVariablesInvalid()
     {
-        $component = [
-            'forward_token' => true,
-            'forward_token_details' => true,
-            'inject_environment' => true,
-        ];
+        $component = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => true,
+                'forward_token_details' => true,
+                'inject_environment' => true,
+            ],
+        ]);
         $parameters = [
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',

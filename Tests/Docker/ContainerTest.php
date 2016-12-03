@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -16,12 +17,14 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function testRun()
     {
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app"
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app"
+                ]
             ]
-        ];
+        ]);
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -87,13 +90,15 @@ EOF;
 
     public function testRunCommand()
     {
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app",
-                "tag" => "master"
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app",
+                    "tag" => "master"
+                ]
             ]
-        ];
+        ]);
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -109,12 +114,14 @@ EOF;
 
     public function testInspectCommand()
     {
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app"
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app"
+                ]
             ]
-        ];
+        ]);
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -130,12 +137,14 @@ EOF;
 
     public function testRemoveCommand()
     {
-        $imageConfiguration = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app"
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app"
+                ]
             ]
-        ];
+        ]);
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());

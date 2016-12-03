@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Exception\ApplicationException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Component
 {
@@ -28,13 +29,14 @@ class Component
      */
     public function __construct(array $componentData)
     {
-        $this->id = empty($component['id']) ? '' : $component['id'];
-        $data = empty($component['data']) ? [] : $component['data'];
-        $this->data = (new Configuration\Component())->parse(['config' => $data]);
-        if (empty($this->data["definition"])) {
-            throw new ApplicationException("Image definition is empty or invalid.", null, $this->data);
+        $this->id = empty($componentData['id']) ? '' : $componentData['id'];
+        $data = empty($componentData['data']) ? [] : $componentData['data'];
+        try {
+            $this->data = (new Configuration\Component())->parse(['config' => $data]);
+        } catch (InvalidConfigurationException $e) {
+            throw new ApplicationException("Image definition is empty or invalid: " . $e->getMessage(), $e, $data);
         }
-        $this->networkType = $this->data['network_type'];
+        $this->networkType = $this->data['network'];
     }
 
     /**
@@ -196,5 +198,10 @@ class Component
     public function setNetworkType($value)
     {
         $this->networkType = $value;
+    }
+
+    public function getStagingStorage()
+    {
+        return $this->data['staging_storage'];
     }
 }

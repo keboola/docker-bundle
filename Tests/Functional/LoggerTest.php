@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -19,20 +20,23 @@ use Symfony\Component\Process\Process;
 
 class LoggerTests extends KernelTestCase
 {
+
     private function getImageConfiguration()
     {
         return [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app.git",
-                        "type" => "git"
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-base-php56:0.0.2",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                            "type" => "git"
+                        ],
+                        "commands" => [],
+                        "entry_point" => "php /data/test.php"
                     ],
-                    "commands" => [],
-                    "entry_point" => "php /data/test.php"
-                ],
+                ]
             ]
         ];
     }
@@ -42,21 +46,23 @@ class LoggerTests extends KernelTestCase
         return [
             /* docker-demo app is actually not used here, it is only needed for
             builder (because requires URI, builder is used to override for the entry point. */
-            "definition" => [
-                "type" => "builder",
-                "uri" => "quay.io/keboola/gelf-test-client:master",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app.git",
-                        "type" => "git"
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/gelf-test-client:master",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                            "type" => "git"
+                        ],
+                        "entry_point" => "php /src/UdpClient.php"
                     ],
-                    "entry_point" => "php /src/UdpClient.php"
                 ],
-            ],
-            "configuration_format" => "json",
-            "logging" => [
-                "type" => "gelf",
-                "gelf_server_type" => "udp"
+                "configuration_format" => "json",
+                "logging" => [
+                    "type" => "gelf",
+                    "gelf_server_type" => "udp"
+                ]
             ]
         ];
     }
@@ -97,7 +103,7 @@ class LoggerTests extends KernelTestCase
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $dataDir = $this->createScript(
             $temp,
@@ -142,8 +148,8 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'udp';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/UdpClient.php';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'udp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/UdpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -152,7 +158,7 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
         $process = $container->run();
@@ -178,8 +184,8 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -188,7 +194,7 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
         $process = $container->run();
@@ -214,8 +220,8 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'http';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'http';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $handler = new TestHandler();
@@ -224,7 +230,7 @@ print "second message to stdout\n";'
         $containerHandler = new TestHandler();
         $containerLog->pushHandler($containerHandler);
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
         $process = $container->run();
@@ -251,8 +257,8 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
 
         //start the symfony kernel
         $kernel = static::createKernel();
@@ -272,9 +278,9 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
         $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $container = new Container(
             'docker-test-logger',
             $image,
@@ -322,9 +328,9 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
-        $imageConfiguration['logging']['verbosity'] = [
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['data']['logging']['verbosity'] = [
             Logger::DEBUG => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::INFO => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::NOTICE => StorageApiHandler::VERBOSITY_VERBOSE,
@@ -352,9 +358,9 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
         $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $container = new Container(
             'docker-test-logger',
             $image,
@@ -418,9 +424,9 @@ print "second message to stdout\n";'
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
-        $imageConfiguration['logging']['verbosity'] = [
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
+        $imageConfiguration['data']['logging']['verbosity'] = [
             Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
             Logger::INFO => StorageApiHandler::VERBOSITY_NONE,
             Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE,
@@ -448,9 +454,9 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
         $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $container = new Container(
             'docker-test-logger',
             $image,
@@ -500,9 +506,9 @@ sleep(5);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
         $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $container = new Container(
             'docker-test-logger',
             $image,
@@ -560,9 +566,9 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = Image::factory($encryptor, $logService->getLog(), $imageConfiguration, true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
         $image->prepare([]);
-        $logService->setVerbosity($image->getLoggerVerbosity());
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $logService->getLog()->notice("Test Notice");
         $logService->getLog()->error("Test Error");
         $logService->getLog()->info("Test Info");

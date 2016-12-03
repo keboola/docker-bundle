@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\StorageApi\Client;
@@ -33,16 +34,18 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
 
-        $image = [
-            'definition' => [
-                'type' => 'dockerhub',
-                'uri' => 'keboola/docker-demo-app',
-                'tag' => '1.1.6'
-            ],
-            'cpu_shares' => 1024,
-            'memory' => '64m',
-            'configuration_format' => 'json',
-        ];
+        $image = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo-app',
+                    'tag' => '1.1.6'
+                ],
+                'cpu_shares' => 1024,
+                'memory' => '64m',
+                'configuration_format' => 'json',
+            ]
+        ]);
 
         $config = [
             'storage' => [
@@ -68,19 +71,21 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
 
-        $image = [
-            'definition' => [
-                'type' => 'dockerhub-private',
-                'uri' => 'keboolaprivatetest/docker-demo-docker',
-                'repository' => [
-                    '#password' => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
-                    'username' => DOCKERHUB_PRIVATE_USERNAME
-                ]
-            ],
-            'cpu_shares' => 1024,
-            'memory' => '64m',
-            'configuration_format' => 'json',
-        ];
+        $image = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub-private',
+                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'repository' => [
+                        '#password' => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
+                        'username' => DOCKERHUB_PRIVATE_USERNAME
+                    ]
+                ],
+                'cpu_shares' => 1024,
+                'memory' => '64m',
+                'configuration_format' => 'json',
+            ]
+        ]);
 
         $config = [
             'storage' => [
@@ -106,15 +111,17 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
 
-        $image = [
-            'definition' => [
-                'type' => 'quayio',
-                'uri' => 'keboola/docker-demo-app'
-            ],
-            'cpu_shares' => 1024,
-            'memory' => '64m',
-            'configuration_format' => 'json',
-        ];
+        $image = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app'
+                ],
+                'cpu_shares' => 1024,
+                'memory' => '64m',
+                'configuration_format' => 'json',
+            ]
+        ]);
 
         $config = [
             'storage' => [
@@ -141,15 +148,17 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
 
-        $image = [
-            'definition' => [
-                'type' => 'quayio',
-                'uri' => 'keboola/docker-demo-app'
-            ],
-            'cpu_shares' => 1024,
-            'memory' => '64m',
-            'configuration_format' => 'json',
-        ];
+        $image = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app'
+                ],
+                'cpu_shares' => 1024,
+                'memory' => '64m',
+                'configuration_format' => 'json',
+            ]
+        ]);
 
         $config = [
             'storage' => [
@@ -165,37 +174,24 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('quay.io/keboola/docker-demo-app:latest', $images[0]->getFullImageId());
     }
 
-    public function testInvalidDefinition()
-    {
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, [], []);
-        try {
-            $imageCreator->prepareImages();
-            $this->fail("Invalid image definition must fail.");
-        } catch (ApplicationException $e) {
-            $this->assertContains('definition is empty', $e->getMessage());
-        }
-    }
-
     public function testCreateImageProcessors()
     {
         $encryptor = new ObjectEncryptor();
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
 
-        $image = [
-            'definition' => [
-                'type' => 'dockerhub',
-                'uri' => 'keboola/docker-demo-app',
-                'tag' => '1.1.6'
-            ],
-            'cpu_shares' => 1024,
-            'memory' => '64m',
-            'configuration_format' => 'json',
-        ];
+        $image = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo-app',
+                    'tag' => '1.1.6'
+                ],
+                'cpu_shares' => 1024,
+                'memory' => '64m',
+                'configuration_format' => 'json',
+            ]
+        ]);
 
         $config = [
             'processors' => [

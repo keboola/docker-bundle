@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -20,25 +21,27 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
     {
         $encryptor = new ObjectEncryptor();
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd /home/",
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data"
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -74,26 +77,28 @@ DOCKERFILE;
     {
         $encryptor = new ObjectEncryptor();
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "version" => '1.0.2',
                     ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd /home/",
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "version" => '1.0.2',
                 ],
-            ],
-            "configuration_format" => "yaml",
-        ];
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -129,40 +134,42 @@ ENTRYPOINT php /home/run.php --data=/data';
     {
         $encryptor = new ObjectEncryptor();
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd {{foo}} {{bar}}",
-                        "composer {{action}}"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "parameters" => [
-                        [
-                            "name" => "foo",
-                            "type" => "string"
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
                         ],
-                        [
-                            "name" => "bar",
-                            "type" => "plain_string"
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd {{foo}} {{bar}}",
+                            "composer {{action}}"
                         ],
-                        [
-                            "name" => "action",
-                            "type" => "string",
-                            "default_value" => "install"
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "parameters" => [
+                            [
+                                "name" => "foo",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "bar",
+                                "type" => "plain_string"
+                            ],
+                            [
+                                "name" => "action",
+                                "type" => "string",
+                                "default_value" => "install"
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -196,34 +203,36 @@ ENTRYPOINT php /home/run.php --data=/data';
     public function testRepositoryPasswordHandling()
     {
         $encryptor = new ObjectEncryptor();
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "{{#password}} {{otherParam}}",
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "parameters" => [
-                        [
-                            "name" => "#password",
-                            "type" => "string"
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
                         ],
-                        [
-                            "name" => "otherParam",
-                            "type" => "string"
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "{{#password}} {{otherParam}}",
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "parameters" => [
+                            [
+                                "name" => "#password",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "otherParam",
+                                "type" => "string"
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -266,31 +275,33 @@ ENTRYPOINT php /home/run.php --data=/data';
     {
         $encryptor = new ObjectEncryptor();
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd {{foo}} {{bar}}",
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "parameters" => [
-                        [
-                            "name" => "foo",
-                            "type" => "string"
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd {{foo}} {{bar}}",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "parameters" => [
+                            [
+                                "name" => "foo",
+                                "type" => "string"
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -315,35 +326,37 @@ ENTRYPOINT php /home/run.php --data=/data';
     {
         $encryptor = new ObjectEncryptor();
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd {{foo}} {{bar}}",
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "parameters" => [
-                        [
-                            "name" => "foo",
-                            "type" => "string"
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
                         ],
-                        [
-                            "name" => "bar",
-                            "type" => "plain_string"
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd {{foo}} {{bar}}",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "parameters" => [
+                            [
+                                "name" => "foo",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "bar",
+                                "type" => "plain_string"
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -372,27 +385,29 @@ ENTRYPOINT php /home/run.php --data=/data';
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                        "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
-                        "username" => GIT_PRIVATE_USERNAME,
-                    ],
-                    "commands" => [
-                        "git clone {{repository}} /home/",
-                        "cd /home/",
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data"
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                            "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                            "username" => GIT_PRIVATE_USERNAME,
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /home/",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         $log = new Logger("null");
@@ -432,85 +447,51 @@ DOCKERFILE;
         );
     }
 
-
-    public function testInvalidRepository()
-    {
-        $encryptor = new ObjectEncryptor();
-
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "fooBar",
-                    ],
-                    "commands" => [
-                        "composer install"
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data"
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
-        $tempDir = new Temp('docker-test');
-        $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-
-        try {
-            Image::factory($encryptor, $log, $imageConfig, true);
-            $this->fail("Invalid repository should fail.");
-        } catch (InvalidConfigurationException $e) {
-            $this->assertContains('Invalid repository_type', $e->getMessage());
-        }
-    }
-
-
     public function testDockerFileBothParameters()
     {
         // test that both values from parameters and definition are treated equally
         $encryptor = new ObjectEncryptor();
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "commands" => [
-                        "{{somewhere}} {{over}} {{version}} {{the}} {{rainbow}}",
-                    ],
-                    "entry_point" => "php /home/run.php --data=/data",
-                    "parameters" => [
-                        [
-                            "name" => "somewhere",
-                            "type" => "string"
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
                         ],
-                        [
-                            "name" => "version",
-                            "type" => "string"
+                        "commands" => [
+                            "{{somewhere}} {{over}} {{version}} {{the}} {{rainbow}}",
                         ],
-                        [
-                            "name" => "over",
-                            "type" => "string"
-                        ],
-                        [
-                            "name" => "the",
-                            "type" => "string"
-                        ],
-                        [
-                            "name" => "rainbow",
-                            "type" => "plain_string"
+                        "entry_point" => "php /home/run.php --data=/data",
+                        "parameters" => [
+                            [
+                                "name" => "somewhere",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "version",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "over",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "the",
+                                "type" => "string"
+                            ],
+                            [
+                                "name" => "rainbow",
+                                "type" => "plain_string"
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "configuration_format" => "yaml",
-        ];
+                ],
+                "configuration_format" => "yaml",
+            ]
+        ]);
         $config = [
             'parameters' => [
                 'somewhere' => 'quick',

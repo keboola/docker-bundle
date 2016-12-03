@@ -201,7 +201,7 @@ class Runner
             $configData['storage'],
             $defaultBucketName,
             $component->getConfigurationFormat(),
-            $component['staging_storage']
+            $component->getStagingStorage()
         );
         $this->imageCreator = new ImageCreator(
             $this->encryptor,

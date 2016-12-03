@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -21,7 +22,7 @@ class NetworkTest extends KernelTestCase
      */
     private $temp;
 
-    private function getContainer($imageConfig, $componentConfig)
+    private function getContainer(Component $imageConfig, array $componentConfig)
     {
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
@@ -43,7 +44,6 @@ class NetworkTest extends KernelTestCase
         self::bootKernel();
     }
 
-
     public function tearDown()
     {
         parent::tearDown();
@@ -55,23 +55,24 @@ class NetworkTest extends KernelTestCase
         ))->run();
     }
 
-
     public function testNetworkBridge()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com"
-                ]
-            ],
-            "network" => "bridge",
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com"
+                    ]
+                ],
+                "network" => "bridge",
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, []);
         $process = $container->run();
@@ -79,23 +80,24 @@ class NetworkTest extends KernelTestCase
         $this->assertContains("64 bytes from", $process->getOutput());
     }
 
-
     public function testNetworkNone()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com"
-                ]
-            ],
-            "network" => "none"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com"
+                    ]
+                ],
+                "network" => "none"
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, []);
         try {
@@ -108,27 +110,29 @@ class NetworkTest extends KernelTestCase
 
     public function testNetworkBridgeOverride()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com",
-                    "parameters" => [
-                        [
-                            "name" => "network",
-                            "type" => "string",
-                            "required" => false
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com",
+                        "parameters" => [
+                            [
+                                "name" => "network",
+                                "type" => "string",
+                                "required" => false
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "network" => "bridge"
-        ];
+                ],
+                "network" => "bridge"
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         try {
@@ -141,27 +145,29 @@ class NetworkTest extends KernelTestCase
 
     public function testNetworkBridgeOverrideNoValue()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com",
-                    "parameters" => [
-                        [
-                            "name" => "network",
-                            "type" => "string",
-                            "required" => false
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com",
+                        "parameters" => [
+                            [
+                                "name" => "network",
+                                "type" => "string",
+                                "required" => false
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "network" => "bridge"
-        ];
+                ],
+                "network" => "bridge"
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, ['runtime' => []]);
         // parameter is not defined in image, must be ignored
@@ -172,20 +178,22 @@ class NetworkTest extends KernelTestCase
 
     public function testNetworkBridgeOverrideFail()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com",
-                ]
-            ],
-            "network" => "bridge"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com",
+                    ]
+                ],
+                "network" => "bridge"
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         // parameter is not defined in image, must be ignored
@@ -196,27 +204,29 @@ class NetworkTest extends KernelTestCase
 
     public function testNetworkNoneOverride()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com",
-                    "parameters" => [
-                        [
-                            "name" => "network",
-                            "type" => "string",
-                            "required" => false
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com",
+                        "parameters" => [
+                            [
+                                "name" => "network",
+                                "type" => "string",
+                                "required" => false
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "network" => "none",
-        ];
+                ],
+                "network" => "none",
+            ]
+        ]);
 
         $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'bridge']]);
         $process = $container->run();
@@ -226,27 +236,29 @@ class NetworkTest extends KernelTestCase
 
     public function testNetworkInvalidOverride()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "builder",
-                "uri" => "keboola/base",
-                "build_options" => [
-                    "repository" => [
-                        "uri" => "https://github.com/keboola/docker-demo-app",
-                        "type" => "git",
-                    ],
-                    "entry_point" => "ping -W 10 -c 1 www.example.com",
-                    "parameters" => [
-                        [
-                            "name" => "network",
-                            "type" => "string",
-                            "required" => false
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/base",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "entry_point" => "ping -W 10 -c 1 www.example.com",
+                        "parameters" => [
+                            [
+                                "name" => "network",
+                                "type" => "string",
+                                "required" => false
+                            ]
                         ]
                     ]
-                ]
-            ],
-            "network" => "none",
-        ];
+                ],
+                "network" => "none",
+            ]
+        ]);
 
         try {
             $this->getContainer($imageConfig, ['runtime' => ['network' => 'fooBar']]);

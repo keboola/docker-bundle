@@ -475,18 +475,6 @@ class RunnerTest extends KernelTestCase
         $this->client->dropBucket('out.c-keboola-docker-demo-app-test-config', ['force' => true]);
     }
 
-    public function testGetSanitizedComponentId()
-    {
-        $runner = $this->getRunner(new NullHandler());
-        $reflection = new \ReflectionMethod($runner, 'getSanitizedComponentId');
-        $reflection->setAccessible(true);
-
-
-        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex-generic'));
-        $this->assertEquals('ex-generic', $reflection->invoke($runner, 'ex-generic'));
-        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex.generic'));
-    }
-
     public function testExecutorStoreState()
     {
         $runner = $this->getRunner(new NullHandler());
