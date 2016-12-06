@@ -11,6 +11,7 @@ use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\StorageApi\Options\FileUploadTransferOptions;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -508,7 +509,9 @@ class Writer
                 ->setIsSliced(true)
                 ->setFileName(basename($source))
         ;
-        $uploadFileId = $this->client->uploadSlicedFile($sliceFiles, $fileUploadOptions);
+        $fileUploadTransferOptions = new FileUploadTransferOptions();
+        $fileUploadTransferOptions->setChunkSize(10);
+        $uploadFileId = $this->client->uploadSlicedFile($sliceFiles, $fileUploadOptions, $fileUploadTransferOptions);
 
         // write table
         $options["dataFileId"] = $uploadFileId;
