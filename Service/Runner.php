@@ -284,7 +284,7 @@ class Runner
             );
 
             $this->configFile->createConfigFile($image->getConfigData());
-            $containerId = $jobId . '-' . $this->storageClient->getRunId();
+            $containerId = $jobId . '-' . ($this->storageClient->getRunId() ?: 'norunid');
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
