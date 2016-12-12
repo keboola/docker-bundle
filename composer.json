@@ -9,7 +9,7 @@
         "keboola/php-utils": "~1.0.0",
         "symfony/symfony": "~2.8.0",
         "keboola/oauth-v2-php-client": "~2.0.0",
-        "keboola/storage-api-client": "~4.5",
+        "keboola/storage-api-client": "~4.19",
         "keboola/gelf-server": "~1.0",
         "keboola/input-mapping": "^1.2",
         "vkartaviy/retry": "~0.2.2"
