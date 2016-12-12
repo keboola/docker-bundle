@@ -39,7 +39,7 @@ class NetworkTest extends KernelTestCase
             $containerLog,
             $this->temp->getTmpFolder(),
             [],
-            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
+            self::$kernel->getContainer()->getParameter('get_host_ip_command')
         );
         return $container;
     }

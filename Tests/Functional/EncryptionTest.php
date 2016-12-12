@@ -89,7 +89,7 @@ class EncryptionTests extends KernelTestCase
             $storageServiceStub,
             $loggersServiceStub,
             "dummy",
-            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
+            self::$kernel->getContainer()->getParameter('get_host_ip_command')
         );
 
         // mock components
