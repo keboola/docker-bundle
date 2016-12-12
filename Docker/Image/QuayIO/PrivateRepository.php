@@ -117,6 +117,9 @@ class PrivateRepository extends Image\QuayIO
             if (strpos($process->getErrorOutput(), "unauthorized: authentication required") !== false) {
                 throw new LoginFailedException($process->getErrorOutput());
             }
+            if (strpos($process->getErrorOutput(), "unauthorized: incorrect username or password") !== false) {
+                throw new LoginFailedException($process->getErrorOutput());
+            }
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
     }

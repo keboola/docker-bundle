@@ -360,7 +360,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                         unset($this->parameters[$key]);
                     } elseif ($key === 'network') {
                         $this->logger->info("Overriding image network configuration setting with runtime value $value.");
-                        $this->component->setNetworkType($value);
+                        $this->getSourceComponent()->setNetworkType($value);
                     }
                 }
             }

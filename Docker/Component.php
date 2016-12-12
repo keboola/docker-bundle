@@ -197,7 +197,11 @@ class Component
 
     public function setNetworkType($value)
     {
-        $this->networkType = $value;
+        if (!in_array($value, ['none', 'bridge'])) {
+            throw new ApplicationException("Network mode $value is not supported.");
+        } else {
+            $this->networkType = $value;
+        }
     }
 
     public function getStagingStorage()

@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Image;
 use Aws\Credentials\Credentials;
 use Aws\Ecr\EcrClient;
 use Aws\Ecr\Exception\EcrException;
+use Aws\Exception\CredentialsException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
@@ -46,6 +47,8 @@ class AWSElasticContainerRegistry extends Image
         ));
         try {
             $authorization = $ecrClient->getAuthorizationToken([]);
+        } catch (CredentialsException $e) {
+            throw new LoginFailedException($e->getMessage());
         } catch (EcrException $e) {
             throw new LoginFailedException($e->getMessage());
         }

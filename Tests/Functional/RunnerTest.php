@@ -129,6 +129,51 @@ class RunnerTest extends KernelTestCase
 
     public function testRunnerPipeline()
     {
+        $components = [
+            [
+                "id" => "keboola.processor.iconv",
+                "data" => [
+                    "definition" => [
+                      "type" => "quayio",
+                      "uri" => "keboola/processor-iconv",
+                      "tag" => "1.0.2",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+            [
+                "id" => "keboola.processor.move-files",
+                "data" => [
+                    "definition" => [
+                        "type" => "quayio",
+                        "uri" => "keboola/processor-move-files",
+                        "tag" => "0.1.0",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+            [
+                "id" => "keboola.processor.unzipper",
+                "data" => [
+                    "definition" => [
+                        "type" => "quayio",
+                        "uri" => "keboola/processor-unziper",
+                        "tag" => "3.0.4",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+        ];
+
+        $clientMock = $this->getMockBuilder(Client::class)
+            ->setConstructorArgs([['token' => STORAGE_API_TOKEN]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects($this->any())
+            ->method('indexAction')
+            ->will($this->returnValue(['components' => $components]));
+        $this->client = $clientMock;
+
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->client->uploadFile(
             $dataDir . 'texty.zip',

@@ -279,7 +279,7 @@ class JobExecutorTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(3900, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(3800, $files[0]['sizeBytes']);
     }
 
     public function testDryRun()
@@ -315,7 +315,7 @@ class JobExecutorTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(6100, $files[0]['sizeBytes']);
     }
 
     public function testIncrementalTags()
