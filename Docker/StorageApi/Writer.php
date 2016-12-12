@@ -509,9 +509,7 @@ class Writer
                 ->setIsSliced(true)
                 ->setFileName(basename($source))
         ;
-        $fileUploadTransferOptions = new FileUploadTransferOptions();
-        $fileUploadTransferOptions->setChunkSize(10);
-        $uploadFileId = $this->client->uploadSlicedFile($sliceFiles, $fileUploadOptions, $fileUploadTransferOptions);
+        $uploadFileId = $this->client->uploadSlicedFile($sliceFiles, $fileUploadOptions);
 
         // write table
         $options["dataFileId"] = $uploadFileId;
