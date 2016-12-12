@@ -122,7 +122,8 @@ class RunnerTest extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
-            "dummy"
+            "dummy",
+            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
         );
         return $runner;
     }
