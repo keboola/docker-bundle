@@ -8,21 +8,32 @@ namespace Keboola\DockerBundle\Tests\Command;
 
 use Keboola\DockerBundle\Command\DecryptCommand;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Test\CommandTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Tester\CommandTester;
 
-class DecryptCommandTest extends CommandTestCase
+class DecryptCommandTest extends WebTestCase
 {
+    /**
+     * @var Application
+     */
+    private $application;
+
     protected function setUp()
     {
         parent::setUp();
+        self::$kernel = static::createKernel();
+        self::$kernel->boot();
+        $this->application = new Application(self::$kernel);
         $this->application->add(new DecryptCommand());
     }
 
     public function testDecryptGeneric()
     {
         $encryptor = self::$kernel->getContainer()->get("syrup.object_encryptor");
+        /** @var DecryptCommand $command */
         $command = $this->application->find('docker:decrypt');
+        $command->setContainer(self::$kernel->getContainer());
         $commandTester = new CommandTester($command);
         $commandTester->execute([
             'string' => $encryptor->encrypt("test"),
@@ -36,7 +47,9 @@ class DecryptCommandTest extends CommandTestCase
 
     public function testDecryptGenericFail()
     {
+        /** @var DecryptCommand $command */
         $command = $this->application->find('docker:decrypt');
+        $command->setContainer(self::$kernel->getContainer());
         $commandTester = new CommandTester($command);
         try {
             $commandTester->execute([
@@ -56,7 +69,9 @@ class DecryptCommandTest extends CommandTestCase
         $cryptoWrapper->setProjectId("123");
         $cryptoWrapper->setComponentId("dummy");
         $encryptor = self::$kernel->getContainer()->get("syrup.object_encryptor");
+        /** @var DecryptCommand $command */
         $command = $this->application->find('docker:decrypt');
+        $command->setContainer(self::$kernel->getContainer());
         $commandTester = new CommandTester($command);
         $commandTester->execute([
             'string' => $encryptor->encrypt("test"),
@@ -70,7 +85,9 @@ class DecryptCommandTest extends CommandTestCase
 
     public function testDecryptComponentSpecificFail()
     {
+        /** @var DecryptCommand $command */
         $command = $this->application->find('docker:decrypt');
+        $command->setContainer(self::$kernel->getContainer());
         $commandTester = new CommandTester($command);
         try {
             $commandTester->execute([
