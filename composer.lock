@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "82f66cd79de486fe2b86af66b14c57c1",
+    "hash": "e10fad47fd7839a72f03d452fb84f9ad",
     "content-hash": "7a6dda6a7721f918da53863a120ca170",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.20.1",
+            "version": "3.20.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c83afe188b2f462840a5ab12d43f2e83f356f3f0"
+                "reference": "4541d9e350644a5c70b298d42e526b65275fc804"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c83afe188b2f462840a5ab12d43f2e83f356f3f0",
-                "reference": "c83afe188b2f462840a5ab12d43f2e83f356f3f0",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4541d9e350644a5c70b298d42e526b65275fc804",
+                "reference": "4541d9e350644a5c70b298d42e526b65275fc804",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-12-01 19:25:12"
+            "time": "2016-12-08 20:59:19"
         },
         {
             "name": "defuse/php-encryption",
@@ -643,16 +643,16 @@
         },
         {
             "name": "doctrine/doctrine-migrations-bundle",
-            "version": "v1.2.0",
+            "version": "v1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineMigrationsBundle.git",
-                "reference": "0b89ee55bceb53c60bc4ba32924ac5053e377abb"
+                "reference": "6276139e0b913a4e5120fc36bb5b0eae8ac549bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineMigrationsBundle/zipball/0b89ee55bceb53c60bc4ba32924ac5053e377abb",
-                "reference": "0b89ee55bceb53c60bc4ba32924ac5053e377abb",
+                "url": "https://api.github.com/repos/doctrine/DoctrineMigrationsBundle/zipball/6276139e0b913a4e5120fc36bb5b0eae8ac549bc",
+                "reference": "6276139e0b913a4e5120fc36bb5b0eae8ac549bc",
                 "shasum": ""
             },
             "require": {
@@ -667,7 +667,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.1-dev"
+                    "dev-master": "1.2-dev"
                 }
             },
             "autoload": {
@@ -700,7 +700,7 @@
                 "migrations",
                 "schema"
             ],
-            "time": "2016-06-30 19:26:35"
+            "time": "2016-12-05 18:36:37"
         },
         {
             "name": "doctrine/inflector",
@@ -1692,16 +1692,16 @@
         },
         {
             "name": "keboola/php-encryption",
-            "version": "0.2.2",
+            "version": "0.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-encryption.git",
-                "reference": "a05e07d0814cc036ff85491b3269a7df936b1328"
+                "reference": "b3608ad1572dde0a1d8af0c25289eba7407b60ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-encryption/zipball/a05e07d0814cc036ff85491b3269a7df936b1328",
-                "reference": "a05e07d0814cc036ff85491b3269a7df936b1328",
+                "url": "https://api.github.com/repos/keboola/php-encryption/zipball/b3608ad1572dde0a1d8af0c25289eba7407b60ad",
+                "reference": "b3608ad1572dde0a1d8af0c25289eba7407b60ad",
                 "shasum": ""
             },
             "require": {
@@ -1736,7 +1736,7 @@
                 "security"
             ],
             "abandoned": "defuse/php-encryption",
-            "time": "2016-12-05 08:53:55"
+            "time": "2013-07-15 12:02:24"
         },
         {
             "name": "keboola/php-temp",
@@ -1855,16 +1855,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "4.17.0",
+            "version": "4.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "c83a91456c7f6effdf8346d467789624f7b69a2d"
+                "reference": "74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c83a91456c7f6effdf8346d467789624f7b69a2d",
-                "reference": "c83a91456c7f6effdf8346d467789624f7b69a2d",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c",
+                "reference": "74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c",
                 "shasum": ""
             },
             "require": {
@@ -1894,20 +1894,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2016-11-25 09:53:59"
+            "time": "2016-12-11 11:44:48"
         },
         {
             "name": "keboola/syrup",
-            "version": "5.0.1",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "3763bb64fecdf608f678d44c0a547c430b65f1e9"
+                "reference": "c1c954ecfba77a344f3bfb190f57c65af13a7791"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/3763bb64fecdf608f678d44c0a547c430b65f1e9",
-                "reference": "3763bb64fecdf608f678d44c0a547c430b65f1e9",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/c1c954ecfba77a344f3bfb190f57c65af13a7791",
+                "reference": "c1c954ecfba77a344f3bfb190f57c65af13a7791",
                 "shasum": ""
             },
             "require": {
@@ -1919,7 +1919,7 @@
                 "elasticsearch/elasticsearch": "~1.3",
                 "keboola/csv": "~1.1",
                 "keboola/debug-log-uploader": "^1.0",
-                "keboola/php-encryption": "~0.2",
+                "keboola/php-encryption": "0.2.1",
                 "keboola/php-temp": "~0.1.0",
                 "keboola/php-utils": "~1.0.0",
                 "keboola/storage-api-client": "^4.0",
@@ -1963,7 +1963,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2016-12-01 15:09:36"
+            "time": "2016-12-09 11:22:38"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -2176,88 +2176,39 @@
             "time": "2016-12-03 22:08:25"
         },
         {
-            "name": "ocramius/package-versions",
-            "version": "1.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Ocramius/PackageVersions.git",
-                "reference": "4b2bfc8128db95b533303942b0d5b332bffa07c6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Ocramius/PackageVersions/zipball/4b2bfc8128db95b533303942b0d5b332bffa07c6",
-                "reference": "4b2bfc8128db95b533303942b0d5b332bffa07c6",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.0",
-                "php": "~7.0"
-            },
-            "require-dev": {
-                "composer/composer": "^1.2.0",
-                "phpunit/phpunit": "^5.4.7"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "PackageVersions\\Installer",
-                "branch-alias": {
-                    "dev-master": "2.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "PackageVersions\\": "src/PackageVersions"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Marco Pivetta",
-                    "email": "ocramius@gmail.com"
-                }
-            ],
-            "description": "Composer plugin that provides efficient querying for installed package versions (no runtime IO)",
-            "time": "2016-07-25 07:13:56"
-        },
-        {
             "name": "ocramius/proxy-manager",
-            "version": "2.0.4",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Ocramius/ProxyManager.git",
-                "reference": "a55d08229f4f614bf335759ed0cf63378feeb2e6"
+                "reference": "57e9272ec0e8deccf09421596e0e2252df440e11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/a55d08229f4f614bf335759ed0cf63378feeb2e6",
-                "reference": "a55d08229f4f614bf335759ed0cf63378feeb2e6",
+                "url": "https://api.github.com/repos/Ocramius/ProxyManager/zipball/57e9272ec0e8deccf09421596e0e2252df440e11",
+                "reference": "57e9272ec0e8deccf09421596e0e2252df440e11",
                 "shasum": ""
             },
             "require": {
-                "ocramius/package-versions": "^1.0",
-                "php": "7.0.0 - 7.0.5 || ^7.0.7",
-                "zendframework/zend-code": "3.0.0 - 3.0.2 || ^3.0.4"
+                "php": ">=5.3.3",
+                "zendframework/zend-code": ">2.2.5,<3.0"
             },
             "require-dev": {
-                "couscous/couscous": "^1.4.0",
                 "ext-phar": "*",
-                "phpbench/phpbench": "^0.11.2",
-                "phpunit/phpunit": "^5.4.6",
-                "squizlabs/php_codesniffer": "^2.6.0"
+                "phpunit/phpunit": "~4.0",
+                "squizlabs/php_codesniffer": "1.5.*"
             },
             "suggest": {
                 "ocramius/generated-hydrator": "To have very fast object to array to object conversion for ghost objects",
                 "zendframework/zend-json": "To have the JsonRpc adapter (Remote Object feature)",
                 "zendframework/zend-soap": "To have the Soap adapter (Remote Object feature)",
+                "zendframework/zend-stdlib": "To use the hydrator proxy",
                 "zendframework/zend-xmlrpc": "To have the XmlRpc adapter (Remote Object feature)"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.0.x-dev"
+                    "dev-master": "2.0.x-dev"
                 }
             },
             "autoload": {
@@ -2273,7 +2224,7 @@
                 {
                     "name": "Marco Pivetta",
                     "email": "ocramius@gmail.com",
-                    "homepage": "http://ocramius.github.io/"
+                    "homepage": "http://ocramius.github.com/"
                 }
             ],
             "description": "A library providing utilities to generate, instantiate and generally operate with Object Proxies",
@@ -2285,7 +2236,7 @@
                 "proxy pattern",
                 "service proxies"
             ],
-            "time": "2016-11-04 15:53:15"
+            "time": "2015-08-09 04:28:19"
         },
         {
             "name": "paragonie/random_compat",
@@ -4035,27 +3986,26 @@
         },
         {
             "name": "zendframework/zend-code",
-            "version": "3.1.0",
+            "version": "2.6.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zendframework/zend-code.git",
-                "reference": "2899c17f83a7207f2d7f53ec2f421204d3beea27"
+                "reference": "95033f061b083e16cdee60530ec260d7d628b887"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zendframework/zend-code/zipball/2899c17f83a7207f2d7f53ec2f421204d3beea27",
-                "reference": "2899c17f83a7207f2d7f53ec2f421204d3beea27",
+                "url": "https://api.github.com/repos/zendframework/zend-code/zipball/95033f061b083e16cdee60530ec260d7d628b887",
+                "reference": "95033f061b083e16cdee60530ec260d7d628b887",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.6 || 7.0.0 - 7.0.4 || ^7.0.6",
+                "php": "^5.5 || 7.0.0 - 7.0.4 || ^7.0.6",
                 "zendframework/zend-eventmanager": "^2.6 || ^3.0"
             },
             "require-dev": {
                 "doctrine/annotations": "~1.0",
-                "ext-phar": "*",
+                "fabpot/php-cs-fixer": "1.7.*",
                 "phpunit/phpunit": "^4.8.21",
-                "squizlabs/php_codesniffer": "^2.5",
                 "zendframework/zend-stdlib": "^2.7 || ^3.0"
             },
             "suggest": {
@@ -4065,8 +4015,8 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.1-dev",
-                    "dev-develop": "3.2-dev"
+                    "dev-master": "2.6-dev",
+                    "dev-develop": "2.7-dev"
                 }
             },
             "autoload": {
@@ -4084,7 +4034,7 @@
                 "code",
                 "zf2"
             ],
-            "time": "2016-10-24 13:23:32"
+            "time": "2016-04-20 17:26:42"
         },
         {
             "name": "zendframework/zend-eventmanager",
@@ -4801,16 +4751,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "5.7.2",
+            "version": "5.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "336aff0ac52e306c98e7455bc3e8d7b0bf777a5e"
+                "reference": "de164acc2f2bb0b79beb892a36260264b2a03233"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/336aff0ac52e306c98e7455bc3e8d7b0bf777a5e",
-                "reference": "336aff0ac52e306c98e7455bc3e8d7b0bf777a5e",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/de164acc2f2bb0b79beb892a36260264b2a03233",
+                "reference": "de164acc2f2bb0b79beb892a36260264b2a03233",
                 "shasum": ""
             },
             "require": {
@@ -4821,7 +4771,7 @@
                 "ext-xml": "*",
                 "myclabs/deep-copy": "~1.3",
                 "php": "^5.6 || ^7.0",
-                "phpspec/prophecy": "^1.3.1",
+                "phpspec/prophecy": "^1.6.2",
                 "phpunit/php-code-coverage": "^4.0.3",
                 "phpunit/php-file-iterator": "~1.4",
                 "phpunit/php-text-template": "~1.2",
@@ -4879,20 +4829,20 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2016-12-03 08:33:00"
+            "time": "2016-12-09 02:48:53"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
-            "version": "3.4.2",
+            "version": "3.4.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit-mock-objects.git",
-                "reference": "90a08f5deed5f7ac35463c161f2e8fa0e5652faf"
+                "reference": "3ab72b65b39b491e0c011e2e09bb2206c2aa8e24"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/90a08f5deed5f7ac35463c161f2e8fa0e5652faf",
-                "reference": "90a08f5deed5f7ac35463c161f2e8fa0e5652faf",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit-mock-objects/zipball/3ab72b65b39b491e0c011e2e09bb2206c2aa8e24",
+                "reference": "3ab72b65b39b491e0c011e2e09bb2206c2aa8e24",
                 "shasum": ""
             },
             "require": {
@@ -4938,7 +4888,7 @@
                 "mock",
                 "xunit"
             ],
-            "time": "2016-11-27 07:52:03"
+            "time": "2016-12-08 20:27:08"
         },
         {
             "name": "satooshi/php-coveralls",

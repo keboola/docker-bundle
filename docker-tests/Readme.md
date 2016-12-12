@@ -66,8 +66,9 @@ Create a new PHPUnit Run configuration. You shouldn't need to set anything in th
 ssh://root@localhost:220/usr/local/bin/php -dxdebug.remote_enable=1 -dxdebug.remote_mode=req -dxdebug.remote_port=9000 -dxdebug.remote_host=172.17.0.1 -dxdebug.remote_host=192.168.0.103 /code/vendor/phpunit/phpunit/phpunit --bootstrap /code/bootstrap.php --configuration /code/phpunit-full.xml.dist --teamcity
 ```
 
-## Tricks:
+## Tips & Tricks:
 
 - You can run commands in the container either via docker: `docker exec -i -t test_runner_php /bin/bash` or via ssh to `localhost:220` and credentials `root:root`
 - When building container `test_runner_php` the code is mapped via volume `../:/code/` This means that when the image is first build, the `vendor` directory is created and PHPStorm can do library dependencies will be resolved. You should delete the `vendor` directory before first running the container and also you should run `composer update` inside the container (otherwise different host PHP and container PHP versions may lead to different dependencies).
+- When changing `parameters.yml` (or any other file in `docker-tests` directory), you have to rebuild the image with `docker-compose up --build`.
 
