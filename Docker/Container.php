@@ -53,6 +53,11 @@ class Container
     private $containerLogger;
 
     /**
+     * @var string
+     */
+    private $commandToGetHostIp;
+
+    /**
      * @return string
      */
     public function getId()
@@ -75,6 +80,7 @@ class Container
      * @param ContainerLogger $containerLogger
      * @param string $dataDirectory
      * @param array $environmentVariables
+     * @param string $commandToGetHostIp
      */
     public function __construct(
         $containerId,
@@ -82,7 +88,8 @@ class Container
         Logger $logger,
         ContainerLogger $containerLogger,
         $dataDirectory,
-        array $environmentVariables
+        array $environmentVariables,
+        $commandToGetHostIp
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -90,6 +97,7 @@ class Container
         $this->dataDir = $dataDirectory;
         $this->id = $containerId;
         $this->environmentVariables = $environmentVariables;
+        $this->commandToGetHostIp = $commandToGetHostIp;
     }
 
     /**
@@ -202,12 +210,8 @@ class Container
             12202,
             13202,
             function ($port) use ($process, $containerName) {
-                // get IP address of host
-                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    $processIp = new Process('hostnamei');
-                } else {
-                    $processIp = new Process('ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'');
-                }
+                // get IP address of host from container
+                $processIp = new Process($this->commandToGetHostIp);
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 

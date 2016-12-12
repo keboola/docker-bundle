@@ -78,6 +78,68 @@ class LoggerTests extends KernelTestCase
         return $dataDir;
     }
 
+    private function getContainerDummyLogger(
+        $imageConfiguration,
+        $dataDir,
+        TestHandler $handler,
+        TestHandler $containerHandler
+    ) {
+        /** @var LoggersService $logService */
+        $logService = self::$kernel->getContainer()->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        $encryptor = new ObjectEncryptor();
+        $log = $logService->getLog();
+        $containerLog = $logService->getContainerLog();
+        $log->pushHandler($handler);
+        $containerLog->pushHandler($containerHandler);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
+        $image->prepare([]);
+        return new Container(
+            'docker-test-logger',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            [],
+            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
+        );
+    }
+
+    private function getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir)
+    {
+        $serviceContainer = self::$kernel->getContainer();
+        /** @var LoggersService $logService */
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        /** @var LoggersService $logService */
+        $logService = $serviceContainer->get('docker_bundle.loggers');
+        $logService->setComponentId('dummy-testing');
+        /** @var StorageApiService $sapiService */
+        $sapiService->setClient(new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]));
+        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
+        $image->prepare([]);
+        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
+        return new Container(
+            'docker-test-logger',
+            $image,
+            $logService->getLog(),
+            $logService->getContainerLog(),
+            $dataDir,
+            [],
+            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
+        );
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+        self::bootKernel();
+    }
+
     public function tearDown()
     {
         parent::tearDown();
@@ -88,23 +150,9 @@ class LoggerTests extends KernelTestCase
 
     public function testLogs()
     {
-        self::bootKernel();
-        $kernel = self::$kernel;
-        /** @var LoggersService $logService */
-        $logService = $kernel->getContainer()->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
         $temp = new Temp('docker');
-        $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor();
-        $log = $logService->getLog();
-        $containerLog = $logService->getContainerLog();
         $handler = new TestHandler();
-        $log->pushHandler($handler);
         $containerHandler = new TestHandler();
-        $containerLog->pushHandler($containerHandler);
-
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
-        $image->prepare([]);
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -114,7 +162,12 @@ sleep(5);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $dataDir, []);
+        $container = $this->getContainerDummyLogger(
+            $this->getImageConfiguration(),
+            $dataDir,
+            $handler,
+            $containerHandler
+        );
         $process = $container->run();
 
         $out = $process->getOutput();
@@ -150,17 +203,14 @@ print "second message to stdout\n";'
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'udp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/UdpClient.php';
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
         $handler = new TestHandler();
-        $log->pushHandler($handler);
-        $containerLog = new ContainerLogger("null");
         $containerHandler = new TestHandler();
-        $containerLog->pushHandler($containerHandler);
-
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $temp->getTmpFolder(),
+            $handler,
+            $containerHandler
+        );
         $process = $container->run();
 
         $out = $process->getOutput();
@@ -186,17 +236,14 @@ print "second message to stdout\n";'
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
         $handler = new TestHandler();
-        $log->pushHandler($handler);
-        $containerLog = new ContainerLogger("null");
         $containerHandler = new TestHandler();
-        $containerLog->pushHandler($containerHandler);
-
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $temp->getTmpFolder(),
+            $handler,
+            $containerHandler
+        );
         $process = $container->run();
 
         $out = $process->getOutput();
@@ -222,17 +269,14 @@ print "second message to stdout\n";'
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'http';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
-        $encryptor = new ObjectEncryptor();
-        $log = new Logger("null");
         $handler = new TestHandler();
-        $log->pushHandler($handler);
-        $containerLog = new ContainerLogger("null");
         $containerHandler = new TestHandler();
-        $containerLog->pushHandler($containerHandler);
-
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $container = new Container('docker-test-logger', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $temp->getTmpFolder(),
+            $handler,
+            $containerHandler
+        );
         $process = $container->run();
 
         $out = $process->getOutput();
@@ -252,43 +296,15 @@ print "second message to stdout\n";'
         $this->assertTrue($containerHandler->hasError("Error message."));
     }
 
-
     public function testVerbosityDefault()
     {
-        $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
 
-        //start the symfony kernel
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $serviceContainer = $kernel->getContainer();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
-        /** @var LoggersService $logService */
-        $logService = $serviceContainer->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
-        /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]));
-        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $temp = new Temp('docker');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
 
         sleep(5); // give storage a little timeout to realize that events are in
@@ -326,7 +342,6 @@ print "second message to stdout\n";'
 
     public function testGelfVerbosityVerbose()
     {
-        $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
@@ -340,35 +355,9 @@ print "second message to stdout\n";'
             Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
         ];
-        //start the symfony kernel
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $serviceContainer = $kernel->getContainer();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
-        /** @var LoggersService $logService */
-        $logService = $serviceContainer->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
-        /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]));
-        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $temp = new Temp('docker');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
 
         sleep(5); // give storage a little timeout to realize that events are in
@@ -422,7 +411,6 @@ print "second message to stdout\n";'
 
     public function testGelfVerbosityNone()
     {
-        $temp = new Temp('docker');
         $imageConfiguration = $this->getGelfImageConfiguration();
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
@@ -436,35 +424,9 @@ print "second message to stdout\n";'
             Logger::ALERT => StorageApiHandler::VERBOSITY_NONE,
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
         ];
-        //start the symfony kernel
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $serviceContainer = $kernel->getContainer();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
-        /** @var LoggersService $logService */
-        $logService = $serviceContainer->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
-        /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]));
-        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $temp->getTmpFolder(),
-            []
-        );
+        $temp = new Temp('docker');
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
 
         sleep(5); // give storage a little timeout to realize that events are in
@@ -476,27 +438,8 @@ print "second message to stdout\n";'
 
     public function testStdoutVerbosity()
     {
-        $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-
-        //start the symfony kernel
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $serviceContainer = $kernel->getContainer();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
-        /** @var LoggersService $logService */
-        $logService = $serviceContainer->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
-        /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]));
-        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
+        $temp = new Temp('docker');
         $dataDir = $this->createScript(
             $temp,
             '<?php
@@ -506,17 +449,8 @@ sleep(5);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
-        $image->prepare([]);
-        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
-        $container = new Container(
-            'docker-test-logger',
-            $image,
-            $logService->getLog(),
-            $logService->getContainerLog(),
-            $dataDir,
-            []
-        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
         $container->run();
 
         sleep(5); // give storage a little timeout to realize that events are in

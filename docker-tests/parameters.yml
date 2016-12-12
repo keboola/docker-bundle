@@ -7,3 +7,4 @@ parameters:
             class: Keboola\DockerBundle\Docker
 
     oauth_api.url: https://syrup.keboola.com/oauth-v2/
+    commandToGetHostIp: ip -4 addr show eth0 | grep -Po 'inet \K[\d.]+'

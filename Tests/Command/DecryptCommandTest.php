@@ -22,8 +22,7 @@ class DecryptCommandTest extends WebTestCase
     protected function setUp()
     {
         parent::setUp();
-        self::$kernel = static::createKernel();
-        self::$kernel->boot();
+        self::bootKernel();
         $this->application = new Application(self::$kernel);
         $this->application->add(new DecryptCommand());
     }

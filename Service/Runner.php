@@ -77,19 +77,26 @@ class Runner
     private $imageCreator;
 
     /**
+     * @var string
+     */
+    private $commandToGetHostIp;
+
+    /**
      * Runner constructor.
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param string $oauthApiUrl
+     * @param string $commandToGetHostIp
      */
     public function __construct(
         Temp $temp,
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
         LoggersService $loggersService,
-        $oauthApiUrl
+        $oauthApiUrl,
+        $commandToGetHostIp
     ) {
         $this->temp = $temp;
         $this->encryptor = $encryptor;
@@ -99,6 +106,7 @@ class Runner
         ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
+        $this->commandToGetHostIp = $commandToGetHostIp;
     }
 
     private function createContainerFromImage(Image $image, $containerId, $environmentVariables)
@@ -109,7 +117,8 @@ class Runner
             $this->loggerService->getLog(),
             $this->loggerService->getContainerLog(),
             $this->dataDirectory->getDataDir(),
-            $environmentVariables
+            $environmentVariables,
+            $this->commandToGetHostIp
         );
     }
 

@@ -50,4 +50,10 @@ services:
 
     docker_bundle.runner:
         class: Keboola\DockerBundle\Service\Runner
-        arguments: ["@syrup.temp", "@syrup.object_encryptor", "@syrup.storage_api", "@docker_bundle.loggers", "%oauth_api.url%"]
+        arguments:
+          - "@syrup.temp"
+          - "@syrup.object_encryptor"
+          - "@syrup.storage_api"
+          - "@docker_bundle.loggers"
+          - "%oauth_api.url%"
+          - "%commandToGetHostIp%"

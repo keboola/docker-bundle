@@ -32,7 +32,15 @@ class NetworkTest extends KernelTestCase
         $image = Image::factory($encryptor, $log, $imageConfig, true);
         $image->prepare($componentConfig);
 
-        $container = new Container('docker-network-test', $image, $log, $containerLog, $this->temp->getTmpFolder(), []);
+        $container = new Container(
+            'docker-network-test',
+            $image,
+            $log,
+            $containerLog,
+            $this->temp->getTmpFolder(),
+            [],
+            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
+        );
         return $container;
     }
 
