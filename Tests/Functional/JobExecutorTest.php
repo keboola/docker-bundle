@@ -85,7 +85,8 @@ class JobExecutorTest extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
-            "dummy"
+            "dummy",
+            self::$kernel->getContainer()->getParameter('commandToGetHostIp')
         );
         $componentsService = new ComponentsService($storageServiceStub);
 
