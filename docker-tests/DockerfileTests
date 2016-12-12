@@ -1,0 +1,63 @@
+FROM php:7-apache
+ENV DEBIAN_FRONTEND noninteractive
+ENV COMPOSER_ALLOW_SUPERUSER 1
+
+RUN apt-get update -q \
+    && apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        ca-certificates \
+        git \
+        gnupg2 \
+        libmcrypt-dev \
+        libpq-dev \
+        openssh-server \
+        sudo \
+        unzip \
+        vim \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# install composer
+RUN cd \
+  && curl -sS https://getcomposer.org/installer | php \
+  && ln -s /root/composer.phar /usr/local/bin/composer
+
+# install docker
+RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D \
+    && echo "deb https://apt.dockerproject.org/repo debian-jessie main" > /etc/apt/sources.list.d/docker.list \
+    && apt-get update -q \
+    && apt-get install -y --no-install-recommends \
+        docker-engine \
+    && rm -rf /var/lib/apt/lists/*    
+
+# add SSH user
+RUN useradd --create-home --shell /bin/bash --groups sudo php-remote \
+    &&  echo "php-remote:php-remote" | chpasswd
+
+# install extensions
+RUN docker-php-ext-install mcrypt pdo_mysql zip \
+    && pecl config-set php_ini /usr/local/etc/php.ini \
+    && yes | pecl install xdebug \
+    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.connect_back=off" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "xdebug.idekey=PHPSTORM" >> /usr/local/etc/php/conf.d/xdebug.ini \
+    && echo "memory_limit=-1" >> /usr/local/etc/php/php.ini
+
+ENV APACHE_LOCK_DIR=/var/apache/lock/
+
+COPY . /buildcode/
+WORKDIR /code/
+
+# configure
+RUN cp /buildcode/sudoers /etc/ \
+    && chmod a+x /buildcode/start.sh \
+    && mkdir -p /var/apache/lock \
+    && chmod a+rw /var/apache/lock \
+    && cp /buildcode/000-default.conf /etc/apache2/sites-available/ 
+
+RUN cp /buildcode/sshd_config /etc/ssh/
+RUN echo "root:root" | chpasswd 
+
+CMD ["/buildcode/start.sh"]
