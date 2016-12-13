@@ -15,6 +15,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
@@ -750,5 +751,138 @@ class RunnerTest extends KernelTestCase
 
         $this->assertTrue($this->client->tableExists('in.c-keboola-docker-demo-app-test-config.sliced'));
         $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
+    }
+
+    public function testExecutorApplicationError()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
+            $this->fail("Application exception must be raised");
+        } catch (ApplicationException $e) {
+            $this->assertContains('Application error', $e->getMessage());
+            $this->assertContains('Class 2 error', $e->getMessage());
+        }
+    }
+
+    public function testExecutorUserError()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "Class 1 error" >&2 && exit 1',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
+            $this->fail('User exception must be raised');
+        } catch (UserException $e) {
+            $this->assertContains('Class 1 error', $e->getMessage());
+        }
+    }
+
+    public function testExecutorApplicationErrorDisabled()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
+                    ],
+                ],
+                'configuration_format' => 'json',
+                'logging' => [
+                    'no_application_errors' => true,
+                ],
+            ],
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
+            $this->fail("Application exception must be raised");
+        } catch (UserException $e) {
+            $this->assertNotContains('Application error', $e->getMessage());
+            $this->assertContains('Class 2 error', $e->getMessage());
+        }
+    }
+
+    public function testExecutorApplicationErrorDisabledButStillError()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'completely_invalid_uri',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
+                    ],
+                ],
+                'configuration_format' => 'json',
+                'logging' => [
+                    'no_application_errors' => true,
+                ],
+            ],
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
+            $this->fail("Application exception must be raised");
+        } catch (ApplicationException $e) {
+            $this->assertContains('Application error', $e->getMessage());
+            $this->assertContains('Failed to pull parent image completely_invalid_uri', $e->getMessage());
+        }
     }
 }
