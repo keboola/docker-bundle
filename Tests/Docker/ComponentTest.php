@@ -7,7 +7,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 
 class ComponentTest extends \PHPUnit_Framework_TestCase
 {
-    public function testConfguration()
+    public function testConfiguration()
     {
         $configuration = [
             "data" => [
@@ -32,7 +32,19 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(7200, $component->getProcessTimeout());
         $this->assertEquals('standard', $component->getLoggerType());
         $this->assertEquals('tcp', $component->getLoggerServerType());
-        $this->assertEquals([], $component->getLoggerVerbosity());
+        $this->assertEquals(
+            [
+                100 => 'none',
+                200 => 'normal',
+                250 => 'normal',
+                300 => 'normal',
+                400 => 'normal',
+                500 => 'camouflage',
+                550 => 'camouflage',
+                600 => 'camouflage',
+            ],
+            $component->getLoggerVerbosity()
+        );
         $this->assertEquals(true, $component->forwardToken());
         $this->assertEquals(true, $component->forwardTokenDetails());
         $this->assertEquals(true, $component->hasDefaultBucket());
@@ -56,7 +68,19 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(3600, $component->getProcessTimeout());
         $this->assertEquals('standard', $component->getLoggerType());
         $this->assertEquals('tcp', $component->getLoggerServerType());
-        $this->assertEquals([], $component->getLoggerVerbosity());
+        $this->assertEquals(
+            [
+                100 => 'none',
+                200 => 'normal',
+                250 => 'normal',
+                300 => 'normal',
+                400 => 'normal',
+                500 => 'camouflage',
+                550 => 'camouflage',
+                600 => 'camouflage',
+            ],
+            $component->getLoggerVerbosity()
+        );
         $this->assertEquals(false, $component->forwardToken());
         $this->assertEquals(false, $component->forwardTokenDetails());
         $this->assertEquals(false, $component->hasDefaultBucket());
