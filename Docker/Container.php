@@ -81,6 +81,8 @@ class Container
      * @param string $dataDirectory
      * @param array $environmentVariables
      * @param string $commandToGetHostIp
+     * @param int $minLogPort
+     * @param $maxLogPort
      */
     public function __construct(
         $containerId,
@@ -89,7 +91,9 @@ class Container
         ContainerLogger $containerLogger,
         $dataDirectory,
         array $environmentVariables,
-        $commandToGetHostIp
+        $commandToGetHostIp,
+        $minLogPort,
+        $maxLogPort
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -98,6 +102,8 @@ class Container
         $this->id = $containerId;
         $this->environmentVariables = $environmentVariables;
         $this->commandToGetHostIp = $commandToGetHostIp;
+        $this->minLogPort = $minLogPort;
+        $this->maxLogPort = $maxLogPort;
     }
 
     /**
@@ -203,12 +209,10 @@ class Container
     private function runWithLogger(Process $process, $containerName)
     {
         $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
-        /* the port range is rather arbitrary, it intentionally excludes the default port (12201)
-            to avoid mis-configured clients. */
         $containerId = '';
         $server->start(
-            12202,
-            13202,
+            $this->minLogPort,
+            $this->maxLogPort,
             function ($port) use ($process, $containerName) {
                 // get IP address of host from container
                 $processIp = new Process($this->commandToGetHostIp);

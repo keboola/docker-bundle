@@ -43,7 +43,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -89,7 +89,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -229,7 +229,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -273,7 +273,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
@@ -320,7 +320,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "",
@@ -388,7 +388,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/non-existent-repo",
@@ -427,7 +427,7 @@ class ImageBuilderTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "keboola/base-php70",
+                    "uri" => "quay.io/keboola/docker-custom-php",
                     "build_options" => [
                         "repository" => [
                             "uri" => "",

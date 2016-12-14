@@ -46,7 +46,17 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
 
         // Create a stub for the Container
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([$containerId, $image, $log, $logContainer, $dataDirectory->getDataDir(), [], 'not-used'])
+            ->setConstructorArgs([
+                $containerId,
+                $image,
+                $log,
+                $logContainer,
+                $dataDirectory->getDataDir(),
+                [],
+                RUNNER_COMMAND_TO_GET_HOST_IP,
+                RUNNER_MIN_LOG_PORT,
+                RUNNER_MAX_LOG_PORT
+            ])
             ->setMethods(['getRunCommand'])
             ->getMock();
 
@@ -207,7 +217,17 @@ EOF;
 
         // Create a stub for the Container
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([$containerId, $image, $log, $logContainer, $dataDirectory->getDataDir(), [], 'not-used'])
+            ->setConstructorArgs([
+                $containerId,
+                $image,
+                $log,
+                $logContainer,
+                $dataDirectory->getDataDir(),
+                [],
+                RUNNER_COMMAND_TO_GET_HOST_IP,
+                RUNNER_MIN_LOG_PORT,
+                RUNNER_MAX_LOG_PORT
+            ])
             ->setMethods(['getRunCommand'])
             ->getMock();
 

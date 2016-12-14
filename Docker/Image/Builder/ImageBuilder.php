@@ -97,11 +97,26 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $this->repository = $config["build_options"]["repository"]["uri"];
             $this->repositoryType = $config["build_options"]["repository"]["type"];
             $this->entryPoint = $config["build_options"]["entry_point"];
-            if (isset($config["build_options"]["commands"])) {
-                $this->setCommands($config["build_options"]["commands"]);
+            $this->commands = [];
+            if (!empty($config["build_options"]["commands"]) && is_array($config["build_options"]["commands"])) {
+                foreach ($config["build_options"]["commands"] as $command) {
+                    $this->commands[] = $command;
+                }
             }
-            if (isset($config["build_options"]["parameters"])) {
-                $this->setParameters($config["build_options"]["parameters"]);
+            $this->parameters = [];
+            if (!empty($config["build_options"]["parameters"]) && is_array($config["build_options"]["parameters"])) {
+                foreach ($config["build_options"]["parameters"] as $parameter) {
+                    if (empty($parameter['name']) || empty($parameter['type']) || !isset($parameter['required'])) {
+                        throw new BuildException("Invalid parameter definition: " . var_export($parameter, true));
+                    }
+                    $this->parameters[$parameter['name']] = new BuilderParameter(
+                        $parameter['name'],
+                        $parameter['type'],
+                        $parameter['required'],
+                        $parameter['default_value'],
+                        empty($parameter['values']) ? [] : $parameter['values']
+                    );
+                }
             }
             if (isset($config["build_options"]["version"])) {
                 $this->version = $config["build_options"]["version"];
@@ -170,42 +185,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     * @param array $commands
-     */
-    private function setCommands(array $commands)
-    {
-        $this->commands = [];
-        foreach ($commands as $command) {
-            $this->commands[] = $command;
-        }
-    }
-
-    /**
      * @return BuilderParameter[]
      */
     public function getParameters()
     {
         return $this->parameters;
-    }
-
-    /**
-     * @param array $parameters
-     */
-    private function setParameters(array $parameters)
-    {
-        $this->parameters = [];
-        foreach ($parameters as $parameter) {
-            if (empty($parameter['name']) || empty($parameter['type']) || !isset($parameter['required'])) {
-                throw new BuildException("Invalid parameter definition: " . var_export($parameter, true));
-            }
-            $this->parameters[$parameter['name']] = new BuilderParameter(
-                $parameter['name'],
-                $parameter['type'],
-                $parameter['required'],
-                $parameter['default_value'],
-                empty($parameter['values']) ? [] : $parameter['values']
-            );
-        }
     }
 
     /**
