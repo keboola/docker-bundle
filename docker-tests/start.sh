@@ -11,12 +11,6 @@ cp /buildcode/config_dev.yml /code/vendor/keboola/syrup/app/config/
 composer run-script build-bootstrap
 php /code/vendor/keboola/syrup/app/console syrup:create-index
 
-# curl -X POST -H "Content-Type: application/json" -H "Cache-Control: no-cache" -d '{
-#	# "actions" : [
-#        { "add" : { "index" : "devel_syrup_docker_2016_1", "alias" : "devel_syrup_docker" } }
-#    ]
-#}' "http://elastic:9200/_aliases/"
-
 service ssh start
 mkdir -p /var/run/apache2
 chmod a+rw /var/run/apache2

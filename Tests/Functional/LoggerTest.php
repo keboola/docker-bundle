@@ -100,7 +100,9 @@ class LoggerTests extends KernelTestCase
             $containerLog,
             $dataDir,
             [],
-            self::$kernel->getContainer()->getParameter('get_host_ip_command')
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
         );
     }
 
@@ -129,7 +131,9 @@ class LoggerTests extends KernelTestCase
             $logService->getContainerLog(),
             $dataDir,
             [],
-            self::$kernel->getContainer()->getParameter('get_host_ip_command')
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
         );
     }
 

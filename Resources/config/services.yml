@@ -56,4 +56,3 @@ services:
           - "@syrup.storage_api"
           - "@docker_bundle.loggers"
           - "%oauth_api.url%"
-          - "%get_host_ip_command%"
