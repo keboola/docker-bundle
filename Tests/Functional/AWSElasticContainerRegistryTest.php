@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -22,18 +23,20 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI,
-                "repository" => [
-                    "region" => AWS_ECR_REGISTRY_REGION
-                ]
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "aws-ecr",
+                    "uri" => AWS_ECR_REGISTRY_URI,
+                    "repository" => [
+                        "region" => AWS_ECR_REGISTRY_REGION
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -55,18 +58,20 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID . "_invalid");
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
-        $imageConfig = array(
-            "definition" => array(
-                "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI,
-                "repository" => [
-                    "region" => AWS_ECR_REGISTRY_REGION
-                ]
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        );
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "aws-ecr",
+                    "uri" => AWS_ECR_REGISTRY_URI,
+                    "repository" => [
+                        "region" => AWS_ECR_REGISTRY_REGION
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -93,18 +98,20 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
-        $imageConfig = [
-            "definition" => [
-                "type" => "aws-ecr",
-                "uri" => AWS_ECR_REGISTRY_URI,
-                "repository" => [
-                    "region" => AWS_ECR_REGISTRY_REGION
-                ]
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "aws-ecr",
+                    "uri" => AWS_ECR_REGISTRY_URI,
+                    "repository" => [
+                        "region" => AWS_ECR_REGISTRY_REGION
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -128,5 +135,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         // remove env variables
         putenv('AWS_ACCESS_KEY_ID=');
         putenv('AWS_SECRET_ACCESS_KEY=');
+        parent::tearDown();
     }
 }

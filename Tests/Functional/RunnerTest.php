@@ -129,6 +129,51 @@ class RunnerTest extends KernelTestCase
 
     public function testRunnerPipeline()
     {
+        $components = [
+            [
+                "id" => "keboola.processor.iconv",
+                "data" => [
+                    "definition" => [
+                      "type" => "quayio",
+                      "uri" => "keboola/processor-iconv",
+                      "tag" => "1.0.2",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+            [
+                "id" => "keboola.processor.move-files",
+                "data" => [
+                    "definition" => [
+                        "type" => "quayio",
+                        "uri" => "keboola/processor-move-files",
+                        "tag" => "0.1.0",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+            [
+                "id" => "keboola.processor.unzipper",
+                "data" => [
+                    "definition" => [
+                        "type" => "quayio",
+                        "uri" => "keboola/processor-unziper",
+                        "tag" => "3.0.4",
+                    ],
+                    "inject_environment" => true,
+                ]
+            ],
+        ];
+
+        $clientMock = $this->getMockBuilder(Client::class)
+            ->setConstructorArgs([['token' => STORAGE_API_TOKEN]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects($this->any())
+            ->method('indexAction')
+            ->will($this->returnValue(['components' => $components]));
+        $this->client = $clientMock;
+
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->client->uploadFile(
             $dataDir . 'texty.zip',
@@ -253,7 +298,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -298,6 +343,56 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
     }
 
+    public function testImageParametersEnvironment()
+    {
+        $configurationData = [
+            'parameters' => [
+                'foo' => 'bar'
+            ]
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptor);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        // also attempt to pass the token to verify that it does not work
+                        'entry_point' => 'echo KBC_PARAMETER_FOO=$KBC_PARAMETER_FOO',
+                    ],
+                ],
+                'configuration_format' => 'json',
+                'inject_environment' => true,
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            uniqid('test-'),
+            $configurationData,
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $this->assertContains('KBC_PARAMETER_FOO=bar', $ret[0]['message']);
+    }
+
     public function testImageParametersNoDecrypt()
     {
         $configurationData = [
@@ -318,7 +413,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -425,18 +520,6 @@ class RunnerTest extends KernelTestCase
         $this->client->dropBucket('out.c-keboola-docker-demo-app-test-config', ['force' => true]);
     }
 
-    public function testGetSanitizedComponentId()
-    {
-        $runner = $this->getRunner(new NullHandler());
-        $reflection = new \ReflectionMethod($runner, 'getSanitizedComponentId');
-        $reflection->setAccessible(true);
-
-
-        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex-generic'));
-        $this->assertEquals('ex-generic', $reflection->invoke($runner, 'ex-generic'));
-        $this->assertEquals('keboola-ex-generic', $reflection->invoke($runner, 'keboola.ex.generic'));
-    }
-
     public function testExecutorStoreState()
     {
         $runner = $this->getRunner(new NullHandler());
@@ -464,7 +547,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
@@ -515,7 +598,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-base-php56:0.0.2',
+                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',

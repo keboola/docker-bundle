@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
@@ -17,16 +18,18 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
     public function testContainerHandler()
     {
         $tag = '1.1.1';
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app",
-                "tag" => $tag
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json",
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app",
+                    "tag" => $tag
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json",
+            ]
+        ]);
         $log = new Logger("null");
         $handler1 = new TestHandler();
         $log->pushHandler($handler1);
@@ -95,16 +98,18 @@ EOF;
     public function testContainerHandlerTerminate()
     {
         $tag = '1.1.1';
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo-app",
-                "tag" => $tag
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app",
+                    "tag" => $tag
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json",
             ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json",
-        ];
+        ]);
         $log = new Logger("null");
         $handler1 = new TestHandler();
         $log->pushHandler($handler1);

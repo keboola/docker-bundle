@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -27,15 +28,17 @@ class QuayIORepositoryTest extends KernelTestCase
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        $imageConfig = array(
-            "definition" => array(
-                "type" => "quayio",
-                "uri" => "keboola/docker-demo-app"
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        );
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "quayio",
+                    "uri" => "keboola/docker-demo-app"
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());

@@ -76,8 +76,14 @@ class Container
      * @param string $dataDirectory
      * @param array $environmentVariables
      */
-    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, array $environmentVariables)
-    {
+    public function __construct(
+        $containerId,
+        Image $image,
+        Logger $logger,
+        ContainerLogger $containerLogger,
+        $dataDirectory,
+        array $environmentVariables
+    ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
         $this->image = $image;
@@ -139,7 +145,7 @@ class Container
             $startTime = time();
             try {
                 $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
-                if ($this->getImage()->getLoggerType() == 'gelf') {
+                if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
                 } else {
                     $this->runWithoutLogger($process);
@@ -162,7 +168,9 @@ class Container
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->notice("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
+                    $this->logger->notice(
+                        "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
+                    );
                     // continue
                 }
             }
@@ -186,7 +194,7 @@ class Container
 
     private function runWithLogger(Process $process, $containerName)
     {
-        $server = ServerFactory::createServer($this->getImage()->getLoggerServerType());
+        $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
         /* the port range is rather arbitrary, it intentionally excludes the default port (12201)
             to avoid mis-configured clients. */
         $containerId = '';
@@ -248,18 +256,23 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->notice("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
+            $this->logger->notice(
+                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
+                $e->getMessage()
+            );
             $inspect = [];
         }
 
-        if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+        if (isset($inspect["State"]) &&
+            isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true
+        ) {
             $data = [
                 "container" => [
                     "id" => $this->getId()
                 ]
             ];
             throw new OutOfMemoryException(
-                "Out of memory (exceeded {$this->getImage()->getMemory()})",
+                "Out of memory (exceeded {$this->getImage()->getSourceComponent()->getMemory()})",
                 null,
                 $data
             );
@@ -268,12 +281,15 @@ class Container
         // killed containers
         if ($process->getExitCode() == 137) {
             // this catches the timeout from `sudo timeout`
-            if ($duration >= $this->getImage()->getProcessTimeout()) {
+            if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
                 throw new UserException(
-                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of " .
+                    $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds."
                 );
             } else {
-                throw new InitializationException("{$this->getImage()->getFullImageId()} container terminated. Will restart.");
+                throw new InitializationException(
+                    "{$this->getImage()->getFullImageId()} container terminated. Will restart."
+                );
             }
         }
 
@@ -337,14 +353,14 @@ class Container
             foreach ($this->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
             }
-            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
+            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
         }
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
-            . " --memory=" . escapeshellarg($this->getImage()->getMemory())
-            . " --memory-swap=" . escapeshellarg($this->getImage()->getMemory())
-            . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
-            . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
+            . " --memory=" . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
+            . " --memory-swap=" . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
+            . " --cpu-shares=" . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
+            . " --net=" . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getImage()->getFullImageId());

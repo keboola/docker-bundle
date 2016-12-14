@@ -12,7 +12,7 @@ class Component extends Configuration
     {
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root('component');
-        $definition = $root->children()->arrayNode('definition');
+        $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 
         $root->children()
@@ -28,13 +28,15 @@ class Component extends Configuration
             ->integerNode('process_timeout')->min(0)->defaultValue(3600)->end()
             ->booleanNode('forward_token')->defaultValue(false)->end()
             ->booleanNode('forward_token_details')->defaultValue(false)->end()
+            ->booleanNode('inject_environment')->defaultValue(false)->end()
             ->booleanNode('default_bucket')->defaultValue(false)->end()
-            ->variableNode('image_parameters')->end()
+            ->variableNode('image_parameters')->defaultValue([])->end()
             ->scalarNode('network')
                 ->validate()
                     ->ifNotInArray(['none', 'bridge'])
                     ->thenInvalid('Invalid network type %s.')
                 ->end()
+                ->defaultValue('bridge')
             ->end()
             ->scalarNode('default_bucket_stage')
                 ->validate()

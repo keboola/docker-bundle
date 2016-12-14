@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Service;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
@@ -76,11 +77,6 @@ class Runner
     private $imageCreator;
 
     /**
-     * @var Environment
-     */
-    private $environment;
-
-    /**
      * Runner constructor.
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
@@ -103,11 +99,6 @@ class Runner
         ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
-    }
-
-    private function getSanitizedComponentId($componentId)
-    {
-        return preg_replace('/[^a-zA-Z0-9-]/i', '-', $componentId);
     }
 
     private function createContainerFromImage(Image $image, $containerId, $environmentVariables)
@@ -144,7 +135,7 @@ class Runner
     }
 
     /**
-     * @param array $component
+     * @param array $componentData
      * @param $configId
      * @param array $configData
      * @param array $state
@@ -153,15 +144,11 @@ class Runner
      * @param string $jobId
      * @return string
      */
-    public function run(array $component, $configId, array $configData, array $state, $action, $mode, $jobId)
+    public function run(array $componentData, $configId, array $configData, array $state, $action, $mode, $jobId)
     {
-        $component['id'] = empty($component['id']) ? '' : $component['id'];
-        $component['data'] = empty($component['data']) ? [] : $component['data'];
-        $this->loggerService->getLog()->info("Running Docker container '{$component['id']}'.", $configData);
-        $componentId = $component['id'];
-        $component = (new Configuration\Component())->parse(['config' => $component['data']]);
-        $component['image_parameters'] = empty($component['image_parameters']) ? [] : $component['image_parameters'];
-        $this->loggerService->setComponentId($componentId);
+        $component = new Component($componentData);
+        $this->loggerService->getLog()->info("Running Component " . $component->getId(), $configData);
+        $this->loggerService->setComponentId($component->getId());
 
         $sandboxed = $mode != 'run';
         try {
@@ -171,39 +158,38 @@ class Runner
         }
         $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
         $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
-        $configFormat = $component['configuration_format'];
+        $configData['parameters'] = empty($configData['parameters']) ? [] : $configData['parameters'];
 
         $this->dataDirectory = new DataDirectory($this->temp->getTmpFolder());
         $this->stateFile = new StateFile(
             $this->dataDirectory->getDataDir(),
             $this->storageClient,
             $state,
-            $componentId,
+            $component->getId(),
             $configId,
-            $configFormat
+            $component->getConfigurationFormat()
         );
-        $authorization = new Authorization($this->oauthClient, $this->encryptor, $componentId, $sandboxed);
+        $authorization = new Authorization($this->oauthClient, $this->encryptor, $component->getId(), $sandboxed);
 
         if ($sandboxed) {
             // do not decrypt image parameters on sandboxed calls
-            $imageParameters = $component['image_parameters'];
+            $imageParameters = $component->getImageParameters();
         } else {
-            $imageParameters = $this->encryptor->decrypt($component['image_parameters']);
+            $imageParameters = $this->encryptor->decrypt($component->getImageParameters());
         }
         $this->configFile = new ConfigFile(
             $this->dataDirectory->getDataDir(),
             $imageParameters,
             $authorization,
             $action,
-            $configFormat
+            $component->getConfigurationFormat()
         );
 
-        if (!empty($component['default_bucket'])) {
+        if ($component->hasDefaultBucket()) {
             if (!$configId) {
                 throw new UserException("Configuration ID not set, but is required for default_bucket option.");
             }
-            $defaultBucketName = $component['default_bucket_stage'] . ".c-" .
-                $this->getSanitizedComponentId($componentId) . "-" . $configId;
+            $defaultBucketName = $component->getDefaultBucketName($configId);
         } else {
             $defaultBucketName = '';
         }
@@ -214,14 +200,8 @@ class Runner
             $this->dataDirectory->getDataDir(),
             $configData['storage'],
             $defaultBucketName,
-            $configFormat,
-            $component['staging_storage']
-        );
-        $this->environment = new Environment(
-            $this->storageClient,
-            $configId,
-            $component['forward_token'],
-            $component['forward_token_details']
+            $component->getConfigurationFormat(),
+            $component->getStagingStorage()
         );
         $this->imageCreator = new ImageCreator(
             $this->encryptor,
@@ -233,12 +213,12 @@ class Runner
 
         switch ($mode) {
             case 'run':
-                $componentOutput = $this->runComponent($jobId, $componentId, $configId);
+                $componentOutput = $this->runComponent($jobId, $configId, $component);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($jobId, $componentId, $configData, $mode);
+                $componentOutput = $this->sandboxComponent($jobId, $configData, $mode, $configId, $component);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -246,26 +226,26 @@ class Runner
         return $componentOutput;
     }
 
-    public function runComponent($jobId, $componentId, $configId)
+    public function runComponent($jobId, $configId, Component $component)
     {
         // initialize
         $this->dataDirectory->createDataDir();
         $this->stateFile->createStateFile();
         $this->dataLoader->loadInputData();
 
-        $componentOutput = $this->runImages($jobId);
+        $componentOutput = $this->runImages($jobId, $configId, $component);
 
         // finalize
         $this->dataLoader->storeOutput();
-        if ($this->shouldStoreState($componentId, $configId)) {
+        if ($this->shouldStoreState($component->getId(), $configId)) {
             $this->stateFile->storeStateFile();
         }
         $this->dataDirectory->dropDataDir();
-        $this->loggerService->getLog()->info("Docker container '$componentId' finished.");
+        $this->loggerService->getLog()->info("Docker Component " . $component->getId() . " finished.");
         return $componentOutput;
     }
 
-    public function sandboxComponent($jobId, $componentId, $configData, $mode)
+    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component)
     {
         // initialize
         $this->dataDirectory->createDataDir();
@@ -274,36 +254,41 @@ class Runner
 
         $componentOutput = '';
         if ($mode == 'dry-run') {
-            $componentOutput = $this->runImages($jobId);
+            $componentOutput = $this->runImages($jobId, $configId, $component);
         } else {
             $this->configFile->createConfigFile($configData);
         }
 
-        $this->dataLoader->storeDataArchive([$mode, 'docker', $componentId]);
+        $this->dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
         // finalize
         $this->dataDirectory->dropDataDir();
         return $componentOutput;
     }
 
-    private function runImages($jobId)
+    private function runImages($jobId, $configId, Component $component)
     {
         $componentOutput = '';
         $images = $this->imageCreator->prepareImages();
-        $this->loggerService->setVerbosity($images[0]->getLoggerVerbosity());
+        $this->loggerService->setVerbosity($component->getLoggerVerbosity());
+        $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
         foreach ($images as $priority => $image) {
+            $environment = new Environment(
+                $configId,
+                $image->getSourceComponent(),
+                $image->getConfigData()['parameters'],
+                $tokenInfo,
+                $this->storageClient->getRunId(),
+                $this->storageClient->getApiUrl()
+            );
+
             $this->configFile->createConfigFile($image->getConfigData());
-            $containerId = $jobId . '-' . $this->storageClient->getRunId();
-            if ($image->isMain()) {
-                $environmentParameters = [];
-            } else {
-                $environmentParameters = $image->getConfigData()['parameters'];
-            }
+            $containerId = $jobId . '-' . ($this->storageClient->getRunId() ?: 'norunid');
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
-                $this->environment->getEnvironmentVariables($environmentParameters)
+                $environment->getEnvironmentVariables()
             );
             $output = $container->run();
             if ($image->isMain()) {

@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -22,15 +23,17 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
-        $imageConfig = [
-            "definition" => [
-                "type" => "quayio-private",
-                "uri" => "keboola/docker-demo-private"
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "quayio-private",
+                    "uri" => "keboola/docker-demo-private"
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -49,21 +52,23 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
-        $imageConfig = array(
-            "definition" => array(
-                "type" => "quayio-private",
-                "uri" => "keboola/docker-demo-private",
-                "repository" => [
-                    "username" => QUAYIO_PRIVATE_USERNAME . "_invalid",
-                    "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD),
-                    "server" => DOCKERHUB_PRIVATE_SERVER
-                ]
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "quayio-private",
+                    "uri" => "keboola/docker-demo-private",
+                    "repository" => [
+                        "username" => QUAYIO_PRIVATE_USERNAME . "_invalid",
+                        "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD),
+                        "server" => DOCKERHUB_PRIVATE_SERVER
+                    ]
 
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        );
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ],
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -87,19 +92,21 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = [
-            "definition" => [
-                "type" => "quayio-private",
-                "uri" => "keboola/docker-demo-private",
-                "repository" => [
-                    "username" => QUAYIO_PRIVATE_USERNAME,
-                    "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD)
-                ]
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "quayio-private",
+                    "uri" => "keboola/docker-demo-private",
+                    "repository" => [
+                        "username" => QUAYIO_PRIVATE_USERNAME,
+                        "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD)
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
             ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        ];
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());

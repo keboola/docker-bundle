@@ -3,7 +3,9 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ActionController;
+use Keboola\StorageApi\Client;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -89,10 +91,10 @@ class ActionControllerTest extends WebTestCase
 
     protected function getStorageServiceStubDcaPython()
     {
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+        $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $storageServiceStub->expects($this->atLeastOnce())
