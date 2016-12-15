@@ -846,7 +846,7 @@ class RunnerTest extends KernelTestCase
 
         try {
             $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
-            $this->fail("Application exception must be raised");
+            $this->fail("Application exception must not be raised.");
         } catch (UserException $e) {
             $this->assertNotContains('Application error', $e->getMessage());
             $this->assertContains('Class 2 error', $e->getMessage());
@@ -881,7 +881,7 @@ class RunnerTest extends KernelTestCase
 
         try {
             $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
-            $this->fail("Application exception must be raised");
+            $this->fail("Application exception must be raised even though it is disabled.");
         } catch (ApplicationException $e) {
             $this->assertContains('Application error', $e->getMessage());
             $this->assertContains('Failed to pull parent image completely_invalid_uri', $e->getMessage());
