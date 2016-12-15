@@ -77,20 +77,33 @@ class Runner
     private $imageCreator;
 
     /**
+     * @var string
+     */
+    private $commandToGetHostIp;
+
+    /**
      * Runner constructor.
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param string $oauthApiUrl
+     * @param string $commandToGetHostIp
+     * @param int $minLogPort
+     * @param int $maxLogPort
      */
     public function __construct(
         Temp $temp,
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
         LoggersService $loggersService,
-        $oauthApiUrl
+        $oauthApiUrl,
+        $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
+        $minLogPort = 12202,
+        $maxLogPort = 13202
     ) {
+        /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
+        to avoid mis-configured clients. */
         $this->temp = $temp;
         $this->encryptor = $encryptor;
         $this->storageClient = $storageApi->getClient();
@@ -99,6 +112,9 @@ class Runner
         ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
+        $this->commandToGetHostIp = $commandToGetHostIp;
+        $this->minLogPort = $minLogPort;
+        $this->maxLogPort = $maxLogPort;
     }
 
     private function createContainerFromImage(Image $image, $containerId, $environmentVariables)
@@ -109,7 +125,10 @@ class Runner
             $this->loggerService->getLog(),
             $this->loggerService->getContainerLog(),
             $this->dataDirectory->getDataDir(),
-            $environmentVariables
+            $environmentVariables,
+            $this->commandToGetHostIp,
+            $this->minLogPort,
+            $this->maxLogPort
         );
     }
 

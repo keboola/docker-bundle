@@ -37,7 +37,17 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, new Component($imageConfig), true);
         $image->prepare([]);
 
-        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, $envs);
+        $container = new Container(
+            'container-error-test',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            $envs,
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         return $container;
     }
 
@@ -159,7 +169,17 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php echo "done";');
-        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
+        $container = new Container(
+            'container-error-test',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
 
         // set benchmark time
         $benchmarkStartTime = time();
@@ -168,7 +188,18 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         // actual test
         $dataDir = $this->createScript($temp, '<?php sleep(20);');
-        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
+        $container = new Container(
+            'container-error-test',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            [],
+            'not-used',
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         $testStartTime = time();
         try {
             $container->run();
@@ -199,7 +230,17 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
-        $container = new Container('container-error-test', $image, $log, $containerLog, $dataDir, []);
+        $container = new Container(
+            'container-error-test',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         $container->run();
     }
 

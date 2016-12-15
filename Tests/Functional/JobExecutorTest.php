@@ -85,7 +85,10 @@ class JobExecutorTest extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
-            "dummy"
+            "dummy",
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
         );
         $componentsService = new ComponentsService($storageServiceStub);
 

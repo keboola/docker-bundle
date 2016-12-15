@@ -1,0 +1,57 @@
+parameters:
+    database_driver: pdo_mysql
+    database_host: database
+    database_port: null
+    database_name: syrup
+    database_user: syrup
+    database_password: syrup
+    syrup.driver: pdo_mysql
+    syrup.host: database
+    syrup.port: ~
+    syrup.name: syrup
+    syrup.user: syrup
+    syrup.password: syrup
+    locks_db.driver: pdo_mysql
+    locks_db.host: database
+    locks_db.port: null
+    locks_db.name: syrup
+    locks_db.user: syrup
+    locks_db.password: syrup
+    pdo.db_options:
+        db_table: session
+        db_id_col: id
+        db_data_col: value
+        db_time_col: time
+    mailer_transport: smtp
+    mailer_host: localhost
+    mailer_user: null
+    mailer_password: null
+    locale: en
+    secret: thisIsSecretHashBleeWieasalsfhlaf
+    kernel.trusted_hosts: null
+    doctrine_migrations_dir: "%kernel.root_dir%/../../../../DoctrineMigrations"
+    storage_api.test.token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    storage_api.test.url: 'https://connection.keboola.com'
+    storage_api.url: 'https://connection.keboola.com/'
+    shared_sapi:
+        url: 'https://connection.keboola.com'
+        token: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    uploader:
+        aws-access-key: xxxxxxxxxxxxxxxxxxxx
+        aws-secret-key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        aws-region: us-east-1
+        s3-upload-path: keboola-logs/debug-files
+        bitly-login: petrsimecek
+        bitly-api-key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        url-prefix: 'https://connection.keboola.com/admin/utils/logs?file='
+    queue:
+        sqs: default
+        url: http://syrup-queue.kbc-devel-02.keboola.com/app_dev.php/queue
+        db_table: queues
+
+    elasticsearch:
+        hosts: [elastic:9200]
+    elasticsearch.index_prefix: devel
+
+    job_manager:
+        index_prefix: devel

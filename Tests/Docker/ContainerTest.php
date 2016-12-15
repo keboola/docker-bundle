@@ -38,7 +38,17 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $fs->mkdir($dataDir);
         $tableDir = $dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables' . DIRECTORY_SEPARATOR;
         $fs->mkdir($tableDir);
-        $container = new Docker\Mock\Container('docker-container-test', $image, $log, $containerLog, $dataDir, []);
+        $container = new Docker\Mock\Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            $dataDir,
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
 
         $callback = function () {
             $process = new Process('echo "Processed 2 rows."');
@@ -107,7 +117,17 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
-        $container = new Container('docker-container-test', $image, $log, $containerLog, '/tmp', $envs);
+        $container = new Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            '/tmp',
+            $envs,
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         $expected = "sudo timeout --signal=SIGKILL 3600 docker run --volume='/tmp':/data --memory='64m' --memory-swap='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
@@ -130,7 +150,17 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $temp = new Temp();
-        $container = new Container('docker-container-test', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        $container = new Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            $temp->getTmpFolder(),
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
     }
@@ -153,7 +183,17 @@ EOF;
 
         $image = Image::factory($encryptor, $log, $imageConfiguration, true);
         $temp = new Temp();
-        $container = new Container('docker-container-test', $image, $log, $containerLog, $temp->getTmpFolder(), []);
+        $container = new Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            $temp->getTmpFolder(),
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
     }
