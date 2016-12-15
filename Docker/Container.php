@@ -332,12 +332,20 @@ class Container
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
-                // syrup will make sure that the actual exception message will be hidden to end-user
-                throw new ApplicationException(
-                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                    null,
-                    $data
-                );
+                if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
+                    throw new UserException(
+                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                        null,
+                        $data
+                    );
+                } else {
+                    // syrup will make sure that the actual exception message will be hidden to end-user
+                    throw new ApplicationException(
+                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                        null,
+                        $data
+                    );
+                }
             }
         }
     }

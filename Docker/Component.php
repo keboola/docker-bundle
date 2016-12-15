@@ -208,4 +208,9 @@ class Component
     {
         return $this->data['staging_storage'];
     }
+
+    public function isApplicationErrorDisabled()
+    {
+        return $this->data['logging']['no_application_errors'];
+    }
 }
