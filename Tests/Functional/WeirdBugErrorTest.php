@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
+use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
@@ -41,7 +42,7 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root);
+        $dataDirectory = new DataDirectory($root, $log);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
@@ -133,12 +134,22 @@ EOF;
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root);
+        $dataDirectory = new DataDirectory($root, $log);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([$containerId, $image, $log, $logContainer, $dataDirectory->getDataDir(), [], 'not-used'])
+            ->setConstructorArgs([
+                $containerId,
+                $image,
+                $log,
+                $logContainer,
+                $dataDirectory->getDataDir(),
+                [],
+                RUNNER_COMMAND_TO_GET_HOST_IP,
+                RUNNER_MIN_LOG_PORT,
+                RUNNER_MAX_LOG_PORT
+            ])
             ->setMethods(['getRunCommand'])
             ->getMock();
 
@@ -212,24 +223,24 @@ EOF;
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root);
+        $dataDirectory = new DataDirectory($root, $log);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
         $container = $this->getMockBuilder(Container::class)
-            ->setConstructorArgs([
-                $containerId,
-                $image,
-                $log,
-                $logContainer,
-                $dataDirectory->getDataDir(),
-                [],
-                RUNNER_COMMAND_TO_GET_HOST_IP,
-                RUNNER_MIN_LOG_PORT,
-                RUNNER_MAX_LOG_PORT
-            ])
-            ->setMethods(['getRunCommand'])
-            ->getMock();
+        ->setConstructorArgs([
+            $containerId,
+            $image,
+            $log,
+            $logContainer,
+            $dataDirectory->getDataDir(),
+            [],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        ])
+        ->setMethods(['getRunCommand'])
+        ->getMock();
 
         $container->method('getRunCommand')
             ->will($this->onConsecutiveCalls(
@@ -277,6 +288,55 @@ EOF;
 
         try {
             $container->run();
+            $this->fail("Too many errors must fail");
+        } catch (ApplicationException $e) {
+        }
+    }
+
+    public function testDataDirectory()
+    {
+        $temp = new Temp();
+        $logger = new Logger('null');
+        $logger->pushHandler(new NullHandler());
+        $dataDir = $this->getMockBuilder(DataDirectory::class)
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setMethods(['getNormalizeCommand'])
+            ->getMock();
+        $dataDir->method('getNormalizeCommand')
+            ->will($this->onConsecutiveCalls(
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\''
+            ));
+
+        /** @var DataDirectory $dataDir */
+        $dataDir->createDataDir();
+        $dataDir->dropDataDir();
+    }
+
+    public function testDataDirectoryTerminate()
+    {
+        $temp = new Temp();
+        $logger = new Logger('null');
+        $logger->pushHandler(new NullHandler());
+        $dataDir = $this->getMockBuilder(DataDirectory::class)
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setMethods(['getNormalizeCommand'])
+            ->getMock();
+        $dataDir->method('getNormalizeCommand')
+            ->will($this->onConsecutiveCalls(
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
+                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\''
+            ));
+
+        /** @var DataDirectory $dataDir */
+        $dataDir->createDataDir();
+        try {
+            $dataDir->dropDataDir();
             $this->fail("Too many errors must fail");
         } catch (ApplicationException $e) {
         }

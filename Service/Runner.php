@@ -179,7 +179,7 @@ class Runner
         $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
         $configData['parameters'] = empty($configData['parameters']) ? [] : $configData['parameters'];
 
-        $this->dataDirectory = new DataDirectory($this->temp->getTmpFolder());
+        $this->dataDirectory = new DataDirectory($this->temp->getTmpFolder(), $this->loggerService->getLog());
         $this->stateFile = new StateFile(
             $this->dataDirectory->getDataDir(),
             $this->storageClient,
