@@ -69,14 +69,14 @@ class DataDirectory
         $retries = 0;
         do {
             $retry = false;
-            $command = $this->getNormalizeCommand();
-            $process = new Process($command);
-            $process->setTimeout(60);
             try {
                 $retryPolicy = new SimpleRetryPolicy(3);
                 $backOffPolicy = new ExponentialBackOffPolicy(10000);
                 $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-                $proxy->call(function () use ($process) {
+                $proxy->call(function () use (&$process) {
+                    $command = $this->getNormalizeCommand();
+                    $process = new Process($command);
+                    $process->setTimeout(60);
                     $process->run();
                 });
                 if ($process->getExitCode() != 1) {
