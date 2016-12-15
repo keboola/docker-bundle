@@ -5,6 +5,9 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Logger;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -70,7 +73,12 @@ class DataDirectory
             $process = new Process($command);
             $process->setTimeout(60);
             try {
-                $process->run();
+                $retryPolicy = new SimpleRetryPolicy(3);
+                $backOffPolicy = new ExponentialBackOffPolicy(10000);
+                $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+                $proxy->call(function () use ($process) {
+                    $process->run();
+                });
                 if ($process->getExitCode() != 1) {
                     $message = $process->getOutput() . $process->getErrorOutput();
                     if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
