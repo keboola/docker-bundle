@@ -68,6 +68,7 @@ class DataDirectory
             $retry = false;
             $command = $this->getNormalizeCommand();
             $process = new Process($command);
+            $process->setTimeout(60);
             try {
                 $process->run();
                 if ($process->getExitCode() != 1) {
