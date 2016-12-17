@@ -7,6 +7,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
+use Symfony\Component\Process\Process;
 
 class DataDirectoryTest extends \PHPUnit_Framework_TestCase
 {
@@ -20,10 +21,11 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
+        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         $dataDir->method('getNormalizeCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
-                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\''
+                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
             ));
 
         /** @var DataDirectory $dataDir */
@@ -40,6 +42,7 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
+        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         $dataDir->method('getNormalizeCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
@@ -48,7 +51,7 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
                 'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
                 'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
                 'sh -c -e \'echo "failed: (125) Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed" && exit 125\'',
-                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\''
+                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
             ));
 
         /** @var DataDirectory $dataDir */
@@ -69,10 +72,11 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
+        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         $dataDir->method('getNormalizeCommand')
             ->will($this->onConsecutiveCalls(
                 'sleep 70 && sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\'',
-                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown 0 /data -R\''
+                'sudo docker run --volume=' . $temp->getTmpFolder() . '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
             ));
 
         /** @var DataDirectory $dataDir */
