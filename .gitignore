@@ -4,7 +4,6 @@ vendor
 *.kdev4
 *~
 .idea
-parameters.yml
-parameters_shared.yml
 composer.phar
 config.php
+/docker-tests/db/data

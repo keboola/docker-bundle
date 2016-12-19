@@ -1,0 +1,28 @@
+imports:
+    - { resource: config.yml }
+
+framework:
+    router:   { resource: "%kernel.root_dir%/config/routing_dev.yml" }
+    profiler: { only_exceptions: false }
+
+monolog:
+    channels: ["fooBar"]
+    handlers:
+        console:
+            type: console
+            verbosity_levels:
+                VERBOSITY_NORMAL: EMERGENCY
+        syrup_syslog:
+            type: syslog
+            ident: %app_name%
+            level: debug
+            # Disable syslog handler, because S3 uploader does not work yet
+            #channels: ["!request", "!event", "!doctrine"]
+            channels: ["fooBar"]
+            formatter: syrup.monolog.formatter
+        storage_api:
+            type: service
+            id: syrup.monolog.sapi_handler
+            ident: %app_name%
+            level: info
+            channels: ["!request", "!event", "!doctrine"]

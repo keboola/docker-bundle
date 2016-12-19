@@ -2,73 +2,77 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\StorageApi\Client;
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\Syrup\Exception\UserException;
 
 class Environment
 {
-    /**
-     * @var Client
-     */
-    private $storageClient;
-
     /**
      * @var string
      */
     private $configId;
 
     /**
-     * @var bool
-     */
-    private $forwardToken;
-
-    /**
-     * @var bool
-     */
-    private $forwardTokenDetails;
-
-    /**
      * @var array
      */
     private $configParameters;
 
-    public function __construct(Client $storageClient, $configId, array $component, array $configParameters)
+    /**
+     * @var array
+     */
+    private $tokenInfo;
+
+    /**
+     * @var string
+     */
+    private $runId;
+
+    /**
+     * @var string
+     */
+    private $url;
+
+    /**
+     * @var Component
+     */
+    private $component;
+
+    public function __construct($configId, Component $component, array $config, array $tokenInfo, $runId, $url)
     {
-        $this->storageClient = $storageClient;
         $this->configId = $configId;
-        $this->forwardToken = $component['forward_token'];
-        $this->forwardTokenDetails = $component['forward_token_details'];
-        if ($component['inject_environment']) {
-            $this->configParameters = $configParameters;
-        } else {
-            $this->configParameters = [];
-        }
+        $this->component = $component;
+        $this->configParameters = $config;
+        $this->tokenInfo = $tokenInfo;
+        $this->runId = $runId;
+        $this->url = $url;
     }
 
     public function getEnvironmentVariables()
     {
-        $envs = $this->getConfigurationVariables($this->configParameters);
-        // @todo possibly pass tokenInfo so that verifyToken does not have to be called twice
-        $tokenInfo = $this->storageClient->verifyToken();
+        if ($this->component->injectEnvironment()) {
+            $configParameters = $this->configParameters;
+        } else {
+            $configParameters = [];
+        }
+        $envs = $this->getConfigurationVariables($configParameters);
         // set environment variables
         $envs = array_merge($envs, [
-            "KBC_RUNID" => $this->storageClient->getRunId(),
-            "KBC_PROJECTID" => $tokenInfo["owner"]["id"],
+            "KBC_RUNID" => $this->runId,
+            "KBC_PROJECTID" => $this->tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
         ]);
-        if ($this->forwardToken) {
-            $envs["KBC_TOKEN"] = $tokenInfo["token"];
-            $envs["KBC_URL"] = $this->storageClient->getApiUrl();
+        if ($this->component->forwardToken()) {
+            $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
+            $envs["KBC_URL"] = $this->url;
         }
-        if ($this->forwardTokenDetails) {
-            $envs["KBC_PROJECTNAME"] = $tokenInfo["owner"]["name"];
-            $envs["KBC_TOKENID"] = $tokenInfo["id"];
-            $envs["KBC_TOKENDESC"] = $tokenInfo["description"];
+        if ($this->component->forwardTokenDetails()) {
+            $envs["KBC_PROJECTNAME"] = $this->tokenInfo["owner"]["name"];
+            $envs["KBC_TOKENID"] = $this->tokenInfo["id"];
+            $envs["KBC_TOKENDESC"] = $this->tokenInfo["description"];
         }
         return $envs;
     }
-
 
     private function getConfigurationVariables($configurationVariables)
     {
@@ -82,7 +86,6 @@ class Environment
         }
         return $envs;
     }
-
 
     private function sanitizeName($name)
     {

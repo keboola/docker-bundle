@@ -12,7 +12,7 @@ class Component extends Configuration
     {
         $treeBuilder = new TreeBuilder();
         $root = $treeBuilder->root('component');
-        $definition = $root->children()->arrayNode('definition');
+        $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 
         $root->children()
@@ -30,12 +30,13 @@ class Component extends Configuration
             ->booleanNode('forward_token_details')->defaultValue(false)->end()
             ->booleanNode('inject_environment')->defaultValue(false)->end()
             ->booleanNode('default_bucket')->defaultValue(false)->end()
-            ->variableNode('image_parameters')->end()
+            ->variableNode('image_parameters')->defaultValue([])->end()
             ->scalarNode('network')
                 ->validate()
                     ->ifNotInArray(['none', 'bridge'])
                     ->thenInvalid('Invalid network type %s.')
                 ->end()
+                ->defaultValue('bridge')
             ->end()
             ->scalarNode('default_bucket_stage')
                 ->validate()
@@ -47,6 +48,7 @@ class Component extends Configuration
             ->variableNode('vendor')->end()
             ->arrayNode('synchronous_actions')->prototype('scalar')->end()->end()
             ->arrayNode('logging')
+                ->addDefaultsIfNotSet()
                 ->children()
                     ->scalarNode('type')
                         ->validate()
@@ -74,6 +76,9 @@ class Component extends Configuration
                             ->thenInvalid('Invalid GELF server type %s.')
                         ->end()
                         ->defaultValue('tcp')
+                    ->end()
+                    ->booleanNode('no_application_errors')
+                        ->defaultValue(false)
                     ->end()
                 ->end()
             ->end()

@@ -5,9 +5,12 @@ namespace Keboola\DockerBundle\Docker\Image;
 use Aws\Credentials\Credentials;
 use Aws\Ecr\EcrClient;
 use Aws\Ecr\Exception\EcrException;
+use Aws\Exception\CredentialsException;
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -15,8 +18,15 @@ use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistry extends Image
 {
-
     protected $awsRegion = 'us-east-1';
+
+    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    {
+        parent::__construct($encryptor, $component);
+        if (!empty($component->getImageDefinition()["repository"]["region"])) {
+            $this->awsRegion = $component->getImageDefinition()["repository"]["region"];
+        }
+    }
 
     /**
      * @return string
@@ -24,17 +34,6 @@ class AWSElasticContainerRegistry extends Image
     public function getAwsRegion()
     {
         return $this->awsRegion;
-    }
-
-    /**
-     * @param string $awsRegion
-     * @return $this
-     */
-    public function setAwsRegion($awsRegion)
-    {
-        $this->awsRegion = $awsRegion;
-
-        return $this;
     }
 
     /**
@@ -48,6 +47,8 @@ class AWSElasticContainerRegistry extends Image
         ));
         try {
             $authorization = $ecrClient->getAuthorizationToken([]);
+        } catch (CredentialsException $e) {
+            throw new LoginFailedException($e->getMessage());
         } catch (EcrException $e) {
             throw new LoginFailedException($e->getMessage());
         }
@@ -97,18 +98,5 @@ class AWSElasticContainerRegistry extends Image
             }
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
-    }
-
-    /**
-     * @param array $config
-     * @return $this
-     */
-    public function fromArray(array $config)
-    {
-        parent::fromArray($config);
-        if (isset($config["definition"]["repository"]["region"])) {
-            $this->setAwsRegion($config["definition"]["repository"]["region"]);
-        }
-        return $this;
     }
 }

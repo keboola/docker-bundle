@@ -1,0 +1,9 @@
+parameters:
+    app_name: docker
+    encryption_key: 123456789012345678901234567890ab
+    components:
+        docker:
+            bundle: Keboola\DockerBundle\KeboolaDockerBundle
+            class: Keboola\DockerBundle\Docker
+
+    oauth_api.url: https://syrup.keboola.com/oauth-v2/ 

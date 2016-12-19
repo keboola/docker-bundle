@@ -85,7 +85,10 @@ class JobExecutorTest extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
-            "dummy"
+            "dummy",
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
         );
         $componentsService = new ComponentsService($storageServiceStub);
 
@@ -279,7 +282,7 @@ class JobExecutorTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(3900, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(3800, $files[0]['sizeBytes']);
     }
 
     public function testDryRun()
@@ -315,7 +318,7 @@ class JobExecutorTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(6300, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(6100, $files[0]['sizeBytes']);
     }
 
     public function testIncrementalTags()

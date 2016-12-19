@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -22,15 +23,17 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
-        $imageConfig = array(
-            "definition" => array(
-                "type" => "dockerhub-private",
-                "uri" => "keboolaprivatetest/docker-demo-docker"
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        );
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub-private",
+                    "uri" => "keboolaprivatetest/docker-demo-docker"
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -50,21 +53,23 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
-        $imageConfig = array(
-            "definition" => array(
-                "type" => "dockerhub-private",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => [
-                    "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
-                    "username" => DOCKERHUB_PRIVATE_USERNAME . "_invalid",
-                    "server" => DOCKERHUB_PRIVATE_SERVER
-                ]
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub-private",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "repository" => [
+                        "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
+                        "username" => DOCKERHUB_PRIVATE_USERNAME . "_invalid",
+                        "server" => DOCKERHUB_PRIVATE_SERVER
+                    ]
 
-            ),
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        );
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -87,20 +92,22 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub-private",
-                "uri" => "keboolaprivatetest/docker-demo-docker",
-                "repository" => [
-                    "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
-                    "username" => DOCKERHUB_PRIVATE_USERNAME,
-                    "server" => DOCKERHUB_PRIVATE_SERVER
-                ]
-            ],
-            "cpu_shares" => 1024,
-            "memory" => "64m",
-            "configuration_format" => "json"
-        ];
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub-private",
+                    "uri" => "keboolaprivatetest/docker-demo-docker",
+                    "repository" => [
+                        "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
+                        "username" => DOCKERHUB_PRIVATE_USERNAME,
+                        "server" => DOCKERHUB_PRIVATE_SERVER
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());

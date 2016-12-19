@@ -53,6 +53,11 @@ class Container
     private $containerLogger;
 
     /**
+     * @var string
+     */
+    private $commandToGetHostIp;
+
+    /**
      * @return string
      */
     public function getId()
@@ -75,15 +80,30 @@ class Container
      * @param ContainerLogger $containerLogger
      * @param string $dataDirectory
      * @param array $environmentVariables
+     * @param string $commandToGetHostIp
+     * @param int $minLogPort
+     * @param $maxLogPort
      */
-    public function __construct($containerId, Image $image, Logger $logger, ContainerLogger $containerLogger, $dataDirectory, array $environmentVariables)
-    {
+    public function __construct(
+        $containerId,
+        Image $image,
+        Logger $logger,
+        ContainerLogger $containerLogger,
+        $dataDirectory,
+        array $environmentVariables,
+        $commandToGetHostIp,
+        $minLogPort,
+        $maxLogPort
+    ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
         $this->image = $image;
         $this->dataDir = $dataDirectory;
         $this->id = $containerId;
         $this->environmentVariables = $environmentVariables;
+        $this->commandToGetHostIp = $commandToGetHostIp;
+        $this->minLogPort = $minLogPort;
+        $this->maxLogPort = $maxLogPort;
     }
 
     /**
@@ -139,7 +159,7 @@ class Container
             $startTime = time();
             try {
                 $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
-                if ($this->getImage()->getLoggerType() == 'gelf') {
+                if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
                     $this->runWithLogger($process, $this->id);
                 } else {
                     $this->runWithoutLogger($process);
@@ -162,7 +182,9 @@ class Container
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
-                    $this->logger->notice("Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}");
+                    $this->logger->notice(
+                        "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
+                    );
                     // continue
                 }
             }
@@ -186,20 +208,14 @@ class Container
 
     private function runWithLogger(Process $process, $containerName)
     {
-        $server = ServerFactory::createServer($this->getImage()->getLoggerServerType());
-        /* the port range is rather arbitrary, it intentionally excludes the default port (12201)
-            to avoid mis-configured clients. */
+        $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
         $containerId = '';
         $server->start(
-            12202,
-            13202,
+            $this->minLogPort,
+            $this->maxLogPort,
             function ($port) use ($process, $containerName) {
-                // get IP address of host
-                if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-                    $processIp = new Process('hostnamei');
-                } else {
-                    $processIp = new Process('ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'');
-                }
+                // get IP address of host from container
+                $processIp = new Process($this->commandToGetHostIp);
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
@@ -248,18 +264,23 @@ class Container
         try {
             $inspect = $this->inspectContainer($containerId);
         } catch (ProcessFailedException $e) {
-            $this->logger->notice("Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " . $e->getMessage());
+            $this->logger->notice(
+                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
+                $e->getMessage()
+            );
             $inspect = [];
         }
 
-        if (isset($inspect["State"]) && isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+        if (isset($inspect["State"]) &&
+            isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true
+        ) {
             $data = [
                 "container" => [
                     "id" => $this->getId()
                 ]
             ];
             throw new OutOfMemoryException(
-                "Out of memory (exceeded {$this->getImage()->getMemory()})",
+                "Out of memory (exceeded {$this->getImage()->getSourceComponent()->getMemory()})",
                 null,
                 $data
             );
@@ -268,12 +289,15 @@ class Container
         // killed containers
         if ($process->getExitCode() == 137) {
             // this catches the timeout from `sudo timeout`
-            if ($duration >= $this->getImage()->getProcessTimeout()) {
+            if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
                 throw new UserException(
-                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of {$this->getImage()->getProcessTimeout()} seconds."
+                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of " .
+                    $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds."
                 );
             } else {
-                throw new InitializationException("{$this->getImage()->getFullImageId()} container terminated. Will restart.");
+                throw new InitializationException(
+                    "{$this->getImage()->getFullImageId()} container terminated. Will restart."
+                );
             }
         }
 
@@ -303,17 +327,25 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
-                (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
+            if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
+                (strpos($message, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
-                // syrup will make sure that the actual exception message will be hidden to end-user
-                throw new ApplicationException(
-                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                    null,
-                    $data
-                );
+                if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
+                    throw new UserException(
+                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                        null,
+                        $data
+                    );
+                } else {
+                    // syrup will make sure that the actual exception message will be hidden to end-user
+                    throw new ApplicationException(
+                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                        null,
+                        $data
+                    );
+                }
             }
         }
     }
@@ -337,14 +369,14 @@ class Container
             foreach ($this->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
             }
-            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getProcessTimeout()} docker run";
+            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
         }
 
         $command .= " --volume=" . escapeshellarg($dataDir) . ":/data"
-            . " --memory=" . escapeshellarg($this->getImage()->getMemory())
-            . " --memory-swap=" . escapeshellarg($this->getImage()->getMemory())
-            . " --cpu-shares=" . escapeshellarg($this->getImage()->getCpuShares())
-            . " --net=" . escapeshellarg($this->getImage()->getNetworkType())
+            . " --memory=" . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
+            . " --memory-swap=" . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
+            . " --cpu-shares=" . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
+            . " --net=" . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
             . " " . escapeshellarg($this->getImage()->getFullImageId());

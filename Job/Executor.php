@@ -134,7 +134,7 @@ class Executor extends BaseExecutor
                     $configData['storage']['input']['tables'][$index] = $table;
                 }
             }
-            $component = [];
+            $component = ['data' => ['definition' => ['type' => 'dockerhub', 'uri' => 'sandbox-dummy-wont-download']]];
         } else {
             $component = $this->getComponent($params["component"]);
 

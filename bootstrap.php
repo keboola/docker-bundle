@@ -49,3 +49,15 @@ defined('AWS_ECR_ACCESS_KEY_ID')
 
 defined('AWS_ECR_SECRET_ACCESS_KEY')
 || define('AWS_ECR_SECRET_ACCESS_KEY', getenv('AWS_ECR_SECRET_ACCESS_KEY') ?: 'secret');
+
+defined('RUNNER_COMMAND_TO_GET_HOST_IP')
+|| define(
+    'RUNNER_COMMAND_TO_GET_HOST_IP',
+    getenv('RUNNER_COMMAND_TO_GET_HOST_IP') ?: 'ip -4 addr show eth0 | grep -Po \'inet \K[\d.]+\''
+);
+
+defined('RUNNER_MIN_LOG_PORT')
+|| define('RUNNER_MIN_LOG_PORT', getenv('RUNNER_MIN_LOG_PORT') ?: 12202);
+
+defined('RUNNER_MAX_LOG_PORT')
+|| define('RUNNER_MAX_LOG_PORT', getenv('RUNNER_MAX_LOG_PORT') ?: 13202);
