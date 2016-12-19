@@ -22,7 +22,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "network" => "none",
             "logging" => [
                 "type" => "gelf",
-                "verbosity" => [200 => "verbose"]
+                "verbosity" => [200 => "verbose"],
+                "no_application_errors" => true,
             ],
             "inject_environment" => true,
         ];
@@ -48,6 +49,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "gelf",
                 "verbosity" => [200 => "verbose"],
                 "gelf_server_type" => "tcp",
+                "no_application_errors" => true,
             ],
             "staging_storage" => [
                 "input" => "local"
@@ -88,6 +90,21 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'inject_environment' => false,
             'image_parameters' => [],
             'network' => 'bridge',
+            'logging' => [
+                'type' => 'standard',
+                'verbosity' => [
+                    100 => 'none',
+                    200 => 'normal',
+                    250 => 'normal',
+                    300 => 'normal',
+                    400 => 'normal',
+                    500 => 'camouflage',
+                    550 => 'camouflage',
+                    600 => 'camouflage',
+                ],
+                'gelf_server_type' => 'tcp',
+                'no_application_errors' => false,
+            ],
         ];
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -214,6 +231,21 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "synchronous_actions" => [],
             "staging_storage" => [
                 "input" => "local"
+            ],
+            "logging" => [
+                "type" => "standard",
+                "verbosity" => [
+                    100 => "none",
+                    200 => "normal",
+                    250 => "normal",
+                    300 => "normal",
+                    400 => "normal",
+                    500 => "camouflage",
+                    550 => "camouflage",
+                    600 => "camouflage",
+                ],
+                "gelf_server_type" => "tcp",
+                "no_application_errors" => false,
             ],
             "inject_environment" => false,
             "image_parameters" => [],
