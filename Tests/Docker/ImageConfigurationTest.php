@@ -232,21 +232,22 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "staging_storage" => [
                 "input" => "local"
             ],
-            'logging' => [
-                'type' => 'standard',
-                'verbosity' => [
-                    100 => 'none',
-                    200 => 'normal',
-                    250 => 'normal',
-                    300 => 'normal',
-                    400 => 'normal',
-                    500 => 'camouflage',
-                    550 => 'camouflage',
-                    600 => 'camouflage',
+            "logging" => [
+                "type" => "standard",
+                "verbosity" => [
+                    100 => "none",
+                    200 => "normal",
+                    250 => "normal",
+                    300 => "normal",
+                    400 => "normal",
+                    500 => "camouflage",
+                    550 => "camouflage",
+                    600 => "camouflage",
                 ],
-                'gelf_server_type' => 'tcp',
-                'no_application_errors' => false,
-            ],            "inject_environment" => false,
+                "gelf_server_type" => "tcp",
+                "no_application_errors" => false,
+            ],
+            "inject_environment" => false,
             "image_parameters" => [],
             "network" => "bridge",
         ];
