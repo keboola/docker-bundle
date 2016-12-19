@@ -2,12 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Exception\WeirdException;
-use Keboola\Syrup\Exception\ApplicationException;
-use Monolog\Logger;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
@@ -20,19 +14,12 @@ class DataDirectory
     private $workingDir;
 
     /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
      * DataDirectory constructor.
-     * @param string $workingDir
-     * @param Logger $logger
+     * @param $workingDir
      */
-    public function __construct($workingDir, Logger $logger)
+    public function __construct($workingDir)
     {
         $this->workingDir = $workingDir;
-        $this->logger = $logger;
     }
 
     /**
@@ -57,49 +44,6 @@ class DataDirectory
         $fs->mkdir($structure);
     }
 
-    public function getNormalizeCommand()
-    {
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        return "sudo docker run --volume=" .
-            $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R'";
-    }
-
-    public function normalizePermissions()
-    {
-        $retries = 0;
-        do {
-            $retry = false;
-            try {
-                $retryPolicy = new SimpleRetryPolicy(3);
-                $backOffPolicy = new ExponentialBackOffPolicy(10000);
-                $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-                $proxy->call(function () use (&$process) {
-                    $command = $this->getNormalizeCommand();
-                    $process = new Process($command);
-                    $process->setTimeout(60);
-                    $process->run();
-                });
-                if ($process->getExitCode() != 1) {
-                    $message = $process->getOutput() . $process->getErrorOutput();
-                    if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
-                        (strpos($message, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
-                        // in case of this weird docker error, throw a new exception to retry the container
-                        throw new WeirdException($message);
-                    }
-                }
-            } catch (WeirdException $e) {
-                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
-                sleep(random_int(1, 4));
-                $retry = true;
-                $retries++;
-                if ($retries >= 5) {
-                    $this->logger->notice("Weird error occurred too many times.");
-                    throw new ApplicationException($e->getMessage(), $e);
-                }
-            }
-        } while ($retry);
-    }
-
     public function getDataDir()
     {
         return $this->workingDir . "/data";
@@ -107,7 +51,11 @@ class DataDirectory
 
     public function dropDataDir()
     {
-        $this->normalizePermissions();
+        // normalize user permissions
+        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
+        $command = "sudo docker run --volume=" . $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R'";
+        (new Process($command))->mustRun();
+
         $fs = new Filesystem();
         $finder = new Finder();
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');

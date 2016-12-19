@@ -10,7 +10,6 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
@@ -42,7 +41,7 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root, $log);
+        $dataDirectory = new DataDirectory($root);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
@@ -134,7 +133,7 @@ EOF;
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root, $log);
+        $dataDirectory = new DataDirectory($root);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
@@ -223,24 +222,24 @@ EOF;
         $containerId = 'docker-test123456789';
         $temp = new Temp();
         $root = $temp->getTmpFolder();
-        $dataDirectory = new DataDirectory($root, $log);
+        $dataDirectory = new DataDirectory($root);
         $dataDirectory->createDataDir();
 
         // Create a stub for the Container
         $container = $this->getMockBuilder(Container::class)
-        ->setConstructorArgs([
-            $containerId,
-            $image,
-            $log,
-            $logContainer,
-            $dataDirectory->getDataDir(),
-            [],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        ])
-        ->setMethods(['getRunCommand'])
-        ->getMock();
+            ->setConstructorArgs([
+                $containerId,
+                $image,
+                $log,
+                $logContainer,
+                $dataDirectory->getDataDir(),
+                [],
+                RUNNER_COMMAND_TO_GET_HOST_IP,
+                RUNNER_MIN_LOG_PORT,
+                RUNNER_MAX_LOG_PORT
+            ])
+            ->setMethods(['getRunCommand'])
+            ->getMock();
 
         $container->method('getRunCommand')
             ->will($this->onConsecutiveCalls(

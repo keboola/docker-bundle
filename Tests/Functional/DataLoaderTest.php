@@ -38,7 +38,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -90,7 +90,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder());
         $data->createDataDir();
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -131,7 +131,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder());
         $data->createDataDir();
         $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, '', 'json');
         try {
@@ -175,7 +175,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder());
         $data->createDataDir();
         $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, '', 'json');
         try {
@@ -206,7 +206,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
         $temp->setPreserveRunFolder(true);
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder());
         $data->createDataDir();
 
         $fs = new Filesystem();
