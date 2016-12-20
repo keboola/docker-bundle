@@ -327,8 +327,8 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            if ((strpos($message, 'Error response from daemon: open /dev/mapper/') !== false) ||
-                (strpos($message, 'Error response from daemon: devicemapper: Error running deviceResume dm_task_run failed.') !== false)) {
+            if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
+                (strpos($message, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($message);
             } else {
