@@ -6,6 +6,8 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\DockerBundle\Exception\WeirdException;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
@@ -81,6 +83,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      * @var string
      */
     protected $fullImageId;
+
+    /**
+     * @var Temp
+     */
+    private $temp;
 
     public function __construct(ObjectEncryptor $encryptor, Component $component)
     {
@@ -260,9 +267,8 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
     /**
      * Create DockerFile file with the build instructions in the working folder.
-     * @param string $workingFolder Working folder.
      */
-    private function createDockerFile($workingFolder)
+    private function createDockerFile()
     {
         $dockerFile = '';
         $dockerFile .= "FROM " . $this->getImageId() . "\n";
@@ -273,7 +279,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $dockerFile .= "\nENV APP_VERSION " . $this->getVersion();
         }
         if ($this->getRepositoryType() == 'git') {
-            $repositoryCommands = $this->handleGitCredentials($workingFolder);
+            $repositoryCommands = $this->handleGitCredentials($this->temp->getTmpFolder());
         } else {
             throw new BuildParameterException("Repository type " . $this->getRepositoryType() . " cannot be handled.");
         }
@@ -302,7 +308,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             );
         }
         $this->logger->debug("Created dockerfile " . $dockerFile);
-        file_put_contents($workingFolder . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
+        file_put_contents($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
     }
 
 
@@ -364,6 +370,12 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
+    public function setTemp(Temp $temp)
+    {
+        $this->temp = $temp;
+        $this->temp->initRunFolder();
+    }
+
     /**
      * Run docker login and docker pull in DinD, login/logout race conditions
      */
@@ -396,50 +408,79 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         }
     }
 
+    /**
+     * @return string
+     */
+    public function getBuildCommand()
+    {
+        if (!$this->getCache()) {
+            $noCache = ' --no-cache';
+        } else {
+            $noCache = '';
+        }
+        return "sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $this->temp->getTmpFolder();
+    }
+
+    /**
+     * @throws WeirdException BuildParameterException BuildException
+     */
+    public function buildImage()
+        {
+        $this->logger->debug("Building image");
+        $process = new Process($this->getBuildCommand());
+        // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
+        $process->setTimeout(3600);
+        $process->run();
+        if ($process->getExitCode() != 0) {
+            /* string matching is used because currently it is not possible to have different exit codes for
+                `docker build` It is either 0 for success or 1 for failure and the individual command exit codes
+                are ignored. */
+            $err = $process->getErrorOutput() . $process->getOutput();
+            if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $err, $matches)) {
+                $message = $matches[1];
+                throw new BuildParameterException($message);
+            } elseif ((strpos($err, WeirdException::ERROR_DEV_MAPPER) !== false) ||
+                    (strpos($err, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
+                    (strpos($err, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
+                // in case of this weird docker error, throw a new exception to retry the container
+                throw new WeirdException($err);
+            } else {
+                $message = "Build failed (code: {$process->getExitCode()}): " .
+                    " {$process->getOutput()} / {$process->getErrorOutput()}";
+                throw new BuildException($message);
+            }
+        }
+    }
+
     /*
      * @inheritdoc
      */
     public function prepare(array $configData)
     {
-        try {
-            $this->initParameters($configData);
-            parent::prepare($configData);
-            $temp = new Temp('docker');
-            $temp->initRunFolder();
-            $workingFolder = $temp->getTmpFolder();
-            $this->createDockerFile($workingFolder);
-
-            if (!$this->getCache()) {
-                $noCache = ' --no-cache';
-            } else {
-                $noCache = '';
-            }
-            $this->logger->debug("Building image");
-            $process = new Process(
-                "sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $workingFolder
-            );
-            // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
-            $process->setTimeout(3600);
-            $process->run();
-            if ($process->getExitCode() != 0) {
-                /* string matching is used because currently it is not possible to have different exit codes for
-                    `docker build` It is either 0 for success or 1 for failure and the individual command exit codes
-                    are ignored. */
-                $err = $process->getErrorOutput();
-                if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $err, $matches)) {
-                    $message = $matches[1];
-                    throw new BuildParameterException($message);
-                } else {
-                    $message = "Build failed (code: {$process->getExitCode()}): " .
-                        " {$process->getOutput()} / {$process->getErrorOutput()}";
-                    throw new BuildException($message);
+        $this->initParameters($configData);
+        parent::prepare($configData);
+        $this->temp->initRunFolder();
+        $this->createDockerFile();
+        $retries = 0;
+        do {
+            $retry = false;
+            try {
+                $this->buildImage();
+            } catch (WeirdException $e) {
+                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
+                sleep(random_int(1, 4));
+                $retry = true;
+                $retries++;
+                if ($retries >= 5) {
+                    $this->logger->notice("Weird error occurred too many times.");
+                    throw new ApplicationException($e->getMessage(), $e);
                 }
+            } catch (BuildParameterException $e) {
+                throw $e;
+            } catch (\Exception $e) {
+                throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
             }
-        } catch (BuildParameterException $e) {
-            throw $e;
-        } catch (\Exception $e) {
-            throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
-        }
+        } while ($retry);
     }
 
     /**

@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Monolog\Logger;
 
 abstract class Image
@@ -129,6 +130,8 @@ abstract class Image
             case "builder":
                 $instance = new Image\Builder\ImageBuilder($encryptor, $component);
                 $instance->setLogger($logger);
+                $temp = new Temp();
+                $instance->setTemp($temp);
                 break;
             default:
                 throw new ApplicationException("Unknown image type: " . $component->getType());
