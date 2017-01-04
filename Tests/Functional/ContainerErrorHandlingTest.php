@@ -34,7 +34,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, new Component($imageConfig), true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfig), new Temp(), true);
         $image->prepare([]);
 
         $container = new Container(
@@ -166,7 +166,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php echo "done";');
         $container = new Container(
@@ -227,7 +227,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
         $container = new Container(

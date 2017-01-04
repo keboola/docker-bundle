@@ -91,7 +91,7 @@ class LoggerTests extends KernelTestCase
         $containerLog = $logService->getContainerLog();
         $log->pushHandler($handler);
         $containerLog->pushHandler($containerHandler);
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), true);
+        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         return new Container(
             'docker-test-logger',
@@ -121,7 +121,7 @@ class LoggerTests extends KernelTestCase
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         return new Container(
@@ -503,7 +503,7 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), true);
+        $image = Image::factory($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $logService->getLog()->notice("Test Notice");

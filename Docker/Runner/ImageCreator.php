@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Monolog\Logger;
 
 class ImageCreator
@@ -41,6 +42,11 @@ class ImageCreator
      */
     private $componentConfig;
 
+    /**
+     * @var Temp
+     */
+    private $temp;
+
     public function __construct(
         ObjectEncryptor $encryptor,
         Logger $logger,
@@ -55,6 +61,8 @@ class ImageCreator
         $this->before = empty($componentConfig['processors']['before']) ? [] : $componentConfig['processors']['before'];
         $this->after = empty($componentConfig['processors']['after']) ? [] : $componentConfig['processors']['after'];
         $this->componentConfig = $componentConfig;
+        $this->temp = new Temp();
+        $this->temp->initRunFolder();
     }
 
     /**
@@ -66,12 +74,12 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
-            $image = Image::factory($this->encryptor, $this->logger, $component, false);
+            $image = Image::factory($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = Image::factory($this->encryptor, $this->logger, $this->mainComponent, true);
+        $image = Image::factory($this->encryptor, $this->logger, $this->mainComponent, $this->temp, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
@@ -79,7 +87,7 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
-            $image = Image::factory($this->encryptor, $this->logger, $component, false);
+            $image = Image::factory($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }

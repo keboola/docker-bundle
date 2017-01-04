@@ -97,7 +97,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -141,7 +141,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -191,7 +191,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -241,7 +241,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
@@ -282,7 +282,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -325,7 +325,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -399,7 +399,7 @@ git checkout -b new_branch_name
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -438,7 +438,7 @@ git checkout -b new_branch_name
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
@@ -498,7 +498,7 @@ git checkout -b new_branch_name
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail("Invalid repository address must fail");

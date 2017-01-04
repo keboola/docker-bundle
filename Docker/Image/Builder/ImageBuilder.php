@@ -373,7 +373,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     public function setTemp(Temp $temp)
     {
         $this->temp = $temp;
-        $this->temp->initRunFolder();
     }
 
     /**
@@ -425,7 +424,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      * @throws WeirdException BuildParameterException BuildException
      */
     public function buildImage()
-        {
+    {
         $this->logger->debug("Building image");
         $process = new Process($this->getBuildCommand());
         // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
