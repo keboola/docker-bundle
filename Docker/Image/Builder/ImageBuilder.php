@@ -460,26 +460,21 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         parent::prepare($configData);
         $this->temp->initRunFolder();
         $this->createDockerFile();
-        $retries = 0;
-        do {
-            $retry = false;
-            try {
+        $retryPolicy = new SimpleRetryPolicy(5, [WeirdException::class]);
+        $backOffPolicy = new ExponentialBackOffPolicy(2, null, 4);
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        try {
+            $proxy->call(function () {
                 $this->buildImage();
-            } catch (WeirdException $e) {
-                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
-                sleep(random_int(1, 4));
-                $retry = true;
-                $retries++;
-                if ($retries >= 5) {
-                    $this->logger->notice("Weird error occurred too many times.");
-                    throw new ApplicationException($e->getMessage(), $e);
-                }
-            } catch (BuildParameterException $e) {
-                throw $e;
-            } catch (\Exception $e) {
-                throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
-            }
-        } while ($retry);
+            });
+        } catch (WeirdException $e) {
+            $this->logger->notice("Weird error occurred too many times.");
+            throw new ApplicationException($e->getMessage(), $e);
+        } catch (BuildParameterException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new BuildException("Failed to build image: " . $e->getMessage(), $e);
+        }
     }
 
     /**
