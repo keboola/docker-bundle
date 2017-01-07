@@ -6,8 +6,10 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -15,6 +17,37 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilderTest extends KernelTestCase
 {
+    const DOCKER_ERROR_MSG = 'Build failed (code: 1): Sending build context to Docker daemon 2.048 kB
+Step 1 : FROM quay.io/keboola/docker-custom-r:latest
+---> a72869638513
+Step 2 : LABEL com.keboola.docker.runner.origin builder
+---> Running in a87231b5bf43
+---> 87f663f8c93c
+Removing intermediate container a87231b5bf43
+Step 3 : WORKDIR /home
+---> Running in 683c54126fa8
+---> 7dbffae5f1b6
+Removing intermediate container 683c54126fa8
+Step 4 : ENV APP_VERSION 1.7
+---> Running in bc520b980770
+---> 3661cfdbd53a
+Removing intermediate container bc520b980770
+Step 5 : RUN git clone -b 1.7 --depth 1 https://keboola/docker-demo-app /home/ || (echo "KBC::USER_ERR:Cannot access the Git repository https://github.com/keboola/docker-demo-app, please verify its URL, credentials and version.KBC::USER_ERR" && exit 1)
+---> Running in 99e6f8091e9f
+[91mCloning into \'/home\'...
+[0m[91mNote: checking out \'af5c7a3995f61cc6515156be3f52d5eb6e3e91e7\'.
+
+You are in \'detached HEAD\' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+git checkout -b new_branch_name
+
+[0m / open /dev/mapper/docker-202:1-661201-2430efb83129dd524011bfbae4eb39476ca783faa2a42180fe578e642f002656: no such file or directory';
+
     public function setUp()
     {
         self::bootKernel();
@@ -64,7 +97,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -108,7 +141,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -158,7 +191,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -208,7 +241,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
@@ -249,7 +282,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -292,7 +325,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -303,7 +336,6 @@ class ImageBuilderTest extends KernelTestCase
             );
         }
     }
-
 
     public function testCreatePrivateRepoViaParameters()
     {
@@ -367,7 +399,7 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -375,7 +407,6 @@ class ImageBuilderTest extends KernelTestCase
         $process->run();
         $this->assertEquals($oldCount + 1, trim($process->getOutput()));
     }
-
 
     public function testInvalidRepo()
     {
@@ -407,7 +438,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
@@ -467,12 +498,110 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());
+        }
+    }
+
+    public function testWeirdBugError()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "json",
+            ]
+        ]);
+
+        $temp = new Temp();
+        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setMethods(['getBuildCommand'])
+            ->getMock();
+        $logger = new Logger('null');
+        $logger->pushHandler(new NullHandler());
+        /** @var Image\Builder\ImageBuilder $builder */
+        $builder->setLogger($logger);
+        $builder->setTemp($temp);
+        $builder->method('getBuildCommand')
+            ->will($this->onConsecutiveCalls(
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
+            ));
+        $builder->prepare([]);
+    }
+
+    public function testWeirdBugTerminate()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "json",
+            ]
+        ]);
+
+        $temp = new Temp();
+        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setMethods(['getBuildCommand'])
+            ->getMock();
+        $logger = new Logger('null');
+        $logger->pushHandler(new NullHandler());
+        /** @var Image\Builder\ImageBuilder $builder */
+        $builder->setLogger($logger);
+        $builder->setTemp($temp);
+        $builder->method('getBuildCommand')
+            ->will($this->onConsecutiveCalls(
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
+            ));
+        try {
+            $builder->prepare([]);
+            $this->fail("Too many errors must fail");
+        } catch (ApplicationException $e) {
         }
     }
 }

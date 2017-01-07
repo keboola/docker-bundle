@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -40,7 +41,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -75,7 +76,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -113,7 +114,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());

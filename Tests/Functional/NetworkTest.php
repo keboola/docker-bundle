@@ -29,7 +29,7 @@ class NetworkTest extends KernelTestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig, true);
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare($componentConfig);
 
         $container = new Container(

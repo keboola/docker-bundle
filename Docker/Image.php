@@ -3,9 +3,9 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Image\DockerHub;
-use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Monolog\Logger;
 
 abstract class Image
@@ -105,10 +105,11 @@ abstract class Image
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
      * @param Logger $logger Logger instance.
      * @param Component $component Docker image runtime configuration.
+     * @param Temp $temp Temporary service.
      * @param bool $isMain True to mark the image as main image.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, Logger $logger, Component $component, $isMain)
+    public static function factory(ObjectEncryptor $encryptor, Logger $logger, Component $component, Temp $temp, $isMain)
     {
         switch ($component->getType()) {
             case "dockerhub":
@@ -129,6 +130,7 @@ abstract class Image
             case "builder":
                 $instance = new Image\Builder\ImageBuilder($encryptor, $component);
                 $instance->setLogger($logger);
+                $instance->setTemp($temp);
                 break;
             default:
                 throw new ApplicationException("Unknown image type: " . $component->getType());

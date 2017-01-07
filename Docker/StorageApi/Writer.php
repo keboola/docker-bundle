@@ -487,9 +487,9 @@ class Writer
      *
      * Uploads a sliced table to storage api. Takes all files from the $source folder
      *
-     * @param $source Slices folder
-     * @param $destination Destination table
-     * @param $options WriteTable options
+     * @param string $source Slices folder
+     * @param string $destination Destination table
+     * @param array $options WriteTable options
      */
     protected function writeSlicedTable($source, $destination, $options)
     {
