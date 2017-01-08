@@ -50,7 +50,7 @@ class Component
     /**
      * @return string
      */
-    private function getSanitizedComponentId()
+    public function getSanitizedComponentId()
     {
         return preg_replace('/[^a-zA-Z0-9-]/i', '-', $this->getId());
     }
