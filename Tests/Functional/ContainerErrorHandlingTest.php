@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Container\Options;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -46,7 +47,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new Options([])
         );
         return $container;
     }
@@ -178,7 +180,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new Options([])
         );
 
         // set benchmark time
@@ -198,7 +201,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             'not-used',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new Options([])
         );
         $testStartTime = time();
         try {
@@ -239,7 +243,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new Options([])
         );
         $container->run();
     }
