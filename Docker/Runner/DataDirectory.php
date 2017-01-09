@@ -60,7 +60,7 @@ class DataDirectory
     public function getNormalizeCommand()
     {
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        return "sudo docker run --volume=" .
+        return "sudo docker run --rm --volume=" .
             $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R'";
     }
 
