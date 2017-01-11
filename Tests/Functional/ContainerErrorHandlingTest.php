@@ -265,12 +265,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-     /**
-     * @expectedException \Keboola\DockerBundle\Exception\OutOfMemoryException
-     * @expectedExceptionMessage Out of memory
-     */
     public function testOutOfMemory()
     {
+        $this->expectException(\Keboola\DockerBundle\Exception\OutOfMemoryException::class);
+        $this->expectExceptionMessage('Component out of memory');
+
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["data"]["memory"] = "32m";
