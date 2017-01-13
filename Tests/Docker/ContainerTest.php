@@ -134,17 +134,17 @@ EOF;
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
-            . " --volume='/tmp':/data"
-            . " --memory='64m'"
-            . " --memory-swap='64m'"
-            . " --cpu-shares='1024'"
-            . " --net='bridge'"
+            . " --volume '/tmp':/data"
+            . " --memory '64m'"
+            . " --memory-swap '64m'"
+            . " --cpu-shares '1024'"
+            . " --net 'bridge'"
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
             . " --label 'com.keboola.runner.jobId=12345678'"
             . " --label 'com.keboola.runner.runId=10.20.30'"
-            . " --name='name'"
+            . " --name 'name'"
             . " 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
