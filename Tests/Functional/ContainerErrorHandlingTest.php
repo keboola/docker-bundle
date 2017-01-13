@@ -13,6 +13,7 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 {
@@ -46,7 +47,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([])
         );
         return $container;
     }
@@ -178,7 +180,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([])
         );
 
         // set benchmark time
@@ -198,7 +201,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             'not-used',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([])
         );
         $testStartTime = time();
         try {
@@ -239,7 +243,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([])
         );
         $container->run();
     }
