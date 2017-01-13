@@ -12,6 +12,7 @@ use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\DockerBundle\Docker\Container\Options;
 
 class Container
 {
@@ -58,6 +59,11 @@ class Container
     private $commandToGetHostIp;
 
     /**
+     * @var Options
+     */
+    private $containerOptions;
+
+    /**
      * @return string
      */
     public function getId()
@@ -83,6 +89,8 @@ class Container
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param $maxLogPort
+     * @param $maxLogPort
+     * @param Options $containerOptions
      */
     public function __construct(
         $containerId,
@@ -93,7 +101,8 @@ class Container
         array $environmentVariables,
         $commandToGetHostIp,
         $minLogPort,
-        $maxLogPort
+        $maxLogPort,
+        Options $containerOptions
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -104,6 +113,7 @@ class Container
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+        $this->containerOptions = $containerOptions;
     }
 
     /**
@@ -379,6 +389,7 @@ class Container
             . " --net=" . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
             . $envs
             . " --name=" . escapeshellarg($containerId)
+            . $this->containerOptions->getOptionAsShellArg('label')
             . " " . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }

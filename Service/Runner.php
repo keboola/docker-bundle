@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Service;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\Container\Options;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -117,8 +118,12 @@ class Runner
         $this->maxLogPort = $maxLogPort;
     }
 
-    private function createContainerFromImage(Image $image, $containerId, $environmentVariables)
-    {
+    private function createContainerFromImage(
+        Image $image,
+        $containerId,
+        $environmentVariables,
+        Options $containerOptions
+    ) {
         return new Container(
             $containerId,
             $image,
@@ -128,7 +133,8 @@ class Runner
             $environmentVariables,
             $this->commandToGetHostIp,
             $this->minLogPort,
-            $this->maxLogPort
+            $this->maxLogPort,
+            $containerOptions
         );
     }
 
@@ -307,7 +313,13 @@ class Runner
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
-                $environment->getEnvironmentVariables()
+                $environment->getEnvironmentVariables(),
+                new Options([
+                    'label' => [
+                        'com.keboola.docker-runner.jobId=' . $jobId,
+                        'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
+                    ],
+                ])
             );
             $output = $container->run();
             if ($image->isMain()) {
