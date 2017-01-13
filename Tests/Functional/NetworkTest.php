@@ -39,11 +39,10 @@ class NetworkTest extends KernelTestCase
             $log,
             $containerLog,
             $this->temp->getTmpFolder(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
         return $container;
     }

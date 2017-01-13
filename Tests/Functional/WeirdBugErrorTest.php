@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -52,10 +53,10 @@ class WeirdBugErrorTest extends \PHPUnit_Framework_TestCase
                 $log,
                 $logContainer,
                 $dataDirectory->getDataDir(),
-                [],
                 RUNNER_COMMAND_TO_GET_HOST_IP,
                 RUNNER_MIN_LOG_PORT,
-                RUNNER_MAX_LOG_PORT
+                RUNNER_MAX_LOG_PORT,
+                new RunCommandOptions([], [])
             ])
             ->setMethods(['getRunCommand'])
             ->getMock();
@@ -144,10 +145,10 @@ EOF;
                 $log,
                 $logContainer,
                 $dataDirectory->getDataDir(),
-                [],
                 RUNNER_COMMAND_TO_GET_HOST_IP,
                 RUNNER_MIN_LOG_PORT,
-                RUNNER_MAX_LOG_PORT
+                RUNNER_MAX_LOG_PORT,
+                new RunCommandOptions([], [])
             ])
             ->setMethods(['getRunCommand'])
             ->getMock();
@@ -233,10 +234,10 @@ EOF;
             $log,
             $logContainer,
             $dataDirectory->getDataDir(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         ])
         ->setMethods(['getRunCommand'])
         ->getMock();

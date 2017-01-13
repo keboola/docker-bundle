@@ -44,11 +44,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], $envs)
         );
         return $container;
     }
@@ -177,11 +176,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
 
         // set benchmark time
@@ -197,12 +195,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             'not-used',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
         $testStartTime = time();
         try {
@@ -240,11 +237,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
         $container->run();
     }

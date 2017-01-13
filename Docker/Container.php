@@ -33,11 +33,6 @@ class Container
     protected $dataDir;
 
     /**
-     * @var array
-     */
-    protected $environmentVariables = [];
-
-    /**
      * @var Logger
      */
     private $logger;
@@ -84,7 +79,6 @@ class Container
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
      * @param string $dataDirectory
-     * @param array $environmentVariables
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param $maxLogPort
@@ -96,7 +90,6 @@ class Container
         Logger $logger,
         ContainerLogger $containerLogger,
         $dataDirectory,
-        array $environmentVariables,
         $commandToGetHostIp,
         $minLogPort,
         $maxLogPort,
@@ -107,7 +100,6 @@ class Container
         $this->image = $image;
         $this->dataDir = $dataDirectory;
         $this->id = $containerId;
-        $this->environmentVariables = $environmentVariables;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
@@ -120,14 +112,6 @@ class Container
     public function getDataDir()
     {
         return $this->dataDir;
-    }
-
-    /**
-     * @return array
-     */
-    public function getEnvironmentVariables()
-    {
-        return $this->environmentVariables;
     }
 
     public function cleanUp()
@@ -227,9 +211,11 @@ class Container
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
-                $this->environmentVariables = array_merge(
-                    $this->environmentVariables,
-                    ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
+                $this->runCommandOptions->setEnvironmentVariables(
+                    array_merge(
+                        $this->runCommandOptions->getEnvironmentVariables(),
+                        ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
+                    )
                 );
                 $process->setCommandLine($this->getRunCommand($containerName));
                 $process->start();
@@ -368,13 +354,13 @@ class Container
         $envs = "";
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
-            foreach ($this->getEnvironmentVariables() as $key => $value) {
+            foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
             }
             $command = "docker run";
         } else {
             $dataDir = $this->dataDir;
-            foreach ($this->getEnvironmentVariables() as $key => $value) {
+            foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
                 $envs .= " -e \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
             }
             $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";

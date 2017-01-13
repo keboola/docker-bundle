@@ -18,7 +18,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-
 class LoggerTests extends KernelTestCase
 {
 
@@ -101,11 +100,10 @@ class LoggerTests extends KernelTestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
     }
 
@@ -133,11 +131,10 @@ class LoggerTests extends KernelTestCase
             $logService->getLog(),
             $logService->getContainerLog(),
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
     }
 

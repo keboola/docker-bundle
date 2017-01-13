@@ -10,11 +10,18 @@ class RunCommandOptions
     private $labels;
 
     /**
-     * @param array $labels
+     * @var array
      */
-    public function __construct(array $labels)
+    private $environmentVariables;
+
+    /**
+     * @param array $labels
+     * @param array $environmentVariables
+     */
+    public function __construct(array $labels, array $environmentVariables)
     {
         $this->labels = $labels;
+        $this->environmentVariables = $environmentVariables;
     }
 
     /**
@@ -23,5 +30,21 @@ class RunCommandOptions
     public function getLabels()
     {
         return $this->labels;
+    }
+
+    /**
+     * @return array
+     */
+    public function getEnvironmentVariables()
+    {
+        return $this->environmentVariables;
+    }
+
+    /**
+     * @param array $environmentVariables
+     */
+    public function setEnvironmentVariables(array $environmentVariables)
+    {
+        $this->environmentVariables = $environmentVariables;
     }
 }

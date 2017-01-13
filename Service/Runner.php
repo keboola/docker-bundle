@@ -118,7 +118,7 @@ class Runner
         $this->maxLogPort = $maxLogPort;
     }
 
-    private function createContainerFromImage(Image $image, $containerId, $environmentVariables, RunCommandOptions $runCommandOptions)
+    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions)
     {
         return new Container(
             $containerId,
@@ -126,7 +126,6 @@ class Runner
             $this->loggerService->getLog(),
             $this->loggerService->getContainerLog(),
             $this->dataDirectory->getDataDir(),
-            $environmentVariables,
             $this->commandToGetHostIp,
             $this->minLogPort,
             $this->maxLogPort,
@@ -309,12 +308,12 @@ class Runner
             $container = $this->createContainerFromImage(
                 $image,
                 $containerId,
-                $environment->getEnvironmentVariables(),
                 new RunCommandOptions(
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
-                    ]
+                    ],
+                    $environment->getEnvironmentVariables()
                 )
             );
             $output = $container->run();

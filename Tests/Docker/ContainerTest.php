@@ -45,11 +45,10 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
 
         $callback = function () {
@@ -125,14 +124,13 @@ EOF;
             $log,
             $containerLog,
             '/tmp',
-            $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([
                 'com.keboola.runner.jobId=12345678',
                 'com.keboola.runner.runId=10.20.30',
-            ])
+            ], $envs)
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
@@ -175,11 +173,10 @@ EOF;
             $log,
             $containerLog,
             $temp->getTmpFolder(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
@@ -209,11 +206,10 @@ EOF;
             $log,
             $containerLog,
             $temp->getTmpFolder(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([])
+            new RunCommandOptions([], [])
         );
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
