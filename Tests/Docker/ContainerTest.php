@@ -128,7 +128,18 @@ EOF;
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
         );
-        $expected = "sudo timeout --signal=SIGKILL 3600 docker run --volume='/tmp':/data --memory='64m' --memory-swap='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
+        $expected = "sudo timeout --signal=SIGKILL 3600"
+            . " docker run"
+            . " --volume='/tmp':/data"
+            . " --memory='64m'"
+            . " --memory-swap='64m'"
+            . " --cpu-shares='1024'"
+            . " --net='bridge'"
+            . " -e \"var=val\""
+            . " -e \"příliš=žluťoučký\""
+            . " -e \"var2=weird = '\\\"value\""
+            . " --name='name'"
+            . " 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
