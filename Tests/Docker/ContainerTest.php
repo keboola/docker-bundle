@@ -134,7 +134,7 @@ EOF;
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
-            . " --volume '/tmp':/data"
+            . " --volume '/tmp:/data'"
             . " --memory '64m'"
             . " --memory-swap '64m'"
             . " --cpu-shares '1024'"
