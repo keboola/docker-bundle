@@ -53,7 +53,10 @@ class RunnerTest extends KernelTestCase
     public function setUp()
     {
         parent::setUp();
-        $this->client = new Client(['token' => STORAGE_API_TOKEN]);
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]);
         $this->temp = new Temp('docker');
         $this->temp->initRunFolder();
         $this->clearBuckets();
@@ -170,7 +173,10 @@ class RunnerTest extends KernelTestCase
         ];
 
         $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([['token' => STORAGE_API_TOKEN]])
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
             ->setMethods(['indexAction'])
             ->getMock();
         $clientMock->expects($this->any())
