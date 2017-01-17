@@ -1,0 +1,100 @@
+parameters:
+    locale: en
+    mailer_transport: smtp
+    mailer_host: localhost
+    mailer_user: null
+    mailer_password: null
+
+framework:
+    secret: "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
+    form: ~
+    csrf_protection: false
+    validation: { enable_annotations: true }
+    templating:  { engines: ['twig'] } #assets_version: SomeVersionScheme
+    default_locale: "%locale%"
+    session: ~
+    http_method_override: true
+
+doctrine:
+    dbal:
+        default_connection: default
+        connections:
+            default:
+                driver:   %database_driver%
+                host:     %database_host%
+                port:     %database_port%
+                dbname:   %database_name%
+                user:     %database_user%
+                password: %database_password%
+                charset:  UTF8
+                logging: false
+                profiling: false
+                mapping_types:
+                    enum: string
+            syrup:
+                driver:   %syrup.driver%
+                host:     %syrup.host%
+                port:     %syrup.port%
+                dbname:   %syrup.name%
+                user:     %syrup.user%
+                password: %syrup.password%
+                charset:  UTF8
+                logging: false
+                profiling: false
+            lock:
+                driver:   %locks_db.driver%
+                host:     %locks_db.host%
+                port:     %locks_db.port%
+                dbname:   %locks_db.name%
+                user:     %locks_db.user%
+                password: %locks_db.password%
+                charset:  UTF8
+                logging: false
+                profiling: false
+            limit_lock:
+                driver:   %locks_db.driver%
+                host:     %locks_db.host%
+                port:     %locks_db.port%
+                dbname:   %locks_db.name%
+                user:     %locks_db.user%
+                password: %locks_db.password%
+                charset:  UTF8
+                logging: false
+                profiling: false
+    orm:
+        default_entity_manager: ~
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: true
+
+doctrine_migrations:
+    dir_name: %doctrine_migrations_dir%
+    namespace: Application\Migrations
+    table_name: migration_versions
+    name: Application Migrations
+
+swiftmailer:
+    transport: %mailer_transport%
+    host:      %mailer_host%
+    username:  %mailer_user%
+    password:  %mailer_password%
+    spool:     { type: memory }
+
+imports:
+    - { resource: parameters_shared.yml }
+    - { resource: parameters.yml }
+    - { resource: security.yml }
+
+monolog:
+    handlers:
+        my_file_log:
+            ident: %app_name%
+            type: stream
+            level: debug
+            path: /code/error.log
+            channels: ["!request", "!event", "!doctrine"]
+            bubble: false

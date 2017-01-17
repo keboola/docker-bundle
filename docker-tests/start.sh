@@ -8,6 +8,8 @@ composer install --no-scripts
 cp /buildcode/parameters.yml /code/vendor/keboola/syrup/app/config/
 cp /buildcode/parameters_shared.yml /code/vendor/keboola/syrup/app/config/
 cp /buildcode/config_dev.yml /code/vendor/keboola/syrup/app/config/
+cp /buildcode/config_prod.yml /code/vendor/keboola/syrup/app/config/
+cp /buildcode/config.yml /code/vendor/keboola/syrup/app/config/
 composer run-script build-bootstrap
 php /code/vendor/keboola/syrup/app/console syrup:create-index
 

@@ -42,8 +42,7 @@ RUN docker-php-ext-install mcrypt pdo_mysql zip \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.connect_back=off" >> /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "xdebug.idekey=PHPSTORM" >> /usr/local/etc/php/conf.d/xdebug.ini \
-    && echo "memory_limit=-1" >> /usr/local/etc/php/php.ini
+    && echo "xdebug.idekey=PHPSTORM" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 ENV APACHE_LOCK_DIR=/var/apache/lock/
 
@@ -55,7 +54,8 @@ RUN cp /buildcode/sudoers /etc/ \
     && chmod a+x /buildcode/start.sh \
     && mkdir -p /var/apache/lock \
     && chmod a+rw /var/apache/lock \
-    && cp /buildcode/000-default.conf /etc/apache2/sites-available/ 
+    && cp /buildcode/000-default.conf /etc/apache2/sites-available/ \
+    && cp /buildcode/php.ini /usr/local/etc/php/
 
 RUN cp /buildcode/sshd_config /etc/ssh/
 RUN echo "root:root" | chpasswd 

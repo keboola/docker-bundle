@@ -8,3 +8,4 @@ composer.phar
 config.php
 /docker-tests/db/data
 /parameters.yml
+/error.log
