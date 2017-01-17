@@ -1,1 +1,0 @@
-See [documentation](http://developers.keboola.com/extend/docker/quick-start/).

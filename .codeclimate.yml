@@ -16,6 +16,10 @@ engines:
         enabled: false
       CleanCode/BooleanArgumentFlag:
         enabled: false
+      Naming/LongVariable:
+        enabled: false
+      Naming/ShortVariable:
+        enabled: false
     exclude_fingerprints:
     - fc7cdf1dcd9ffb15b73a2edf2ab992ed
     - e995d923dc507123eca26fc6bbf71d4f
