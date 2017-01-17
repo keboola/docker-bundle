@@ -12,6 +12,7 @@ use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
+use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
@@ -44,10 +45,10 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
 
         $callback = function () {
@@ -123,12 +124,28 @@ EOF;
             $log,
             $containerLog,
             '/tmp',
-            $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([
+                'com.keboola.runner.jobId=12345678',
+                'com.keboola.runner.runId=10.20.30',
+            ], $envs)
         );
-        $expected = "sudo timeout --signal=SIGKILL 3600 docker run --volume='/tmp':/data --memory='64m' --memory-swap='64m' --cpu-shares='1024' --net='bridge' -e \"var=val\" -e \"příliš=žluťoučký\" -e \"var2=weird = '\\\"value\" --name='name' 'keboola/docker-demo-app:master'";
+        $expected = "sudo timeout --signal=SIGKILL 3600"
+            . " docker run"
+            . " --volume '/tmp:/data'"
+            . " --memory '64m'"
+            . " --memory-swap '64m'"
+            . " --cpu-shares '1024'"
+            . " --net 'bridge'"
+            . " --env \"var=val\""
+            . " --env \"příliš=žluťoučký\""
+            . " --env \"var2=weird = '\\\"value\""
+            . " --label 'com.keboola.runner.jobId=12345678'"
+            . " --label 'com.keboola.runner.runId=10.20.30'"
+            . " --name 'name'"
+            . " 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
     }
 
@@ -156,10 +173,10 @@ EOF;
             $log,
             $containerLog,
             $temp->getTmpFolder(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
@@ -189,10 +206,10 @@ EOF;
             $log,
             $containerLog,
             $temp->getTmpFolder(),
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));

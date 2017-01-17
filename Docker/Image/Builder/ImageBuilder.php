@@ -438,9 +438,8 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $err, $matches)) {
                 $message = $matches[1];
                 throw new BuildParameterException($message);
-            } elseif ((strpos($err, WeirdException::ERROR_DEV_MAPPER) !== false) ||
-                    (strpos($err, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
-                    (strpos($err, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
+            } elseif ((strpos($err, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
+                    (strpos($err, WeirdException::ERROR_DEVICE_RESUME_BUILD) !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
                 throw new WeirdException($err);
             } else {

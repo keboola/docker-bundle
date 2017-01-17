@@ -13,6 +13,7 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
+use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,10 +44,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            $envs,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], $envs)
         );
         return $container;
     }
@@ -175,10 +176,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
 
         // set benchmark time
@@ -194,11 +195,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
-            'not-used',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
         $testStartTime = time();
         try {
@@ -236,10 +236,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             $log,
             $containerLog,
             $dataDir,
-            [],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([], [])
         );
         $container->run();
     }
@@ -265,12 +265,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-     /**
-     * @expectedException \Keboola\DockerBundle\Exception\OutOfMemoryException
-     * @expectedExceptionMessage Out of memory
-     */
     public function testOutOfMemory()
     {
+        $this->expectException(\Keboola\DockerBundle\Exception\OutOfMemoryException::class);
+        $this->expectExceptionMessage('Component out of memory');
+
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["data"]["memory"] = "32m";
