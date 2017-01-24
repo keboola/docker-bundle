@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -175,25 +176,16 @@ class Executor extends BaseExecutor
 
     public function cleanup(Job $job)
     {
-        $params = $job->getRawParams();
-        if (isset($params["component"])) {
-            $containerId = $job->getId() . "-" . $this->storageApi->getRunId();
-            $this->logger->info("Terminating process");
-            try {
-                $process = new Process('sudo docker ps | grep ' . escapeshellarg($containerId) .' | wc -l');
-                $process->mustRun();
-                if (trim($process->getOutput()) !== '0') {
-                    (new Process('sudo docker kill ' . escapeshellarg($containerId)))->mustRun();
-                }
-                $this->logger->info("Process terminated");
-            } catch (\Exception $e) {
-                $this->logger->debug("Cannot terminate container '{$containerId}': " . $e->getMessage());
+        $this->logger->info("Terminating job {$job->getId()}");
+        try {
+            $listCommand = 'sudo docker ps -aq --filter=label=com.keboola.docker-runner.jobId=' . $job->getId();
+            while (intval(trim((new Process($listCommand . ' | wc -l'))->mustRun()->getOutput())) > 0) {
+                // executing docker kill does not seem to be required, docker rm --force does it all
+                (new Process($listCommand . ' | xargs --no-run-if-empty sudo docker rm --force'))->mustRun();
             }
-            try {
-                (new Process('sudo docker rm --force ' . escapeshellarg($containerId)))->mustRun();
-            } catch (\Exception $e) {
-                $this->logger->debug("Cannot remove container '{$containerId}': " . $e->getMessage());
-            }
+            $this->logger->info("Job {$job->getId()} terminated");
+        } catch (\Exception $e) {
+            throw new ApplicationException("Job {$job->getId()} termination failed: " . $e->getMessage(), $e);
         }
     }
 }
