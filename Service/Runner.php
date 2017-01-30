@@ -14,6 +14,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -81,6 +82,11 @@ class Runner
      * @var string
      */
     private $commandToGetHostIp;
+
+    /**
+     * @var UsageFile
+     */
+    private $usageFile;
 
     /**
      * Runner constructor.
@@ -231,6 +237,11 @@ class Runner
             $configData
         );
 
+        $this->usageFile = new UsageFile(
+            $this->dataDirectory->getDataDir(),
+            $component->getConfigurationFormat()
+        );
+
         switch ($mode) {
             case 'run':
                 $componentOutput = $this->runComponent($jobId, $configId, $component);
@@ -260,6 +271,8 @@ class Runner
         if ($this->shouldStoreState($component->getId(), $configId)) {
             $this->stateFile->storeStateFile();
         }
+        $this->usageFile->storeUsage();
+
         $this->dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Docker Component " . $component->getId() . " finished.");
         return $componentOutput;
