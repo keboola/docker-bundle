@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -23,7 +24,7 @@ class UsageFile
     private $fs;
 
     /**
-     * @var UsageFileAdapter
+     * @var Adapter
      */
     private $adapter;
 
@@ -45,7 +46,7 @@ class UsageFile
         $this->jobId = $jobId;
 
         $this->fs = new Filesystem;
-        $this->adapter = new UsageFileAdapter($format);
+        $this->adapter = new Adapter($format);
     }
 
     /**

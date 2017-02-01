@@ -1,11 +1,11 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Runner;
+namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Keboola\DockerBundle\Docker\Configuration;
 
-class UsageFileConfigDefinition extends Configuration
+class Usage extends Configuration
 {
     public function getConfigTreeBuilder()
     {
