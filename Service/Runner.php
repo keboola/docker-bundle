@@ -19,6 +19,7 @@ use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -84,6 +85,11 @@ class Runner
     private $commandToGetHostIp;
 
     /**
+     * @var JobMapper
+     */
+    private $jobMapper;
+
+    /**
      * @var UsageFile
      */
     private $usageFile;
@@ -94,7 +100,8 @@ class Runner
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
-     * @param string $oauthApiUrl
+     * @param JobMapper $jobMapper
+     * @param $oauthApiUrl
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param int $maxLogPort
@@ -104,6 +111,7 @@ class Runner
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
         LoggersService $loggersService,
+        JobMapper $jobMapper,
         $oauthApiUrl,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
         $minLogPort = 12202,
@@ -119,6 +127,7 @@ class Runner
         ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
+        $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;

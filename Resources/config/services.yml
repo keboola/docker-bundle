@@ -55,4 +55,5 @@ services:
           - "@syrup.object_encryptor"
           - "@syrup.storage_api"
           - "@docker_bundle.loggers"
+          - "@syrup.elasticsearch.current_component_job_mapper"
           - "%oauth_api.url%"

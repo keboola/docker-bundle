@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -73,6 +74,11 @@ class EncryptionTests extends KernelTestCase
             ->method("getContainerLog")
             ->will($this->returnValue($containerLogger));
 
+        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
         $encryptor = new ObjectEncryptor();
         $baseWrapper = new BaseWrapper(hash('sha256', uniqid()));
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
@@ -91,6 +97,7 @@ class EncryptionTests extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
+            $jobMapperStub,
             "dummy",
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
