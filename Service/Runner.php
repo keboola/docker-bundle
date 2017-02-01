@@ -248,7 +248,9 @@ class Runner
 
         $this->usageFile = new UsageFile(
             $this->dataDirectory->getDataDir(),
-            $component->getConfigurationFormat()
+            $component->getConfigurationFormat(),
+            $this->jobMapper,
+            $jobId
         );
 
         switch ($mode) {
