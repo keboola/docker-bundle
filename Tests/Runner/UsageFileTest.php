@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Symfony\Component\Filesystem\Filesystem;
@@ -90,6 +92,40 @@ YAML;
         ;
 
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
+        $usageFile->storeUsage();
+    }
+
+    public function testStoreUsageOk()
+    {
+        $usage = <<<JSON
+[
+  {
+    "metric": "kiloBytes",
+    "value": 150
+  }
+]
+JSON;
+        $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
+
+        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $jobMapperStub
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn(new Job(new ObjectEncryptor));
+
+        $jobMapperStub
+            ->expects($this->once())
+            ->method('update')
+            ->with($this->callback(function ($job) use ($usage) {
+                /** @var $job Job */
+                return $job->getUsage() === \json_decode($usage, true);
+            }));
+
+        $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
 }
