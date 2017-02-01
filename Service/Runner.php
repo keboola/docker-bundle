@@ -282,7 +282,6 @@ class Runner
         if ($this->shouldStoreState($component->getId(), $configId)) {
             $this->stateFile->storeStateFile();
         }
-        $this->usageFile->storeUsage();
 
         $this->dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Docker Component " . $component->getId() . " finished.");
@@ -344,6 +343,7 @@ class Runner
             $output = $container->run();
             if ($image->isMain()) {
                 $componentOutput = $output->getOutput();
+                $this->usageFile->storeUsage();
             }
             $counter++;
             if ($counter < count($images)) {
