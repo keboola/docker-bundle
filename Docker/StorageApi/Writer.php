@@ -422,6 +422,32 @@ class Writer
                     // ignore
                 }
             }
+            if(
+                count($tableInfo["primaryKey"]) != count($config["primary_key"])
+                || count(array_intersect($tableInfo["primaryKey"], $config["primary_key"])) != count($tableInfo["primaryKey"])
+            ) {
+                $failed = false;
+                // modify primary key
+                try {
+                    $this->client->removeTablePrimaryKey($tableInfo["id"]);
+                } catch (\Exception $e) {
+                    // warn and go on
+                    $this->getLogger()->warn("Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage());
+                    $failed = true;
+                }
+                if (!$failed) {
+                    try {
+                        $this->client->createTablePrimaryKey($tableInfo["id"], $config["primary_key"]);
+                    } catch (\Exception $e) {
+                        // warn and try to rollback to original state
+                        $this->getLogger()->warn(
+                            "Error changing primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                        );
+                        $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
+                    }
+                }
+
+            }
             if (!empty($config["delete_where_column"])) {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
