@@ -48,6 +48,19 @@ git checkout -b new_branch_name
 
 [0m / open /dev/mapper/docker-202:1-661201-2430efb83129dd524011bfbae4eb39476ca783faa2a42180fe578e642f002656: no such file or directory';
 
+    const DOCKER_ERROR_MSG_2 = 'Build failed (code: 1): Sending build context to Docker daemon 3.584 kB
+
+Step 1 : FROM quay.io/keboola/docker-custom-python:1.2.3
+---> 40458b762166
+Step 2 : LABEL com.keboola.docker.runner.origin builder
+---> Using cache
+---> 1d68d4503a7d
+Step 3 : WORKDIR /home
+---> Using cache
+---> 56d743f551fd
+Step 4 : ENV APP_VERSION v1.0.8
+/ devicemapper: Error running deviceResume dm_task_run failed';
+
     public function setUp()
     {
         self::bootKernel();
@@ -547,6 +560,51 @@ git checkout -b new_branch_name
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
                 'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
+                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
+            ));
+        $builder->prepare([]);
+    }
+
+    public function testWeirdBugError2()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "json",
+            ]
+        ]);
+
+        $temp = new Temp();
+        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setMethods(['getBuildCommand'])
+            ->getMock();
+        $logger = new Logger('null');
+        $logger->pushHandler(new NullHandler());
+        /** @var Image\Builder\ImageBuilder $builder */
+        $builder->setLogger($logger);
+        $builder->setTemp($temp);
+        $builder->method('getBuildCommand')
+            ->will($this->onConsecutiveCalls(
+                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG_2 . '" && exit 1\'',
                 'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
             ));
         $builder->prepare([]);

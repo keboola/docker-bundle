@@ -434,17 +434,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             /* string matching is used because currently it is not possible to have different exit codes for
                 `docker build` It is either 0 for success or 1 for failure and the individual command exit codes
                 are ignored. */
-            $err = $process->getErrorOutput() . $process->getOutput();
-            if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $err, $matches)) {
+            $message = "Build failed (code: {$process->getExitCode()}): " .
+                " {$process->getOutput()} / {$process->getErrorOutput()}";
+            if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $message, $matches)) {
                 $message = $matches[1];
                 throw new BuildParameterException($message);
-            } elseif ((strpos($err, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
-                    (strpos($err, WeirdException::ERROR_DEVICE_RESUME_BUILD) !== false)) {
+            } elseif ((strpos($message, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
+                    (strpos($message, WeirdException::ERROR_DEVICE_RESUME_BUILD) !== false)) {
                 // in case of this weird docker error, throw a new exception to retry the container
-                throw new WeirdException($err);
+                throw new WeirdException($message);
             } else {
-                $message = "Build failed (code: {$process->getExitCode()}): " .
-                    " {$process->getOutput()} / {$process->getErrorOutput()}";
                 throw new BuildException($message);
             }
         }
