@@ -422,8 +422,7 @@ class Writer
                     // ignore
                 }
             }
-            if(
-                count($tableInfo["primaryKey"]) != count($config["primary_key"])
+            if (count($tableInfo["primaryKey"]) != count($config["primary_key"])
                 || count(array_intersect($tableInfo["primaryKey"], $config["primary_key"])) != count($tableInfo["primaryKey"])
             ) {
                 $failed = false;
@@ -446,7 +445,6 @@ class Writer
                         $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
                     }
                 }
-
             }
             if (!empty($config["delete_where_column"])) {
                 // Index columns
