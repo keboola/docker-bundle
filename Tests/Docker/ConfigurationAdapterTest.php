@@ -31,7 +31,13 @@ class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
             ],
             'authorization' => [
                 'oauth_api' => [
-                    'id' => 1234
+                    'id' => 1234,
+                    'credentials' => [
+                        'token' => 123456,
+                        'params' => [
+                            'key' => 'val'
+                        ]
+                    ]
                 ]
             ]
         ];
@@ -55,6 +61,10 @@ parameters:
 authorization:
     oauth_api:
         id: 1234
+        credentials:
+            token: 123456
+            params:
+                key: val
 
 EOT;
         return $data;
@@ -84,7 +94,13 @@ EOT;
     },
     "authorization": {
         "oauth_api": {
-            "id": 1234
+            "id": 1234,
+            "credentials": {
+                "token": 123456,
+                "params": {
+                    "key": "val"
+                }
+            }
         }
     }
 }

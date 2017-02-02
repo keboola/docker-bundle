@@ -46,7 +46,13 @@ class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
                 ),
                 "authorization" => array(
                     "oauth_api" => array(
-                        "id" => 1234
+                        "id" => 1234,
+                        "credentials" => array(
+                            "token" => "123456",
+                            "params" => array(
+                                "key" => "val"
+                            )
+                        )
                     )
                 ),
                 "processors" => array(
