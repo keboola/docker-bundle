@@ -5,7 +5,7 @@
     "keywords": [],
     "authors": [],
     "require": {
-        "keboola/syrup": "^5.0",
+        "keboola/syrup": "~5.1",
         "keboola/php-utils": "~1.0.0",
         "symfony/symfony": "~2.8.0",
         "keboola/oauth-v2-php-client": "~2.0.0",
@@ -37,7 +37,7 @@
         "build-bootstrap": [
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ]        
+        ]
     },
     "minimum-stability": "stable",
     "autoload": {
