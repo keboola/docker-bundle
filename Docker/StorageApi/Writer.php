@@ -321,9 +321,9 @@ class Writer
 
             if (count(explode(".", $config["destination"])) != 3) {
                 throw new UserException(
-                    "Output source '{$config["destination"]}' does not seem to be a valid table identifier, " .
-                    "either set output-mapping for table stored in '{$file->getRelativePathname()}' or make sure " .
-                    "that the file name is a valid storage table identifier."
+                    "CSV file '{$config["destination"]}' file name is not a valid table identifier, " .
+                    "either set output mapping for '{$file->getRelativePathname()}' or make sure " .
+                    "that the file name is a valid Storage table identifier."
                 );
             }
 
