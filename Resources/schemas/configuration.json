@@ -18,6 +18,10 @@
           "properties": {
             "id": {
               "type": "string"
+            },
+            "credentials": {
+              "type": "object",
+              "additionalProperties": true
             }
           }
         }
