@@ -340,10 +340,15 @@ class Runner
                     $environment->getEnvironmentVariables()
                 )
             );
-            $output = $container->run();
-            if ($image->isMain()) {
-                $componentOutput = $output->getOutput();
-                $this->usageFile->storeUsage();
+            try {
+                $process = $container->run();
+                if ($image->isMain()) {
+                    $componentOutput = $process->getOutput();
+                }
+            } finally {
+                if ($image->isMain()) {
+                    $this->usageFile->storeUsage();
+                }
             }
             $counter++;
             if ($counter < count($images)) {
