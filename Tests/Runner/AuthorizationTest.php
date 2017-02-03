@@ -222,7 +222,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($sampleData, $data);
     }
 
-    public function testOauthInjectedDecrypt()
+    public function testOauthInjected()
     {
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -243,7 +243,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ['oauth_api' => ['credentials' => $encryptor->encrypt($credentials)]];
+        $config = ['oauth_api' => ['credentials' => $credentials]];
 
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -256,7 +256,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    public function testOauthInjectedDecryptSandboxed()
+    public function testOauthInjectedSandboxed()
     {
         $encryptor = new ObjectEncryptor();
         $wrapper = new ComponentWrapper(md5(uniqid()));
@@ -311,7 +311,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ["authorization" => ["oauth_api" => ["credentials" => $encryptor->encrypt($credentials)]]];
+        $config = ["authorization" => ["oauth_api" => ["credentials" => $credentials]]];
 
         $temp = new Temp();
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
@@ -369,7 +369,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ["authorization" => ["oauth_api" => ["credentials" => $encryptor->encrypt($credentials)]]];
+        $config = ["authorization" => ["oauth_api" => ["credentials" => $credentials]]];
 
         $temp = new Temp();
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
@@ -390,10 +390,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
                             'description' => 'ondrej.hlavacek@keboola.com'
                         ],
                         'created' => '2016-02-09 09:47:16',
-                        '#data' => 'KBC::Encrypted==',
+                        '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
                         'oauthVersion' => '2.0',
                         'appKey' => '123456',
-                        '#appSecret' => 'KBC::Encrypted==',
+                        '#appSecret' => '654321',
                     ],
                 ],
             ],
@@ -402,16 +402,6 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ],
             'action' => 'run',
         ];
-        $data['authorization']['oauth_api']['credentials']['#data'] = substr(
-            $data['authorization']['oauth_api']['credentials']['#data'],
-            0,
-            16
-        );
-        $data['authorization']['oauth_api']['credentials']['#appSecret'] = substr(
-            $data['authorization']['oauth_api']['credentials']['#appSecret'],
-            0,
-            16
-        );
         $this->assertEquals($sampleData, $data);
     }
 }

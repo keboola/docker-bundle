@@ -39,6 +39,9 @@ class Authorization
     public function getAuthorization($configData)
     {
         $data = [];
+        if (isset($configData['oauth_api']['credentials'])) {
+            $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
+        }
         if (isset($configData['oauth_api']['id'])) {
             // read authorization from API
             $credentials = $this->oauthClient->getDetail(
@@ -49,14 +52,6 @@ class Authorization
                 $decrypted = $credentials;
             } else {
                 $decrypted = $this->encryptor->decrypt($credentials);
-            }
-            $data['oauth_api']['credentials'] = $decrypted;
-        } elseif (isset($configData['oauth_api']['credentials'])) {
-            // pass injected authorization data
-            if ($this->sandboxed) {
-                $decrypted = $configData['oauth_api']['credentials'];
-            } else {
-                $decrypted = $this->encryptor->decrypt($configData['oauth_api']['credentials']);
             }
             $data['oauth_api']['credentials'] = $decrypted;
         }
