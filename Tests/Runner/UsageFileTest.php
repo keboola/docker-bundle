@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
@@ -124,6 +125,35 @@ JSON;
                 /** @var $job Job */
                 return $job->getUsage() === \json_decode($usage, true);
             }));
+
+        $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $usageFile->storeUsage();
+    }
+
+    public function testStoreUsageUnknownJob()
+    {
+        $this->expectException(ApplicationException::class);
+        $this->expectExceptionMessage('Job not found');
+
+        $usage = <<<JSON
+[
+  {
+    "metric": "kiloBytes",
+    "value": 150
+  }
+]
+JSON;
+        $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
+
+        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $jobMapperStub
+            ->expects($this->once())
+            ->method('get')
+            ->willReturn(null);
 
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();

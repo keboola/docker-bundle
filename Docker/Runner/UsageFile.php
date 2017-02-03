@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Symfony\Component\Filesystem\Filesystem;
+use Keboola\Syrup\Exception\ApplicationException;
 
 class UsageFile
 {
@@ -58,8 +59,12 @@ class UsageFile
         if ($this->fs->exists($usageFileName)) {
             $usage = $this->adapter->readFromFile($usageFileName);
             $job = $this->jobMapper->get($this->jobId);
-            $job = $job->setUsage($usage);
-            $this->jobMapper->update($job);
+            if ($job !== null) {
+                $job = $job->setUsage($usage);
+                $this->jobMapper->update($job);
+            } else {
+                throw new ApplicationException('Job not found', null, ['jobId' => $this->jobId]);
+            }
         }
     }
 }
