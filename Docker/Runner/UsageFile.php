@@ -39,6 +39,14 @@ class UsageFile
      */
     private $jobId;
 
+    /**
+     * UsageFile constructor.
+     *
+     * @param string $dataDir
+     * @param string $format
+     * @param JobMapper $jobMapper
+     * @param string $jobId
+     */
     public function __construct($dataDir, $format, JobMapper $jobMapper, $jobId)
     {
         $this->dataDir = $dataDir;

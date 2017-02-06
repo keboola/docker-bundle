@@ -101,7 +101,7 @@ class Runner
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param JobMapper $jobMapper
-     * @param $oauthApiUrl
+     * @param string $oauthApiUrl
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param int $maxLogPort
