@@ -14,6 +14,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -109,6 +110,11 @@ class RunnerTest extends KernelTestCase
             ->method('getContainerLog')
             ->will($this->returnValue($containerLogger));
 
+        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
         $encryptor = new ObjectEncryptor();
         $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
         $ecWrapper->setComponentId('keboola.r-transformation');
@@ -126,6 +132,7 @@ class RunnerTest extends KernelTestCase
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
+            $jobMapperStub,
             "dummy",
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,

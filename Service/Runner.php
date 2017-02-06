@@ -14,10 +14,12 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -83,11 +85,22 @@ class Runner
     private $commandToGetHostIp;
 
     /**
+     * @var JobMapper
+     */
+    private $jobMapper;
+
+    /**
+     * @var UsageFile
+     */
+    private $usageFile;
+
+    /**
      * Runner constructor.
      * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
+     * @param JobMapper $jobMapper
      * @param string $oauthApiUrl
      * @param string $commandToGetHostIp
      * @param int $minLogPort
@@ -98,6 +111,7 @@ class Runner
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
         LoggersService $loggersService,
+        JobMapper $jobMapper,
         $oauthApiUrl,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
         $minLogPort = 12202,
@@ -113,6 +127,7 @@ class Runner
         ]);
         $this->oauthClient->enableReturnArrays(true);
         $this->loggerService = $loggersService;
+        $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
@@ -231,6 +246,13 @@ class Runner
             $configData
         );
 
+        $this->usageFile = new UsageFile(
+            $this->dataDirectory->getDataDir(),
+            $component->getConfigurationFormat(),
+            $this->jobMapper,
+            $jobId
+        );
+
         switch ($mode) {
             case 'run':
                 $componentOutput = $this->runComponent($jobId, $configId, $component);
@@ -260,6 +282,7 @@ class Runner
         if ($this->shouldStoreState($component->getId(), $configId)) {
             $this->stateFile->storeStateFile();
         }
+
         $this->dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Docker Component " . $component->getId() . " finished.");
         return $componentOutput;
@@ -317,9 +340,15 @@ class Runner
                     $environment->getEnvironmentVariables()
                 )
             );
-            $output = $container->run();
-            if ($image->isMain()) {
-                $componentOutput = $output->getOutput();
+            try {
+                $process = $container->run();
+                if ($image->isMain()) {
+                    $componentOutput = $process->getOutput();
+                }
+            } finally {
+                if ($image->isMain()) {
+                    $this->usageFile->storeUsage();
+                }
             }
             $counter++;
             if ($counter < count($images)) {
