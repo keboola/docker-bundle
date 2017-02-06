@@ -459,9 +459,8 @@ class Writer
                 }
                 if (!$failed) {
                     try {
-                        $configPK = self::normalizePrimaryKey($config["primary_key"]);
-                        if (count($configPK)) {
-                            $this->client->createTablePrimaryKey($tableInfo["id"], $configPK);
+                        if (count($config["primary_key"])) {
+                            $this->client->createTablePrimaryKey($tableInfo["id"], $config["primary_key"]);
                         }
                     } catch (\Exception $e) {
                         // warn and try to rollback to original state
