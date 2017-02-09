@@ -327,11 +327,16 @@ class Runner
             );
 
             $this->configFile->createConfigFile($image->getConfigData());
-            $containerId = $jobId . '-' . ($this->storageClient->getRunId() ?: 'norunid') .
-                '-' . $image->getSourceComponent()->getSanitizedComponentId();
+
+            $containerIdParts = [];
+            $containerIdParts[] = $jobId;
+            $containerIdParts[] = $this->storageClient->getRunId() ?: 'norunid';
+            $containerIdParts[] = $priority;
+            $containerIdParts[] = $image->getSourceComponent()->getSanitizedComponentId();
+
             $container = $this->createContainerFromImage(
                 $image,
-                $containerId,
+                join('-', $containerIdParts),
                 new RunCommandOptions(
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
