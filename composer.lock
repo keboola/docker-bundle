@@ -1898,16 +1898,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "5.1.1",
+            "version": "5.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "827d9305058df008c7c50a94ec0bbc7fe9156ba6"
+                "reference": "8a07a1d68573830a61c200dd14285c7e81b2798e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/827d9305058df008c7c50a94ec0bbc7fe9156ba6",
-                "reference": "827d9305058df008c7c50a94ec0bbc7fe9156ba6",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/8a07a1d68573830a61c200dd14285c7e81b2798e",
+                "reference": "8a07a1d68573830a61c200dd14285c7e81b2798e",
                 "shasum": ""
             },
             "require": {
@@ -1963,7 +1963,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2017-02-07 11:24:37"
+            "time": "2017-02-13 13:02:26"
         },
         {
             "name": "kriswallsmith/assetic",
