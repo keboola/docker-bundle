@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\FileUploadTransferOptions;
 use Keboola\Temp\Temp;
@@ -344,6 +345,14 @@ class Writer
                     $e
                 );
             }
+
+            // After the file has been written, we can write metadata
+            if (isset($config['metadata']) && !empty($config['metadata'])) {
+                $this->writeTableMetadata($config["destination"], $configuration["provider"], $config["metadata"]);
+            }
+            if (isset($config['columnMetadata']) && !empty($config['columnMetadata'])) {
+                $this->writeColumnMetadata($config["destination"], $configuration["provider"], $config["columnMetadata"]);
+            }
         }
 
         $processedOutputMappingTables = array_unique($processedOutputMappingTables);
@@ -480,6 +489,35 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
+        }
+    }
+
+    /**
+     * @param $tableId
+     * @param $provider
+     * @param $metadata
+     * @throws ClientException
+     */
+    protected function writeTableMetadata($tableId, $provider, $metadata)
+    {
+        $metadataApi = new Metadata($this->client);
+
+        $metadataApi->postTableMetadata($tableId, $provider, $metadata);
+    }
+
+    /**
+     * @param $tableId
+     * @param $provider
+     * @param $columnMetadata
+     * @throws ClientException
+     */
+    protected function writeColumnMetadata($tableId, $provider, $columnMetadata)
+    {
+        $metadataApi = new Metadata($this->client);
+
+        foreach($columnMetadata as $column => $metadataArray) {
+            $columnId = $tableId . "." . $column;
+            $metadataApi->postColumnMetadata($columnId, $provider, $metadataArray);
         }
     }
 
