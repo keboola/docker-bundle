@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\InputMapping\Exception\InvalidInputException;
@@ -42,9 +43,6 @@ class DataLoader
      */
     private $defaultBucketName;
 
-    /**
-     * @var string
-     */
     private $format;
     /**
      * @var array
@@ -52,9 +50,15 @@ class DataLoader
     protected $features = [];
 
     /**
-     * @var array
+     * @var Component
      */
-    private $stagingStorage;
+    private $component;
+
+
+    /**
+     * @var string
+     */
+    private $configId;
 
     /**
      * DataLoader constructor.
@@ -72,17 +76,16 @@ class DataLoader
         Logger $logger,
         $dataDirectory,
         array $storageConfig,
-        $defaultBucketName,
-        $format,
-        array $stagingStorage = []
+        Component $component,
+        $configId = null
     ) {
         $this->storageClient = $storageClient;
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
         $this->storageConfig = $storageConfig;
-        $this->defaultBucketName = $defaultBucketName;
-        $this->format = $format;
-        $this->stagingStorage = $stagingStorage;
+        $this->component = $component;
+        $this->configId = $configId;
+        $this->defaultBucketName = $this->getDefaultBucket();
     }
 
     /**
@@ -92,7 +95,7 @@ class DataLoader
     {
         // download source files
         $reader = new Reader($this->storageClient);
-        $reader->setFormat($this->format);
+        $reader->setFormat($this->component->getConfigurationFormat());
 
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
@@ -100,7 +103,7 @@ class DataLoader
                 $reader->downloadTables(
                     $this->storageConfig['input']['tables'],
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
-                    isset($this->stagingStorage['input']) ? $this->stagingStorage['input'] : 'local'
+                    $this->getStagingStorageInput()
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&
@@ -128,8 +131,11 @@ class DataLoader
         $this->logger->debug("Storing results.");
 
         $writer = new Writer($this->storageClient, $this->logger);
+
         $writer->setFormat($this->format);
         $writer->setFeatures($this->features);
+
+        $writer->setFormat($this->component->getConfigurationFormat());
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
@@ -148,6 +154,8 @@ class DataLoader
         $this->logger->debug("Uploading output tables and files.");
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
+
+        $uploadTablesOptions["provider"] = $this->component->getId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -199,7 +207,7 @@ class DataLoader
         $zip->close();
 
         $writer = new Writer($this->storageClient, $this->logger);
-        $writer->setFormat($this->format);
+        $writer->setFormat($this->component->getConfigurationFormat());
         // zip archive must be created in special directory, because uploadFiles is recursive
         $writer->uploadFiles(
             $zipDir,
@@ -227,5 +235,25 @@ class DataLoader
         $this->features = $features;
 
         return $this;
+    }
+    
+    protected function getDefaultBucket() {
+        if ($this->component->hasDefaultBucket()) {
+            if (!$this->configId) {
+                throw new UserException("Configuration ID not set, but is required for default_bucket option.");
+            }
+            return $this->component->getDefaultBucketName($this->configId);
+        } else {
+            return '';
+        }
+    }
+
+    private function getStagingStorageInput() {
+        if ($stagingStorage = $this->component->getStagingStorage() != null) {
+            if (isset($stagingStorage['input'])) {
+                return $stagingStorage['input'];
+            }
+        }
+        return 'local';
     }
 }
