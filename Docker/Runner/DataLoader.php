@@ -249,7 +249,7 @@ class DataLoader
     }
 
     private function getStagingStorageInput() {
-        if ($stagingStorage = $this->component->getStagingStorage() != null) {
+        if (($stagingStorage = $this->component->getStagingStorage()) !== null) {
             if (isset($stagingStorage['input'])) {
                 return $stagingStorage['input'];
             }
