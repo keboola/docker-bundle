@@ -822,7 +822,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-
     public function testWriteTableOutputMappingWithPk()
     {
         $root = $this->tmp->getTmpFolder();
@@ -887,6 +886,8 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         );
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
         $writer->uploadTables(
@@ -902,6 +903,52 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             ]
         );
         $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+    }
+
+
+    public function testWriteTableOutputMappingWithPkMismatchWithFixPrimaryKeysFeature()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
+
+        $handler = new TestHandler();
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
+        $writer->uploadTables(
+            $root . "/upload",
+            [
+                "mapping" => [
+                    [
+                        "source" => "table9.csv",
+                        "destination" => "out.c-docker-test.table9",
+                        "primary_key" => ["Id"]
+                    ]
+                ]
+            ]
+        );
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
+        $writer->setFeatures(["docker-runner-output-mapping-adaptive-pk"]);
+        $writer->uploadTables(
+            $root . "/upload",
+            [
+                "mapping" => [
+                    [
+                        "source" => "table9.csv",
+                        "destination" => "out.c-docker-test.table9",
+                        "primary_key" => ["Id", "Name"]
+                    ]
+                ]
+            ]
+        );
+        $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
+        $this->assertTrue($handler->hasWarningThatContains("Modifying primary key of table out.c-docker-test.table9."));
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals(["Id", "Name"], $tableInfo["primaryKey"]);
     }
 
 
@@ -925,6 +972,9 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         );
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals([], $tableInfo["primaryKey"]);
+
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
         $writer->uploadTables(
@@ -939,9 +989,10 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         );
-        $this->assertFalse($handler->hasWarningThatContains("Output mapping does not match destination table: primary key '' does not match '' in 'out.c-docker-test.table9'."));
+        $this->assertFalse($handler->hasWarningThatContains("Output mapping does not match destination table"));
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals([], $tableInfo["primaryKey"]);
     }
-
 
     public function testWriteTableOutputMappingWithEmptyStringPkInManifest()
     {
@@ -968,5 +1019,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         file_put_contents($root . "/upload/table9.csv.manifest", '{"destination": "out.c-docker-test.table9","primary_key": [""]}');
         $writer->uploadTables($root . "/upload");
         $this->assertFalse($handler->hasWarningThatContains("Output mapping does not match destination table: primary key '' does not match '' in 'out.c-docker-test.table9'."));
+        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
+        $this->assertEquals([], $tableInfo["primaryKey"]);
     }
 }

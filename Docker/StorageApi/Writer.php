@@ -42,6 +42,11 @@ class Writer
     protected $format = 'json';
 
     /**
+     * @var array
+     */
+    protected $features = [];
+
+    /**
      * @return mixed
      */
     public function getFormat()
@@ -96,6 +101,26 @@ class Writer
         $this->logger = $logger;
 
         return $this;
+    }
+
+    /**
+     * @param array $features
+     * @return $this
+     */
+    public function setFeatures($features)
+    {
+        $this->features = $features;
+
+        return $this;
+    }
+
+    /**
+     * @param $feature
+     * @return bool
+     */
+    public function hasFeature($feature)
+    {
+        return in_array($feature, $this->features);
     }
 
     /**
@@ -333,9 +358,7 @@ class Writer
                     be done until all images are updated not to use the parameter.
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
-                if ($config["primary_key"] == [""]) {
-                    $config["primary_key"] = [];
-                }
+                $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
                 $this->uploadTable($file->getPathname(), $config);
             } catch (ClientException $e) {
                 throw new UserException(
@@ -422,6 +445,32 @@ class Writer
                     // ignore
                 }
             }
+
+            if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
+                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]}.");
+                $failed = false;
+                // modify primary key
+                try {
+                    $this->client->removeTablePrimaryKey($tableInfo["id"]);
+                } catch (\Exception $e) {
+                    // warn and go on
+                    $this->getLogger()->warn("Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage());
+                    $failed = true;
+                }
+                if (!$failed) {
+                    try {
+                        if (count($config["primary_key"])) {
+                            $this->client->createTablePrimaryKey($tableInfo["id"], $config["primary_key"]);
+                        }
+                    } catch (\Exception $e) {
+                        // warn and try to rollback to original state
+                        $this->getLogger()->warn(
+                            "Error changing primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                        );
+                        $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
+                    }
+                }
+            }
             if (!empty($config["delete_where_column"])) {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
@@ -458,7 +507,7 @@ class Writer
             }
         } else {
             $options = array(
-                "primaryKey" => join(",", array_unique($config["primary_key"]))
+                "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
             );
             // headless csv file
             if (!empty($config["columns"])) {
@@ -551,18 +600,58 @@ class Writer
         }
     }
 
+    /**
+     * @param array $tableInfo
+     * @param array $config
+     */
     public function validateAgainstTable($tableInfo = [], $config = [])
     {
         // primary key
-        if (count($config["primary_key"]) > 0 || count($tableInfo["primaryKey"]) > 0) {
-            if (count(array_diff($tableInfo["primaryKey"], $config["primary_key"])) > 0 ||
-                count(array_diff($config["primary_key"], $tableInfo["primaryKey"])) > 0
+        $configPK = self::normalizePrimaryKey($config["primary_key"]);
+        if (count($configPK) > 0 || count($tableInfo["primaryKey"]) > 0) {
+            if (count(array_diff($tableInfo["primaryKey"], $configPK)) > 0 ||
+                count(array_diff($configPK, $tableInfo["primaryKey"])) > 0
             ) {
-                $pkMapping = join(", ", $config["primary_key"]);
+                $pkMapping = join(", ", $configPK);
                 $pkTable = join(", ", $tableInfo["primaryKey"]);
                 $message = "Output mapping does not match destination table: primary key '{$pkMapping}' does not match '{$pkTable}' in '{$config["destination"]}'.";
                 throw new UserException($message);
             }
         }
+    }
+
+    /**
+     * @param array $pKey
+     * @return array
+     */
+    public static function normalizePrimaryKey(array $pKey)
+    {
+        return array_unique(array_filter($pKey, function ($col) {
+            if ($col != '') {
+                return true;
+            }
+            return false;
+        }));
+    }
+
+    /**
+     * @param array $features
+     * @param array $tableInfo
+     * @param array $config
+     * @return bool
+     */
+    public static function modifyPrimaryKeyDecider(array $features, array $tableInfo, array $config)
+    {
+        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)) {
+            return false;
+        }
+        $configPK = self::normalizePrimaryKey($config["primary_key"]);
+        if (count($tableInfo["primaryKey"]) != count($configPK)) {
+            return true;
+        }
+        if (count(array_intersect($tableInfo["primaryKey"], $configPK)) != count($tableInfo["primaryKey"])) {
+            return true;
+        }
+        return false;
     }
 }
