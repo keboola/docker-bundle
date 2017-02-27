@@ -155,7 +155,10 @@ class DataLoader
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
-        $uploadTablesOptions["provider"] = $this->component->getId();
+        $uploadTablesOptions["provider"] = array(
+            'componentId' => $this->component->getId(),
+            'configurationId' => $this->configId
+        );
 
         // Get default bucket
         if ($this->defaultBucketName) {

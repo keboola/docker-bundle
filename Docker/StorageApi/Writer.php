@@ -27,6 +27,8 @@ use Keboola\Syrup\Exception\UserException;
 class Writer
 {
 
+    const SYSTEM_COMPONENT_NAME = 'docker-runner';
+
     /**
      * @var Client
      */
@@ -360,6 +362,11 @@ class Writer
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
                 $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
+                if ($config["primary_key"] == [""]) {
+                    $config["primary_key"] = [];
+                }
+                $config['provider'] = $configuration['provider'];
+
                 $this->uploadTable($file->getPathname(), $config);
             } catch (ClientException $e) {
                 throw new UserException(
@@ -520,10 +527,23 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $this->client->writeTableAsync($config["destination"], $csvFile, $options);
             }
+
+            $systemUpdateMeta = array(
+                [
+                    'key' => 'KBC.updated.componentId',
+                    'value' => $config['provider']['componentId']
+                ],
+                [
+                    'key' => 'KBC.updated.configurationId',
+                    'value' => $config['provider']['configurationId']
+                ]
+            );
+            $this->writeTableMetadata($config['destination'], 'docker-runner', $systemUpdateMeta);
         } else {
             $options = array(
                 "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
             );
+            $tableId = $config['destination'];
             // headless csv file
             if (!empty($config["columns"])) {
                 $tmp = new Temp();
@@ -542,8 +562,19 @@ class Writer
                 }
             } else {
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
-                $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
+                $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
+            $systemCreateMeta = array(
+                [
+                    'key' => 'KBC.updated.componentId',
+                    'value' => $config['provider']['componentId']
+                ],
+                [
+                    'key' => 'KBC.updated.configurationId',
+                    'value' => $config['provider']['configurationId']
+                ]
+            );
+            $this->writeTableMetadata($tableId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta);
         }
     }
 
