@@ -205,7 +205,8 @@ class DataLoader
         );
     }
     
-    protected function getDefaultBucket() {
+    protected function getDefaultBucket()
+    {
         if ($this->component->hasDefaultBucket()) {
             if (!$this->configId) {
                 throw new UserException("Configuration ID not set, but is required for default_bucket option.");
@@ -216,7 +217,8 @@ class DataLoader
         }
     }
 
-    private function getStagingStorageInput() {
+    private function getStagingStorageInput()
+    {
         if (($stagingStorage = $this->component->getStagingStorage()) !== null) {
             if (isset($stagingStorage['input'])) {
                 return $stagingStorage['input'];

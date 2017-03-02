@@ -138,7 +138,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                 $this->defaultBucketCommponent
             );
             $this->fail("ConfigId is required for defaultBucket=true component data setting");
-        } Catch(UserException $e) {
+        } catch (UserException $e) {
             $this->assertStringStartsWith("Configuration ID not set", $e->getMessage());
         }
     }
@@ -173,7 +173,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $dataLoader->storeOutput();
 
         $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
-        $this->assertCount(2,$bucketMetadata);
+        $this->assertCount(2, $bucketMetadata);
         foreach ($bucketMetadata as $bmd) {
             $this->assertEquals("docker-runner", $bmd['provider']);
             if ($bmd['key'] === "KBC.createdBy.component.id") {
@@ -184,7 +184,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             }
         }
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
-        $this->assertCount(2,$tableMetadata);
+        $this->assertCount(2, $tableMetadata);
         foreach ($bucketMetadata as $bmd) {
             $this->assertEquals("docker-runner", $bmd['provider']);
             if ($bmd['key'] === "KBC.createdBy.component.id") {
