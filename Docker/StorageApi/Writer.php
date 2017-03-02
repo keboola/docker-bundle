@@ -19,6 +19,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Intl\Exception\MethodArgumentValueNotImplementedException;
 
 /**
  * Class Writer
@@ -33,6 +34,11 @@ class Writer
      * @var Client
      */
     protected $client;
+
+    /**
+     * @var Metadata
+     */
+    protected $metadataClient;
 
     /**
      * @var Logger
@@ -83,6 +89,17 @@ class Writer
     }
 
     /**
+     * @param Metadata $metadataClient
+     * @return $this
+     */
+    public function setMetadataClient(Metadata $metadataClient)
+    {
+        $this->metadataClient = $metadataClient;
+
+        return $this;
+    }
+
+    /**
      * @return Logger
      */
     public function getLogger()
@@ -110,6 +127,7 @@ class Writer
     public function __construct(Client $client, Logger $logger)
     {
         $this->setClient($client);
+        $this->setMetadataClient(new Metadata($client));
         $this->setLogger($logger);
     }
 
@@ -351,7 +369,7 @@ class Writer
 
             // After the file has been written, we can write metadata
             if (isset($config['metadata']) && !empty($config['metadata'])) {
-                $this->writeTableMetadata($config["destination"], $configuration["provider"], $config["metadata"]);
+                $this->metadataClient->postTableMetadata($config["destination"], $configuration["provider"], $config["metadata"]);
             }
             if (isset($config['columnMetadata']) && !empty($config['columnMetadata'])) {
                 $this->writeColumnMetadata($config["destination"], $configuration["provider"], $config["columnMetadata"]);
@@ -417,10 +435,21 @@ class Writer
             throw new UserException("Sliced file '" . basename($source) . "': columns specification missing.");
         }
 
+        $systemCreateMeta = array(
+            [
+                'key' => 'KBC.createdBy.component.id',
+                'value' => $config['provider']['componentId']
+            ],
+            [
+                'key' => 'KBC.createdBy.configuration.id',
+                'value' => $config['provider']['configurationId']
+            ]
+        );
+
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
-            // TODO component name!
             $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
+            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta, "bucket");
         }
 
         if ($this->client->tableExists($config["destination"])) {
@@ -471,15 +500,15 @@ class Writer
 
             $systemUpdateMeta = array(
                 [
-                    'key' => 'KBC.updated.componentId',
+                    'key' => 'KBC.lastUpdatedBy.component.id',
                     'value' => $config['provider']['componentId']
                 ],
                 [
-                    'key' => 'KBC.updated.configurationId',
+                    'key' => 'KBC.lastUpdatedBy.configuration.id',
                     'value' => $config['provider']['configurationId']
                 ]
             );
-            $this->writeTableMetadata($config['destination'], 'docker-runner', $systemUpdateMeta);
+            $this->writeMetadata($config['destination'], 'docker-runner', $systemUpdateMeta, "table");
         } else {
             $options = array(
                 "primaryKey" => join(",", array_unique($config["primary_key"]))
@@ -505,31 +534,9 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
-            $systemCreateMeta = array(
-                [
-                    'key' => 'KBC.updated.componentId',
-                    'value' => $config['provider']['componentId']
-                ],
-                [
-                    'key' => 'KBC.updated.configurationId',
-                    'value' => $config['provider']['configurationId']
-                ]
-            );
-            $this->writeTableMetadata($tableId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta);
+
+            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta);
         }
-    }
-
-    /**
-     * @param $tableId
-     * @param $provider
-     * @param $metadata
-     * @throws ClientException
-     */
-    protected function writeTableMetadata($tableId, $provider, $metadata)
-    {
-        $metadataApi = new Metadata($this->client);
-
-        $metadataApi->postTableMetadata($tableId, $provider, $metadata);
     }
 
     /**
@@ -540,11 +547,9 @@ class Writer
      */
     protected function writeColumnMetadata($tableId, $provider, $columnMetadata)
     {
-        $metadataApi = new Metadata($this->client);
-
         foreach($columnMetadata as $column => $metadataArray) {
             $columnId = $tableId . "." . $column;
-            $metadataApi->postColumnMetadata($columnId, $provider, $metadataArray);
+            $this->metadataClient->postColumnMetadata($columnId, $provider, $metadataArray);
         }
     }
 
