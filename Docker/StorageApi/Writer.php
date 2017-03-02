@@ -606,7 +606,7 @@ class Writer
      */
     protected function writeColumnMetadata($tableId, $provider, $columnMetadata)
     {
-        foreach($columnMetadata as $column => $metadataArray) {
+        foreach ($columnMetadata as $column => $metadataArray) {
             $columnId = $tableId . "." . $column;
             $this->metadataClient->postColumnMetadata($columnId, $provider, $metadataArray);
         }
