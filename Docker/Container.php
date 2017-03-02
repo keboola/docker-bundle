@@ -158,8 +158,9 @@ class Container
                 }
                 $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 
+                $this->checkOOM($this->inspectContainer($this->id));
                 if (!$process->isSuccessful()) {
-                    $this->handleContainerFailure($process, $this->id, $startTime);
+                    $this->handleContainerFailure($process, $startTime);
                 }
             } catch (WeirdException $e) {
                 $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
@@ -251,12 +252,9 @@ class Container
         );
     }
 
-    private function handleContainerFailure(Process $process, $containerId, $startTime)
+    private function handleContainerFailure(Process $process, $startTime)
     {
         $duration = time() - $startTime;
-        $inspect = $this->inspectContainer($containerId);
-        $this->checkOOM($inspect);
-
         // killed containers
         if ($process->getExitCode() == 137) {
             // this catches the timeout from `sudo timeout`
@@ -416,6 +414,10 @@ class Container
         return $inspect;
     }
 
+    /**
+     * @param array $inspect Container inspect data
+     * @throws OutOfMemoryException In case OOM was triggered during container run.
+     */
     private function checkOOM(array $inspect)
     {
         if (isset($inspect["State"]) &&
