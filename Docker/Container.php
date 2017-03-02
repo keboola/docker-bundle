@@ -251,34 +251,11 @@ class Container
         );
     }
 
-
     private function handleContainerFailure(Process $process, $containerId, $startTime)
     {
         $duration = time() - $startTime;
-        try {
-            $inspect = $this->inspectContainer($containerId);
-        } catch (ProcessFailedException $e) {
-            $this->logger->notice(
-                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
-                $e->getMessage()
-            );
-            $inspect = [];
-        }
-
-        if (isset($inspect["State"]) &&
-            isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true
-        ) {
-            $data = [
-                "container" => [
-                    "id" => $this->getId()
-                ]
-            ];
-            throw new OutOfMemoryException(
-                "Component out of memory (exceeded {$this->getImage()->getSourceComponent()->getMemory()})",
-                null,
-                $data
-            );
-        }
+        $inspect = $this->inspectContainer($containerId);
+        $this->checkOOM($inspect);
 
         // killed containers
         if ($process->getExitCode() == 137) {
@@ -419,14 +396,41 @@ class Container
 
     /**
      * @param $containerId
-     * @return mixed
+     * @return array
      */
     public function inspectContainer($containerId)
     {
-        $process = new Process($this->getInspectCommand($containerId));
-        $process->setTimeout($this->dockerCliTimeout);
-        $process->mustRun();
-        $inspect = json_decode($process->getOutput(), true);
-        return array_pop($inspect);
+        try {
+            $process = new Process($this->getInspectCommand($containerId));
+            $process->setTimeout($this->dockerCliTimeout);
+            $process->mustRun();
+            $inspect = json_decode($process->getOutput(), true);
+            $inspect = array_pop($inspect);
+        } catch (ProcessFailedException $e) {
+            $this->logger->notice(
+                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
+                $e->getMessage()
+            );
+            $inspect = [];
+        }
+        return $inspect;
+    }
+
+    private function checkOOM(array $inspect)
+    {
+        if (isset($inspect["State"]) &&
+            isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true
+        ) {
+            $data = [
+                "container" => [
+                    "id" => $this->getId()
+                ]
+            ];
+            throw new OutOfMemoryException(
+                "Component out of memory (exceeded {$this->getImage()->getSourceComponent()->getMemory()})",
+                null,
+                $data
+            );
+        }
     }
 }
