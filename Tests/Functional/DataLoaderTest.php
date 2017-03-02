@@ -143,6 +143,59 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testDefaultSystemMetadata()
+    {
+        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
+            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
+        }
+        $metadataApi = new Metadata($this->client);
+
+        $log = new Logger('null');
+        $log->pushHandler(new NullHandler());
+        $temp = new Temp();
+        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data->createDataDir();
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+
+        $dataLoader = new DataLoader(
+            $this->client,
+            $log,
+            $data->getDataDir(),
+            [],
+            $this->defaultBucketCommponent,
+            "whatever"
+        );
+        $dataLoader->storeOutput();
+
+        $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
+        $this->assertCount(2,$bucketMetadata);
+        foreach ($bucketMetadata as $bmd) {
+            $this->assertEquals("docker-runner", $bmd['provider']);
+            if ($bmd['key'] === "KBC.createdBy.component.id") {
+                $this->assertEquals("docker-demo", $bmd['value']);
+            } else {
+                $this->assertEquals("KBC.createdBy.configuration.id", $bmd['key']);
+                $this->assertEquals("whatever", $bmd['value']);
+            }
+        }
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $this->assertCount(2,$tableMetadata);
+        foreach ($bucketMetadata as $bmd) {
+            $this->assertEquals("docker-runner", $bmd['provider']);
+            if ($bmd['key'] === "KBC.createdBy.component.id") {
+                $this->assertEquals("docker-demo", $bmd['value']);
+            } else {
+                $this->assertEquals("KBC.createdBy.configuration.id", $bmd['key']);
+                $this->assertEquals("whatever", $bmd['value']);
+            }
+        }
+    }
+
     public function testExecutorManifestMetadata()
     {
         if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
