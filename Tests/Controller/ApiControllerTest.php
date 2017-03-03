@@ -75,7 +75,7 @@ class ApiControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123"]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         return $storageServiceStub;
     }
@@ -397,7 +397,7 @@ class ApiControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->once())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123"]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         $cryptoWrapper = $container->get("syrup.encryption.component_project_wrapper");
         $cryptoWrapper->setComponentId('docker-dummy-test');

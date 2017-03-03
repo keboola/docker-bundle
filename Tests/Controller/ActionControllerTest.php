@@ -84,7 +84,7 @@ class ActionControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123"]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         return $storageServiceStub;
     }
@@ -165,7 +165,7 @@ class ActionControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123"]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
         $storageClientStub->expects($this->any())
             ->method("getRunId")
             ->will($this->returnValue(uniqid()));
