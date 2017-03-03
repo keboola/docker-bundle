@@ -139,7 +139,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($file3["isPublic"]);
     }
 
-
     public function testWriteFilesOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
@@ -173,9 +172,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(array("docker-bundle-test"), $file1["tags"]);
     }
 
-
-    /**
-     */
     public function testWriteFilesOutputMappingAndManifest()
     {
         $root = $this->tmp->getTmpFolder();
@@ -395,6 +391,29 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         );
         file_put_contents(
             $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.manifest",
+            "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\",\"Name\"]}"
+        );
+
+        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+
+        $writer->uploadTables($root . "/upload");
+
+        $tables = $this->client->listTables("out.c-docker-test");
+        $this->assertCount(1, $tables);
+        $this->assertEquals('out.c-docker-test.table3', $tables[0]["id"]);
+        $this->assertEquals(array("Id", "Name"), $tables[0]["primaryKey"]);
+    }
+
+    public function testWriteTableZipManifest()
+    {
+        $root = $this->tmp->getTmpFolder();
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv",
+            "\"Id\",\"Name\"\n\"test\",\"test\"\n"
+        );
+        exec('gzip ' . $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv");
+        file_put_contents(
+            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-test.table3.csv.gz.manifest",
             "{\"destination\": \"out.c-docker-test.table3\",\"primary_key\": [\"Id\",\"Name\"]}"
         );
 
