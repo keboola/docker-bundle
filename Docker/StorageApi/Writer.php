@@ -450,12 +450,16 @@ class Writer
                 $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]}.");
                 $failed = false;
                 // modify primary key
-                try {
-                    $this->client->removeTablePrimaryKey($tableInfo["id"]);
-                } catch (\Exception $e) {
-                    // warn and go on
-                    $this->getLogger()->warn("Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage());
-                    $failed = true;
+                if (count($tableInfo["primaryKey"]) > 0) {
+                    try {
+                        $this->client->removeTablePrimaryKey($tableInfo["id"]);
+                    } catch (\Exception $e) {
+                        // warn and go on
+                        $this->getLogger()->warn(
+                            "Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                        );
+                        $failed = true;
+                    }
                 }
                 if (!$failed) {
                     try {
@@ -467,7 +471,9 @@ class Writer
                         $this->getLogger()->warn(
                             "Error changing primary key of table {$tableInfo["id"]}:" . $e->getMessage()
                         );
-                        $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
+                        if (count($tableInfo["primaryKey"]) > 0) {
+                            $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
+                        }
                     }
                 }
             }
