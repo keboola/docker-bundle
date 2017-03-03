@@ -286,4 +286,28 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $container = $this->getContainer($imageConfiguration, $dataDir, []);
         $container->run();
     }
+
+    public function testOutOfMemoryCrippledComponent()
+    {
+        $this->expectException(\Keboola\DockerBundle\Exception\OutOfMemoryException::class);
+        $this->expectExceptionMessage('Component out of memory');
+
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration["data"]["memory"] = "32m";
+        $imageConfiguration["data"]["definition"]["build_options"]["entry_point"] =
+            "php /data/test.php || true";
+
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+            $array = [];
+            for($i = 0; $i < 1000000; $i++) {
+                $array[] = "0123456789";
+            }
+            print "finished";'
+        );
+        $container = $this->getContainer($imageConfiguration, $dataDir, []);
+        $container->run();
+    }
 }
