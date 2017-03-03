@@ -46,12 +46,27 @@ class DataLoader
      * @var string
      */
     private $format;
+    /**
+     * @var array
+     */
+    protected $features;
 
     /**
      * @var array
      */
     private $stagingStorage;
 
+    /**
+     * DataLoader constructor.
+     *
+     * @param Client $storageClient
+     * @param Logger $logger
+     * @param $dataDirectory
+     * @param array $storageConfig
+     * @param $defaultBucketName
+     * @param $format
+     * @param array $stagingStorage
+     */
     public function __construct(
         Client $storageClient,
         Logger $logger,
@@ -70,6 +85,9 @@ class DataLoader
         $this->stagingStorage = $stagingStorage;
     }
 
+    /**
+     *
+     */
     public function loadInputData()
     {
         // download source files
@@ -111,6 +129,7 @@ class DataLoader
 
         $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->format);
+        $writer->setFeatures($this->features);
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
@@ -148,7 +167,6 @@ class DataLoader
             $writer->tagFiles($this->storageConfig["input"]["files"]);
         }
     }
-
 
     /**
      * Archive data directory and save it to Storage, do not actually run the container.
@@ -198,5 +216,16 @@ class DataLoader
                 ]
             ]
         );
+    }
+
+    /**
+     * @param array $features
+     * @return $this
+     */
+    public function setFeatures($features)
+    {
+        $this->features = $features;
+
+        return $this;
     }
 }

@@ -93,6 +93,10 @@ class Runner
      * @var UsageFile
      */
     private $usageFile;
+    /**
+     * @var array
+     */
+    protected $features;
 
     /**
      * Runner constructor.
@@ -133,6 +137,12 @@ class Runner
         $this->maxLogPort = $maxLogPort;
     }
 
+    /**
+     * @param Image $image
+     * @param $containerId
+     * @param RunCommandOptions $runCommandOptions
+     * @return Container
+     */
     private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions)
     {
         return new Container(
@@ -148,6 +158,12 @@ class Runner
         );
     }
 
+    /**
+     * @param $componentId
+     * @param $configurationId
+     * @return bool
+     * @throws ClientException
+     */
     private function shouldStoreState($componentId, $configurationId)
     {
         $storeState = false;
@@ -238,6 +254,7 @@ class Runner
             $component->getConfigurationFormat(),
             $component->getStagingStorage()
         );
+        $this->dataLoader->setFeatures($this->features);
         $this->imageCreator = new ImageCreator(
             $this->encryptor,
             $this->loggerService->getLog(),
@@ -268,6 +285,12 @@ class Runner
         return $componentOutput;
     }
 
+    /**
+     * @param $jobId
+     * @param $configId
+     * @param Component $component
+     * @return string
+     */
     public function runComponent($jobId, $configId, Component $component)
     {
         // initialize
@@ -288,6 +311,14 @@ class Runner
         return $componentOutput;
     }
 
+    /**
+     * @param $jobId
+     * @param $configData
+     * @param $mode
+     * @param $configId
+     * @param Component $component
+     * @return string
+     */
     public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component)
     {
         // initialize
@@ -308,6 +339,12 @@ class Runner
         return $componentOutput;
     }
 
+    /**
+     * @param $jobId
+     * @param $configId
+     * @param Component $component
+     * @return string
+     */
     private function runImages($jobId, $configId, Component $component)
     {
         $componentOutput = '';
@@ -361,5 +398,16 @@ class Runner
             }
         }
         return $componentOutput;
+    }
+
+    /**
+     * @param array $features
+     * @return $this
+     */
+    public function setFeatures($features)
+    {
+        $this->features = $features;
+
+        return $this;
     }
 }
