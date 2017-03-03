@@ -96,7 +96,7 @@ class Runner
     /**
      * @var array
      */
-    protected $features;
+    protected $features = [];
 
     /**
      * Runner constructor.

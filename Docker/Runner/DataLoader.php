@@ -49,7 +49,7 @@ class DataLoader
     /**
      * @var array
      */
-    protected $features;
+    protected $features = [];
 
     /**
      * @var array
