@@ -420,9 +420,7 @@ class Container
      */
     private function checkOOM(array $inspect)
     {
-        if (isset($inspect["State"]) &&
-            isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true
-        ) {
+        if (isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
             $data = [
                 "container" => [
                     "id" => $this->getId()
