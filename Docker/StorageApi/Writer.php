@@ -447,7 +447,7 @@ class Writer
             }
 
             if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
-                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]}.");
+                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;
                 // modify primary key
                 if (count($tableInfo["primaryKey"]) > 0) {

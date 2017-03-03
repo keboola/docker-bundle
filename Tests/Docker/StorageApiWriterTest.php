@@ -946,7 +946,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             ]
         );
         $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
-        $this->assertTrue($handler->hasWarningThatContains("Modifying primary key of table out.c-docker-test.table9."));
+        $this->assertTrue($handler->hasWarningThatContains("Modifying primary key of table out.c-docker-test.table9 to [Id, Name]."));
         $tableInfo = $this->client->getTable("out.c-docker-test.table9");
         $this->assertEquals(["Id", "Name"], $tableInfo["primaryKey"]);
     }
