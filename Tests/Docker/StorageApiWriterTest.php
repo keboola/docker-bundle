@@ -81,9 +81,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->clearFileUploads();
     }
 
-    /**
-     * @throws \Keboola\StorageApi\ClientException
-     */
     public function testWriteFiles()
     {
         $root = $this->tmp->getTmpFolder();
@@ -143,9 +140,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
     }
 
 
-    /**
-     * @throws \Keboola\StorageApi\ClientException
-     */
     public function testWriteFilesOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
