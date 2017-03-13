@@ -203,7 +203,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(4, $tableMetadata);
         foreach ($tableMetadata as $tmd) {
             $this->assertEquals("system", $tmd['provider']);
-            if (stristr($tmd['key'],"updated")) {
+            if (stristr($tmd['key'], "updated")) {
                 if ($tmd['key'] === "KBC.lastUpdatedBy.component.id") {
                     $this->assertEquals("docker-demo", $tmd['value']);
                 } else {
