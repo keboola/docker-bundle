@@ -383,7 +383,11 @@ class Writer
                 if ($config["primary_key"] == [""]) {
                     $config["primary_key"] = [];
                 }
-                $config['provider'] = $configuration['provider'];
+                if (isset($configuration['provider'])) {
+                    $config['provider'] = $configuration['provider'];
+                } else {
+                    $config['provider'] = ["componentId" => "unknown", "configurationId" => ""];
+                }
 
                 $this->uploadTable($file->getPathname(), $config);
             } catch (ClientException $e) {
@@ -567,7 +571,7 @@ class Writer
                     'value' => $config['provider']['configurationId']
                 ]
             );
-            $this->writeMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $systemUpdateMeta, "table");
+            $this->metadataClient->postTableMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $systemUpdateMeta);
         } else {
             $options = array(
                 "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
@@ -593,7 +597,6 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
-
             $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_METADATA_PROVIDER, $systemCreateMeta);
         }
     }
