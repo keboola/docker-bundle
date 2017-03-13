@@ -28,7 +28,7 @@ use Symfony\Component\Intl\Exception\MethodArgumentValueNotImplementedException;
 class Writer
 {
 
-    const SYSTEM_COMPONENT_NAME = 'docker-runner';
+    const SYSTEM_METADATA_PROVIDER = 'system';
 
     /**
      * @var Client
@@ -396,10 +396,10 @@ class Writer
 
             // After the file has been written, we can write metadata
             if (isset($config['metadata']) && !empty($config['metadata'])) {
-                $this->metadataClient->postTableMetadata($config["destination"], $configuration["provider"], $config["metadata"]);
+                $this->metadataClient->postTableMetadata($config["destination"], $configuration["provider"]['componentId'], $config["metadata"]);
             }
             if (isset($config['columnMetadata']) && !empty($config['columnMetadata'])) {
-                $this->writeColumnMetadata($config["destination"], $configuration["provider"], $config["columnMetadata"]);
+                $this->writeColumnMetadata($config["destination"], $configuration["provider"]['componentId'], $config["columnMetadata"]);
             }
         }
 
@@ -476,7 +476,7 @@ class Writer
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
             $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
-            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta, "bucket");
+            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_METADATA_PROVIDER, $systemCreateMeta, "bucket");
         }
 
         if ($this->client->tableExists($config["destination"])) {
@@ -567,7 +567,7 @@ class Writer
                     'value' => $config['provider']['configurationId']
                 ]
             );
-            $this->writeMetadata($config['destination'], 'docker-runner', $systemUpdateMeta, "table");
+            $this->writeMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $systemUpdateMeta, "table");
         } else {
             $options = array(
                 "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
@@ -594,7 +594,7 @@ class Writer
                 $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
 
-            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_COMPONENT_NAME, $systemCreateMeta);
+            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_METADATA_PROVIDER, $systemCreateMeta);
         }
     }
 
