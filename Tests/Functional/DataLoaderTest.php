@@ -194,6 +194,24 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                 $this->assertEquals("whatever", $bmd['value']);
             }
         }
+
+        // let's run the data loader again.
+        // This time the tables should receive "update" metadata
+        $dataLoader->storeOutput();
+
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $this->assertCount(4, $tableMetadata);
+        foreach ($tableMetadata as $tmd) {
+            $this->assertEquals("system", $tmd['provider']);
+            if (stristr($tmd['key'],"updated")) {
+                if ($tmd['key'] === "KBC.lastUpdatedBy.component.id") {
+                    $this->assertEquals("docker-demo", $tmd['value']);
+                } else {
+                    $this->assertEquals("KBC.lastUpdatedBy.configuration.id", $tmd['key']);
+                    $this->assertEquals("whatever", $tmd['value']);
+                }
+            }
+        }
     }
 
     public function testExecutorManifestMetadata()
