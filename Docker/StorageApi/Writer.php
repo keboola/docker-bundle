@@ -632,12 +632,19 @@ class Writer
      */
     public static function normalizePrimaryKey(array $pKey)
     {
-        return array_unique(array_filter($pKey, function ($col) {
-            if ($col != '') {
-                return true;
-            }
-            return false;
-        }));
+        return array_map(
+            function ($pKey) {
+                return trim($pKey);
+            },
+            array_unique(
+                array_filter($pKey, function ($col) {
+                    if ($col != '') {
+                        return true;
+                    }
+                    return false;
+                })
+            )
+        );
     }
 
     /**
