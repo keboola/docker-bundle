@@ -447,7 +447,7 @@ class Writer
             }
 
             if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
-                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} to [" . join(", ", $config["primary_key"]) . "].");
+                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;
                 // modify primary key
                 if (count($tableInfo["primaryKey"]) > 0) {
@@ -456,7 +456,7 @@ class Writer
                     } catch (\Exception $e) {
                         // warn and go on
                         $this->getLogger()->warn(
-                            "Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                            "Error deleting primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         $failed = true;
                     }
@@ -469,7 +469,7 @@ class Writer
                     } catch (\Exception $e) {
                         // warn and try to rollback to original state
                         $this->getLogger()->warn(
-                            "Error changing primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                            "Error changing primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         if (count($tableInfo["primaryKey"]) > 0) {
                             $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
