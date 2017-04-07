@@ -593,7 +593,7 @@ class Writer
      */
     public function tagFiles(array $configuration)
     {
-        $reader = new Reader($this->client);
+        $reader = new Reader($this->client, $this->logger);
         foreach ($configuration as $fileConfiguration) {
             if (!empty($fileConfiguration['processed_tags'])) {
                 $files = $reader->getFiles($fileConfiguration);
