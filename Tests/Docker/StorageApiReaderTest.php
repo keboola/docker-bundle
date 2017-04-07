@@ -13,7 +13,6 @@ use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Validator\Constraints\Null;
 
 class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 {
