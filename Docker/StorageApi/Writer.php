@@ -441,7 +441,7 @@ class Writer
             } catch (UserException $e) {
                 try {
                     $this->getLogger()->warn($e->getMessage());
-                } catch (\Exception $e) {
+                } catch (\Exception $eLog) {
                     // ignore
                 }
             }
