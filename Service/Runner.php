@@ -371,6 +371,11 @@ class Runner
             $containerIdParts[] = $priority;
             $containerIdParts[] = $image->getSourceComponent()->getSanitizedComponentId();
 
+            $containerNameParts[] = $image->getSourceComponent()->getSanitizedComponentId();
+            $containerNameParts[] = $jobId;
+            $containerNameParts[] = $this->storageClient->getRunId() ?: 'norunid';
+            $containerNameParts[] = $priority;
+
             $container = $this->createContainerFromImage(
                 $image,
                 join('-', $containerIdParts),
@@ -378,6 +383,7 @@ class Runner
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
+                        'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts)
                     ],
                     $environment->getEnvironmentVariables()
                 )
