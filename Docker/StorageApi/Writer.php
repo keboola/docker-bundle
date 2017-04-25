@@ -449,6 +449,37 @@ class Writer
                 }
             }
 
+            if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
+                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
+                $failed = false;
+                // modify primary key
+                if (count($tableInfo["primaryKey"]) > 0) {
+                    try {
+                        $this->client->removeTablePrimaryKey($tableInfo["id"]);
+                    } catch (\Exception $e) {
+                        // warn and go on
+                        $this->getLogger()->warn(
+                            "Error deleting primary key of table {$tableInfo["id"]}: " . $e->getMessage()
+                        );
+                        $failed = true;
+                    }
+                }
+                if (!$failed) {
+                    try {
+                        if (count($config["primary_key"])) {
+                            $this->client->createTablePrimaryKey($tableInfo["id"], $config["primary_key"]);
+                        }
+                    } catch (\Exception $e) {
+                        // warn and try to rollback to original state
+                        $this->getLogger()->warn(
+                            "Error changing primary key of table {$tableInfo["id"]}: " . $e->getMessage()
+                        );
+                        if (count($tableInfo["primaryKey"]) > 0) {
+                            $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
+                        }
+                    }
+                }
+            }
             if (!empty($config["delete_where_column"])) {
                 // Index columns
                 $tableInfo = $this->getClient()->getTable($config["destination"]);
@@ -617,5 +648,27 @@ class Writer
                 })
             )
         );
+    }
+
+    /**
+     * @param array $features
+     * @param array $tableInfo
+     * @param array $config
+     * @return bool
+     */
+    public static function modifyPrimaryKeyDecider(array $features, array $tableInfo, array $config)
+    {
+        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)
+            && !in_array("docker-runner-output-mapping-strict-pk", $features)) {
+            return false;
+        }
+        $configPK = self::normalizePrimaryKey($config["primary_key"]);
+        if (count($tableInfo["primaryKey"]) != count($configPK)) {
+            return true;
+        }
+        if (count(array_intersect($tableInfo["primaryKey"], $configPK)) != count($tableInfo["primaryKey"])) {
+            return true;
+        }
+        return false;
     }
 }
