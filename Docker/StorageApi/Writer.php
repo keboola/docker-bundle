@@ -439,6 +439,9 @@ class Writer
             try {
                 $this->validateAgainstTable($tableInfo, $config);
             } catch (UserException $e) {
+                if ($this->hasFeature('docker-runner-output-mapping-strict-pk')) {
+                    throw $e;
+                }
                 try {
                     $this->getLogger()->warn($e->getMessage());
                 } catch (\Exception $eLog) {
@@ -655,7 +658,8 @@ class Writer
      */
     public static function modifyPrimaryKeyDecider(array $features, array $tableInfo, array $config)
     {
-        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)) {
+        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)
+            && !in_array("docker-runner-output-mapping-strict-pk", $features)) {
             return false;
         }
         $configPK = self::normalizePrimaryKey($config["primary_key"]);
