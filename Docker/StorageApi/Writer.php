@@ -449,7 +449,7 @@ class Writer
                 }
             }
 
-            if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
+            if (self::modifyPrimaryKeyDecider($tableInfo, $config)) {
                 $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;
                 // modify primary key
@@ -651,17 +651,12 @@ class Writer
     }
 
     /**
-     * @param array $features
      * @param array $tableInfo
      * @param array $config
      * @return bool
      */
-    public static function modifyPrimaryKeyDecider(array $features, array $tableInfo, array $config)
+    public static function modifyPrimaryKeyDecider(array $tableInfo, array $config)
     {
-        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)
-            && !in_array("docker-runner-output-mapping-strict-pk", $features)) {
-            return false;
-        }
         $configPK = self::normalizePrimaryKey($config["primary_key"]);
         if (count($tableInfo["primaryKey"]) != count($configPK)) {
             return true;
