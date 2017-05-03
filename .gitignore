@@ -9,4 +9,3 @@ config.php
 /docker-tests/db/data
 /parameters.yml
 /error.log
-/parameters_shared.yml
