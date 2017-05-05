@@ -64,8 +64,12 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
 
     public function tearDown()
     {
-        if ($this->client->bucketExists('in.c-docker-test')) {
+        try {
             $this->client->dropBucket('in.c-docker-test', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
         }
         // Delete local files
         $this->tmp = null;

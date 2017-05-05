@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -18,6 +19,20 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
      * @var Client
      */
     protected $client;
+
+    /**
+     * Transform metadata into a key-value array
+     * @param $metadata
+     * @return array
+     */
+    private function getMetadataValues($metadata)
+    {
+        $result = [];
+        foreach ($metadata as $item) {
+            $result[$item['provider']][$item['key']] = $item['value'];
+        }
+        return $result;
+    }
 
     private function getDefaultBucketComponent()
     {
@@ -43,13 +58,30 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
+
+        try {
+            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $this->client->createBucket('in.c-docker-demo-whatever', "in");
+    }
+
+    public function tearDown()
+    {
+        try {
+            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
     }
 
     public function testDefaultSystemMetadata()
     {
-        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
-            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
-        }
         $metadataApi = new Metadata($this->client);
 
         $log = new Logger('null');
@@ -75,53 +107,35 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         $dataLoader->storeOutput();
 
         $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
-        $this->assertCount(2, $bucketMetadata);
-        foreach ($bucketMetadata as $bmd) {
-            $this->assertEquals("system", $bmd['provider']);
-            if ($bmd['key'] === "KBC.createdBy.component.id") {
-                $this->assertEquals("docker-demo", $bmd['value']);
-            } else {
-                $this->assertEquals("KBC.createdBy.configuration.id", $bmd['key']);
-                $this->assertEquals("whatever", $bmd['value']);
-            }
-        }
+        $expectedBucketMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'whatever'
+            ]
+        ];
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
-        $this->assertCount(2, $tableMetadata);
-        foreach ($bucketMetadata as $bmd) {
-            $this->assertEquals("system", $bmd['provider']);
-            if ($bmd['key'] === "KBC.createdBy.component.id") {
-                $this->assertEquals("docker-demo", $bmd['value']);
-            } else {
-                $this->assertEquals("KBC.createdBy.configuration.id", $bmd['key']);
-                $this->assertEquals("whatever", $bmd['value']);
-            }
-        }
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'whatever'
+            ]
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         // let's run the data loader again.
         // This time the tables should receive "update" metadata
         $dataLoader->storeOutput();
 
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
-        $this->assertCount(4, $tableMetadata);
-        foreach ($tableMetadata as $tmd) {
-            $this->assertEquals("system", $tmd['provider']);
-            if (stristr($tmd['key'], "updated")) {
-                if ($tmd['key'] === "KBC.lastUpdatedBy.component.id") {
-                    $this->assertEquals("docker-demo", $tmd['value']);
-                } else {
-                    $this->assertEquals("KBC.lastUpdatedBy.configuration.id", $tmd['key']);
-                    $this->assertEquals("whatever", $tmd['value']);
-                }
-            }
-        }
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'whatever';
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
     public function testExecutorManifestMetadata()
     {
-        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
-            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
-        }
-
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         $temp = new Temp();
@@ -196,46 +210,26 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
         $metadataApi = new Metadata($this->client);
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
-
-        $this->assertCount(4, $tableMetadata); // 2 system provided + 2 manifest provided
-        foreach ($tableMetadata as $tmd) {
-            $this->assertArrayHasKey("key", $tmd);
-            $this->assertArrayHasKey("value", $tmd);
-            if ($tmd['provider'] === "system") {
-                if ($tmd['key'] === "KBC.createdBy.component.id") {
-                    $this->assertEquals("docker-demo", $tmd["value"]);
-                } else {
-                    $this->assertEquals("KBC.createdBy.configuration.id", $tmd["key"]);
-                    $this->assertEquals("whatever", $tmd["value"]);
-                }
-            } else {
-                $this->assertEquals("docker-demo", $tmd["provider"]);
-                if ($tmd['key'] === "table.key.one") {
-                    $this->assertEquals("table value one", $tmd["value"]);
-                } else {
-                    $this->assertEquals("table value two", $tmd["value"]);
-                }
-            }
-        }
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.configuration.id' => 'whatever',
+                'KBC.createdBy.component.id' => 'docker-demo',
+            ],
+            'docker-demo' => [
+                'table.key.one' => 'table value one',
+                'table.key.two' => 'table value two',
+            ],
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
+        $expectedColumnMetadata = [
+            'docker-demo' => [
+                'column.key.one' => 'column value one id',
+                'column.key.two' => 'column value two id',
+            ],
+        ];
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
 
-        $this->assertCount(2, $idColMetadata);
-        foreach ($idColMetadata as $tmd) {
-            $this->assertArrayHasKey("key", $tmd);
-            $this->assertArrayHasKey("value", $tmd);
-            $this->assertEquals("docker-demo", $tmd["provider"]);
-            if ($tmd['key'] === "column.key.one") {
-                $this->assertEquals("column value one id", $tmd["value"]);
-            } else {
-                $this->assertEquals("column.key.two", $tmd["key"]);
-                $this->assertEquals("column value two id", $tmd["value"]);
-            }
-        }
-
-        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
-            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
-        }
     }
-
 }
