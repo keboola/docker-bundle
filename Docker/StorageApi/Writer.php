@@ -380,9 +380,6 @@ class Writer
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
                 $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
-                if ($config["primary_key"] == [""]) {
-                    $config["primary_key"] = [];
-                }
                 if (isset($configuration['provider'])) {
                     $config['provider'] = $configuration['provider'];
                 } else {
