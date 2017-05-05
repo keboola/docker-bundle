@@ -12,6 +12,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -287,6 +288,9 @@ class Writer
      */
     public function uploadTables($source, array $configuration, array $systemMetadata)
     {
+        if (empty($systemMetadata['componentId'])) {
+            throw new ApplicationException("Component Id must be set");
+        }
         $manifestNames = $this->getManifestFiles($source);
 
         $finder = new Finder();
@@ -466,12 +470,12 @@ class Writer
     private function getUpdatedMetadata(array $systemMetadata)
     {
         $metadata[] = [
-            'key' => 'KBC.createdBy.component.id',
+            'key' => 'KBC.lastUpdatedBy.component.id',
             'value' => $systemMetadata['componentId']
         ];
         if (!empty($systemMetadata['configurationId'])) {
             $metadata[] = [
-                'key' => 'KBC.createdBy.configuration.id',
+                'key' => 'KBC.lastUpdatedBy.configuration.id',
                 'value' => $systemMetadata['configurationId']
             ];
         }
