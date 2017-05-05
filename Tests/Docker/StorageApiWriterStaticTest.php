@@ -20,9 +20,9 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
     /**
      * @dataProvider modifyPrimaryKeyDeciderOptionsProvider
      */
-    public function testModifyPrimaryKeyDecider(array $features, array $tableInfo, array $config, $result)
+    public function testModifyPrimaryKeyDecider(array $tableInfo, array $config, $result)
     {
-        $this->assertEquals($result, Writer::modifyPrimaryKeyDecider($features, $tableInfo, $config));
+        $this->assertEquals($result, Writer::modifyPrimaryKeyDecider($tableInfo, $config));
     }
 
     /**
@@ -41,7 +41,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
     {
         return [
             [
-                [],
                 [
                     "primaryKey" => []
                 ],
@@ -51,17 +50,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
                 false
             ],
             [
-                [],
-                [
-                    "primaryKey" => ["Id"]
-                ],
-                [
-                    "primary_key" => []
-                ],
-                false
-            ],
-            [
-                ["docker-runner-output-mapping-adaptive-pk"],
                 [
                     "primaryKey" => []
                 ],
@@ -71,7 +59,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
                 true
             ],
             [
-                ["docker-runner-output-mapping-adaptive-pk"],
                 [
                     "primaryKey" => ["Id"]
                 ],
@@ -81,7 +68,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
                 true
             ],
             [
-                ["docker-runner-output-mapping-adaptive-pk"],
                 [
                     "primaryKey" => ["Id"]
                 ],
@@ -91,7 +77,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
                 false
             ],
             [
-                ["docker-runner-output-mapping-adaptive-pk"],
                 [
                     "primaryKey" => ["Id"]
                 ],
@@ -101,7 +86,6 @@ class StorageApiWriterStaticTest extends \PHPUnit_Framework_TestCase
                 true
             ],
             [
-                ["docker-runner-output-mapping-adaptive-pk"],
                 [
                     "primaryKey" => ["Id"]
                 ],

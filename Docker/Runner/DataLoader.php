@@ -44,6 +44,7 @@ class DataLoader
     private $defaultBucketName;
 
     private $format;
+
     /**
      * @var array
      */

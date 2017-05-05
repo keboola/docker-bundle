@@ -10,6 +10,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -93,7 +94,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $id1 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
         $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
 
-        $reader = new Reader($this->client);
+        $reader = new Reader($this->client, new NullLogger());
         $configuration = [["tags" => ["docker-bundle-test"]]];
         $reader->downloadFiles($configuration, $root . "/download");
 
@@ -126,7 +127,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         $root = $this->tmpDir;
 
-        $reader = new Reader($this->client);
+        $reader = new Reader($this->client, new NullLogger());
         $configuration = [
             [
                 "source" => "in.c-docker-test.test",
@@ -162,7 +163,7 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
 
         $root = $this->tmpDir;
 
-        $reader = new Reader($this->client);
+        $reader = new Reader($this->client, new NullLogger());
         $configuration = [
             [
                 "source" => "in.c-docker-test-redshift.test",
