@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -22,6 +23,20 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
      */
     private $tmp;
 
+    /**
+     * Transform metadata into a key-value array
+     * @param $metadata
+     * @return array
+     */
+    private function getMetadataValues($metadata)
+    {
+        $result = [];
+        foreach ($metadata as $item) {
+            $result[$item['provider']][$item['key']] = $item['value'];
+        }
+        return $result;
+    }
+
     public function setUp()
     {
         // Create folders
@@ -36,6 +51,15 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
+
+        try {
+            $this->client->dropBucket('in.c-docker-test', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $this->client->createBucket('docker-test', "in");
     }
 
     public function tearDown()
@@ -49,115 +73,85 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
 
     public function testMetadataWritingTest()
     {
-        if (!$this->client->bucketExists('in.c-docker-test.table1')) {
-            $this->client->createBucket('docker-test', "in");
-        }
-
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
 
         $config = [
-                    "mapping" => [
+            "mapping" => [
+                [
+                    "source" => "table1.csv",
+                    "destination" => "in.c-docker-test.table1",
+                    "metadata" => [
                         [
-                            "source" => "table1.csv",
-                            "destination" => "in.c-docker-test.table1",
-                            "metadata" => [
-                                [
-                                    "key" => "table.key.one",
-                                    "value" => "table value one"
-                                ],
-                                [
-                                    "key" => "table.key.two",
-                                    "value" => "table value two"
-                                ]
-                            ],
-                            "columnMetadata" => [
-                                "Id" => [
-                                    [
-                                        "key" => "column.key.one",
-                                        "value" => "column value one id"
-                                    ],
-                                    [
-                                        "key" => "column.key.two",
-                                        "value" => "column value two id"
-                                    ]
-                                ],
-                                "Name" => [
-                                    [
-                                        "key" => "column.key.one",
-                                        "value" => "column value one text"
-                                    ],
-                                    [
-                                        "key" => "column.key.two",
-                                        "value" => "column value two text"
-                                    ]
-                                ]
-                            ]
+                            "key" => "table.key.one",
+                            "value" => "table value one"
+                        ],
+                        [
+                            "key" => "table.key.two",
+                            "value" => "table value two"
                         ]
                     ],
-                    // This gets added by the DataLoader
-                    "provider" => [
-                        "componentId" => "testComponent",
-                        "configurationId" => "metadata-write-test"
+                    "columnMetadata" => [
+                        "Id" => [
+                            [
+                                "key" => "column.key.one",
+                                "value" => "column value one id"
+                            ],
+                            [
+                                "key" => "column.key.two",
+                                "value" => "column value two id"
+                            ]
+                        ],
+                        "Name" => [
+                            [
+                                "key" => "column.key.one",
+                                "value" => "column value one text"
+                            ],
+                            [
+                                "key" => "column.key.two",
+                                "value" => "column value two text"
+                            ]
+                        ]
                     ]
-                ];
+                ]
+            ],
+        ];
+        $systemMetadata = [
+            "componentId" => "testComponent",
+            "configurationId" => "metadata-write-test"
+        ];
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
-
-        $writer->uploadTables($root . "/upload", $config, []);
-
+        $writer->uploadTables($root . "/upload", $config, $systemMetadata);
         $metadataApi = new Metadata($this->client);
 
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-test.table1');
-        $this->assertCount(4, $tableMetadata); // 2 system provided + 2 manifest provided
-        foreach ($tableMetadata as $tmd) {
-            $this->assertArrayHasKey("key", $tmd);
-            $this->assertArrayHasKey("value", $tmd);
-            if ($tmd['provider'] === "system") {
-                if ($tmd['key'] === "KBC.createdBy.component.id") {
-                    $this->assertEquals("testComponent", $tmd["value"]);
-                } else {
-                    $this->assertEquals("KBC.createdBy.configuration.id", $tmd["key"]);
-                    $this->assertEquals("metadata-write-test", $tmd["value"]);
-                }
-            } else {
-                $this->assertEquals("testComponent", $tmd["provider"]);
-                if ($tmd['key'] === "table.key.one") {
-                    $this->assertEquals("table value one", $tmd["value"]);
-                } else {
-                    $this->assertEquals("table value two", $tmd["value"]);
-                }
-            }
-        }
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'testComponent',
+                'KBC.createdBy.configuration.id' => 'metadata-write-test',
+            ],
+            'testComponent' => [
+                'table.key.one' => 'table value one',
+                'table.key.two' => 'table value two'
+            ]
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-test.table1.Id');
-        $this->assertCount(2, $idColMetadata);
-        foreach ($idColMetadata as $tmd) {
-            $this->assertArrayHasKey("key", $tmd);
-            $this->assertArrayHasKey("value", $tmd);
-            $this->assertEquals("testComponent", $tmd["provider"]);
-            if ($tmd['key'] === "column.key.one") {
-                $this->assertEquals("column value one id", $tmd["value"]);
-            } else {
-                $this->assertEquals("column.key.two", $tmd["key"]);
-                $this->assertEquals("column value two id", $tmd["value"]);
-            }
-        }
+        $expectedColumnMetadata = [
+            'testComponent' => [
+                'column.key.one' => 'column value one id',
+                'column.key.two' => 'column value two id',
+            ]
+        ];
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
 
         // check metadata update
-        $writer->uploadTables($root . "/upload", $config, []);
+        $writer->uploadTables($root . "/upload", $config, $systemMetadata);
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-test.table1');
-        $this->assertCount(6, $tableMetadata);
-        foreach ($tableMetadata as $tmd) {
-            if (stristr($tmd['key'], "updated")) {
-                $this->assertEquals("system", $tmd['provider']);
-                if ($tmd['key'] === "KBC.lastUpdatedBy.component.id") {
-                    $this->assertEquals("testComponent", $tmd['value']);
-                } else {
-                    $this->assertEquals("KBC.lastUpdatedBy.configuration.id", $tmd['key']);
-                    $this->assertEquals("metadata-write-test", $tmd['value']);
-                }
-            }
-        }
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'metadata-write-test';
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'testComponent';
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 }
