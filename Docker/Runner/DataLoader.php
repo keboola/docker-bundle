@@ -96,7 +96,7 @@ class DataLoader
     public function loadInputData()
     {
         // download source files
-        $reader = new Reader($this->storageClient);
+        $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
 
         try {
