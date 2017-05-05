@@ -446,16 +446,20 @@ class Writer
      */
     private function getCreatedMetadata(array $systemMetadata)
     {
-        return [
-            [
-            'key' => 'KBC.createdBy.component.id',
-            'value' => $systemMetadata['componentId']
-            ],
-            [
+        $metadata = [];
+        if (!empty($systemMetadata['componentId'])) {
+            $metadata[] = [
+                'key' => 'KBC.createdBy.component.id',
+                'value' => $systemMetadata['componentId']
+            ];
+        }
+        if (!empty($systemMetadata['configurationId'])) {
+            $metadata[] = [
                 'key' => 'KBC.createdBy.configuration.id',
                 'value' => $systemMetadata['configurationId']
-            ]
-        ];
+            ];
+        }
+        return $metadata;
     }
 
     /**
@@ -464,16 +468,20 @@ class Writer
      */
     private function getUpdatedMetadata(array $systemMetadata)
     {
-        return [
-            [
+        $metadata = [];
+        if (!empty($systemMetadata['componentId'])) {
+            $metadata[] = [
                 'key' => 'KBC.createdBy.component.id',
                 'value' => $systemMetadata['componentId']
-            ],
-            [
+            ];
+        }
+        if (!empty($systemMetadata['configurationId'])) {
+            $metadata[] = [
                 'key' => 'KBC.createdBy.configuration.id',
                 'value' => $systemMetadata['configurationId']
-            ]
-        ];
+            ];
+        }
+        return $metadata;
     }
 
     /**

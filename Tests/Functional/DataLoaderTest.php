@@ -21,56 +21,9 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
      */
     protected $client;
 
-    /**
-     * @var Component
-     */
-    protected $defaultBucketCommponent;
-
-    /**
-     * @var Component
-     */
-    protected $noDefaultBucketComponent;
-
-    /**
-     * @var Component
-     */
-    protected $s3StagingComponent;
-
-    public function setUp()
+    private function getS3StagingComponent()
     {
-        parent::setUp();
-
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-
-        // use the docker-demo component for testing
-        $this->defaultBucketCommponent = new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
-                ],
-                "default_bucket" => true
-            ]
-        ]);
-
-        $this->noDefaultBucketComponent = new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
-                ],
-
-            ]
-        ]);
-
-        $this->s3StagingComponent = new Component([
+        return new Component([
             'id' => 'docker-demo',
             'data' => [
                 "definition" => [
@@ -82,6 +35,47 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                     "input" => "s3"
                 ]
             ]
+        ]);
+    }
+
+    private function getNoDefaultBucketComponent()
+    {
+        return new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo",
+                    "tag" => "master"
+                ],
+
+            ]
+        ]);
+    }
+
+    private function getDefaultBucketComponent()
+    {
+        // use the docker-demo component for testing
+        return new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo",
+                    "tag" => "master"
+                ],
+                "default_bucket" => true
+            ]
+        ]);
+    }
+
+    public function setUp()
+    {
+        parent::setUp();
+
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
         ]);
     }
 
@@ -102,13 +96,13 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        
+
         $dataLoader = new DataLoader(
             $this->client,
             $log,
             $data->getDataDir(),
             [],
-            $this->defaultBucketCommponent,
+            $this->getDefaultBucketComponent(),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -130,12 +124,12 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data = new DataDirectory($temp->getTmpFolder(), $log);
             $data->createDataDir();
 
-            $dataLoader = new DataLoader(
+            new DataLoader(
                 $this->client,
                 $log,
                 $data->getDataDir(),
                 [],
-                $this->defaultBucketCommponent
+                $this->getDefaultBucketComponent()
             );
             $this->fail("ConfigId is required for defaultBucket=true component data setting");
         } catch (UserException $e) {
@@ -167,7 +161,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $log,
             $data->getDataDir(),
             [],
-            $this->defaultBucketCommponent,
+            $this->getDefaultBucketComponent(),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -287,7 +281,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $log,
             $data->getDataDir(),
             $config,
-            $this->defaultBucketCommponent,
+            $this->getDefaultBucketComponent(),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -370,7 +364,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->noDefaultBucketComponent);
+        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->storeOutput();
             $this->fail("Invalid configuration must raise UserException.");
@@ -406,7 +400,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp();
         $data = new DataDirectory($temp->getTmpFolder(), $log);
         $data->createDataDir();
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->noDefaultBucketComponent);
+        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->loadInputData();
             $this->fail("Invalid configuration must raise UserException.");
@@ -451,7 +445,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp();
         $data = new DataDirectory($temp->getTmpFolder(), $log);
         $data->createDataDir();
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->noDefaultBucketComponent);
+        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->loadInputData();
             $this->fail("Invalid configuration must raise UserException.");
@@ -491,7 +485,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         );
         $this->client->createTable('in.c-docker-test', 'test', new CsvFile($filePath));
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->s3StagingComponent);
+        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getS3StagingComponent());
         $dataLoader->loadInputData();
 
         $manifest = json_decode(
