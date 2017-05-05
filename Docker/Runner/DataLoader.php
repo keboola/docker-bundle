@@ -147,10 +147,10 @@ class DataLoader
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
-        $uploadTablesOptions["provider"] = array(
+        $systemMetadata = [
             'componentId' => $this->component->getId(),
             'configurationId' => $this->configId
-        );
+        ];
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -158,7 +158,7 @@ class DataLoader
             $this->logger->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
-        $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions);
+        $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
         try {
             $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
         } catch (ManifestMismatchException $e) {

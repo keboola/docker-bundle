@@ -283,8 +283,9 @@ class Writer
     /**
      * @param string $source
      * @param array $configuration
+     * @param array $systemMetadata
      */
-    public function uploadTables($source, $configuration)
+    public function uploadTables($source, array $configuration, array $systemMetadata)
     {
         $manifestNames = $this->getManifestFiles($source);
 
@@ -378,13 +379,7 @@ class Writer
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
                 $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
-                if (isset($configuration['provider'])) {
-                    $config['provider'] = $configuration['provider'];
-                } else {
-                    $config['provider'] = ["componentId" => "unknown", "configurationId" => ""];
-                }
-
-                $this->uploadTable($file->getPathname(), $config);
+                $this->uploadTable($file->getPathname(), $config, $systemMetadata);
             } catch (ClientException $e) {
                 throw new UserException(
                     "Cannot upload file '{$file->getFilename()}' to table '{$config["destination"]}' in Storage API: "
@@ -446,11 +441,48 @@ class Writer
     }
 
     /**
-     * @param $source
+     * @param array $systemMetadata
+     * @return array
+     */
+    private function getCreatedMetadata(array $systemMetadata)
+    {
+        return [
+            [
+            'key' => 'KBC.createdBy.component.id',
+            'value' => $systemMetadata['componentId']
+            ],
+            [
+                'key' => 'KBC.createdBy.configuration.id',
+                'value' => $systemMetadata['configurationId']
+            ]
+        ];
+    }
+
+    /**
+     * @param array $systemMetadata
+     * @return array
+     */
+    private function getUpdatedMetadata(array $systemMetadata)
+    {
+        return [
+            [
+                'key' => 'KBC.createdBy.component.id',
+                'value' => $systemMetadata['componentId']
+            ],
+            [
+                'key' => 'KBC.createdBy.configuration.id',
+                'value' => $systemMetadata['configurationId']
+            ]
+        ];
+    }
+
+    /**
+     * @param string $source
      * @param array $config
+     * @param array $systemMetadata
      * @throws \Keboola\StorageApi\ClientException
      */
-    protected function uploadTable($source, $config = array())
+    protected function uploadTable($source, array $config, array $systemMetadata)
     {
         $tableIdParts = explode(".", $config["destination"]);
         $bucketId = $tableIdParts[0] . "." . $tableIdParts[1];
@@ -461,21 +493,10 @@ class Writer
             throw new UserException("Sliced file '" . basename($source) . "': columns specification missing.");
         }
 
-        $systemCreateMeta = array(
-            [
-                'key' => 'KBC.createdBy.component.id',
-                'value' => $config['provider']['componentId']
-            ],
-            [
-                'key' => 'KBC.createdBy.configuration.id',
-                'value' => $config['provider']['configurationId']
-            ]
-        );
-
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
-            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
-            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_METADATA_PROVIDER, $systemCreateMeta);
+            $this->client->createBucket($bucketName, $tableIdParts[0]);
+            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_METADATA_PROVIDER, $this->getCreatedMetadata($systemMetadata));
         }
 
         if ($this->client->tableExists($config["destination"])) {
@@ -559,17 +580,7 @@ class Writer
                 $this->client->writeTableAsync($config["destination"], $csvFile, $options);
             }
 
-            $systemUpdateMeta = array(
-                [
-                    'key' => 'KBC.lastUpdatedBy.component.id',
-                    'value' => $config['provider']['componentId']
-                ],
-                [
-                    'key' => 'KBC.lastUpdatedBy.configuration.id',
-                    'value' => $config['provider']['configurationId']
-                ]
-            );
-            $this->metadataClient->postTableMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $systemUpdateMeta);
+            $this->metadataClient->postTableMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $this->getUpdatedMetadata($systemMetadata));
         } else {
             $options = array(
                 "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
@@ -595,7 +606,7 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
-            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_METADATA_PROVIDER, $systemCreateMeta);
+            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_METADATA_PROVIDER, $this->getCreatedMetadata($systemMetadata));
         }
     }
 

@@ -104,7 +104,7 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
-        $writer->uploadTables($root . "/upload", $config);
+        $writer->uploadTables($root . "/upload", $config, []);
 
         $metadataApi = new Metadata($this->client);
 
@@ -145,7 +145,7 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
         }
 
         // check metadata update
-        $writer->uploadTables($root . "/upload", $config);
+        $writer->uploadTables($root . "/upload", $config, []);
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-test.table1');
         $this->assertCount(6, $tableMetadata);
         foreach ($tableMetadata as $tmd) {
