@@ -43,7 +43,6 @@ class DataLoader
      */
     private $defaultBucketName;
 
-    private $format;
     /**
      * @var array
      */
@@ -53,7 +52,6 @@ class DataLoader
      * @var Component
      */
     private $component;
-
 
     /**
      * @var string
@@ -65,11 +63,10 @@ class DataLoader
      *
      * @param Client $storageClient
      * @param Logger $logger
-     * @param $dataDirectory
+     * @param string $dataDirectory
      * @param array $storageConfig
-     * @param $defaultBucketName
-     * @param $format
-     * @param array $stagingStorage
+     * @param Component $component
+     * @param string|null $configId
      */
     public function __construct(
         Client $storageClient,
@@ -89,11 +86,10 @@ class DataLoader
     }
 
     /**
-     *
+     * Download source files
      */
     public function loadInputData()
     {
-        // download source files
         $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
 
@@ -122,17 +118,13 @@ class DataLoader
         }
     }
 
-    /**
-     * @throws ClientException
-     * @throws \Exception
-     */
     public function storeOutput()
     {
         $this->logger->debug("Storing results.");
 
         $writer = new Writer($this->storageClient, $this->logger);
 
-        $writer->setFormat($this->format);
+        $writer->setFormat($this->component->getConfigurationFormat());
         $writer->setFeatures($this->features);
 
         $writer->setFormat($this->component->getConfigurationFormat());
@@ -239,7 +231,7 @@ class DataLoader
 
         return $this;
     }
-    
+
     protected function getDefaultBucket()
     {
         if ($this->component->hasDefaultBucket()) {
