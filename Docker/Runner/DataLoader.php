@@ -43,6 +43,9 @@ class DataLoader
      */
     private $defaultBucketName;
 
+    /**
+     * @var string
+     */
     private $format;
 
     /**
@@ -54,7 +57,6 @@ class DataLoader
      * @var Component
      */
     private $component;
-
 
     /**
      * @var string
@@ -68,9 +70,8 @@ class DataLoader
      * @param Logger $logger
      * @param $dataDirectory
      * @param array $storageConfig
-     * @param $defaultBucketName
-     * @param $format
-     * @param array $stagingStorage
+     * @param Component $component
+     * @param string $configId
      */
     public function __construct(
         Client $storageClient,

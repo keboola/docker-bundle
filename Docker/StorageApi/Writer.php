@@ -12,14 +12,12 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\FileUploadTransferOptions;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 use Keboola\Syrup\Exception\UserException;
-use Symfony\Component\Intl\Exception\MethodArgumentValueNotImplementedException;
 
 /**
  * Class Writer
