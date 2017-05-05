@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "37c6734a85323ca3cd2c763fc46d9b8f",
-    "content-hash": "c91dad6f7790d73a1e8d761d78a081d9",
+    "hash": "f7fcc0cbca165a437ef30fcf97632431",
+    "content-hash": "459fccb2ef637e52306365d1901f628e",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1605,22 +1605,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "1.2.2",
+            "version": "2.0.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "5054bdbbb0484b8c6302f5e2ac499fa504b09f67"
+                "reference": "f5f15373c53690e5aff04d4b8504db5ff2c03f0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/5054bdbbb0484b8c6302f5e2ac499fa504b09f67",
-                "reference": "5054bdbbb0484b8c6302f5e2ac499fa504b09f67",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/f5f15373c53690e5aff04d4b8504db5ff2c03f0f",
+                "reference": "f5f15373c53690e5aff04d4b8504db5ff2c03f0f",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^4.11.0",
+                "keboola/storage-api-client": "^6.3",
                 "symfony/config": "^2.8",
                 "symfony/finder": "^2.8",
                 "symfony/serializer": "^2.8",
@@ -1649,7 +1649,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2016-10-01 04:36:37"
+            "time": "2017-04-07 07:43:33"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1855,24 +1855,24 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "4.19.0",
+            "version": "6.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c"
+                "reference": "c89785b832baea4a7b0c5b46a7a560c260bc229f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c",
-                "reference": "74cdd93c84177cc4cf0fb7d6cf75829ac9c0772c",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c89785b832baea4a7b0c5b46a7a560c260bc229f",
+                "reference": "c89785b832baea4a7b0c5b46a7a560c260bc229f",
                 "shasum": ""
             },
             "require": {
                 "aws/aws-sdk-php": "~3.2",
                 "guzzlehttp/guzzle": "~6.0",
                 "keboola/csv": "~1.1.3",
-                "symfony/filesystem": "~2.3",
-                "symfony/process": "~2.3"
+                "symfony/filesystem": "^3.0||~2.3",
+                "symfony/process": "^3.0||~2.3"
             },
             "require-dev": {
                 "apigen/apigen": "4.0.0-RC4",
@@ -1894,20 +1894,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2016-12-11 11:44:48"
+            "time": "2017-04-27 13:38:14"
         },
         {
             "name": "keboola/syrup",
-            "version": "5.1.2",
+            "version": "6.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "8a07a1d68573830a61c200dd14285c7e81b2798e"
+                "reference": "c8127efad09d0b9f4f155a5698fb2cab74255571"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/8a07a1d68573830a61c200dd14285c7e81b2798e",
-                "reference": "8a07a1d68573830a61c200dd14285c7e81b2798e",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/c8127efad09d0b9f4f155a5698fb2cab74255571",
+                "reference": "c8127efad09d0b9f4f155a5698fb2cab74255571",
                 "shasum": ""
             },
             "require": {
@@ -1922,7 +1922,7 @@
                 "keboola/php-encryption": "~0.2",
                 "keboola/php-temp": "~0.1.0",
                 "keboola/php-utils": "~1.0.0",
-                "keboola/storage-api-client": "^4.0",
+                "keboola/storage-api-client": "^6.0",
                 "php": "~5.6|^7.0",
                 "sensio/distribution-bundle": "~4.0.4",
                 "sensio/framework-extra-bundle": "~3.0",
@@ -1963,7 +1963,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2017-02-13 13:02:26"
+            "time": "2017-04-07 08:01:13"
         },
         {
             "name": "kriswallsmith/assetic",

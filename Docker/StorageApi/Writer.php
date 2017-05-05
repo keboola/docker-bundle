@@ -488,15 +488,18 @@ class Writer
             try {
                 $this->validateAgainstTable($tableInfo, $config);
             } catch (UserException $e) {
+                if ($this->hasFeature('docker-runner-output-mapping-strict-pk')) {
+                    throw $e;
+                }
                 try {
                     $this->getLogger()->warn($e->getMessage());
-                } catch (\Exception $e) {
+                } catch (\Exception $eLog) {
                     // ignore
                 }
             }
 
-            if (self::modifyPrimaryKeyDecider($this->features, $tableInfo, $config)) {
-                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} to [" . join(", ", $config["primary_key"]) . "].");
+            if (self::modifyPrimaryKeyDecider($tableInfo, $config)) {
+                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;
                 // modify primary key
                 if (count($tableInfo["primaryKey"]) > 0) {
@@ -505,7 +508,7 @@ class Writer
                     } catch (\Exception $e) {
                         // warn and go on
                         $this->getLogger()->warn(
-                            "Error deleting primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                            "Error deleting primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         $failed = true;
                     }
@@ -518,7 +521,7 @@ class Writer
                     } catch (\Exception $e) {
                         // warn and try to rollback to original state
                         $this->getLogger()->warn(
-                            "Error changing primary key of table {$tableInfo["id"]}:" . $e->getMessage()
+                            "Error changing primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         if (count($tableInfo["primaryKey"]) > 0) {
                             $this->client->createTablePrimaryKey($tableInfo["id"], $tableInfo["primaryKey"]);
@@ -670,7 +673,7 @@ class Writer
      */
     public function tagFiles(array $configuration)
     {
-        $reader = new Reader($this->client);
+        $reader = new Reader($this->client, $this->logger);
         foreach ($configuration as $fileConfiguration) {
             if (!empty($fileConfiguration['processed_tags'])) {
                 $files = $reader->getFiles($fileConfiguration);
@@ -709,25 +712,28 @@ class Writer
      */
     public static function normalizePrimaryKey(array $pKey)
     {
-        return array_unique(array_filter($pKey, function ($col) {
-            if ($col != '') {
-                return true;
-            }
-            return false;
-        }));
+        return array_map(
+            function ($pKey) {
+                return trim($pKey);
+            },
+            array_unique(
+                array_filter($pKey, function ($col) {
+                    if ($col != '') {
+                        return true;
+                    }
+                    return false;
+                })
+            )
+        );
     }
 
     /**
-     * @param array $features
      * @param array $tableInfo
      * @param array $config
      * @return bool
      */
-    public static function modifyPrimaryKeyDecider(array $features, array $tableInfo, array $config)
+    public static function modifyPrimaryKeyDecider(array $tableInfo, array $config)
     {
-        if (!in_array("docker-runner-output-mapping-adaptive-pk", $features)) {
-            return false;
-        }
         $configPK = self::normalizePrimaryKey($config["primary_key"]);
         if (count($tableInfo["primaryKey"]) != count($configPK)) {
             return true;
