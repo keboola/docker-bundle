@@ -390,10 +390,10 @@ class Writer
 
             // After the file has been written, we can write metadata
             if (!empty($config['metadata'])) {
-                $this->metadataClient->postTableMetadata($config["destination"], $configuration["provider"]['componentId'], $config["metadata"]);
+                $this->metadataClient->postTableMetadata($config["destination"], $systemMetadata['componentId'], $config["metadata"]);
             }
             if (!empty($config['columnMetadata'])) {
-                $this->writeColumnMetadata($config["destination"], $configuration["provider"]['componentId'], $config["columnMetadata"]);
+                $this->writeColumnMetadata($config["destination"], $systemMetadata['componentId'], $config["columnMetadata"]);
             }
         }
 
@@ -446,13 +446,10 @@ class Writer
      */
     private function getCreatedMetadata(array $systemMetadata)
     {
-        $metadata = [];
-        if (!empty($systemMetadata['componentId'])) {
-            $metadata[] = [
-                'key' => 'KBC.createdBy.component.id',
-                'value' => $systemMetadata['componentId']
-            ];
-        }
+        $metadata[] = [
+            'key' => 'KBC.createdBy.component.id',
+            'value' => $systemMetadata['componentId']
+        ];
         if (!empty($systemMetadata['configurationId'])) {
             $metadata[] = [
                 'key' => 'KBC.createdBy.configuration.id',
@@ -468,13 +465,10 @@ class Writer
      */
     private function getUpdatedMetadata(array $systemMetadata)
     {
-        $metadata = [];
-        if (!empty($systemMetadata['componentId'])) {
-            $metadata[] = [
-                'key' => 'KBC.createdBy.component.id',
-                'value' => $systemMetadata['componentId']
-            ];
-        }
+        $metadata[] = [
+            'key' => 'KBC.createdBy.component.id',
+            'value' => $systemMetadata['componentId']
+        ];
         if (!empty($systemMetadata['configurationId'])) {
             $metadata[] = [
                 'key' => 'KBC.createdBy.configuration.id',
