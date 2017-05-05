@@ -281,10 +281,10 @@ class Writer
     }
 
     /**
-     * @param $source
+     * @param string $source
      * @param array $configuration
      */
-    public function uploadTables($source, $configuration = [])
+    public function uploadTables($source, $configuration)
     {
         $manifestNames = $this->getManifestFiles($source);
 
@@ -378,9 +378,6 @@ class Writer
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
                 $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
-                if ($config["primary_key"] == [""]) {
-                    $config["primary_key"] = [];
-                }
                 if (isset($configuration['provider'])) {
                     $config['provider'] = $configuration['provider'];
                 } else {
@@ -397,10 +394,10 @@ class Writer
             }
 
             // After the file has been written, we can write metadata
-            if (isset($config['metadata']) && !empty($config['metadata'])) {
+            if (!empty($config['metadata'])) {
                 $this->metadataClient->postTableMetadata($config["destination"], $configuration["provider"]['componentId'], $config["metadata"]);
             }
-            if (isset($config['columnMetadata']) && !empty($config['columnMetadata'])) {
+            if (!empty($config['columnMetadata'])) {
                 $this->writeColumnMetadata($config["destination"], $configuration["provider"]['componentId'], $config["columnMetadata"]);
             }
         }
@@ -650,7 +647,7 @@ class Writer
     }
 
     /**
-     * @param $dir
+     * @param string $dir
      * @return array
      */
     protected function getManifestFiles($dir)
