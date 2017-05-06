@@ -66,7 +66,6 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 throw $e;
             }
         }
-        $this->client->createBucket('in.c-docker-demo-whatever', "in");
     }
 
     public function tearDown()
@@ -134,7 +133,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function testExecutorManifestMetadata()
+    public function testExecutorConfigMetadata()
     {
         $log = new Logger('null');
         $log->pushHandler(new NullHandler());
@@ -230,6 +229,164 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
+    }
 
+    public function testExecutorManifestMetadata()
+    {
+        $log = new Logger('null');
+        $log->pushHandler(new NullHandler());
+        $temp = new Temp();
+        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data->createDataDir();
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $manifest = '
+            {
+                "destination": "in.c-docker-demo-whatever.sliced",
+                "metadata": [{
+                        "key": "table.key.one",
+                        "value": "table value one"
+                    },
+                    {
+                        "key": "table.key.two",
+                        "value": "table value two"
+                    }
+                ],
+                "columnMetadata": {
+                    "id": [{
+                            "key": "column.key.one",
+                            "value": "column value one id"
+                        },
+                        {
+                            "key": "column.key.two",
+                            "value": "column value two id"
+                        }
+                    ],
+                    "text": [{
+                            "key": "column.key.one",
+                            "value": "column value one text"
+                        },
+                        {
+                            "key": "column.key.two",
+                            "value": "column value two text"
+                        }
+                    ]
+                }
+            }        
+        ';
+        $fs->dumpFile($data->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
+
+        $config = [];
+        $dataLoader = new DataLoader(
+            $this->client,
+            $log,
+            $data->getDataDir(),
+            $config,
+            $this->getDefaultBucketComponent(),
+            "whatever"
+        );
+        $dataLoader->storeOutput();
+
+        $metadataApi = new Metadata($this->client);
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.configuration.id' => 'whatever',
+                'KBC.createdBy.component.id' => 'docker-demo',
+            ],
+            'docker-demo' => [
+                'table.key.one' => 'table value one',
+                'table.key.two' => 'table value two',
+            ],
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+
+        $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
+        $expectedColumnMetadata = [
+            'docker-demo' => [
+                'column.key.one' => 'column value one id',
+                'column.key.two' => 'column value two id',
+            ],
+        ];
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
+    }
+
+    public function testExecutorManifestMetadataCombined()
+    {
+        $log = new Logger('null');
+        $log->pushHandler(new NullHandler());
+        $temp = new Temp();
+        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data->createDataDir();
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv.manifest',
+            '{"metadata":[{"key":"table.key.one","value":"table value one"},'.
+            '{"key":"table.key.two","value":"table value two"}],"columnMetadata":{"id":['.
+            '{"key":"column.key.one","value":"column value one id"},'.
+            '{"key":"column.key.two","value":"column value two id"}],'.
+            '"text":[{"key":"column.key.one","value":"column value one text"},'.
+            '{"key":"column.key.two","value":"column value two text"}]}}'
+        );
+
+        $config = [
+            "input" => [
+                "tables" => [
+                    [
+                        "source" => "in.c-docker-test.test"
+                    ]
+                ]
+            ],
+            "output" => [
+                "tables" => [
+                    [
+                        "source" => "sliced.csv",
+                        "destination" => "in.c-docker-demo-whatever.sliced",
+                    ]
+                ]
+            ]
+        ];
+
+        $dataLoader = new DataLoader(
+            $this->client,
+            $log,
+            $data->getDataDir(),
+            $config,
+            $this->getDefaultBucketComponent(),
+            "whatever"
+        );
+        $dataLoader->storeOutput();
+
+        $metadataApi = new Metadata($this->client);
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.configuration.id' => 'whatever',
+                'KBC.createdBy.component.id' => 'docker-demo',
+            ],
+            'docker-demo' => [
+                'table.key.one' => 'table value one',
+                'table.key.two' => 'table value two',
+            ],
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+
+        $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
+        $expectedColumnMetadata = [
+            'docker-demo' => [
+                'column.key.one' => 'column value one id',
+                'column.key.two' => 'column value two id',
+            ],
+        ];
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 }
