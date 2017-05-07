@@ -92,7 +92,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs], []);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
@@ -122,7 +122,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
         );
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs], []);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $table = $this->client->getTable("out.c-docker-test.table");
         $this->assertEquals(["Id", "Name"], $table["columns"]);
@@ -156,7 +156,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs], []);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
@@ -187,7 +187,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
-        $writer->uploadTables($root . "/upload", [], []);
+        $writer->uploadTables($root . "/upload", [], ['componentId' => 'foo']);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
@@ -227,7 +227,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
 
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs], []);
+        $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $tables = $this->client->listTables("out.c-docker-test");
         $this->assertCount(1, $tables);
