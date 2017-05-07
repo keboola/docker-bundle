@@ -351,6 +351,16 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                     [
                         "source" => "sliced.csv",
                         "destination" => "in.c-docker-demo-whatever.sliced",
+                        "metadata" => [
+                            [
+                                "key" => "table.key.one",
+                                "value" => "table value three"
+                            ],
+                            [
+                                "key" => "table.key.two",
+                                "value" => "table value four"
+                            ]
+                        ]
                     ]
                 ]
             ]
@@ -374,19 +384,14 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'KBC.createdBy.component.id' => 'docker-demo',
             ],
             'docker-demo' => [
-                'table.key.one' => 'table value one',
-                'table.key.two' => 'table value two',
+                'table.key.one' => 'table value three',
+                'table.key.two' => 'table value four',
             ],
         ];
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
-        $expectedColumnMetadata = [
-            'docker-demo' => [
-                'column.key.one' => 'column value one id',
-                'column.key.two' => 'column value two id',
-            ],
-        ];
+        $expectedColumnMetadata = [];
         self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 }
