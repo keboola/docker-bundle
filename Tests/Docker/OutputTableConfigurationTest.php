@@ -27,7 +27,9 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "eq",
             "delimiter" => ",",
             "enclosure" => "\"",
-            "escaped_by" => ""
+            "escaped_by" => "",
+            "metadata" => [],
+            "columnMetadata" => []
         );
 
         $processedConfiguration = (new Table())->parse(array("config" => $config));
@@ -50,7 +52,9 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "ne",
             "delimiter" => "\t",
             "enclosure" => "'",
-            "escaped_by" => "\\"
+            "escaped_by" => "\\",
+            "metadata" => [],
+            "columnMetadata" => []
         );
 
         $expectedArray = $config;
@@ -103,7 +107,9 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "delete_where_operator" => "eq",
             "delimiter" => ",",
             "enclosure" => "\"",
-            "escaped_by" => ""
+            "escaped_by" => "",
+            "metadata" => [],
+            "columnMetadata" => []
         );
         $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);

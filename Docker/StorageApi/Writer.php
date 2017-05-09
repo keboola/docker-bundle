@@ -10,8 +10,9 @@ use Keboola\DockerBundle\Exception\MissingFileException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\FileUploadTransferOptions;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -26,10 +27,17 @@ use Keboola\Syrup\Exception\UserException;
 class Writer
 {
 
+    const SYSTEM_METADATA_PROVIDER = 'system';
+
     /**
      * @var Client
      */
     protected $client;
+
+    /**
+     * @var Metadata
+     */
+    protected $metadataClient;
 
     /**
      * @var Logger
@@ -85,6 +93,17 @@ class Writer
     }
 
     /**
+     * @param Metadata $metadataClient
+     * @return $this
+     */
+    public function setMetadataClient(Metadata $metadataClient)
+    {
+        $this->metadataClient = $metadataClient;
+
+        return $this;
+    }
+
+    /**
      * @return Logger
      */
     public function getLogger()
@@ -132,6 +151,7 @@ class Writer
     public function __construct(Client $client, Logger $logger)
     {
         $this->setClient($client);
+        $this->setMetadataClient(new Metadata($client));
         $this->setLogger($logger);
     }
 
@@ -262,11 +282,15 @@ class Writer
     }
 
     /**
-     * @param $source
+     * @param string $source
      * @param array $configuration
+     * @param array $systemMetadata
      */
-    public function uploadTables($source, $configuration = [])
+    public function uploadTables($source, array $configuration, array $systemMetadata)
     {
+        if (empty($systemMetadata['componentId'])) {
+            throw new ApplicationException("Component Id must be set");
+        }
         $manifestNames = $this->getManifestFiles($source);
 
         $finder = new Finder();
@@ -359,13 +383,21 @@ class Writer
                 The following unset should be removed once the 'escaped_by' parameter is removed from table manifest. */
                 unset($config['escaped_by']);
                 $config["primary_key"] = self::normalizePrimaryKey($config["primary_key"]);
-                $this->uploadTable($file->getPathname(), $config);
+                $this->uploadTable($file->getPathname(), $config, $systemMetadata);
             } catch (ClientException $e) {
                 throw new UserException(
                     "Cannot upload file '{$file->getFilename()}' to table '{$config["destination"]}' in Storage API: "
                     . $e->getMessage(),
                     $e
                 );
+            }
+
+            // After the file has been written, we can write metadata
+            if (!empty($config['metadata'])) {
+                $this->metadataClient->postTableMetadata($config["destination"], $systemMetadata['componentId'], $config["metadata"]);
+            }
+            if (!empty($config['columnMetadata'])) {
+                $this->writeColumnMetadata($config["destination"], $systemMetadata['componentId'], $config["columnMetadata"]);
             }
         }
 
@@ -413,11 +445,50 @@ class Writer
     }
 
     /**
-     * @param $source
+     * @param array $systemMetadata
+     * @return array
+     */
+    private function getCreatedMetadata(array $systemMetadata)
+    {
+        $metadata[] = [
+            'key' => 'KBC.createdBy.component.id',
+            'value' => $systemMetadata['componentId']
+        ];
+        if (!empty($systemMetadata['configurationId'])) {
+            $metadata[] = [
+                'key' => 'KBC.createdBy.configuration.id',
+                'value' => $systemMetadata['configurationId']
+            ];
+        }
+        return $metadata;
+    }
+
+    /**
+     * @param array $systemMetadata
+     * @return array
+     */
+    private function getUpdatedMetadata(array $systemMetadata)
+    {
+        $metadata[] = [
+            'key' => 'KBC.lastUpdatedBy.component.id',
+            'value' => $systemMetadata['componentId']
+        ];
+        if (!empty($systemMetadata['configurationId'])) {
+            $metadata[] = [
+                'key' => 'KBC.lastUpdatedBy.configuration.id',
+                'value' => $systemMetadata['configurationId']
+            ];
+        }
+        return $metadata;
+    }
+
+    /**
+     * @param string $source
      * @param array $config
+     * @param array $systemMetadata
      * @throws \Keboola\StorageApi\ClientException
      */
-    protected function uploadTable($source, $config = array())
+    protected function uploadTable($source, array $config, array $systemMetadata)
     {
         $tableIdParts = explode(".", $config["destination"]);
         $bucketId = $tableIdParts[0] . "." . $tableIdParts[1];
@@ -430,8 +501,8 @@ class Writer
 
         // Create bucket if not exists
         if (!$this->client->bucketExists($bucketId)) {
-            // TODO component name!
-            $this->client->createBucket($bucketName, $tableIdParts[0], "Created by Docker Runner");
+            $this->client->createBucket($bucketName, $tableIdParts[0]);
+            $this->metadataClient->postBucketMetadata($bucketId, self::SYSTEM_METADATA_PROVIDER, $this->getCreatedMetadata($systemMetadata));
         }
 
         if ($this->client->tableExists($config["destination"])) {
@@ -514,10 +585,13 @@ class Writer
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
                 $this->client->writeTableAsync($config["destination"], $csvFile, $options);
             }
+
+            $this->metadataClient->postTableMetadata($config['destination'], self::SYSTEM_METADATA_PROVIDER, $this->getUpdatedMetadata($systemMetadata));
         } else {
             $options = array(
                 "primaryKey" => join(",", self::normalizePrimaryKey($config["primary_key"]))
             );
+            $tableId = $config['destination'];
             // headless csv file
             if (!empty($config["columns"])) {
                 $tmp = new Temp();
@@ -536,8 +610,23 @@ class Writer
                 }
             } else {
                 $csvFile = new CsvFile($source, $config["delimiter"], $config["enclosure"]);
-                $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
+                $tableId = $this->client->createTableAsync($bucketId, $tableName, $csvFile, $options);
             }
+            $this->metadataClient->postTableMetadata($tableId, self::SYSTEM_METADATA_PROVIDER, $this->getCreatedMetadata($systemMetadata));
+        }
+    }
+
+    /**
+     * @param $tableId
+     * @param $provider
+     * @param $columnMetadata
+     * @throws ClientException
+     */
+    protected function writeColumnMetadata($tableId, $provider, $columnMetadata)
+    {
+        foreach ($columnMetadata as $column => $metadataArray) {
+            $columnId = $tableId . "." . $column;
+            $this->metadataClient->postColumnMetadata($columnId, $provider, $metadataArray);
         }
     }
 
@@ -575,7 +664,7 @@ class Writer
     }
 
     /**
-     * @param $dir
+     * @param string $dir
      * @return array
      */
     protected function getManifestFiles($dir)

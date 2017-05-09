@@ -236,23 +236,13 @@ class Runner
             $component->getConfigurationFormat()
         );
 
-        if ($component->hasDefaultBucket()) {
-            if (!$configId) {
-                throw new UserException("Configuration ID not set, but is required for default_bucket option.");
-            }
-            $defaultBucketName = $component->getDefaultBucketName($configId);
-        } else {
-            $defaultBucketName = '';
-        }
-
         $this->dataLoader = new DataLoader(
             $this->storageClient,
             $this->loggerService->getLog(),
             $this->dataDirectory->getDataDir(),
             $configData['storage'],
-            $defaultBucketName,
-            $component->getConfigurationFormat(),
-            $component->getStagingStorage()
+            $component,
+            $configId
         );
         $this->dataLoader->setFeatures($this->features);
         $this->imageCreator = new ImageCreator(
