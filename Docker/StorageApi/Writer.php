@@ -507,19 +507,7 @@ class Writer
 
         if ($this->client->tableExists($config["destination"])) {
             $tableInfo = $this->getClient()->getTable($config["destination"]);
-            try {
-                $this->validateAgainstTable($tableInfo, $config);
-            } catch (UserException $e) {
-                if ($this->hasFeature('docker-runner-output-mapping-strict-pk')) {
-                    throw $e;
-                }
-                try {
-                    $this->getLogger()->warn($e->getMessage());
-                } catch (\Exception $eLog) {
-                    // ignore
-                }
-            }
-
+            $this->validateAgainstTable($tableInfo, $config);
             if (self::modifyPrimaryKeyDecider($tableInfo, $config)) {
                 $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;

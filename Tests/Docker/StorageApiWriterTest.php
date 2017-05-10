@@ -911,8 +911,7 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
     }
 
-
-    public function testWriteTableOutputMappingWithPkMismatchWith()
+    public function testWriteTableOutputMappingWithPkMismatch()
     {
         $root = $this->tmp->getTmpFolder();
         file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
@@ -937,52 +936,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->uploadTables(
-            $root . "/upload",
-            [
-                "mapping" => [
-                    [
-                        "source" => "table9.csv",
-                        "destination" => "out.c-docker-test.table9",
-                        "primary_key" => ["Id", "Name"]
-                    ]
-                ]
-            ],
-            ['componentId' => 'foo']
-        );
-        $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
-        $this->assertTrue($handler->hasWarningThatContains("Modifying primary key of table out.c-docker-test.table9 from [Id] to [Id, Name]."));
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-        $this->assertEquals(["Id", "Name"], $tableInfo["primaryKey"]);
-    }
-
-
-    public function testWriteTableOutputMappingWithPkMismatchWithStrictPrimaryKeysStrict()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-
-        $handler = new TestHandler();
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->uploadTables(
-            $root . "/upload",
-            [
-                "mapping" => [
-                    [
-                        "source" => "table9.csv",
-                        "destination" => "out.c-docker-test.table9",
-                        "primary_key" => ["Id"]
-                    ]
-                ]
-            ],
-            ['componentId' => 'foo']
-        );
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->setFeatures(["docker-runner-output-mapping-strict-pk"]);
         try {
             $writer->uploadTables(
                 $root . "/upload",
@@ -1003,7 +956,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'.", $e->getMessage());
         }
     }
-
 
     public function testWriteTableOutputMappingWithPkMismatchWhitespace()
     {
@@ -1030,53 +982,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
 
         $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->uploadTables(
-            $root . "/upload",
-            [
-                "mapping" => [
-                    [
-                        "source" => "table9.csv",
-                        "destination" => "out.c-docker-test.table9",
-                        "primary_key" => ["Id ", "Name "]
-                    ]
-                ]
-            ],
-            ['componentId' => 'foo']
-        );
-        $this->assertTrue($handler->hasWarningThatContains("Output mapping does not match destination table: primary key 'Id, Name' does not match 'Id' in 'out.c-docker-test.table9'."));
-        $this->assertTrue($handler->hasWarningThatContains("Modifying primary key of table out.c-docker-test.table9 from [Id] to [Id, Name]."));
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-        $this->assertEquals(["Id", "Name"], $tableInfo["primaryKey"]);
-    }
-
-
-    public function testWriteTableOutputMappingWithPkMismatchWhitespaceWithStrictPrimaryKeysFeature()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table9.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n");
-
-        $handler = new TestHandler();
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->uploadTables(
-            $root . "/upload",
-            [
-                "mapping" => [
-                    [
-                        "source" => "table9.csv",
-                        "destination" => "out.c-docker-test.table9",
-                        "primary_key" => ["Id "]
-                    ]
-                ]
-            ],
-            ['componentId' => 'foo']
-        );
-        $tableInfo = $this->client->getTable("out.c-docker-test.table9");
-        $this->assertEquals(["Id"], $tableInfo["primaryKey"]);
-
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler($handler));
-        $writer->setFeatures(["docker-runner-output-mapping-strict-pk"]);
-
         try {
             $writer->uploadTables(
                 $root . "/upload",
