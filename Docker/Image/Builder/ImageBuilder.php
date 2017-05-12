@@ -271,7 +271,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     private function createDockerFile()
     {
         $dockerFile = '';
-        $dockerFile .= "FROM " . $this->getImageId() . "\n";
+        $dockerFile .= "FROM " . $this->getImageId() . ":" . $this->getTag() . "\n";
         $dockerFile .= "LABEL com.keboola.docker.runner.origin=builder\n";
         $dockerFile .= "WORKDIR /home\n";
 
@@ -387,12 +387,13 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
                 "docker:1.11-dind sh -c '" .
                 "docker login " . $this->getLoginParams() . " " .
-                "&& docker pull " . escapeshellarg($this->getImageId()) . " " .
+                "&& docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag()) . " " .
                 "&& docker logout " . $this->getLogoutParams() .
                 "'";
         } else {
-            $command = "sudo docker pull " . escapeshellarg($this->getImageId());
+            $command = "sudo docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag());
         }
+
         $process = new Process($command);
         $process->setTimeout(3600);
         try {
@@ -401,7 +402,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             });
         } catch (\Exception $e) {
             throw new BuildException(
-                "Failed to pull parent image {$this->getImageId()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
+                "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
                 $e
             );
         }
