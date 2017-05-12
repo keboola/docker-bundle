@@ -114,7 +114,8 @@ class UsageFileTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-custom-php:0.0.1',
+                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'tag' => '0.0.1',
                     'build_options' => [
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app.git',
