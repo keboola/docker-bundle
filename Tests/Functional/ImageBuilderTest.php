@@ -163,6 +163,61 @@ Step 4 : ENV APP_VERSION v1.0.8
         $this->assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 
+
+    public function testCreatePublicRepoWithTag()
+    {
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $oldCount = intval(trim($process->getOutput()));
+
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $process = new Process("sudo docker images quay.io/keboola/docker-custom-php:1.1.0 | grep docker-custom-php | wc -l");
+        $process->run();
+        if (trim($process->getOutput() != 0)) {
+            (new Process("sudo docker rmi quay.io/keboola/docker-custom-php:1.1.0"))->mustRun();
+        }
+
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "tag" => "1.1.0",
+                    "build_options" => [
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git",
+                        ],
+                        "commands" => [
+                            "git clone --depth 1 {{repository}} /home/" .
+                                " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ],
+                "configuration_format" => "json",
+            ]
+        ]);
+
+        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image->prepare([]);
+        $this->assertContains("builder-", $image->getFullImageId());
+
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $this->assertEquals($oldCount + 1, trim($process->getOutput()));
+
+        $process = new Process("sudo docker images quay.io/keboola/docker-custom-php:1.1.0 | grep docker-custom-php | wc -l");
+        $process->run();
+        $this->assertEquals(1, trim($process->getOutput()));
+    }
+
     public function testCreatePrivateRepoPrivateHub()
     {
         $process = new Process("sudo docker images | grep builder- | wc -l");
