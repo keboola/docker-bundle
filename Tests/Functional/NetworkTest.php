@@ -72,7 +72,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -97,7 +98,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -126,7 +128,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -161,7 +164,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -194,7 +198,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -220,7 +225,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -252,7 +258,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos:7.2.1511",
+                    "uri" => "centos",
+                    "tag" => "7.2.1511",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
