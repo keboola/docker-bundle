@@ -50,7 +50,8 @@ class LoggerTests extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/gelf-test-client:master",
+                    "uri" => "quay.io/keboola/gelf-test-client",
+                    "tag" => "master",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app.git",
