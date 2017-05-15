@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -139,6 +140,20 @@ class RunnerTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT
         );
         return $runner;
+    }
+
+    /**
+     * Transform metadata into a key-value array
+     * @param $metadata
+     * @return array
+     */
+    private function getMetadataValues($metadata)
+    {
+        $result = [];
+        foreach ($metadata as $item) {
+            $result[$item['provider']][$item['key']] = $item['value'];
+        }
+        return $result;
     }
 
     public function testRunnerPipeline()
@@ -690,11 +705,16 @@ class RunnerTest extends KernelTestCase
                 'configuration_format' => 'json',
             ],
         ];
+        $configData = [
+            'parameters' => [
+                'foo' => 'bar'
+            ]
+        ];
 
         $runner->run(
             $componentData,
             '',
-            ["parameters" => ["foo" => "bar"]],
+            $configData,
             [],
             'run',
             'run',
@@ -710,6 +730,73 @@ class RunnerTest extends KernelTestCase
                 throw $e;
             }
         }
+    }
+
+    public function testExecutorNoConfigIdNoMetadata()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'tag' => '0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "id,name\n1,test" > /data/out/tables/data.csv',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+        $configData = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'data.csv',
+                            'destination' => 'in.c-docker-demo-whatever.some-table'
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $runner->run(
+            $componentData,
+            null,
+            $configData,
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+        $metadataApi = new Metadata($this->client);
+        $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
+        $expectedBucketMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo'
+            ]
+        ];
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
     }
 
     public function testExecutorInvalidConfiguration()
