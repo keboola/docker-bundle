@@ -655,6 +655,63 @@ class RunnerTest extends KernelTestCase
         }
     }
 
+    public function testExecutorStateNoConfigId()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'tag' => '0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            '',
+            ["parameters" => ["foo" => "bar"]],
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $component = new Components($this->client);
+        try {
+            $component->getConfiguration('docker-demo', 'test-configuration');
+            $this->fail("Configuration should not exist");
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+    }
+
     public function testExecutorInvalidConfiguration()
     {
         $configurationData = [

@@ -39,7 +39,12 @@ class Environment
 
     public function __construct($configId, Component $component, array $config, array $tokenInfo, $runId, $url)
     {
-        $this->configId = $configId;
+        if ($configId) {
+            $this->configId = $configId;
+        } else {
+            $this->configId = sha1(serialize($config));
+        }
+
         $this->component = $component;
         $this->configParameters = $config;
         $this->tokenInfo = $tokenInfo;

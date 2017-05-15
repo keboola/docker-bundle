@@ -167,7 +167,7 @@ class Executor extends BaseExecutor
         if ($params && isset($params["config"])) {
             $configId = $params['config'];
         } else {
-            $configId = sha1(serialize($params['configData']));
+            $configId = null;
         }
         $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode'], $job->getId());
         return ["message" => "Docker container processing finished."];
