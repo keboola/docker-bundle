@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Runner;
+namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\StorageApi\Writer;
