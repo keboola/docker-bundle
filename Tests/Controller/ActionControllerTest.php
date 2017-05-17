@@ -89,7 +89,7 @@ class ActionControllerTest extends WebTestCase
         return $storageServiceStub;
     }
 
-    protected function getStorageServiceStubDcaPython()
+    protected function getStorageServiceStubDcaPython($defaultBucket = false)
     {
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -151,6 +151,7 @@ class ActionControllerTest extends WebTestCase
                             ],
                         ],
                         'process_timeout' => 21600,
+                        'default_bucket' => $defaultBucket,
                         'memory' => '8192m',
                         'configuration_format' => 'json',
                         'synchronous_actions' => ['test', 'run', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
@@ -317,6 +318,22 @@ class ActionControllerTest extends WebTestCase
         $this->assertEquals('{"test":"test"}', $response->getContent());
     }
 
+    public function testActionDefaultBucket()
+    {
+        $request = $this->prepareRequest('test');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"test":"test"}', $response->getContent());
+    }
+
+
     /**
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
      * @expectedExceptionMessage Action 'run' not allowed
@@ -391,7 +408,7 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Keboola\Syrup\Exception\UserException
      * @expectedExceptionMessage Decoding JSON response from component failed
      */
-    public function testInvalidJSONRepsonse()
+    public function testInvalidJSONResponse()
     {
         $request = $this->prepareRequest('invalidjson');
         $container = self::$container;
