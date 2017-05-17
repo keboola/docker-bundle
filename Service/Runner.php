@@ -11,6 +11,8 @@ use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
@@ -70,7 +72,7 @@ class Runner
     private $configFile;
 
     /**
-     * @var DataLoader
+     * @var DataLoaderInterface
      */
     private $dataLoader;
 
@@ -236,14 +238,25 @@ class Runner
             $component->getConfigurationFormat()
         );
 
-        $this->dataLoader = new DataLoader(
-            $this->storageClient,
-            $this->loggerService->getLog(),
-            $this->dataDirectory->getDataDir(),
-            $configData['storage'],
-            $component,
-            $configId
-        );
+        if ($action == 'run') {
+            $this->dataLoader = new DataLoader(
+                $this->storageClient,
+                $this->loggerService->getLog(),
+                $this->dataDirectory->getDataDir(),
+                $configData['storage'],
+                $component,
+                $configId
+            );
+        } else {
+            $this->dataLoader = new NullDataLoader(
+                $this->storageClient,
+                $this->loggerService->getLog(),
+                $this->dataDirectory->getDataDir(),
+                $configData['storage'],
+                $component,
+                $configId
+            );
+        }
         $this->dataLoader->setFeatures($this->features);
         $this->imageCreator = new ImageCreator(
             $this->encryptor,

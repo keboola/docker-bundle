@@ -16,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
-class DataLoader
+class DataLoader implements DataLoaderInterface
 {
     /**
      * @var Client
