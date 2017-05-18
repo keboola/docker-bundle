@@ -854,7 +854,7 @@ class RunnerTest extends KernelTestCase
 
     public function testExecutorDefaultBucketNoStage()
     {
-        // Create bucket
+        // Initialize buckets
         try {
             $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
         } catch (ClientException $e) {
@@ -931,7 +931,7 @@ class RunnerTest extends KernelTestCase
 
     public function testExecutorSyncActionNoStorage()
     {
-        // Create bucket
+        // Initialize buckets
         try {
             $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
         } catch (ClientException $e) {
