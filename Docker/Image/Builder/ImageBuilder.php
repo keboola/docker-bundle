@@ -10,7 +10,7 @@ use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
 class ImageBuilder extends Image\DockerHub\PrivateRepository
 {
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     protected $logger;
 
@@ -136,9 +136,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
 
 
     /**
-     * @param Logger $log
+     * @param LoggerInterface $log
      */
-    public function setLogger(Logger $log)
+    public function setLogger(LoggerInterface $log)
     {
         $this->logger = $log;
     }

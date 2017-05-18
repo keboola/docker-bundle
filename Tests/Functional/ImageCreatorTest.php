@@ -7,10 +7,8 @@ use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Encryption\BaseWrapper;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 
 class ImageCreatorTest extends \PHPUnit_Framework_TestCase
 {
@@ -31,9 +29,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
     public function testCreateImageDockerHub()
     {
         $encryptor = new ObjectEncryptor();
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
         $image = new Component([
             'data' => [
                 'definition' => [
@@ -54,7 +49,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'foo' => 'bar'
             ]
         ];
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
+        $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(1, $images);
         $this->assertTrue($images[0]->isMain());
@@ -68,9 +63,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId('keboola.docker-demo');
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
         $image = new Component([
             'data' => [
                 'definition' => [
@@ -94,7 +86,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'foo' => 'bar'
             ]
         ];
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
+        $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(1, $images);
         $this->assertTrue($images[0]->isMain());
@@ -108,9 +100,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId('keboola.docker-demo');
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
         $image = new Component([
             'data' => [
                 'definition' => [
@@ -130,7 +119,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'foo' => 'bar'
             ]
         ];
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
+        $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(1, $images);
         $this->assertTrue($images[0]->isMain());
@@ -144,10 +133,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $wrapper->setComponentId('keboola.docker-demo');
         $encryptor->pushWrapper($wrapper);
         $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
         $image = new Component([
             'data' => [
                 'definition' => [
@@ -167,7 +152,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'foo' => 'bar'
             ]
         ];
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
+        $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(1, $images);
         $this->assertTrue($images[0]->isMain());
@@ -177,9 +162,6 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
     public function testCreateImageProcessors()
     {
         $encryptor = new ObjectEncryptor();
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-
         $image = new Component([
             'data' => [
                 'definition' => [
@@ -216,7 +198,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'foo' => 'bar'
             ]
         ];
-        $imageCreator = new ImageCreator($encryptor, $log, $this->client, $image, $config);
+        $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(3, $images);
         $this->assertEquals('quay.io/keboola/processor-unziper:3.0.4', $images[0]->getFullImageId());

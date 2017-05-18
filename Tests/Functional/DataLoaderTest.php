@@ -9,8 +9,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends \PHPUnit_Framework_TestCase
@@ -84,10 +83,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
         }
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -98,7 +95,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
 
         $dataLoader = new DataLoader(
             $this->client,
-            $log,
+            new NullLogger(),
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
@@ -116,16 +113,13 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
     public function testNoConfigDefaultBucketException()
     {
         try {
-            $log = new Logger('null');
-            $log->pushHandler(new NullHandler());
-
             $temp = new Temp();
-            $data = new DataDirectory($temp->getTmpFolder(), $log);
+            $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
             $data->createDataDir();
 
             new DataLoader(
                 $this->client,
-                $log,
+                new NullLogger(),
                 $data->getDataDir(),
                 [],
                 $this->getDefaultBucketComponent()
@@ -159,10 +153,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -170,7 +162,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
+        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->storeOutput();
             $this->fail("Invalid configuration must raise UserException.");
@@ -201,12 +193,10 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
+        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->loadInputData();
             $this->fail("Invalid configuration must raise UserException.");
@@ -246,12 +236,10 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
+        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
         try {
             $dataLoader->loadInputData();
             $this->fail("Invalid configuration must raise UserException.");
@@ -276,11 +264,9 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
         $temp->setPreserveRunFolder(true);
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -291,7 +277,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         );
         $this->client->createTable('in.c-docker-test', 'test', new CsvFile($filePath));
 
-        $dataLoader = new DataLoader($this->client, $log, $data->getDataDir(), $config, $this->getS3StagingComponent());
+        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getS3StagingComponent());
         $dataLoader->loadInputData();
 
         $manifest = json_decode(

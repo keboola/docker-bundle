@@ -10,8 +10,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
@@ -80,8 +79,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -110,7 +107,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -126,8 +123,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -154,7 +149,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -170,8 +165,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -205,7 +198,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -224,8 +217,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -259,7 +250,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -275,8 +266,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process = new Process("sudo docker rmi -f keboolaprivatetest/docker-demo-docker");
         $process->run();
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -309,7 +298,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
@@ -321,8 +310,6 @@ Step 4 : ENV APP_VERSION v1.0.8
 
     public function testCreatePrivateRepoMissingPassword()
     {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -350,7 +337,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -365,8 +352,6 @@ Step 4 : ENV APP_VERSION v1.0.8
 
     public function testCreatePrivateRepoMissingCredentials()
     {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -393,7 +378,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -411,8 +396,6 @@ Step 4 : ENV APP_VERSION v1.0.8
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -467,7 +450,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -478,8 +461,6 @@ Step 4 : ENV APP_VERSION v1.0.8
 
     public function testInvalidRepo()
     {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -506,7 +487,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
@@ -517,8 +498,6 @@ Step 4 : ENV APP_VERSION v1.0.8
 
     public function testCreateInvalidUrl()
     {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
@@ -566,7 +545,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
@@ -607,10 +586,8 @@ Step 4 : ENV APP_VERSION v1.0.8
             ->setConstructorArgs([$encryptor, $imageConfig])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger($logger);
+        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -652,10 +629,8 @@ Step 4 : ENV APP_VERSION v1.0.8
             ->setConstructorArgs([$encryptor, $imageConfig])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger($logger);
+        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -697,10 +672,8 @@ Step 4 : ENV APP_VERSION v1.0.8
             ->setConstructorArgs([$encryptor, $imageConfig])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger($logger);
+        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(

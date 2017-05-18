@@ -10,8 +10,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Exception\UserException;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
@@ -93,7 +92,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
@@ -124,7 +123,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $table = $this->client->getTable("out.c-docker-test.table");
@@ -149,7 +148,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
         try {
             $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
             $this->fail("Exception not caught");
@@ -181,7 +180,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
@@ -217,7 +216,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
@@ -257,7 +256,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $tables = $this->client->listTables("out.c-docker-test");
@@ -301,7 +300,7 @@ class StorageApiSlicedWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 

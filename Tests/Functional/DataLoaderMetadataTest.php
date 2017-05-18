@@ -9,8 +9,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
@@ -82,11 +81,8 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
     public function testDefaultSystemMetadata()
     {
         $metadataApi = new Metadata($this->client);
-
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -97,7 +93,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
         $dataLoader = new DataLoader(
             $this->client,
-            $log,
+            new NullLogger(),
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
@@ -135,12 +131,9 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorConfigMetadata()
     {
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
-
         $fs = new Filesystem();
         $fs->dumpFile(
             $data->getDataDir() . '/out/tables/sliced.csv',
@@ -199,7 +192,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
         $dataLoader = new DataLoader(
             $this->client,
-            $log,
+            new NullLogger(),
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
@@ -233,10 +226,8 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorManifestMetadata()
     {
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -283,7 +274,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         $config = [];
         $dataLoader = new DataLoader(
             $this->client,
-            $log,
+            new NullLogger(),
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
@@ -317,10 +308,8 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
     public function testExecutorManifestMetadataCombined()
     {
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), $log);
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
         $fs = new Filesystem();
@@ -368,7 +357,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
 
         $dataLoader = new DataLoader(
             $this->client,
-            $log,
+            new NullLogger(),
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),

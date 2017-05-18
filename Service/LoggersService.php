@@ -6,13 +6,23 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Monolog\Processor\DockerContainerProcessor;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
-use Keboola\Syrup\Monolog\Handler\StorageApiHandler as SyrupStorageApiHandler;
 use Monolog\Logger;
 
 class LoggersService
 {
+    /**
+     * @var Logger
+     */
     private $logger;
+
+    /**
+     * @var ContainerLogger
+     */
     private $containerLogger;
+
+    /**
+     * @var StorageApiHandler
+     */
     private $sapiHandler;
 
     public function __construct(Logger $log, ContainerLogger $containerLog, StorageApiHandler $sapiHandler)
@@ -53,11 +63,17 @@ class LoggersService
         $this->containerLogger->pushProcessor([$processor, 'processRecord']);
     }
 
+    /**
+     * @return Logger
+     */
     public function getLog()
     {
         return $this->logger;
     }
 
+    /**
+     * @return ContainerLogger
+     */
     public function getContainerLog()
     {
         return $this->containerLogger;

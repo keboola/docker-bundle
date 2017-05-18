@@ -7,8 +7,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
@@ -125,7 +124,7 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
             "configurationId" => "metadata-write-test"
         ];
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
         $writer->uploadTables($root . "/upload", $config, $systemMetadata);
         $metadataApi = new Metadata($this->client);
 

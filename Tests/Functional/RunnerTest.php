@@ -111,6 +111,7 @@ class RunnerTest extends KernelTestCase
             ->method('getContainerLog')
             ->will($this->returnValue($containerLogger));
 
+        /** @var JobMapper $jobMapperStub */
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
             ->getMock()
