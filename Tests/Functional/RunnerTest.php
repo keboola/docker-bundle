@@ -1003,11 +1003,10 @@ class RunnerTest extends KernelTestCase
                 'run',
                 '1234567'
             );
+            $this->fail("Component must fail");
         } catch (UserException $e) {
             $this->assertContains("File '/data/in/tables/source.csv' not found", $e->getMessage());
         }
-
-        $this->assertFalse($this->client->tableExists('in.c-keboola-docker-demo-app-test-config.sliced'));
     }
 
     public function testExecutorApplicationError()
