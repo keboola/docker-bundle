@@ -36,7 +36,7 @@
     </target>
 
     <target name="api-tests-ci" depends="prepare" description="Run unit tests with PHPUnit">
-        <exec executable="phpunit" failonerror="true">
+        <exec executable="${basedir}/vendor/bin/phpunit" failonerror="true">
             <env key="STORAGE_API_URL" value="${storage-api-url}"/>
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
             <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
@@ -59,7 +59,7 @@
     </target>
 
     <target name="api-tests-ci-full" depends="create-index" description="Run unit tests with PHPUnit">
-        <exec executable="phpunit" failonerror="true">
+        <exec executable="${basedir}/vendor/bin/phpunit" failonerror="true">
             <env key="STORAGE_API_URL" value="${storage-api-url}"/>
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
             <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
