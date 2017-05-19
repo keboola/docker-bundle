@@ -10,8 +10,7 @@ use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Symfony\Component\HttpKernel\Log\NullLogger;
 
 class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 {
@@ -43,10 +42,8 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -100,10 +97,8 @@ DOCKERFILE;
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -157,10 +152,8 @@ DOCKERFILE;
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -228,10 +221,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
@@ -291,10 +282,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
         /** @var ImageBuilder $image */
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke(
@@ -360,10 +349,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -415,10 +402,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -466,10 +451,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         ]);
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -561,13 +544,9 @@ DOCKERFILE;
         ];
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
 
-        /**
-         * @var $image ImageBuilder
-         */
-        $image = Image::factory($encryptor, $log, $imageConfig, $tempDir, true);
+        /** @var ImageBuilder $image */
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $this->assertInstanceOf(ImageBuilder::class, $image);
         $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 

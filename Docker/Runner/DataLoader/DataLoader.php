@@ -11,7 +11,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -24,7 +24,7 @@ class DataLoader implements DataLoaderInterface
     private $storageClient;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -62,7 +62,7 @@ class DataLoader implements DataLoaderInterface
      * DataLoader constructor.
      *
      * @param Client $storageClient
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @param string $dataDirectory
      * @param array $storageConfig
      * @param Component $component
@@ -70,7 +70,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function __construct(
         Client $storageClient,
-        Logger $logger,
+        LoggerInterface $logger,
         $dataDirectory,
         array $storageConfig,
         Component $component,
@@ -162,7 +162,7 @@ class DataLoader implements DataLoaderInterface
         try {
             $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
         } catch (ManifestMismatchException $e) {
-            $this->logger->warn($e->getMessage());
+            $this->logger->warning($e->getMessage());
         }
 
         if (isset($this->storageConfig["input"]["files"])) {

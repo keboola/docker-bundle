@@ -14,7 +14,7 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -40,7 +40,7 @@ class Writer
     protected $metadataClient;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     protected $logger;
 
@@ -104,7 +104,7 @@ class Writer
     }
 
     /**
-     * @return Logger
+     * @return LoggerInterface
      */
     public function getLogger()
     {
@@ -112,7 +112,7 @@ class Writer
     }
 
     /**
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @return $this
      */
     public function setLogger($logger)
@@ -146,9 +146,9 @@ class Writer
      * Writer constructor.
      *
      * @param Client $client
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      */
-    public function __construct(Client $client, Logger $logger)
+    public function __construct(Client $client, LoggerInterface $logger)
     {
         $this->setClient($client);
         $this->setMetadataClient(new Metadata($client));
@@ -509,7 +509,7 @@ class Writer
             $tableInfo = $this->getClient()->getTable($config["destination"]);
             $this->validateAgainstTable($tableInfo, $config);
             if (self::modifyPrimaryKeyDecider($tableInfo, $config)) {
-                $this->getLogger()->warn("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
+                $this->getLogger()->warning("Modifying primary key of table {$tableInfo["id"]} from [" . join(", ", $tableInfo["primaryKey"]) . "] to [" . join(", ", $config["primary_key"]) . "].");
                 $failed = false;
                 // modify primary key
                 if (count($tableInfo["primaryKey"]) > 0) {
@@ -517,7 +517,7 @@ class Writer
                         $this->client->removeTablePrimaryKey($tableInfo["id"]);
                     } catch (\Exception $e) {
                         // warn and go on
-                        $this->getLogger()->warn(
+                        $this->getLogger()->warning(
                             "Error deleting primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         $failed = true;
@@ -530,7 +530,7 @@ class Writer
                         }
                     } catch (\Exception $e) {
                         // warn and try to rollback to original state
-                        $this->getLogger()->warn(
+                        $this->getLogger()->warning(
                             "Error changing primary key of table {$tableInfo["id"]}: " . $e->getMessage()
                         );
                         if (count($tableInfo["primaryKey"]) > 0) {

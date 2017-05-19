@@ -9,8 +9,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
@@ -90,7 +89,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
@@ -121,7 +120,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
         $table = $this->client->getTable("out.c-docker-test.table");
@@ -154,7 +153,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 
@@ -185,7 +184,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
             "{\"destination\": \"out.c-docker-test.table\",\"primary_key\":[\"Id\",\"Name\"],\"columns\":[\"Id\",\"Name\"]}"
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", [], ['componentId' => 'foo']);
 
@@ -225,7 +224,7 @@ class StorageApiHeadlessWriterTest extends \PHPUnit_Framework_TestCase
             )
         );
 
-        $writer = new Writer($this->client, (new Logger("null"))->pushHandler(new NullHandler()));
+        $writer = new Writer($this->client, new NullLogger());
 
         $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
 

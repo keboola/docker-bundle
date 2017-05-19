@@ -9,6 +9,8 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
+use Psr\Log\Test\LoggerInterfaceTest;
 
 class ImageCreator
 {
@@ -18,7 +20,7 @@ class ImageCreator
     private $encryptor;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
@@ -47,9 +49,17 @@ class ImageCreator
      */
     private $temp;
 
+    /**
+     * ImageCreator constructor.
+     * @param ObjectEncryptor $encryptor
+     * @param LoggerInterface $logger
+     * @param Client $storageClient
+     * @param Component $mainComponent
+     * @param array $componentConfig
+     */
     public function __construct(
         ObjectEncryptor $encryptor,
-        Logger $logger,
+        LoggerInterface $logger,
         Client $storageClient,
         Component $mainComponent,
         array $componentConfig

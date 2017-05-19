@@ -4,11 +4,9 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
@@ -38,13 +36,8 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -73,13 +66,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -113,13 +100,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":latest", $image->getFullImageId());

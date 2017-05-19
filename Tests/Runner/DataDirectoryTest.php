@@ -5,8 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
+use Psr\Log\NullLogger;
 use Symfony\Component\Process\Process;
 
 class DataDirectoryTest extends \PHPUnit_Framework_TestCase
@@ -15,10 +14,8 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
     public function testDataDirectory()
     {
         $temp = new Temp();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         $dataDir = $this->getMockBuilder(DataDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setConstructorArgs([$temp->getTmpFolder(), new NullLogger()])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
@@ -36,10 +33,8 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
     public function testDataDirectoryTerminate()
     {
         $temp = new Temp();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         $dataDir = $this->getMockBuilder(DataDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setConstructorArgs([$temp->getTmpFolder(), new NullLogger()])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
@@ -66,10 +61,8 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
     public function testDataDirectoryTimeout()
     {
         $temp = new Temp();
-        $logger = new Logger('null');
-        $logger->pushHandler(new NullHandler());
         $dataDir = $this->getMockBuilder(DataDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setConstructorArgs([$temp->getTmpFolder(), new NullLogger()])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());

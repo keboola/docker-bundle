@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\Syrup\Exception\ApplicationException;
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -20,16 +20,16 @@ class DataDirectory
     private $workingDir;
 
     /**
-     * @var Logger
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
      * DataDirectory constructor.
      * @param string $workingDir
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      */
-    public function __construct($workingDir, Logger $logger)
+    public function __construct($workingDir, LoggerInterface $logger)
     {
         $this->workingDir = $workingDir;
         $this->logger = $logger;

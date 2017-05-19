@@ -7,6 +7,7 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 abstract class Image
 {
@@ -103,13 +104,13 @@ abstract class Image
 
     /**
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
-     * @param Logger $logger Logger instance.
+     * @param LoggerInterface $logger Logger instance.
      * @param Component $component Docker image runtime configuration.
      * @param Temp $temp Temporary service.
      * @param bool $isMain True to mark the image as main image.
      * @return Image|DockerHub
      */
-    public static function factory(ObjectEncryptor $encryptor, Logger $logger, Component $component, Temp $temp, $isMain)
+    public static function factory(ObjectEncryptor $encryptor, LoggerInterface $logger, Component $component, Temp $temp, $isMain)
     {
         switch ($component->getType()) {
             case "dockerhub":
