@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -72,8 +73,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -98,8 +99,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -116,9 +117,8 @@ class NetworkTest extends KernelTestCase
         try {
             $container->run();
             $this->fail("Ping must fail");
-        } catch (ApplicationException $e) {
-            var_dump($e->getMessage());
-            $this->assertContains("unknown host www.example.com", $e->getMessage());
+        } catch (UserException $e) {
+            $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
     }
 
@@ -128,8 +128,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -153,8 +153,8 @@ class NetworkTest extends KernelTestCase
         try {
             $container->run();
             $this->fail("Ping must fail");
-        } catch (ApplicationException $e) {
-            $this->assertContains("unknown host www.example.com", $e->getMessage());
+        } catch (UserException $e) {
+            $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
     }
 
@@ -164,8 +164,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -198,8 +198,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -225,8 +225,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
@@ -258,8 +258,8 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "centos",
-                    "tag" => "7.2.1511",
+                    "uri" => "alpine",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
