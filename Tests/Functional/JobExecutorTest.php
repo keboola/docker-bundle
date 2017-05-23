@@ -87,6 +87,7 @@ class JobExecutorTest extends KernelTestCase
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
+        /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
             $this->temp,
             $encryptor,

@@ -6,11 +6,11 @@ use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
 class DataDirectoryTest extends \PHPUnit_Framework_TestCase
 {
-
     public function testDataDirectory()
     {
         $temp = new Temp();
@@ -74,6 +74,26 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
 
         /** @var DataDirectory $dataDir */
         $dataDir->createDataDir();
+        $dataDir->dropDataDir();
+    }
+
+    public function testDataDirectoryMove()
+    {
+        $temp = new Temp();
+        $dataDir = new DataDirectory($temp->getTmpFolder(), new NullLogger());
+
+        $fs = new Filesystem();
+        $tableFile = 'id,name\n10,apples';
+        $tableManifestFile = '{"incremental":false}';
+        $stateFile = '{"time":{"previousStart":1495580620}}';
+        $dataDir->createDataDir();
+        $fs->dumpFile($dataDir->getDataDir() . '/out/tables/table', $tableFile);
+        $fs->dumpFile($dataDir->getDataDir() . '/out/tables/table.manifest', $tableManifestFile);
+        $fs->dumpFile($dataDir->getDataDir() . '/out/state.json', $stateFile);
+        $dataDir->moveOutputToInput();
+        self::assertEquals($tableFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table'));
+        self::assertEquals($tableManifestFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table.manifest'));
+        self::assertEquals($stateFile, file_get_contents($dataDir->getDataDir() . '/in/state.json'));
         $dataDir->dropDataDir();
     }
 }
