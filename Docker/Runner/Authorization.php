@@ -3,6 +3,9 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\OAuthV2Api\Exception\RequestException;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 
 class Authorization
@@ -44,16 +47,24 @@ class Authorization
         }
         if (isset($configData['oauth_api']['id'])) {
             // read authorization from API
-            $credentials = $this->oauthClient->getDetail(
-                $this->componentId,
-                $configData['oauth_api']['id']
-            );
-            if ($this->sandboxed) {
-                $decrypted = $credentials;
-            } else {
-                $decrypted = $this->encryptor->decrypt($credentials);
+            try {
+                $credentials = $this->oauthClient->getDetail(
+                    $this->componentId,
+                    $configData['oauth_api']['id']
+                );
+                if ($this->sandboxed) {
+                    $decrypted = $credentials;
+                } else {
+                    $decrypted = $this->encryptor->decrypt($credentials);
+                }
+                $data['oauth_api']['credentials'] = $decrypted;
+            } catch (RequestException $e) {
+                if (($e->getCode() >= 400) && ($e->getCode() < 500)) {
+                    throw new UserException($e->getMessage(), $e);
+                } else {
+                    throw new ApplicationException($e->getMessage(), $e);
+                }
             }
-            $data['oauth_api']['credentials'] = $decrypted;
         }
         return $data;
     }

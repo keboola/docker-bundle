@@ -6,7 +6,10 @@ use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\OAuthV2Api\Exception\RequestException;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 
@@ -43,6 +46,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($oauthResponse));
         $config = ['oauth_api' => ['id' => 'whatever']];
 
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
         $this->assertEquals(
             $credentials,
@@ -81,6 +85,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ->will($this->returnValue($oauthResponse));
         $config = ['oauth_api' => ['id' => 'whatever']];
 
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', true);
         $this->assertEquals(
             $oauthResponse,
@@ -120,6 +125,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
         $temp = new Temp();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config);
@@ -182,6 +188,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
         $temp = new Temp();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', true);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config);
@@ -248,6 +255,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
         $this->assertEquals(
             $credentials,
@@ -255,6 +263,57 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         );
     }
 
+    public function testOauthUserError()
+    {
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $config = ['oauth_api' => ['id' => 'test-credentials-45']];
+
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'test-credentials-45')
+            ->will($this->throwException(new RequestException("OAuth API error: No data found for api: keboola.docker-demo", 400)));
+        /** @var Credentials $oauthClientStub */
+        $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
+        try {
+            $auth->getAuthorization($config);
+            $this->fail("Must raise UserException");
+        } catch (UserException $e) {
+            $this->assertContains('No data found for api', $e->getMessage());
+        }
+    }
+
+    public function testOauthApplicationError()
+    {
+        $encryptor = new ObjectEncryptor();
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId('keboola.docker-demo');
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $config = ['oauth_api' => ['id' => 'test-credentials-45']];
+
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $oauthClientStub->expects($this->once())
+            ->method("getDetail")
+            ->with('keboola.docker-demo', 'test-credentials-45')
+            ->will($this->throwException(new RequestException("Internal Server Error", 500)));
+        /** @var Credentials $oauthClientStub */
+        $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
+        try {
+            $auth->getAuthorization($config);
+            $this->fail("Must raise ApplicationException");
+        } catch (ApplicationException $e) {
+            $this->assertContains('Internal Server Error', $e->getMessage());
+        }
+    }
 
     public function testOauthInjectedSandboxed()
     {
@@ -282,6 +341,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', true);
         $this->assertEquals(
             $config,
@@ -317,6 +377,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', false);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config);
@@ -375,6 +436,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptor, 'keboola.docker-demo', true);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config);
