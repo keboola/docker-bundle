@@ -506,6 +506,85 @@ class ApiControllerTest extends WebTestCase
     }
 
 
+    public function testSaveConfigWithEmptyKey()
+    {
+        $server = [
+            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
+
+        ];
+        $parameters = [
+            "component" => "docker-dummy-test",
+            "configId" => 1,
+            "configuration" => '{
+                "": "value"
+            }'
+        ];
+        $container = self::$container;
+        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
+        $container->get('request_stack')->push($request);
+        $ctrl = new ApiController();
+
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->atLeastOnce())
+            ->method("getClient")
+            ->will($this->returnValue($storageClientStub));
+
+        // mock client to return image data
+        $indexActionValue = array(
+            'components' =>
+                array(
+                    0 =>
+                        array(
+                            'id' => 'docker-dummy-test',
+                            'type' => 'other',
+                            'name' => 'Docker Config Dump',
+                            'description' => 'Testing Docker',
+                            'longDescription' => null,
+                            'hasUI' => false,
+                            'hasRun' => true,
+                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
+                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
+                            'data' => array(
+                                'definition' =>
+                                    array(
+                                        'type' => 'dockerhub',
+                                        'uri' => 'keboola/docker-dummy-test',
+                                    ),
+                            ),
+                            'flags' => array(),
+                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
+                        )
+                )
+        );
+
+        $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"":"value"}},"state":{}}';
+
+        $storageClientStub->expects($this->atLeastOnce())
+            ->method("indexAction")
+            ->will($this->returnValue($indexActionValue));
+        $storageClientStub->expects($this->once())
+            ->method("apiPut")
+            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
+                if ($body['configuration'] != '{"":"value"}') {
+                    return false;
+                }
+                return true;
+            }))
+            ->will($this->returnValue(json_decode($responseJson, true)));
+
+        $container->set("syrup.storage_api", $storageServiceStub);
+
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->saveConfigAction($request);
+    }
+
+    
     public function testSaveChangeDescription()
     {
         $server = [
