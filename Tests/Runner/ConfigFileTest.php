@@ -21,6 +21,7 @@ class ConfigFileTest extends \PHPUnit_Framework_TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         $config->createConfigFile(['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]]);
@@ -52,6 +53,7 @@ SAMPLE;
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
 
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
@@ -94,6 +96,7 @@ SAMPLE;
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData);
@@ -119,6 +122,7 @@ SAMPLE;
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData);

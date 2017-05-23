@@ -1145,4 +1145,99 @@ class RunnerTest extends KernelTestCase
             $this->assertContains('Failed to pull parent image completely_invalid_uri', $e->getMessage());
         }
     }
+
+    public function testExecutorInvalidInputMapping()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app',
+                ]
+            ]
+        ];
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
+                            "source" => "in.c-docker-test.test",
+                            // erroneous lines
+                            "foo" => "bar"
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', $config, [], 'run', 'run', '1234567');
+            $this->fail("User exception must be raised");
+        } catch (UserException $e) {
+            $this->assertContains('Unrecognized option "foo" under "container.storage.input.tables.0"', $e->getMessage());
+        }
+    }
+
+    public function testExecutorInvalidInputMapping2()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-app',
+            'data' => [
+                'definition' => [
+                    'type' => 'quayio',
+                    'uri' => 'keboola/docker-demo-app',
+                ]
+            ]
+        ];
+        $config = [
+            "storage" => [
+                "input" => [
+                    "tables" => [
+                        [
+                            "source" => "in.c-docker-test.test",
+                            // erroneous lines
+                            "columns" => [
+                                [
+                                    "value" => "id",
+                                    "label" => "id"
+                                ],
+                                [
+                                    "value" => "col1",
+                                    "label" => "col1"
+                                ]
+                            ]
+                        ]
+                    ]
+                ],
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "sliced.csv",
+                            "destination" => "in.c-docker-test.out"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        try {
+            $runner->run($componentData, 'test-config', $config, [], 'run', 'run', '1234567');
+            $this->fail("User exception must be raised");
+        } catch (UserException $e) {
+            $this->assertContains('Invalid type for path "container.storage.input.tables.0.columns.0".', $e->getMessage());
+        }
+    }
 }
