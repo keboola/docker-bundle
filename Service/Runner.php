@@ -238,7 +238,7 @@ class Runner
             $component->getConfigurationFormat()
         );
 
-        if ($action == 'run') {
+        if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $this->dataLoader = new DataLoader(
                 $this->storageClient,
                 $this->loggerService->getLog(),

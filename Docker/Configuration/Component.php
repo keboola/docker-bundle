@@ -86,7 +86,7 @@ class Component extends Configuration
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->enumNode('input')
-                        ->values(['local', 's3'])
+                        ->values(['local', 's3', 'none'])
                         ->defaultValue('local')
                     ->end()
                 ->end()
