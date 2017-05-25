@@ -396,8 +396,8 @@ class Writer
             if (!empty($config['metadata'])) {
                 $this->metadataClient->postTableMetadata($config["destination"], $systemMetadata['componentId'], $config["metadata"]);
             }
-            if (!empty($config['columnMetadata'])) {
-                $this->writeColumnMetadata($config["destination"], $systemMetadata['componentId'], $config["columnMetadata"]);
+            if (!empty($config['column_metadata'])) {
+                $this->writeColumnMetadata($config["destination"], $systemMetadata['componentId'], $config["column_metadata"]);
             }
         }
 

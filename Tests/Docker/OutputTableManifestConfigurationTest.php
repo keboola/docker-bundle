@@ -6,31 +6,27 @@ use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 
 class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
 {
-
-    /**
-     *
-     */
     public function testBasicConfiguration()
     {
-        $config = array(
+        $config = [
             "destination" => "in.c-main.test"
-        );
+        ];
 
-        $expectedArray = array(
+        $expectedArray = [
             "destination" => "in.c-main.test",
-            "primary_key" => array(),
-            "columns" => array(),
+            "primary_key" => [],
+            "columns" => [],
             "incremental" => false,
-            "delete_where_values" => array(),
+            "delete_where_values" => [],
             "delete_where_operator" => "eq",
             "delimiter" => ",",
             "enclosure" => "\"",
             "escaped_by" => "",
-            "metadata" => array(),
-            "columnMetadata" => array()
-        );
+            "metadata" => [],
+            "column_metadata" => []
+        ];
 
-        $processedConfiguration = (new Table\Manifest())->parse(array("config" => $config));
+        $processedConfiguration = (new Table\Manifest())->parse(["config" => $config]);
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
@@ -39,24 +35,24 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testComplexConfiguration()
     {
-        $config = array(
+        $config = [
             "destination" => "in.c-main.test",
             "incremental" => true,
-            "primary_key" => array("Id", "Name"),
-            "columns" => array("Id", "Name", "status"),
+            "primary_key" => ["Id", "Name"],
+            "columns" => ["Id", "Name", "status"],
             "delete_where_column" => "status",
-            "delete_where_values" => array("val1", "val2"),
+            "delete_where_values" => ["val1", "val2"],
             "delete_where_operator" => "ne",
             "delimiter" => "\t",
             "enclosure" => "'",
             "escaped_by" => "\\",
-            "metadata" => array(),
-            "columnMetadata" => array()
-        );
+            "metadata" => [],
+            "column_metadata" => []
+        ];
 
         $expectedArray = $config;
 
-        $processedConfiguration = (new Table\Manifest())->parse(array("config" => $config));
+        $processedConfiguration = (new Table\Manifest())->parse(["config" => $config]);
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
@@ -67,16 +63,16 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
      */
     public function testInvalidWhereOperator()
     {
-        $config = array(
+        $config = [
             "destination" => "in.c-main.test",
             "delete_where_operator" => 'abc'
-        );
-        (new Table\Manifest())->parse(array("config" => $config));
+        ];
+        (new Table\Manifest())->parse(["config" => $config]);
     }
 
     public function testTableMetadataConfiguration()
     {
-        $config = array(
+        $config = [
             "destination" => "in.c-main.test",
             "metadata" => [
                 [
@@ -88,32 +84,31 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
                     "value" => "table value two"
                 ]
             ]
-        );
+        ];
 
-        $expectedArray = array(
+        $expectedArray = [
             "destination" => "in.c-main.test",
-            "primary_key" => array(),
-            "columns" => array(),
+            "primary_key" => [],
+            "columns" => [],
             "incremental" => false,
-            "delete_where_values" => array(),
+            "delete_where_values" => [],
             "delete_where_operator" => "eq",
             "delimiter" => ",",
             "enclosure" => "\"",
             "escaped_by" => "",
-            "columnMetadata" => array()
-        );
+            "column_metadata" => []
+        ];
         $expectedArray['metadata'] = $config['metadata'];
 
-        $parsedConfig = (new Table\Manifest())->parse(array("config" => $config));
-
+        $parsedConfig = (new Table\Manifest())->parse(["config" => $config]);
         $this->assertEquals($expectedArray, $parsedConfig);
     }
 
     public function testColumnMetadataConfiguration()
     {
-        $config = array(
+        $config = [
             "destination" => "in.c-main.test",
-            "columnMetadata" => [
+            "column_metadata" => [
                 "colA" => [
                     [
                         "key" => "column.key.one",
@@ -135,24 +130,24 @@ class OutputTableManifestConfigurationTest extends \PHPUnit_Framework_TestCase
                     ]
                 ]
             ]
-        );
+        ];
 
-        $expectedArray = array(
+        $expectedArray = [
             "destination" => "in.c-main.test",
-            "primary_key" => array(),
-            "columns" => array(),
+            "primary_key" => [],
+            "columns" => [],
             "incremental" => false,
-            "delete_where_values" => array(),
+            "delete_where_values" => [],
             "delete_where_operator" => "eq",
             "delimiter" => ",",
             "enclosure" => "\"",
             "escaped_by" => "",
-            "metadata" => array()
-        );
+            "metadata" => []
+        ];
 
-        $expectedArray['columnMetadata'] = $config['columnMetadata'];
+        $expectedArray['column_metadata'] = $config['column_metadata'];
 
-        $parsedConfig = (new Table\Manifest())->parse(array("config" => $config));
+        $parsedConfig = (new Table\Manifest())->parse(["config" => $config]);
 
         $this->assertEquals($expectedArray, $parsedConfig);
     }

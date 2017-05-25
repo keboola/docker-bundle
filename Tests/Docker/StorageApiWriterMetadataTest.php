@@ -94,7 +94,7 @@ class StorageApiWriterMetadataTest extends \PHPUnit_Framework_TestCase
                             "value" => "table value two"
                         ]
                     ],
-                    "columnMetadata" => [
+                    "column_metadata" => [
                         "Id" => [
                             [
                                 "key" => "column.key.one",

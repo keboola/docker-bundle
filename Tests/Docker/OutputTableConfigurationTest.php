@@ -6,10 +6,6 @@ use Keboola\DockerBundle\Docker\Configuration\Output\Table;
 
 class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
 {
-
-    /**
-     *
-     */
     public function testBasicConfiguration()
     {
         $config = array(
@@ -29,16 +25,13 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "enclosure" => "\"",
             "escaped_by" => "",
             "metadata" => [],
-            "columnMetadata" => []
+            "column_metadata" => []
         );
 
         $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);
     }
 
-    /**
-     *
-     */
     public function testComplexConfiguration()
     {
         $config = array(
@@ -54,7 +47,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "enclosure" => "'",
             "escaped_by" => "\\",
             "metadata" => [],
-            "columnMetadata" => []
+            "column_metadata" => []
         );
 
         $expectedArray = $config;
@@ -86,9 +79,6 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
         (new Table())->parse(array("config" => array()));
     }
 
-    /**
-     *
-     */
     public function testPrimaryKeyEmptyString()
     {
         $config = array(
@@ -109,7 +99,7 @@ class OutputTableConfigurationTest extends \PHPUnit_Framework_TestCase
             "enclosure" => "\"",
             "escaped_by" => "",
             "metadata" => [],
-            "columnMetadata" => []
+            "column_metadata" => []
         );
         $processedConfiguration = (new Table())->parse(array("config" => $config));
         $this->assertEquals($expectedArray, $processedConfiguration);

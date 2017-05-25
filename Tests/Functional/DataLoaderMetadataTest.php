@@ -163,7 +163,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                                 "value" => "table value two"
                             ]
                         ],
-                        "columnMetadata" => [
+                        "column_metadata" => [
                             "id" => [
                                 [
                                     "key" => "column.key.one",
@@ -247,7 +247,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                         "value": "table value two"
                     }
                 ],
-                "columnMetadata": {
+                "column_metadata": {
                     "id": [{
                             "key": "column.key.one",
                             "value": "column value one id"
@@ -320,7 +320,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         $fs->dumpFile(
             $data->getDataDir() . '/out/tables/sliced.csv.manifest',
             '{"metadata":[{"key":"table.key.one","value":"table value one"},'.
-            '{"key":"table.key.two","value":"table value two"}],"columnMetadata":{"id":['.
+            '{"key":"table.key.two","value":"table value two"}],"column_metadata":{"id":['.
             '{"key":"column.key.one","value":"column value one id"},'.
             '{"key":"column.key.two","value":"column value two id"}],'.
             '"text":[{"key":"column.key.one","value":"column value one text"},'.
