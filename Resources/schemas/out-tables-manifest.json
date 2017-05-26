@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "title": "Table Output Manifest",
+  "type": "object",
+  "properties": {
+    "destination": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delimiter": {
+      "type": "string",
+      "minLength": 1
+    },
+    "enclosure": {
+      "type": "string",
+      "minLength": 1
+    },
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "incremental": {
+      "type": "boolean"
+    },    
+    "primary_key": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "delete_where_column": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delete_where_values": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },    
+    "last_change_date": {
+      "type": "string",
+      "minLength": 1
+    },
+    "delete_where_operator": {
+      "type": "string",
+      "minLength": 1
+    },
+    "metadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timestamp": {
+            "type": "string",
+            "minLength": 1
+          }          
+        }
+      }
+    },
+    "column_metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

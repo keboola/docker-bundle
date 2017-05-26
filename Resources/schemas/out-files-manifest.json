@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "title": "File Output Manifest",
+  "type": "object",
+  "properties": {
+    "is_public": {
+      "type": "boolean"
+    },
+    "is_permanent": {
+      "type": "boolean"
+    },
+    "is_encrypted": {
+      "type": "boolean"
+    },
+    "notify": {
+      "type": "boolean"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

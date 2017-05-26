@@ -213,6 +213,68 @@
     "runtime": {
       "type": "object",
       "additionalProperties": true
+    },
+    "processors": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "before": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["definition"],
+            "properties": {
+              "definition": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "component": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "after": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["definition"],
+            "properties": {
+              "definition": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "component": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "parameters": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }        
+      }
+    },
+    "image_parameters": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "action": {
+      "type": "string",
+      "minLength": 1
     }
   }
 }

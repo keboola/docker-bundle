@@ -1,0 +1,104 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": false,
+  "title": "Table Input Manifest",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primary_key": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "indexed_columns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "created": {
+      "type": "string",
+      "minLength": 1
+    },
+    "last_change_date": {
+      "type": "string",
+      "minLength": 1
+    },
+    "last_import_date": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rows_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "data_size_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "is_alias": {
+      "type": "boolean"
+    },    
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "attributes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "metadata": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "key": {
+            "type": "string",
+            "minLength": 1
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1
+          },
+          "timestamp": {
+            "type": "string",
+            "minLength": 1
+          }          
+        }
+      }
+    },
+    "column_metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}
