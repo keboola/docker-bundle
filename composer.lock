@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.28.3",
+            "version": "3.28.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "8c3c45f73abfa377f37599da49d053e5d2347059"
+                "reference": "a02d10b668ce905c627c6ce149e095b159538341"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/8c3c45f73abfa377f37599da49d053e5d2347059",
-                "reference": "8c3c45f73abfa377f37599da49d053e5d2347059",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/a02d10b668ce905c627c6ce149e095b159538341",
+                "reference": "a02d10b668ce905c627c6ce149e095b159538341",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-05-24T18:18:21+00:00"
+            "time": "2017-05-25T22:17:39+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1929,16 +1929,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "6.4.1",
+            "version": "6.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "c89785b832baea4a7b0c5b46a7a560c260bc229f"
+                "reference": "8e77401f866d388c43e64fcd92b6df6a06b278fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c89785b832baea4a7b0c5b46a7a560c260bc229f",
-                "reference": "c89785b832baea4a7b0c5b46a7a560c260bc229f",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/8e77401f866d388c43e64fcd92b6df6a06b278fe",
+                "reference": "8e77401f866d388c43e64fcd92b6df6a06b278fe",
                 "shasum": ""
             },
             "require": {
@@ -1968,7 +1968,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2017-04-27T13:38:14+00:00"
+            "time": "2017-05-27T19:46:33+00:00"
         },
         {
             "name": "keboola/syrup",

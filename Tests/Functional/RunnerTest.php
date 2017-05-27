@@ -490,6 +490,60 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
     }
 
+    public function testClearState()
+    {
+        $state = ['key' => 'value'];
+        $runner = $this->getRunner(new NullHandler(), $encryptor);
+        $cmp = new Components($this->client);
+        try {
+            $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $cfg = new Configuration();
+        $cfg->setComponentId('docker-demo');
+        $cfg->setConfigurationId('dummy-configuration');
+        $cfg->setConfiguration([]);
+        $cfg->setName('Test configuration');
+        $cfg->setState($state);
+        $cmp->addConfiguration($cfg);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'tag' => '0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'cat /data/config.json',
+                    ],
+                ],
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            'dummy-configuration',
+            [],
+            $state,
+            'run',
+            'run',
+            '1234567'
+        );
+        $cfg = $cmp->getConfiguration('docker-demo', 'dummy-configuration');
+        self::assertEquals([], $cfg['state']);
+        $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
+    }
+
     public function testExecutorDefaultBucketWithDot()
     {
         // Create bucket
