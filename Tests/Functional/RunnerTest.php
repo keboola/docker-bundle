@@ -1376,4 +1376,61 @@ class RunnerTest extends KernelTestCase
             $this->assertContains('Invalid type for path "container.storage.input.tables.0.columns.0".', $e->getMessage());
         }
     }
+
+
+    public function testExecutorSlicedFiles()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $configuration->setState(json_encode(['foo' => 'bar']));
+        $component->addConfiguration($configuration);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'tag' => '0.0.1',
+                    'build_options' => [
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && touch /data/out/tables/mytable.csv.gz/part1 && echo "value1" > /data/out/tables/mytable.csv.gz/part1 && touch /data/out/tables/mytable.csv.gz/part2 && echo "value2" > /data/out/tables/mytable.csv.gz/part2 && echo "{\"destination\":\"in.c-docker-test.mytable\",\"columns\":[\"col1\"]}" > /data/out/tables/mytable.csv.gz.manifest',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $runner->run(
+            $componentData,
+            'test-configuration',
+            [],
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
+    }
 }
