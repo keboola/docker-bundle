@@ -1405,8 +1405,7 @@ class RunnerTest extends KernelTestCase
                             . 'chmod 640 /data/out/tables/mytable.csv.gz/part1 '
                             . '&& touch /data/out/tables/mytable.csv.gz/part2 && '
                             . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'chmod 640 /data/out/tables/mytable.csv.gz/part2 '
-                            . 'echo "{\"destination\":\"in.c-docker-test.mytable\",\"columns\":[\"col1\"]}" > /data/out/tables/mytable.csv.gz.manifest',
+                            . 'chmod 640 /data/out/tables/mytable.csv.gz/part2'
                     ],
                 ],
                 'configuration_format' => 'json',
