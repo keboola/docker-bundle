@@ -1382,21 +1382,6 @@ class RunnerTest extends KernelTestCase
     {
         $runner = $this->getRunner(new NullHandler());
 
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
-        $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
-        $component->addConfiguration($configuration);
-
         $componentData = [
             'id' => 'docker-demo',
             'type' => 'other',
@@ -1413,17 +1398,39 @@ class RunnerTest extends KernelTestCase
                             'type' => 'git'
                         ],
                         'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && touch /data/out/tables/mytable.csv.gz/part1 && echo "value1" > /data/out/tables/mytable.csv.gz/part1 && touch /data/out/tables/mytable.csv.gz/part2 && echo "value2" > /data/out/tables/mytable.csv.gz/part2 && echo "{\"destination\":\"in.c-docker-test.mytable\",\"columns\":[\"col1\"]}" > /data/out/tables/mytable.csv.gz.manifest',
+                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
+                            . 'chmod 050 /data/out/tables/mytable.csv.gz && '
+                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 '
+                            . 'chmod 640 /data/out/tables/mytable.csv.gz/part1 '
+                            . '&& touch /data/out/tables/mytable.csv.gz/part2 && '
+                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
+                            . 'chmod 640 /data/out/tables/mytable.csv.gz/part2 '
+                            . 'echo "{\"destination\":\"in.c-docker-test.mytable\",\"columns\":[\"col1\"]}" > /data/out/tables/mytable.csv.gz.manifest',
                     ],
                 ],
                 'configuration_format' => 'json',
             ],
         ];
 
+        $config = [
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
         $runner->run(
             $componentData,
             'test-configuration',
-            [],
+            $config,
             [],
             'run',
             'run',
@@ -1431,6 +1438,5 @@ class RunnerTest extends KernelTestCase
         );
 
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 }
