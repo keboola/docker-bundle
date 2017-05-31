@@ -397,6 +397,7 @@ class Runner
                     $componentOutput = $process->getOutput();
                 }
             } finally {
+                $this->dataDirectory->normalizePermissions();
                 if ($image->isMain()) {
                     $this->usageFile->storeUsage();
                 }

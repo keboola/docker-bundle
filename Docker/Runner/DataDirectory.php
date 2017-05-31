@@ -107,7 +107,6 @@ class DataDirectory
 
     public function dropDataDir()
     {
-        $this->normalizePermissions();
         $fs = new Filesystem();
         $finder = new Finder();
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
