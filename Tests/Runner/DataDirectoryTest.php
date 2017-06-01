@@ -52,7 +52,7 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
         /** @var DataDirectory $dataDir */
         $dataDir->createDataDir();
         try {
-            $dataDir->dropDataDir();
+            $dataDir->normalizePermissions();
             $this->fail("Too many errors must fail");
         } catch (ApplicationException $e) {
         }

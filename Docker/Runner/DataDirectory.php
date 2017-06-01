@@ -61,7 +61,9 @@ class DataDirectory
     {
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         return "sudo docker run --rm --volume=" .
-            $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R'";
+            $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R && "
+                . "find /data -type d -exec chmod 755 {} + && "
+                . "find /data -type f -exec chmod 644 {} +'";
     }
 
     public function normalizePermissions()
@@ -107,7 +109,6 @@ class DataDirectory
 
     public function dropDataDir()
     {
-        $this->normalizePermissions();
         $fs = new Filesystem();
         $finder = new Finder();
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
