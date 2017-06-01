@@ -12,6 +12,7 @@
         "keboola/storage-api-client": "^6.4",
         "keboola/gelf-server": "^1.0",
         "keboola/input-mapping": "^2.0",
+        "keboola/output-mapping": "^1.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {

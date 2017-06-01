@@ -2,17 +2,12 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\StorageApi\Writer;
+use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\TableExporter;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
-use Keboola\Syrup\Exception\UserException;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
