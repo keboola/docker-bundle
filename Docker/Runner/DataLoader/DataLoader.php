@@ -6,8 +6,6 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\OutputMapping\Exception\ManifestMismatchException;
-use Keboola\OutputMapping\Exception\OutputOperationException;
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -159,11 +157,7 @@ class DataLoader implements DataLoaderInterface
 
         try {
             $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
-            try {
-                $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-            } catch (ManifestMismatchException $e) {
-                $this->logger->warning($e->getMessage());
-            }
+            $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
 
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
