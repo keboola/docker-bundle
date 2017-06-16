@@ -2,8 +2,10 @@
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\InputMapping\Configuration\File;
-use Keboola\InputMapping\Configuration\Table;
+use Keboola\InputMapping\Configuration\File as InputFile;
+use Keboola\InputMapping\Configuration\Table as InputTable;
+use Keboola\OutputMapping\Configuration\File as OutputFile;
+use Keboola\OutputMapping\Configuration\Table as OutputTable;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Container extends Configuration
@@ -32,14 +34,14 @@ class Container extends Configuration
                 ->arrayNode("tables")
                     ->prototype("array")
         ;
-        Table::configureNode($inputTable);
+        InputTable::configureNode($inputTable);
 
         $inputFile = $input
             ->children()
                 ->arrayNode("files")
                     ->prototype("array")
         ;
-        File::configureNode($inputFile);
+        InputFile::configureNode($inputFile);
 
         $output = $storage
             ->children()
@@ -50,14 +52,14 @@ class Container extends Configuration
                 ->arrayNode("tables")
                     ->prototype("array")
         ;
-        Output\Table::configureNode($outputTable);
+        OutputTable::configureNode($outputTable);
 
         $outputFile = $output
             ->children()
                 ->arrayNode("files")
                     ->prototype("array")
         ;
-        Output\File::configureNode($outputFile);
+        OutputFile::configureNode($outputFile);
 
         // authorization
         $root->children()

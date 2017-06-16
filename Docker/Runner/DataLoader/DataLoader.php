@@ -3,10 +3,10 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\StorageApi\Writer;
-use Keboola\DockerBundle\Exception\ManifestMismatchException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader\Reader;
+use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -123,11 +123,8 @@ class DataLoader implements DataLoaderInterface
         $this->logger->debug("Storing results.");
 
         $writer = new Writer($this->storageClient, $this->logger);
-
         $writer->setFormat($this->component->getConfigurationFormat());
         $writer->setFeatures($this->features);
-
-        $writer->setFormat($this->component->getConfigurationFormat());
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
@@ -158,16 +155,16 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
-        $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
         try {
+            $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
             $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-        } catch (ManifestMismatchException $e) {
-            $this->logger->warning($e->getMessage());
-        }
 
-        if (isset($this->storageConfig["input"]["files"])) {
-            // tag input files
-            $writer->tagFiles($this->storageConfig["input"]["files"]);
+            if (isset($this->storageConfig["input"]["files"])) {
+                // tag input files
+                $writer->tagFiles($this->storageConfig["input"]["files"]);
+            }
+        } catch (InvalidOutputException $ex) {
+            throw new UserException($ex->getMessage(), $ex);
         }
     }
 
