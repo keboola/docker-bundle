@@ -416,6 +416,12 @@ class Container
                 $e->getMessage()
             );
             $inspect = [];
+        } catch (ProcessTimedOutException $e) {
+            $this->logger->notice(
+                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
+                $e->getMessage()
+            );
+            $inspect = [];
         }
         return $inspect;
     }
