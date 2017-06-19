@@ -9,6 +9,7 @@ use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -175,6 +176,11 @@ class Container
                 try {
                     $this->removeContainer($this->id);
                 } catch (ProcessFailedException $e) {
+                    $this->logger->notice(
+                        "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
+                    );
+                    // continue
+                } catch (ProcessTimedOutException $e) {
                     $this->logger->notice(
                         "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
                     );
