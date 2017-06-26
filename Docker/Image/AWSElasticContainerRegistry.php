@@ -36,6 +36,11 @@ class AWSElasticContainerRegistry extends Image
         return $this->awsRegion;
     }
 
+    public function getAwsAccountId()
+    {
+        return substr($this->getImageId(), 0, strpos($this->getImageId(), '.'));
+    }
+
     /**
      * @return string
      */
@@ -46,7 +51,7 @@ class AWSElasticContainerRegistry extends Image
             'version' => '2015-09-21'
         ));
         try {
-            $authorization = $ecrClient->getAuthorizationToken([]);
+            $authorization = $ecrClient->getAuthorizationToken(["registryIds" => [$this->getAwsAccountId()]]);
         } catch (CredentialsException $e) {
             throw new LoginFailedException($e->getMessage());
         } catch (EcrException $e) {

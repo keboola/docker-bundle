@@ -112,6 +112,30 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         (new Process("sudo docker rmi " . AWS_ECR_REGISTRY_URI))->run();
     }
 
+    public function testGetAwsAccountId()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "aws-ecr",
+                    "uri" => AWS_ECR_REGISTRY_URI,
+                    "repository" => [
+                        "region" => AWS_ECR_REGISTRY_REGION
+                    ]
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
+        /** @var Image\AWSElasticContainerRegistry $image */
+        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $this->assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
+    }
+
     public function tearDown()
     {
         // remove env variables

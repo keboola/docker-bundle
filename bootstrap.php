@@ -45,6 +45,9 @@ defined('AWS_ECR_REGISTRY_URI')
 defined('AWS_ECR_REGISTRY_REGION')
 || define('AWS_ECR_REGISTRY_REGION', getenv('AWS_ECR_REGISTRY_REGION') ?: 'up-north-01');
 
+defined('AWS_ECR_REGISTRY_ACCOUNT_ID')
+|| define('AWS_ECR_REGISTRY_ACCOUNT_ID', getenv('AWS_ECR_REGISTRY_ACCOUNT_ID') ?: '123456');
+
 defined('AWS_ECR_ACCESS_KEY_ID')
 || define('AWS_ECR_ACCESS_KEY_ID', getenv('AWS_ECR_ACCESS_KEY_ID') ?: 'key');
 

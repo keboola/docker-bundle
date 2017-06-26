@@ -74,6 +74,7 @@
             <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
             <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>
             <env key="AWS_ECR_REGISTRY_REGION" value="${aws-ecr-registry-region}"/>
+            <env key="AWS_ECR_REGISTRY_ACCOUNT_ID" value="${aws-ecr-registry-account-id}"/>
             <arg value="--configuration"/>
             <arg path="phpunit-full.xml.dist"/>
             <arg value="--stop-on-error"/>
