@@ -99,11 +99,12 @@ class PrivateRepository extends Image\DockerHub
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-            "docker:1.11-dind sh -c '" .
-            "docker login " . $this->getLoginParams() .  " " .
-            "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
-            "&& docker logout " . $this->getLogoutParams() .
-            "'";
+            "docker:1.11-dind sh -c " .
+            escapeshellarg(
+                "docker login " . $this->getLoginParams() .  " " .
+                "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
+                "&& docker logout " . $this->getLogoutParams()
+            );
         $process = new Process($command);
         $process->setTimeout(3600);
         try {
