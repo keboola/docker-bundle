@@ -77,7 +77,7 @@ class AWSElasticContainerRegistry extends Image
     }
 
     /**
-     * Run docker login and docker pull in DinD, login/logout race conditions
+     * Run docker login and docker pull in container, login/logout race conditions
      */
     protected function pullImage()
     {
@@ -86,7 +86,7 @@ class AWSElasticContainerRegistry extends Image
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
 
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-            "docker:1.11-dind sh -c " .
+            "docker:1.11 sh -c " .
             escapeshellarg(
                 "docker login " . $this->getLoginParams() .  " " .
                 "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .

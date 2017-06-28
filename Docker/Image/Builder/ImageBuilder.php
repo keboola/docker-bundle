@@ -376,7 +376,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     }
 
     /**
-     * Run docker login and docker pull in DinD, login/logout race conditions
+     * Run docker login and docker pull in container, login/logout race conditions
      */
     protected function pullImage()
     {
@@ -385,7 +385,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         if ($this->getLoginUsername()) {
             $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-                "docker:1.11-dind sh -c " .
+                "docker:1.11 sh -c " .
                 escapeshellarg(
                     "docker login " . $this->getLoginParams() . " " .
                     "&& docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag()) . " " .

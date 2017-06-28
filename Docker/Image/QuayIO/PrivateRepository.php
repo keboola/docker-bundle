@@ -91,7 +91,7 @@ class PrivateRepository extends Image\QuayIO
     }
 
     /**
-     * Run docker login and docker pull in DinD, login/logout race conditions
+     * Run docker login and docker pull in container, login/logout race conditions
      */
     protected function pullImage()
     {
@@ -99,7 +99,7 @@ class PrivateRepository extends Image\QuayIO
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-            "docker:1.11-dind sh -c " .
+            "docker:1.11 sh -c " .
             escapeshellarg(
                 "docker login " . $this->getLoginParams() .  " " .
                 "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
