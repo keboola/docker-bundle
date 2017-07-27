@@ -15,6 +15,9 @@
             "mode": {
                 "type": "string"
             },
+            "tag": {
+                "type": "string"
+            },
             "format": {
                 "type": "string"
             }
