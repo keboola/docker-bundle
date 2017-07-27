@@ -8,6 +8,10 @@ use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use Psr\Log\LoggerInterface;
+use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\Policy\SimpleRetryPolicy;
+use Retry\RetryProxy;
+use Symfony\Component\Process\Process;
 
 abstract class Image
 {
@@ -39,6 +43,11 @@ abstract class Image
     protected $configData;
 
     /**
+     * @var LoggerInterface
+     */
+    protected $logger;
+
+    /**
      * @var bool
      */
     private $isMain;
@@ -54,11 +63,13 @@ abstract class Image
      * Constructor (use @see {factory()})
      * @param ObjectEncryptor $encryptor
      * @param Component $component
+     * @param LoggerInterface $logger
      */
-    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
         $this->encryptor = $encryptor;
         $this->component = $component;
+        $this->logger = $logger;
         $this->imageId = $component->getImageDefinition()["uri"];
         if (!empty($component->getImageDefinition()['tag'])) {
             $this->tag = $component->getImageDefinition()['tag'];
@@ -114,23 +125,22 @@ abstract class Image
     {
         switch ($component->getType()) {
             case "dockerhub":
-                $instance = new Image\DockerHub($encryptor, $component);
+                $instance = new Image\DockerHub($encryptor, $component, $logger);
                 break;
             case "quayio":
-                $instance = new Image\QuayIO($encryptor, $component);
+                $instance = new Image\QuayIO($encryptor, $component, $logger);
                 break;
             case "dockerhub-private":
-                $instance = new Image\DockerHub\PrivateRepository($encryptor, $component);
+                $instance = new Image\DockerHub\PrivateRepository($encryptor, $component, $logger);
                 break;
             case "quayio-private":
-                $instance = new Image\QuayIO\PrivateRepository($encryptor, $component);
+                $instance = new Image\QuayIO\PrivateRepository($encryptor, $component, $logger);
                 break;
             case "aws-ecr":
-                $instance = new Image\AWSElasticContainerRegistry($encryptor, $component);
+                $instance = new Image\AWSElasticContainerRegistry($encryptor, $component, $logger);
                 break;
             case "builder":
-                $instance = new Image\Builder\ImageBuilder($encryptor, $component);
-                $instance->setLogger($logger);
+                $instance = new Image\Builder\ImageBuilder($encryptor, $component, $logger);
                 $instance->setTemp($temp);
                 break;
             default:
@@ -170,5 +180,28 @@ abstract class Image
     public function getSourceComponent()
     {
         return $this->component;
+    }
+
+    /**
+     * Get and log hash of the image.
+     * @param string $name Image name including tag
+     */
+    public function logImageHash($name)
+    {
+        $retryPolicy = new SimpleRetryPolicy(3);
+        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $command = "sudo docker images --format \"{{.ID}}\" --no-trunc " . escapeshellarg($name);
+
+        $process = new Process($command);
+        $process->setTimeout(3600);
+        try {
+            $proxy->call(function () use ($process) {
+                $process->mustRun();
+            });
+            $this->logger->debug("Using image $name with hash " . trim($process->getOutput()));
+        } catch (\Exception $e) {
+            $this->logger->error("Failed to get hash for image " . $name);
+        }
     }
 }

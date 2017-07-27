@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -18,9 +19,9 @@ class PrivateRepository extends Image\QuayIO
     protected $loginPassword;
     protected $loginServer = "quay.io";
 
-    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
-        parent::__construct($encryptor, $component);
+        parent::__construct($encryptor, $component, $logger);
         $config = $component->getImageDefinition();
         if (isset($config['repository'])) {
             if (isset($config['repository']['username'])) {
@@ -111,6 +112,7 @@ class PrivateRepository extends Image\QuayIO
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
+            $this->logImageHash($this->getFullImageId());
         } catch (\Exception $e) {
             if (strpos($process->getOutput(), "Username: EOF") !== false) {
                 throw new LoginFailedException($process->getOutput());

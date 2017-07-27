@@ -150,6 +150,7 @@ class Executor extends BaseExecutor
                 // Read config from storage
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+                    $this->logger->debug("Using configuration id: " . $configuration['id'] . ' version:' . $configuration['version']);
                     if (in_array("encrypt", $component["flags"])) {
                         $configData = $this->encryptor->decrypt($configuration["configuration"]);
                     } else {

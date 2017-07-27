@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
+use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
@@ -20,9 +21,9 @@ class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
 
-    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
-        parent::__construct($encryptor, $component);
+        parent::__construct($encryptor, $component, $logger);
         if (!empty($component->getImageDefinition()["repository"]["region"])) {
             $this->awsRegion = $component->getImageDefinition()["repository"]["region"];
         }
@@ -98,6 +99,7 @@ class AWSElasticContainerRegistry extends Image
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
+            $this->logImageHash($this->getFullImageId());
         } catch (\Exception $e) {
             if (strpos($process->getOutput(), "403 Forbidden") !== false) {
                 throw new LoginFailedException($process->getOutput());

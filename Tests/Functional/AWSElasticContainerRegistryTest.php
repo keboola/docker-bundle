@@ -6,6 +6,8 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
@@ -134,6 +136,43 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         /** @var Image\AWSElasticContainerRegistry $image */
         $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $this->assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
+    }
+
+    public function testLogger()
+    {
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "aws-ecr",
+                    "uri" => AWS_ECR_REGISTRY_URI,
+                    "repository" => [
+                        "region" => AWS_ECR_REGISTRY_REGION
+                    ],
+                    "tag" => "test-hash"
+                ],
+                "cpu_shares" => 1024,
+                "memory" => "64m",
+                "configuration_format" => "json"
+            ]
+        ]);
+        $testHandler = new TestHandler();
+        $logger = new Logger('null', [$testHandler]);
+        $image = Image::factory($encryptor, $logger, $imageConfig, new Temp(), true);
+        $image->prepare([]);
+
+        $this->assertEquals(AWS_ECR_REGISTRY_URI . ":test-hash", $image->getFullImageId());
+        $this->assertTrue($testHandler->hasDebug(
+            'Using image ' . AWS_ECR_REGISTRY_URI .
+            ':test-hash with hash sha256:15845b8045ed4a44299e39511d7218bc2fa9f6fdbc0649d5cb96f1eef0510ad2'
+        ));
+
+        (new Process("sudo docker rmi " . AWS_ECR_REGISTRY_URI))->run();
     }
 
     public function tearDown()

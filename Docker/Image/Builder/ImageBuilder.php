@@ -19,11 +19,6 @@ use Symfony\Component\Process\Process;
 class ImageBuilder extends Image\DockerHub\PrivateRepository
 {
     /**
-     * @var LoggerInterface
-     */
-    protected $logger;
-
-    /**
      * @var string
      */
     protected $repoUsername;
@@ -89,9 +84,9 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private $temp;
 
-    public function __construct(ObjectEncryptor $encryptor, Component $component)
+    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
-        parent::__construct($encryptor, $component);
+        parent::__construct($encryptor, $component, $logger);
         $config = $component->getImageDefinition();
         if (isset($config["build_options"])) {
             if (isset($config["build_options"]["repository"]["username"])) {
@@ -132,15 +127,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 $this->cache = $config["build_options"]["cache"];
             }
         }
-    }
-
-
-    /**
-     * @param LoggerInterface $log
-     */
-    public function setLogger(LoggerInterface $log)
-    {
-        $this->logger = $log;
     }
 
     /**
@@ -401,6 +387,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
+            $this->logImageHash($this->getImageId() . ":" . $this->getTag());
         } catch (\Exception $e) {
             throw new BuildException(
                 "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
