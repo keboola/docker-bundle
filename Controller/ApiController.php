@@ -221,7 +221,6 @@ class ApiController extends BaseApiController
         }
     }
 
-
     /**
      * Run docker component with the provided configuration.
      *
@@ -239,6 +238,23 @@ class ApiController extends BaseApiController
         return $this->createJobFromParams($params);
     }
 
+    /**
+     * Run docker component with the provided configuration and specified image tag.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function runTagAction(Request $request)
+    {
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'run';
+        $params['tag'] = $request->get('tag');
+
+        return $this->createJobFromParams($params);
+    }
 
     /**
      * Run docker component with the provided configuration.

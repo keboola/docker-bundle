@@ -20,6 +20,7 @@ use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -37,7 +38,7 @@ class JobExecutorTest extends KernelTestCase
      */
     private $temp;
 
-    private function getJobExecutor(&$encryptor)
+    private function getJobExecutor(&$encryptor, $handler = null)
     {
         $storageApiClient = new Client([
             'url' => STORAGE_API_URL,
@@ -59,6 +60,9 @@ class JobExecutorTest extends KernelTestCase
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
+        if ($handler) {
+            $log->pushHandler($handler);
+        }
         $containerLogger = new ContainerLogger("null");
         $containerLogger->pushHandler(new NullHandler());
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
@@ -204,8 +208,9 @@ class JobExecutorTest extends KernelTestCase
             $this->client->createTableAsync("in.c-docker-test", "source", $csv);
         }
 
+        $handler = new TestHandler();
         $data = $this->getJobParameters();
-        $jobExecutor = $this->getJobExecutor($encryptor);
+        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
         $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
@@ -219,6 +224,40 @@ class JobExecutorTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
+        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
+    }
+
+    public function testRunTag()
+    {
+        // Create table
+        if (!$this->client->tableExists("in.c-docker-test.source")) {
+            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+            $csv->writeRow(['name', 'oldValue', 'newValue']);
+            $csv->writeRow(['price', '100', '1000']);
+            $csv->writeRow(['size', 'small', 'big']);
+            $csv->writeRow(['age', 'low', 'high']);
+            $csv->writeRow(['kindness', 'no', 'yes']);
+            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        }
+
+        $handler = new TestHandler();
+        $data = $this->getJobParameters();
+        $data['params']['tag'] = '1.0.0';
+        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
+        $job = new Job($encryptor, $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $csvData = $this->client->exportTable('out.c-docker-test.transposed');
+        $data = Client::parseCsv($csvData);
+
+        $this->assertEquals(2, count($data));
+        $this->assertArrayHasKey('column', $data[0]);
+        $this->assertArrayHasKey('price', $data[0]);
+        $this->assertArrayHasKey('size', $data[0]);
+        $this->assertArrayHasKey('age', $data[0]);
+        $this->assertArrayHasKey('kindness', $data[0]);
+        $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
     }
 
     public function testSandbox()

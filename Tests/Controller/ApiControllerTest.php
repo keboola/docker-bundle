@@ -97,6 +97,23 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
+    public function testRunTag()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run/tag/1.1.0',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+    }
+
     public function testSandbox()
     {
         $client = $this->createClient();

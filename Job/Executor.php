@@ -169,6 +169,10 @@ class Executor extends BaseExecutor
         } else {
             $configId = null;
         }
+        if (!empty($params['tag'])) {
+            $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
+            $component['data']['definition']['tag'] = $params['tag'];
+        }
         $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode'], $job->getId());
         return ["message" => "Docker container processing finished."];
     }
