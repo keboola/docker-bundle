@@ -27,8 +27,8 @@ class LoggerTests extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-base-php56",
-                    "tag" => "0.0.2",
+                    "uri" => "quay.io/keboola/docker-demo-app",
+                    "tag" => "latest",
                     "build_options" => [
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app.git",
