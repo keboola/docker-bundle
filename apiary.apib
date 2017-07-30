@@ -199,16 +199,16 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
 
 # Group Run
 
-Run a configuration in an image.
+Run a configuration of a component.
 
-## Create a job [/{image}/run]
+## Create a job [/{component}/run]
 
-Create an execution job on a specified docker image.
+Create an execution job on a specified component.
 
 + Parameters
-    + image (string) ... KBC component Id
+    + component (string) ... KBC component Id
 
-### Create a Run job [POST]
+### Run job [POST]
 
 + Request Stored configuration (application/json)
     + Headers
@@ -258,6 +258,71 @@ Create an execution job on a specified docker image.
                                     ]
                                 }
                             ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
+                    }
+                    "runtime": {
+                        "baz": "bar"
+                    }
+                }
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+## Create a job with image [/{component}/run/tag/{tag}]
+
+Create an execution job on a specified component while using a specific image tag.
+
++ Parameters
+    + component (string) - KBC component Id
+    + tag (string) - docker image tag to be used
+
+### Run job [POST]
+
++ Request Stored configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": "next-order-1"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ]
+                        },
+                        "output": {
                             "tables": [
                                 {
                                     "source": "sliced.csv",
