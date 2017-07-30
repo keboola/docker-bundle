@@ -199,7 +199,7 @@ abstract class Image
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
-            $this->logger->debug("Using image $name with hash " . trim($process->getOutput()));
+            $this->logger->notice("Using image $name with hash " . trim($process->getOutput()));
         } catch (\Exception $e) {
             $this->logger->error("Failed to get hash for image " . $name);
         }

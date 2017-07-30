@@ -310,7 +310,7 @@ class Runner
         }
 
         $this->dataDirectory->dropDataDir();
-        $this->loggerService->getLog()->info("Docker Component " . $component->getId() . " finished.");
+        $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
         return $componentOutput;
     }
 
