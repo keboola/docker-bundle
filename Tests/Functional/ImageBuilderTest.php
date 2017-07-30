@@ -554,7 +554,7 @@ Step 4 : ENV APP_VERSION v1.0.8
         }
     }
 
-    public function testWeirdBugError()
+    public function a()
     {
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
@@ -583,11 +583,10 @@ Step 4 : ENV APP_VERSION v1.0.8
 
         $temp = new Temp();
         $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -626,11 +625,10 @@ Step 4 : ENV APP_VERSION v1.0.8
 
         $temp = new Temp();
         $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -669,11 +667,10 @@ Step 4 : ENV APP_VERSION v1.0.8
 
         $temp = new Temp();
         $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig])
+            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
         /** @var Image\Builder\ImageBuilder $builder */
-        $builder->setLogger(new NullLogger());
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
