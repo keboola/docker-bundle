@@ -107,6 +107,7 @@ class EncryptionTests extends KernelTestCase
         // mock components
         $configData = [
             "id" => "fake",
+            "version" => "1",
             "configuration" => [
                 "parameters" => [
                     "key1" => "value1",
