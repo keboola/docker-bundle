@@ -161,7 +161,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration['data']['process_timeout'] = 5;
+        $imageConfiguration['data']['process_timeout'] = 10;
         $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
