@@ -111,6 +111,12 @@ class Component
         return $this->data['definition']['type'];
     }
 
+    public function setType($type)
+    {
+        // TODO: get rid of this
+        $this->data['definition']['type'] = $type;
+    }
+
     /**
      * @return string
      */

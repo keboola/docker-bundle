@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Image\Builder;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\WeirdException;
@@ -84,6 +85,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private $temp;
 
+    /**
+     * @var string
+     */
+    private $parentType;
+
     public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
         parent::__construct($encryptor, $component, $logger);
@@ -125,6 +131,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
             if (isset($config["build_options"]["cache"])) {
                 $this->cache = $config["build_options"]["cache"];
+            }
+            if (isset($config["build_options"]["parent_type"])) {
+                $this->parentType = $config["build_options"]["parent_type"];
+            } else {
+                $this->parentType = "legacy";
             }
         }
     }
@@ -250,7 +261,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
         return $ret;
     }
 
-
     /**
      * Create DockerFile file with the build instructions in the working folder.
      */
@@ -366,33 +376,47 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        if ($this->getLoginUsername()) {
-            $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-                "docker:1.11 sh -c " .
-                escapeshellarg(
-                    "docker login " . $this->getLoginParams() . " " .
-                    "&& docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag()) . " " .
-                    "&& docker logout " . $this->getLogoutParams()
-                );
-        } else {
-            $command = "sudo docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag());
-        }
+        if ($this->parentType == 'legacy') {
+            $retryPolicy = new SimpleRetryPolicy(3);
+            $backOffPolicy = new ExponentialBackOffPolicy(10000);
+            $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+            if ($this->getLoginUsername()) {
+                $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
+                    "docker:1.11 sh -c " .
+                    escapeshellarg(
+                        "docker login " . $this->getLoginParams() . " " .
+                        "&& docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag()) . " " .
+                        "&& docker logout " . $this->getLogoutParams()
+                    );
+            } else {
+                $command = "sudo docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag());
+            }
 
-        $process = new Process($command);
-        $process->setTimeout(3600);
-        try {
-            $proxy->call(function () use ($process) {
-                $process->mustRun();
-            });
-            $this->logImageHash($this->getImageId() . ":" . $this->getTag());
-        } catch (\Exception $e) {
-            throw new BuildException(
-                "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
-                $e
-            );
+            $process = new Process($command);
+            $process->setTimeout(3600);
+            try {
+                $proxy->call(function () use ($process) {
+                    $process->mustRun();
+                });
+                $this->logImageHash($this->getImageId() . ":" . $this->getTag());
+            } catch (\Exception $e) {
+                throw new BuildException(
+                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
+                    $e
+                );
+            }
+        } else {
+            try {
+                $component = $this->getSourceComponent();
+                $component->setType($this->parentType);
+                $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
+                $image->prepare($this->configData);
+            } catch (\Exception $e) {
+                throw new BuildException(
+                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
+                    $e
+                );
+            }
         }
     }
 
