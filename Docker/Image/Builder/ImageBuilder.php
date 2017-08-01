@@ -412,7 +412,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                 $image->prepare($this->configData);
             } catch (\Exception $e) {
                 throw new BuildException(
-                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
+                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage(),
                     $e
                 );
             }

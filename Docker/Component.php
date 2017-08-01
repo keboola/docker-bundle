@@ -118,8 +118,9 @@ class Component
      */
     public function changeType($type)
     {
-        $data = $this->data;
-        $data['definition']['type'] = $type;
+        $data = ['data' => $this->data, 'id' => $this->id];
+        $data['data']['network'] = $this->networkType;
+        $data['data']['definition']['type'] = $type;
         return new Component($data);
     }
 
