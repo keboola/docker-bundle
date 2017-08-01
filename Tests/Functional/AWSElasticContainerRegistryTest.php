@@ -3,7 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
@@ -39,7 +40,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
             ]
         ]);
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -68,7 +69,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -102,7 +103,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":latest", $image->getFullImageId());
@@ -133,8 +134,8 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        /** @var Image\AWSElasticContainerRegistry $image */
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        /** @var AWSElasticContainerRegistry $image */
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $this->assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
     }
 
@@ -163,7 +164,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         ]);
         $testHandler = new TestHandler();
         $logger = new Logger('null', [$testHandler]);
-        $image = Image::factory($encryptor, $logger, $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":test-hash", $image->getFullImageId());

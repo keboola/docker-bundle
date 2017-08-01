@@ -4,13 +4,12 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
-use Monolog\Logger;
 use Psr\Log\LoggerInterface;
-use Psr\Log\Test\LoggerInterfaceTest;
 
 class ImageCreator
 {
@@ -50,6 +49,11 @@ class ImageCreator
     private $temp;
 
     /**
+     * @var Client
+     */
+    private $storageClient;
+
+    /**
      * ImageCreator constructor.
      * @param ObjectEncryptor $encryptor
      * @param LoggerInterface $logger
@@ -84,12 +88,12 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
-            $image = Image::factory($this->encryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = Image::factory($this->encryptor, $this->logger, $this->mainComponent, $this->temp, true);
+        $image = ImageFactory::getImage($this->encryptor, $this->logger, $this->mainComponent, $this->temp, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
@@ -97,7 +101,7 @@ class ImageCreator
             $componentId = $processor['definition']['component'];
             $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
-            $image = Image::factory($this->encryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }

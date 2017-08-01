@@ -3,7 +3,9 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\Image\DockerHub;
+use Keboola\DockerBundle\Docker\Image\QuayIO;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\Syrup\Encryption\BaseWrapper;
@@ -32,8 +34,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $configuration, new Temp(), true);
-        $this->assertEquals(Image\DockerHub::class, get_class($image));
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
+        $this->assertEquals(DockerHub::class, get_class($image));
         $this->assertEquals("master", $image->getTag());
         $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());
     }
@@ -62,9 +64,9 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "process_timeout" => 7200
             ]
         ]);
-        /** @var Image\DockerHub\PrivateRepository $image */
-        $image = Image::factory($encryptor, new NullLogger(), $configuration, new Temp(), true);
-        $this->assertEquals(Image\DockerHub\PrivateRepository::class, get_class($image));
+        /** @var DockerHub\PrivateRepository $image */
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
+        $this->assertEquals(DockerHub\PrivateRepository::class, get_class($image));
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());
         $this->assertEquals("dd", $image->getLoginServer());
@@ -92,8 +94,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $configuration, new Temp(), true);
-        $this->assertEquals(Image\QuayIO::class, get_class($image));
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
+        $this->assertEquals(QuayIO::class, get_class($image));
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }
 
@@ -121,9 +123,9 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                 "process_timeout" => 7200
             ]
         ]);
-        /** @var Image\DockerHub\PrivateRepository $image */
-        $image = Image::factory($encryptor, new NullLogger(), $configuration, new Temp(), true);
-        $this->assertEquals(Image\QuayIO\PrivateRepository::class, get_class($image));
+        /** @var QuayIO\PrivateRepository $image */
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
+        $this->assertEquals(QuayIO\PrivateRepository::class, get_class($image));
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());
         $this->assertEquals("quay.io", $image->getLoginServer());

@@ -3,9 +3,9 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
@@ -31,7 +31,7 @@ class NetworkTest extends KernelTestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, $imageConfig, new Temp(), true);
         $image->prepare($componentConfig);
 
         $container = new Container(

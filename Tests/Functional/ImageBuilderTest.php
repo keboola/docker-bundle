@@ -3,7 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -107,7 +108,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -149,7 +150,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -198,7 +199,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -250,7 +251,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -298,7 +299,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
@@ -337,7 +338,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -378,7 +379,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -450,7 +451,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -487,7 +488,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             ]
         ]);
 
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
@@ -545,7 +546,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
@@ -582,11 +583,11 @@ Step 4 : ENV APP_VERSION v1.0.8
         ]);
 
         $temp = new Temp();
-        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+        $builder = $this->getMockBuilder(ImageBuilder::class)
             ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        /** @var Image\Builder\ImageBuilder $builder */
+        /** @var ImageBuilder $builder */
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -624,11 +625,11 @@ Step 4 : ENV APP_VERSION v1.0.8
         ]);
 
         $temp = new Temp();
-        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+        $builder = $this->getMockBuilder(ImageBuilder::class)
             ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        /** @var Image\Builder\ImageBuilder $builder */
+        /** @var ImageBuilder $builder */
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(
@@ -666,11 +667,11 @@ Step 4 : ENV APP_VERSION v1.0.8
         ]);
 
         $temp = new Temp();
-        $builder = $this->getMockBuilder(Image\Builder\ImageBuilder::class)
+        $builder = $this->getMockBuilder(ImageBuilder::class)
             ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
             ->setMethods(['getBuildCommand'])
             ->getMock();
-        /** @var Image\Builder\ImageBuilder $builder */
+        /** @var ImageBuilder $builder */
         $builder->setTemp($temp);
         $builder->method('getBuildCommand')
             ->will($this->onConsecutiveCalls(

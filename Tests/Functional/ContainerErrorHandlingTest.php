@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -35,7 +35,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $log->pushHandler(new NullHandler());
-        $image = Image::factory($encryptor, $log, new Component($imageConfig), new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfig), new Temp(), true);
         $image->prepare([]);
 
         $container = new Container(
@@ -168,7 +168,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php echo "done";');
         $container = new Container(
@@ -228,7 +228,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
         $container = new Container(

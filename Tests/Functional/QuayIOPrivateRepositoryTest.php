@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
@@ -34,7 +34,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
             ]
         ]);
         $encryptor = new ObjectEncryptor();
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -63,7 +63,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ],
         ]);
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -95,7 +95,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ],
         ]);
-        $image = Image::factory($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());

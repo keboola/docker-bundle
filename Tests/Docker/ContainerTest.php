@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\Temp\Temp;
@@ -32,7 +32,7 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $fs = new Filesystem();
         $dataDir = $temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'data';
@@ -116,7 +116,7 @@ EOF;
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
         $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
         $container = new Container(
             'docker-container-test',
@@ -165,7 +165,7 @@ EOF;
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $container = new Container(
             'docker-container-test',
@@ -198,7 +198,7 @@ EOF;
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = Image::factory($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $container = new Container(
             'docker-container-test',
