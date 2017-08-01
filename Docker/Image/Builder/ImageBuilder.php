@@ -407,8 +407,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
         } else {
             try {
-                $component = $this->getSourceComponent();
-                $component->setType($this->parentType);
+                $component = $this->getSourceComponent()->changeType($this->parentType);
                 $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
                 $image->prepare($this->configData);
             } catch (\Exception $e) {

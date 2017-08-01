@@ -111,10 +111,16 @@ class Component
         return $this->data['definition']['type'];
     }
 
-    public function setType($type)
+    /**
+     * Change type of component image
+     * @param $type
+     * @return Component
+     */
+    public function changeType($type)
     {
-        // TODO: get rid of this
-        $this->data['definition']['type'] = $type;
+        $data = $this->data;
+        $data['definition']['type'] = $type;
+        return new Component($data);
     }
 
     /**
