@@ -217,7 +217,8 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                     ],
                     "entry_point" => "Rscript /home/script.R",
                     "parameters" => [],
-                    "cache" => true
+                    "cache" => true,
+                    "parent_type" => 'legacy'
                 ]
             ],
             "cpu_shares" => 1024,

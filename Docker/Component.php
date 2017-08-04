@@ -112,6 +112,19 @@ class Component
     }
 
     /**
+     * Change type of component image
+     * @param $type
+     * @return Component
+     */
+    public function changeType($type)
+    {
+        $data = ['data' => $this->data, 'id' => $this->id];
+        $data['data']['network'] = $this->networkType;
+        $data['data']['definition']['type'] = $type;
+        return new Component($data);
+    }
+
+    /**
      * @return string
      */
     public function getLoggerType()
