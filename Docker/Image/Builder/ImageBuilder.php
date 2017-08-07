@@ -90,6 +90,11 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     private $parentType;
 
+    /**
+     * @var string
+     */
+    private $parentImage;
+
     public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
         parent::__construct($encryptor, $component, $logger);
@@ -267,7 +272,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
     private function createDockerFile()
     {
         $dockerFile = '';
-        $dockerFile .= "FROM " . $this->getImageId() . ":" . $this->getTag() . "\n";
+        $dockerFile .= "FROM " . $this->parentImage . "\n";
         $dockerFile .= "LABEL com.keboola.docker.runner.origin=builder\n";
         $dockerFile .= "WORKDIR /home\n";
 
@@ -405,11 +410,13 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
                     $e
                 );
             }
+            $this->parentImage = $this->getImageId() . ':' . $this->getTag();
         } else {
             try {
                 $component = $this->getSourceComponent()->changeType($this->parentType);
                 $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
                 $image->prepare($this->configData);
+                $this->parentImage = $image->getFullImageId();
             } catch (\Exception $e) {
                 throw new BuildException(
                     "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage(),

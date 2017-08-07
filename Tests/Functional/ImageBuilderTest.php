@@ -689,6 +689,47 @@ Step 4 : ENV APP_VERSION v1.0.8
         }
     }
 
+    public function testQuayImage()
+    {
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $oldCount = intval(trim($process->getOutput()));
+
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
+        $imageConfig = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/docker-custom-php",
+                    "build_options" => [
+                        "parent_type" => "quayio",
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app",
+                            "type" => "git"
+                        ],
+                        "commands" => [
+                            "git clone --depth 1 {{repository}} /home/" .
+                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
+                            "cd /home/",
+                            "composer install"
+                        ],
+                        "entry_point" => "php /home/run.php --data=/data"
+                    ]
+                ]
+            ]
+        ]);
+
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image->prepare([]);
+        $this->assertContains("builder-", $image->getFullImageId());
+
+        $process = new Process("sudo docker images | grep builder- | wc -l");
+        $process->run();
+        $this->assertEquals($oldCount + 1, trim($process->getOutput()));
+    }
+
     public function testECRImage()
     {
         $process = new Process("sudo docker images | grep builder- | wc -l");
