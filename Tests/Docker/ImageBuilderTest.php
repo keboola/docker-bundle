@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -44,6 +45,9 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $tempDir->initRunFolder();
 
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
+        $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -67,62 +71,6 @@ ENTRYPOINT php /home/run.php --data=/data
 DOCKERFILE;
         $this->assertEquals($expectedFile, trim($dockerFile));
     }
-
-
-    public function testDockerFileTag()
-    {
-        $encryptor = new ObjectEncryptor();
-
-        $imageConfig = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboolaprivatetest/docker-demo-docker",
-                    "tag" => "1.0.0",
-                    "build_options" => [
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app",
-                            "type" => "git",
-                        ],
-                        "commands" => [
-                            "git clone {{repository}} /home/",
-                            "cd /home/",
-                            "composer install"
-                        ],
-                        "entry_point" => "php /home/run.php --data=/data"
-                    ]
-                ],
-                "configuration_format" => "yaml",
-            ]
-        ]);
-        $tempDir = new Temp('docker-test');
-        $tempDir->initRunFolder();
-
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
-        $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
-        $reflection->setAccessible(true);
-        $reflection->invoke($image, []);
-        $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
-        $reflection->setAccessible(true);
-        $reflection->invoke($image, $tempDir->getTmpFolder());
-        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
-        $expectedFile = <<<DOCKERFILE
-FROM keboolaprivatetest/docker-demo-docker:1.0.0
-LABEL com.keboola.docker.runner.origin=builder
-WORKDIR /home
-
-# Image definition commands
-RUN git clone https://github.com/keboola/docker-demo-app /home/
-RUN cd /home/
-RUN composer install
-WORKDIR /data
-ENTRYPOINT php /home/run.php --data=/data
-DOCKERFILE;
-        $this->assertEquals($expectedFile, trim($dockerFile));
-    }
-
 
     public function testDockerFileVersion()
     {
@@ -154,6 +102,9 @@ DOCKERFILE;
         $tempDir->initRunFolder();
 
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
+        $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -223,6 +174,9 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir->initRunFolder();
 
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
+        $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
@@ -453,6 +407,9 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir->initRunFolder();
 
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
+        $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -550,6 +507,9 @@ DOCKERFILE;
         $this->assertInstanceOf(ImageBuilder::class, $image);
         $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 
+        $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $config);
