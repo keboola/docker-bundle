@@ -395,7 +395,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'eboola/docker-custom-php',
+                    'uri' => 'keboola/docker-custom-php',
                     'tag' => 'latest',
                     'build_options' => [
                         'parent_type' => 'quayio',
@@ -694,7 +694,7 @@ class RunnerTest extends KernelTestCase
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'quay.io/keboola/docker-custom-php',
+                    'uri' => 'keboola/docker-custom-php',
                     'tag' => 'latest',
                     'build_options' => [
                         'parent_type' => 'quayio',
