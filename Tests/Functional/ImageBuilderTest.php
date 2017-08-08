@@ -87,8 +87,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
                             "type" => "git",
@@ -131,8 +132,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -179,9 +181,10 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "tag" => "1.1.0",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -232,6 +235,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                         "server" => DOCKERHUB_PRIVATE_SERVER,
                     ],
                     "build_options" => [
+                        "parent_type" => "dockerhub-private",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -279,6 +283,7 @@ Step 4 : ENV APP_VERSION v1.0.8
                         "server" => DOCKERHUB_PRIVATE_SERVER,
                     ],
                     "build_options" => [
+                        "parent_type" => "dockerhub-private",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -304,7 +309,7 @@ Step 4 : ENV APP_VERSION v1.0.8
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
-            $this->assertContains('not found', $e->getMessage());
+            $this->assertContains('Failed to pull parent image', $e->getMessage());
         }
     }
 
@@ -318,8 +323,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
                             "type" => "git",
@@ -360,8 +366,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
                             "type" => "git",
@@ -404,8 +411,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "",
                             "type" => "git",
@@ -469,8 +477,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/non-existent-repo",
                             "type" => "git",
@@ -506,8 +515,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "",
                             "type" => "git",
@@ -605,8 +615,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -647,8 +658,9 @@ Step 4 : ENV APP_VERSION v1.0.8
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
+                    "uri" => "keboola/docker-custom-php",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",

@@ -2,6 +2,7 @@
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\ImageFactory;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -21,7 +22,7 @@ class Image extends Configuration
             ->scalarNode('type')
                 ->isRequired()
                 ->validate()
-                    ->ifNotInArray(['dockerhub', 'dockerhub-private', 'builder', 'quayio', 'quayio-private', 'aws-ecr'])
+                    ->ifNotInArray(ImageFactory::KNOWN_IMAGE_TYPES)
                         ->thenInvalid('Invalid image type %s.')
                     ->end()
                 ->end()
@@ -38,9 +39,9 @@ class Image extends Configuration
             ->arrayNode('build_options')
                 ->children()
                     ->scalarNode('parent_type')
-                        ->defaultValue('legacy')
+                        ->isRequired()
                         ->validate()
-                            ->ifNotInArray(['dockerhub', 'dockerhub-private', 'builder', 'quayio', 'quayio-private', 'aws-ecr', 'legacy'])
+                            ->ifNotInArray(ImageFactory::KNOWN_IMAGE_TYPES)
                             ->thenInvalid('Invalid image type %s.')
                             ->end()
                         ->end()

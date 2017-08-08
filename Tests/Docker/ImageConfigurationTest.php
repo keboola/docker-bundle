@@ -206,6 +206,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-base-r",
                 "tag" => "somebranch",
                 "build_options" => [
+                    "parent_type" => "dockerhub",
                     "repository" => [
                         "type" => "git",
                         "uri" => "https://bitbucket.org/xpopelkaTest/test-r-transformation.git",
@@ -218,7 +219,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                     "entry_point" => "Rscript /home/script.R",
                     "parameters" => [],
                     "cache" => true,
-                    "parent_type" => 'legacy'
                 ]
             ],
             "cpu_shares" => 1024,

@@ -1,0 +1,60 @@
+version: '2'
+
+volumes:
+  docker_socket:
+
+services:
+  elastic:
+    container_name: job_runner_elastic
+    image: elasticsearch:2.4
+    tty: true
+    stdin_open: true
+    network_mode: bridge
+    ports:
+      - "9200:9200"
+
+  database:
+    container_name: job_runner_database
+    image: mysql:5.7
+    tty: true
+    stdin_open: true
+    network_mode: bridge
+    ports:
+      - "3306:3306"
+    volumes:
+      - ../db/data/:/var/lib/mysql/
+      - ../db/init/:/docker-entrypoint-initdb.d/
+    environment:
+      - "MYSQL_ROOT_PASSWORD=root"
+      - "MYSQL_DATABASE=syrup"
+      - "MYSQL_USER=syrup"
+      - "MYSQL_PASSWORD=syrup"
+      - "LANG=en_US.UTF-8"
+    entrypoint: 
+      - "docker-entrypoint.sh"
+      - "--sql-mode=ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+      - "--character-set-server=utf8"
+      - "--collation-server=utf8_general_ci"
+
+  runner:
+    container_name: job_runner_php
+    build: 
+      context: ..
+      dockerfile: ./DockerfileTests
+    tty: true
+    stdin_open: true  
+    network_mode: bridge
+    environment:
+      - "DOCKER_HOST"
+      - "PHP_IDE_CONFIG=serverName=Dockerserver"
+    command: /code/docker-tests/run-job/run-job.sh
+    volumes:
+      - ../../:/code/
+      - ./tmp/:/tmp/
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "800:80"
+      - "220:22"
+    links:
+      - database
+      - elastic

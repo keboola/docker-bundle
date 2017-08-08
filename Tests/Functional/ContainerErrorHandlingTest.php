@@ -58,9 +58,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-demo-app",
+                    "uri" => "keboola/docker-demo-app",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app.git",
                             "type" => "git"

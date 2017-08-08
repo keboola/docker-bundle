@@ -76,6 +76,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => 'dockerhub',
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -102,6 +103,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -131,6 +133,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -167,6 +170,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -201,6 +205,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -228,6 +233,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
@@ -261,6 +267,7 @@ class NetworkTest extends KernelTestCase
                     "uri" => "alpine",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "dockerhub",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",

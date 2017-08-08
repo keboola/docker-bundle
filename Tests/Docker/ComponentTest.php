@@ -150,6 +150,7 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
                         "type" => "builder",
                         "uri" => "keboolaprivatetest/docker-demo-docker",
                         "build_options" => [
+                            "parent_type" => "dockerhub-private",
                             "repository" => [
                                 "uri" => "https://github.com/keboola/docker-demo-app",
                                 "type" => "fooBar",

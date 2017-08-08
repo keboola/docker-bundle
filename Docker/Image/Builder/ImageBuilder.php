@@ -17,7 +17,7 @@ use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
-class ImageBuilder extends Image\DockerHub\PrivateRepository
+class ImageBuilder extends Image
 {
     /**
      * @var string
@@ -110,6 +110,7 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             $this->repository = $config["build_options"]["repository"]["uri"];
             $this->repositoryType = $config["build_options"]["repository"]["type"];
             $this->entryPoint = $config["build_options"]["entry_point"];
+            $this->parentType = $config["build_options"]["parent_type"];
             $this->commands = [];
             if (!empty($config["build_options"]["commands"]) && is_array($config["build_options"]["commands"])) {
                 foreach ($config["build_options"]["commands"] as $command) {
@@ -136,11 +137,6 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
             }
             if (isset($config["build_options"]["cache"])) {
                 $this->cache = $config["build_options"]["cache"];
-            }
-            if (isset($config["build_options"]["parent_type"])) {
-                $this->parentType = $config["build_options"]["parent_type"];
-            } else {
-                $this->parentType = "legacy";
             }
         }
     }
@@ -381,48 +377,16 @@ class ImageBuilder extends Image\DockerHub\PrivateRepository
      */
     protected function pullImage()
     {
-        if ($this->parentType == 'legacy') {
-            $retryPolicy = new SimpleRetryPolicy(3);
-            $backOffPolicy = new ExponentialBackOffPolicy(10000);
-            $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-            if ($this->getLoginUsername()) {
-                $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-                    "docker:1.11 sh -c " .
-                    escapeshellarg(
-                        "docker login " . $this->getLoginParams() . " " .
-                        "&& docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag()) . " " .
-                        "&& docker logout " . $this->getLogoutParams()
-                    );
-            } else {
-                $command = "sudo docker pull " . escapeshellarg($this->getImageId() . ":" . $this->getTag());
-            }
-
-            $process = new Process($command);
-            $process->setTimeout(3600);
-            try {
-                $proxy->call(function () use ($process) {
-                    $process->mustRun();
-                });
-                $this->logImageHash($this->getImageId() . ":" . $this->getTag());
-            } catch (\Exception $e) {
-                throw new BuildException(
-                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage() . " " . $process->getErrorOutput() . " " . $process->getOutput(),
-                    $e
-                );
-            }
-            $this->parentImage = $this->getImageId() . ':' . $this->getTag();
-        } else {
-            try {
-                $component = $this->getSourceComponent()->changeType($this->parentType);
-                $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
-                $image->prepare($this->configData);
-                $this->parentImage = $image->getFullImageId();
-            } catch (\Exception $e) {
-                throw new BuildException(
-                    "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage(),
-                    $e
-                );
-            }
+        try {
+            $component = $this->getSourceComponent()->changeType($this->parentType);
+            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
+            $image->prepare($this->configData);
+            $this->parentImage = $image->getFullImageId();
+        } catch (\Exception $e) {
+            throw new BuildException(
+                "Failed to pull parent image {$this->getImageId()}:{$this->getTag()}, error: " . $e->getMessage(),
+                $e
+            );
         }
     }
 

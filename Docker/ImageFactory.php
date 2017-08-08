@@ -10,6 +10,8 @@ use Psr\Log\LoggerInterface;
 
 abstract class ImageFactory
 {
+    const KNOWN_IMAGE_TYPES = ['dockerhub', 'dockerhub-private', 'builder', 'quayio', 'quayio-private', 'aws-ecr', 'legacy'];
+
     /**
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
      * @param LoggerInterface $logger Logger instance.

@@ -1,0 +1,1 @@
+curl -X PUT -H "Content-Type: application/json" --data-binary "@/code/docker-tests/run-job/job.json" "http://elastic:9200/devel_syrup_docker_2017_1/jobs/$JOB_ID"

@@ -27,9 +27,10 @@ class LoggerTests extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-demo-app",
+                    "uri" => "keboola/docker-demo-app",
                     "tag" => "latest",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app.git",
                             "type" => "git"
@@ -50,9 +51,10 @@ class LoggerTests extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "quay.io/keboola/gelf-test-client",
+                    "uri" => "keboola/gelf-test-client",
                     "tag" => "master",
                     "build_options" => [
+                        "parent_type" => "quayio",
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app.git",
                             "type" => "git"
