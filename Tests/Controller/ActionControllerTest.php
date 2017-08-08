@@ -117,9 +117,10 @@ class ActionControllerTest extends WebTestCase
                     'data' => [
                         'definition' => [
                             'type' => 'builder',
-                            'uri' => 'quay.io/keboola/docker-custom-python',
-                            'tag' => '1.1.0',
+                            'uri' => 'keboola/docker-custom-python',
+                            'tag' => 'latest',
                             'build_options' => [
+                                'parent_type' => 'quayio',
                                 'repository' => [
                                     'uri' => '',
                                     'type' => 'git',
