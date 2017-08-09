@@ -204,7 +204,7 @@ class JobExecutorTest extends KernelTestCase
         putenv('AWS_SECRET_ACCESS_KEY=');
         parent::tearDown();
     }
-    
+
     public function testRun()
     {
         // Create table
@@ -234,7 +234,7 @@ class JobExecutorTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
-        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
+        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
     public function testRunTag()
@@ -252,7 +252,7 @@ class JobExecutorTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
-        $data['params']['tag'] = '1.0.0';
+        $data['params']['tag'] = '1.1.1';
         $jobExecutor = $this->getJobExecutor($encryptor, $handler);
         $job = new Job($encryptor, $data);
         $job->setId(123456);
@@ -267,7 +267,7 @@ class JobExecutorTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
-        $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
+        $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
     public function testSandbox()
