@@ -72,8 +72,8 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
      */
     public function testDownloadedImageEncryptedPassword()
     {
+        (new Process("sudo docker rmi -f $(sudo docker images --filter=\"label=com.keboola.docker.runner.origin=builder\" -aq)"))->run();
         (new Process("sudo docker rmi -f $(sudo docker images -aq keboolaprivatetest/docker-demo-docker)"))->run();
-
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
