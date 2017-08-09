@@ -8,6 +8,7 @@
         "keboola/syrup": "^6.1",
         "keboola/php-utils": "^1.0",
         "symfony/symfony": "^2.8",
+        "symfony/console": "^2.8",
         "keboola/oauth-v2-php-client": "^2.1",
         "keboola/storage-api-client": "^6.4",
         "keboola/gelf-server": "^1.0",
