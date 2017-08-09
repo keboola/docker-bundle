@@ -59,8 +59,19 @@
                     "ecr:GetAuthorizationToken"
                   ],
                   "Resource": "*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ecr:GetDownloadUrlForLayer",
+                    "ecr:BatchGetImage",
+                    "ecr:BatchCheckLayerAvailability"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
                 }
-              ]
+          		]
             }
           }
         ]

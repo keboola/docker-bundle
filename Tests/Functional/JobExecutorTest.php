@@ -193,8 +193,18 @@ class JobExecutorTest extends KernelTestCase
         $this->client->createBucket("docker-test", Client::STAGE_OUT, "Docker TestSuite");
 
         self::bootKernel();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
+    public function tearDown()
+    {
+        // remove env variables
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
+        parent::tearDown();
+    }
+    
     public function testRun()
     {
         // Create table
