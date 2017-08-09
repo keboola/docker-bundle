@@ -15,35 +15,33 @@ class GarbageCollectCommand extends BaseCommand
         $this
             ->setName('docker:garbage-collect')
             ->setDescription('Garbage collect unused images')
-            ->setDefinition(array(
-                new InputArgument('timeout', InputArgument::OPTIONAL, 'Execution timeout', 30)
-            ));
+            ->setDefinition([
+                new InputArgument('timeout', InputArgument::OPTIONAL, 'Execution timeout', 120),
+                new InputArgument('image-age', InputArgument::OPTIONAL, 'Max image age', 86400),
+                new InputArgument('container-age', InputArgument::OPTIONAL, 'Max container age', 259200),
+                new InputArgument('command-timeout', InputArgument::OPTIONAL, 'Command timeout', 60),
+            ]);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $timeout = $input->getArgument('timeout');
-        $maxAge = 3600;
+        $imageAge = $input->getArgument('image-age');
+        $containerAge = $input->getArgument('container-age');
+        $commandTimeout = $input->getArgument('command-timeout');
         $startTime = microtime();
-        $commandTimeout = 60;
 
         $output->writeln('Clearing old containers');
         try {
-            $this->clearContainers($output, $commandTimeout, $startTime, $maxAge);
+            $this->clearContainers($output, $commandTimeout, $startTime, $containerAge);
         } catch (\Exception $e) {
             $output->writeln('Clearing old containers failed ' . $e->getMessage());
         }
         try {
             $output->writeln('Clearing builder images');
-            $this->clearBuilderImages($output, $commandTimeout, $startTime, $maxAge);
+            $this->clearBuilderImages($output, $commandTimeout, $startTime, $imageAge);
         } catch (\Exception $e) {
             $output->writeln('Clearing builder images failed ' . $e->getMessage());
-        }
-        try {
-            $output->writeln('Clearing old images');
-            $this->clearOldImages($output, $commandTimeout, $startTime, $maxAge);
-        } catch (\Exception $e) {
-            $output->writeln('Clearing old images failed ' . $e->getMessage());
         }
         try {
             $output->writeln('Clearing dangling');
@@ -97,50 +95,6 @@ class GarbageCollectCommand extends BaseCommand
 
     private function clearBuilderImages(OutputInterface $output, $commandTimeout, $startTime, $maxAge)
     {
-        $images = new Process(
-            'docker images --all --quiet --filter=\'label=com.keboola.docker.runner.origin=builder\''
-        );
-        $images->setTimeout($commandTimeout);
-        $images->mustRun();
-        $imageIds = explode('\n', $images->getOutput());
-        foreach ($imageIds as $imageId) {
-            if (empty(trim($imageId))) {
-                continue;
-            }
-            try {
-                $imageId = trim($imageId);
-                $process = new Process('sudo docker inspect ' . $imageId);
-                $process->setTimeout($commandTimeout);
-                $process->mustRun();
-                $inspect = json_decode($process->getOutput(), true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
-                }
-                $inspect = array_pop($inspect);
-                if (empty($inspect['Created'])) {
-                    $output->writeln('Container ' . $imageId . ' is not created?');
-                    continue;
-                }
-                $dateDiff = time() - strtotime($inspect['Created']);
-                $output->writeln(
-                    'Image ' . $imageId . ' created ' . $inspect['Created'] . ' is ' . ($dateDiff / 3600) . ' hours old'
-                );
-                if ($dateDiff > $maxAge) {
-                    $output->writeln('Removing image ' . $imageId);
-                    $rmi = new Process('sudo docker rmi ' . $imageId);
-                    $rmi->setTimeout($commandTimeout);
-                    //$rmi->mustRun();
-                }
-            } catch (\Exception $e) {
-                $output->writeln('Error occurred when processing image ' . $imageId . ': ' . $e->getMessage());
-            }
-            $output->writeln('Running for ' . ($startTime - microtime()) . ' seconds');
-        }
-    }
-
-    private function clearOldImages(OutputInterface $output, $commandTimeout, $startTime, $maxAge)
-    {
-        TODO
         $images = new Process(
             'docker images --all --quiet --filter=\'label=com.keboola.docker.runner.origin=builder\''
         );

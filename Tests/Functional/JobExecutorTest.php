@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\JobExecutorTest;
+namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
@@ -193,6 +193,16 @@ class JobExecutorTest extends KernelTestCase
         $this->client->createBucket("docker-test", Client::STAGE_OUT, "Docker TestSuite");
 
         self::bootKernel();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+    }
+
+    public function tearDown()
+    {
+        // remove env variables
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
+        parent::tearDown();
     }
 
     public function testRun()
@@ -224,7 +234,7 @@ class JobExecutorTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
-        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
+        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
     public function testRunTag()
@@ -242,7 +252,7 @@ class JobExecutorTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
-        $data['params']['tag'] = '1.0.0';
+        $data['params']['tag'] = '1.1.1';
         $jobExecutor = $this->getJobExecutor($encryptor, $handler);
         $job = new Job($encryptor, $data);
         $job->setId(123456);
@@ -257,7 +267,7 @@ class JobExecutorTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
-        $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.0.0\''));
+        $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
     public function testSandbox()
