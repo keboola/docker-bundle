@@ -333,19 +333,11 @@ class Container
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
-        if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
-            $dataDir = str_replace(DIRECTORY_SEPARATOR, '/', str_replace(':', '', '/' . lcfirst($this->dataDir)));
-            foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
-                $envs .= " --env " . escapeshellarg($key) . "=" . str_replace(' ', '\\ ', escapeshellarg($value));
-            }
-            $command = "docker run";
-        } else {
-            $dataDir = $this->dataDir;
-            foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
-                $envs .= " --env \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
-            }
-            $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
+        $dataDir = $this->dataDir;
+        foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
+            $envs .= " --env \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
         }
+        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
 
         $labels = '';
         foreach ($this->runCommandOptions->getLabels() as $label) {
