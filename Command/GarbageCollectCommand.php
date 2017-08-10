@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Command;
 
+use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -10,6 +11,42 @@ use Symfony\Component\Process\Process;
 
 class GarbageCollectCommand extends BaseCommand
 {
+    /**
+     * Timeout for individual command
+     * @var int
+     */
+    private $commandTimeout;
+
+    /**
+     * Timeout for entire garbage collect
+     * @var int
+     */
+    private $timeout;
+
+    /**
+     * Execution start timestamp
+     * @var int
+     */
+    private $startTime;
+
+    private function exec($command)
+    {
+        $process = new Process($command);
+        $process->setTimeout($this->commandTimeout);
+        $process->mustRun();
+        return $process->getOutput();
+    }
+
+    private function checkTimeout(OutputInterface $output)
+    {
+        //$output->writeln('Running for ' . (microtime(true) - $this->startTime) . ' seconds');
+        if ((microtime(true) - $this->startTime) > $this->timeout) {
+            $output->writeln("Timeout reached, terminating");
+            return false;
+        }
+        return true;
+    }
+
     public function configure()
     {
         $this
@@ -25,48 +62,43 @@ class GarbageCollectCommand extends BaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $timeout = $input->getArgument('timeout');
+        $this->commandTimeout = $input->getArgument('command-timeout');
+        $this->timeout = $input->getArgument('timeout');
+        $this->startTime = microtime(true);
         $imageAge = $input->getArgument('image-age');
         $containerAge = $input->getArgument('container-age');
-        $commandTimeout = $input->getArgument('command-timeout');
-        $startTime = microtime();
 
         $output->writeln('Clearing old containers');
         try {
-            $this->clearContainers($output, $commandTimeout, $startTime, $containerAge);
+            $this->clearContainers($output, $containerAge);
         } catch (\Exception $e) {
             $output->writeln('Clearing old containers failed ' . $e->getMessage());
         }
         try {
             $output->writeln('Clearing builder images');
-            $this->clearBuilderImages($output, $commandTimeout, $startTime, $imageAge);
+            $this->clearBuilderImages($output, $imageAge);
         } catch (\Exception $e) {
             $output->writeln('Clearing builder images failed ' . $e->getMessage());
         }
         try {
             $output->writeln('Clearing dangling');
-            $this->clearDangling($output, $commandTimeout);
+            $this->clearDangling($output);
         } catch (\Exception $e) {
             $output->writeln('Clearing dangling failed ' . $e->getMessage());
         }
+        $output->writeln('Finished');
     }
 
-    private function clearContainers(OutputInterface $output, $commandTimeout, $startTime, $maxAge)
+    private function clearContainers(OutputInterface $output, $maxAge)
     {
-        $containers = new Process('docker ps --all --quiet');
-        $containers->setTimeout($commandTimeout);
-        $containers->mustRun();
-        $containerIds = explode('\n', $containers->getOutput());
+        $containerIds = explode("\n", $this->exec('sudo docker ps --all --quiet'));
         foreach ($containerIds as $containerId) {
-            if (empty(trim($containerId))) {
+            $containerId = trim($containerId);
+            if (empty($containerId)) {
                 continue;
             }
             try {
-                $containerId = trim($containerId);
-                $process = new Process('sudo docker inspect ' . $containerId);
-                $process->setTimeout($commandTimeout);
-                $process->mustRun();
-                $inspect = json_decode($process->getOutput(), true);
+                $inspect = json_decode($this->exec('sudo docker inspect ' . $containerId), true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
@@ -82,35 +114,30 @@ class GarbageCollectCommand extends BaseCommand
                 );
                 if ($dateDiff > $maxAge) {
                     $output->writeln('Removing container ' . $containerId);
-                    $rmi = new Process('sudo docker rm ' . $containerId);
-                    $rmi->setTimeout($commandTimeout);
-                    //$rmi->mustRun();
+                    $this->exec('sudo docker rm ' . $containerId);
                 }
             } catch (\Exception $e) {
                 $output->writeln('Error occurred when processing container ' . $containerId . ': ' . $e->getMessage());
             }
-            $output->writeln('Running for ' . ($startTime - microtime()) . ' seconds');
+            if (!$this->checkTimeout($output)) {
+                break;
+            }
         }
     }
 
-    private function clearBuilderImages(OutputInterface $output, $commandTimeout, $startTime, $maxAge)
+    private function clearBuilderImages(OutputInterface $output, $maxAge)
     {
-        $images = new Process(
-            'docker images --all --quiet --filter=\'label=com.keboola.docker.runner.origin=builder\''
+        $imageIds = explode(
+            "\n",
+            $this->exec('sudo docker images --all --quiet --filter=\'label=' . ImageBuilder::COMMON_LABEL . '\'')
         );
-        $images->setTimeout($commandTimeout);
-        $images->mustRun();
-        $imageIds = explode('\n', $images->getOutput());
         foreach ($imageIds as $imageId) {
-            if (empty(trim($imageId))) {
+            $imageId = trim($imageId);
+            if (empty($imageId)) {
                 continue;
             }
             try {
-                $imageId = trim($imageId);
-                $process = new Process('sudo docker inspect ' . $imageId);
-                $process->setTimeout($commandTimeout);
-                $process->mustRun();
-                $inspect = json_decode($process->getOutput(), true);
+                $inspect = json_decode($this->exec('sudo docker inspect ' . $imageId), true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
@@ -125,26 +152,22 @@ class GarbageCollectCommand extends BaseCommand
                 );
                 if ($dateDiff > $maxAge) {
                     $output->writeln('Removing image ' . $imageId);
-                    $rmi = new Process('sudo docker rmi ' . $imageId);
-                    $rmi->setTimeout($commandTimeout);
-                    //$rmi->mustRun();
+                    $this->exec('sudo docker rmi ' . $imageId);
                 }
             } catch (\Exception $e) {
                 $output->writeln('Error occurred when processing image ' . $imageId . ': ' . $e->getMessage());
             }
-            $output->writeln('Running for ' . ($startTime - microtime()) . ' seconds');
+            if (!$this->checkTimeout($output)) {
+                break;
+            }
         }
     }
 
-    private function clearDangling(OutputInterface $output, $commandTimeout)
+    private function clearDangling(OutputInterface $output)
     {
         $output->writeln("Removing volumes");
-        $rmi = new Process('docker volume rm $(docker volume ls --quiet --filter=\'dangling=true\')');
-        $rmi->setTimeout($commandTimeout);
-        $rmi->mustRun();
+        $this->exec('sudo docker volume rm $(docker volume ls --quiet --filter=\'dangling=true\')');
         $output->writeln("Removing images");
-        $rmi = new Process('docker rmi $(docker images --quiet --filter=\'dangling=true\')');
-        $rmi->setTimeout($commandTimeout);
-        $rmi->mustRun();
+        $this->exec('sudo docker rmi $(docker images --quiet --filter=\'dangling=true\')');
     }
 }
