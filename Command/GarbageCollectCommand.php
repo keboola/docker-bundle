@@ -56,7 +56,7 @@ class GarbageCollectCommand extends BaseCommand
         */
         /* docker on some platforms returns microtime with more than 6 digits
         http://php.net/manual/en/datetime.createfromformat.php#121431 */
-        $dateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s\.u', substr($date, 0, 19));
+        $dateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s', substr($date, 0, 19), new \DateTimeZone('UTC'));
         return $dateTime;
     }
 
@@ -116,6 +116,10 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
+                if (empty($inspect['State']['Status']) || ($inspect['State']['Status']) != 'exited') {
+                    $output->writeln('Container ' . $containerId . ' is not finished.');
+                    continue;
+                }
                 if (empty($inspect['State']['FinishedAt'])) {
                     $output->writeln('Container ' . $containerId . ' is not finished?');
                     continue;
@@ -160,7 +164,7 @@ class GarbageCollectCommand extends BaseCommand
                     $output->writeln('Container ' . $imageId . ' is not created?');
                     continue;
                 }
-                $date = $this->processDate($inspect['State']['Created']);
+                $date = $this->processDate($inspect['Created']);
                 $dateDiff = time() - $date->getTimestamp();
                 $output->writeln(
                     'Image ' . $imageId . ' created ' . $inspect['Created'] . ' is ' . ($dateDiff / 3600) . ' hours old'
