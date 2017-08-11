@@ -68,8 +68,7 @@ class GarbageCollectCommandTest extends WebTestCase
             "sudo docker ps --all --quiet --filter 'name=" . escapeshellarg($containerName) . "'"
         ))));
 
-        // wait for the images to expire
-        sleep(60);
+        $deleteTime = time();
 
         // prepare builder image to be kept
         $keepId = uniqid('test-id');
@@ -100,9 +99,9 @@ class GarbageCollectCommandTest extends WebTestCase
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run([
             'docker:garbage-collect',
-            'timeout' => 10,
-            'image-age' => 60,
-            'container-age' => 60,
+            'timeout' => 60,
+            'image-age' => (time() - $deleteTime),
+            'container-age' => (time() - $deleteTime),
             'command-timeout' => 20
         ]);
 
