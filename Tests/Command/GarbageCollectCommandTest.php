@@ -127,4 +127,24 @@ class GarbageCollectCommandTest extends WebTestCase
             self::assertFalse(in_array($id, $containers));
         }
     }
+
+    public function testCommandTimeout()
+    {
+        // run the garbage collect command
+        $application = new Application(self::$kernel);
+        $application->setAutoExit(false);
+        /** @var GarbageCollectCommand $mock */
+        $application->add(new GarbageCollectCommand());
+        $applicationTester = new ApplicationTester($application);
+        $applicationTester->run([
+            'docker:garbage-collect',
+            'timeout' => 1,
+            'image-age' => 20,
+            'container-age' => 20,
+            'command-timeout' => 5
+        ]);
+        self::assertContains('Timeout reached, terminating', $applicationTester->getDisplay());
+        self::assertContains('Finished', $applicationTester->getDisplay());
+        self::assertEquals(0, $applicationTester->getStatusCode());
+    }
 }

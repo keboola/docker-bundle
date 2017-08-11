@@ -171,7 +171,7 @@ class GarbageCollectCommand extends BaseCommand
                 );
                 if ($dateDiff > $maxAge) {
                     $output->writeln('Removing image ' . $imageId);
-                    $this->exec('sudo docker rmi ' . $imageId);
+                    $this->exec('sudo docker rmi --force ' . $imageId);
                 }
             } catch (\Exception $e) {
                 $output->writeln('Error occurred when processing image ' . $imageId . ': ' . $e->getMessage());
