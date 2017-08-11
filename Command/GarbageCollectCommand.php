@@ -47,6 +47,19 @@ class GarbageCollectCommand extends BaseCommand
         return true;
     }
 
+    private function processDate($date)
+    {
+        /* The following date formats can be returned by docker
+            "2017-08-11T14:12:30.574769788Z"
+            "2017-08-11T14:12:30.57476"
+            "0001-01-01T00:00:00Z"
+        */
+        /* docker on some platforms returns microtime with more than 6 digits
+        http://php.net/manual/en/datetime.createfromformat.php#121431 */
+        $dateTime = \DateTime::createFromFormat('Y-m-d\TH:i:s\.u', substr($date, 0, 19));
+        return $dateTime;
+    }
+
     public function configure()
     {
         $this
@@ -107,12 +120,7 @@ class GarbageCollectCommand extends BaseCommand
                     $output->writeln('Container ' . $containerId . ' is not finished?');
                     continue;
                 }
-                /* docker on some platforms returns microtime with more than 6 digits
-                http://php.net/manual/en/datetime.createfromformat.php#121431 */
-                $date = \DateTime::createFromFormat(
-                    'Y-m-d\TH:i:s\.u',
-                    substr($inspect['State']['FinishedAt'], 0, strpos($inspect['State']['FinishedAt'], '.') + 6)
-                );
+                $date = $this->processDate($inspect['State']['FinishedAt']);
                 $dateDiff = time() - $date->getTimestamp();
                 $output->writeln(
                     'Container ' . $containerId . ' finished ' . $inspect['State']['FinishedAt'] .
@@ -152,13 +160,7 @@ class GarbageCollectCommand extends BaseCommand
                     $output->writeln('Container ' . $imageId . ' is not created?');
                     continue;
                 }
-                /* docker on some platforms returns microtime with more than 6 digits
-                http://php.net/manual/en/datetime.createfromformat.php#121431 */
-                $date = \DateTime::createFromFormat(
-                    'Y-m-d\TH:i:s\.u',
-                    substr($inspect['Created'], 0, strpos($inspect['Created'], '.') + 6)
-                );
-
+                $date = $this->processDate($inspect['State']['Created']);
                 $dateDiff = time() - $date->getTimestamp();
                 $output->writeln(
                     'Image ' . $imageId . ' created ' . $inspect['Created'] . ' is ' . ($dateDiff / 3600) . ' hours old'
