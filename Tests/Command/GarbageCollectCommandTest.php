@@ -75,7 +75,9 @@ class GarbageCollectCommandTest extends WebTestCase
             "sudo docker ps --all --quiet --filter 'name=" . escapeshellarg($containerName) . "'"
         ))));
 
+        sleep(3);
         $deleteTime = time();
+        sleep(3);
 
         // prepare builder image to be kept
         $keepId = uniqid('test-id');
@@ -138,11 +140,21 @@ class GarbageCollectCommandTest extends WebTestCase
 
     public function testCommandTimeout()
     {
+        // make sure there are some images and containers
+        $this->exec("sudo docker run --entrypoint='/bin/pwd' alpine");
+        
+        $mock = self::getMockBuilder(GarbageCollectCommand::class)->setMethods(['exec'])->getMock();
+        $mock->method('exec')->willReturnCallback(function($command) {
+            sleep(5);
+            $process = new Process($command);
+            $process->mustRun();
+            return $process->getOutput();
+        });
         // run the garbage collect command
         $application = new Application(self::$kernel);
         $application->setAutoExit(false);
         /** @var GarbageCollectCommand $mock */
-        $application->add(new GarbageCollectCommand());
+        $application->add($mock);
         $applicationTester = new ApplicationTester($application);
         $applicationTester->run([
             'docker:garbage-collect',

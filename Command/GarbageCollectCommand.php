@@ -29,7 +29,11 @@ class GarbageCollectCommand extends BaseCommand
      */
     private $startTime;
 
-    private function exec($command)
+    /**
+     * @param $command
+     * @return string
+     */
+    public function exec($command)
     {
         $process = new Process($command);
         $process->setTimeout($this->commandTimeout);
@@ -37,6 +41,10 @@ class GarbageCollectCommand extends BaseCommand
         return $process->getOutput();
     }
 
+    /**
+     * @param OutputInterface $output
+     * @return bool
+     */
     private function checkTimeout(OutputInterface $output)
     {
         //$output->writeln('Running for ' . (microtime(true) - $this->startTime) . ' seconds');
@@ -47,6 +55,10 @@ class GarbageCollectCommand extends BaseCommand
         return true;
     }
 
+    /**
+     * @param $date
+     * @return bool|\DateTime
+     */
     private function processDate($date)
     {
         /* The following date formats can be returned by docker
@@ -60,6 +72,9 @@ class GarbageCollectCommand extends BaseCommand
         return $dateTime;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function configure()
     {
         $this
@@ -73,6 +88,9 @@ class GarbageCollectCommand extends BaseCommand
             ]);
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->commandTimeout = $input->getArgument('command-timeout');
@@ -102,10 +120,17 @@ class GarbageCollectCommand extends BaseCommand
         $output->writeln('Finished');
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param $maxAge
+     */
     private function clearContainers(OutputInterface $output, $maxAge)
     {
         $containerIds = explode("\n", $this->exec('sudo docker ps --all --quiet'));
         foreach ($containerIds as $containerId) {
+            if (!$this->checkTimeout($output)) {
+                break;
+            }
             $containerId = trim($containerId);
             if (empty($containerId)) {
                 continue;
@@ -137,12 +162,13 @@ class GarbageCollectCommand extends BaseCommand
             } catch (\Exception $e) {
                 $output->writeln('Error occurred when processing container ' . $containerId . ': ' . $e->getMessage());
             }
-            if (!$this->checkTimeout($output)) {
-                break;
-            }
         }
     }
 
+    /**
+     * @param OutputInterface $output
+     * @param $maxAge
+     */
     private function clearBuilderImages(OutputInterface $output, $maxAge)
     {
         $imageIds = explode(
@@ -150,6 +176,9 @@ class GarbageCollectCommand extends BaseCommand
             $this->exec('sudo docker images --all --quiet --filter=\'label=' . ImageBuilder::COMMON_LABEL . '\'')
         );
         foreach ($imageIds as $imageId) {
+            if (!$this->checkTimeout($output)) {
+                break;
+            }
             $imageId = trim($imageId);
             if (empty($imageId)) {
                 continue;
@@ -176,12 +205,12 @@ class GarbageCollectCommand extends BaseCommand
             } catch (\Exception $e) {
                 $output->writeln('Error occurred when processing image ' . $imageId . ': ' . $e->getMessage());
             }
-            if (!$this->checkTimeout($output)) {
-                break;
-            }
         }
     }
 
+    /**
+     * @param OutputInterface $output
+     */
     private function clearDangling(OutputInterface $output)
     {
         $output->writeln("Removing volumes");
