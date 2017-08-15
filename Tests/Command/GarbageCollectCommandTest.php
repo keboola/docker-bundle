@@ -142,9 +142,9 @@ class GarbageCollectCommandTest extends WebTestCase
     {
         // make sure there are some images and containers
         $this->exec("sudo docker run --entrypoint='/bin/pwd' alpine");
-        
+
         $mock = self::getMockBuilder(GarbageCollectCommand::class)->setMethods(['exec'])->getMock();
-        $mock->method('exec')->willReturnCallback(function($command) {
+        $mock->method('exec')->willReturnCallback(function ($command) {
             sleep(5);
             $process = new Process($command);
             $process->mustRun();
