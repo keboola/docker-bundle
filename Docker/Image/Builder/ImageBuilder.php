@@ -19,6 +19,7 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilder extends Image
 {
+    const COMMON_LABEL = 'com.keboola.docker.runner.origin=builder';
     /**
      * @var string
      */
@@ -269,7 +270,7 @@ class ImageBuilder extends Image
     {
         $dockerFile = '';
         $dockerFile .= "FROM " . $this->parentImage . "\n";
-        $dockerFile .= "LABEL com.keboola.docker.runner.origin=builder\n";
+        $dockerFile .= "LABEL " . self::COMMON_LABEL . "\n";
         $dockerFile .= "WORKDIR /home\n";
 
         if ($this->getVersion()) {

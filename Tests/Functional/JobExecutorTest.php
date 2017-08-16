@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\JobExecutorTest;
+namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
