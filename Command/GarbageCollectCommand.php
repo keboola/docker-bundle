@@ -112,10 +112,16 @@ class GarbageCollectCommand extends BaseCommand
             $output->writeln('Clearing builder images failed ' . $e->getMessage());
         }
         try {
-            $output->writeln('Clearing dangling');
-            $this->clearDangling($output);
+            $output->writeln('Clearing dangling volumes');
+            $this->clearDanglingVolumes($output);
         } catch (\Exception $e) {
-            $output->writeln('Clearing dangling failed ' . $e->getMessage());
+            $output->writeln('Clearing dangling volumes failed ' . $e->getMessage());
+        }
+        try {
+            $output->writeln('Clearing dangling images');
+            $this->clearDanglingImages($output);
+        } catch (\Exception $e) {
+            $output->writeln('Clearing dangling images failed ' . $e->getMessage());
         }
         $output->writeln('Finished');
     }
@@ -141,7 +147,8 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
-                if (empty($inspect['State']['Status']) || ($inspect['State']['Status']) != 'exited') {
+                if (empty($inspect['State']['Status']) ||
+                    (($inspect['State']['Status'] != 'exited') && ($inspect['State']['Status'] != 'dead'))) {
                     $output->writeln('Container ' . $containerId . ' is not finished.');
                     continue;
                 }
@@ -211,11 +218,18 @@ class GarbageCollectCommand extends BaseCommand
     /**
      * @param OutputInterface $output
      */
-    private function clearDangling(OutputInterface $output)
+    private function clearDanglingVolumes(OutputInterface $output)
     {
         $output->writeln("Removing volumes");
-        $this->exec('sudo docker volume rm $(docker volume ls --quiet --filter=\'dangling=true\')');
+        $this->exec('sudo docker volume rm $(sudo docker volume ls --quiet --filter=\'dangling=true\')');
+    }
+
+    /**
+     * @param OutputInterface $output
+     */
+    private function clearDanglingImages(OutputInterface $output)
+    {
         $output->writeln("Removing images");
-        $this->exec('sudo docker rmi $(docker images --quiet --filter=\'dangling=true\')');
+        $this->exec('sudo docker rmi $(sudo docker images --quiet --filter=\'dangling=true\')');
     }
 }

@@ -42,16 +42,9 @@ class GarbageCollectCommandTest extends WebTestCase
             explode("\n", trim($this->exec('sudo docker images --quiet alpine:3.6')))
         );
 
-        // prepare dangling image to be removed
-        $this->exec('sudo docker pull alpine:3.5');
-        $removeImages = array_merge(
-            $removeImages,
-            explode("\n", trim($this->exec('sudo docker images --quiet alpine:3.5')))
-        );
-
         // prepare builder image to be removed
         $removeId = uniqid('test-remove-id');
-        $dockerFile = "FROM alpine:3.5\nLABEL " . ImageBuilder::COMMON_LABEL .
+        $dockerFile = "FROM alpine:3.6\nLABEL " . ImageBuilder::COMMON_LABEL .
             "\nLABEL com.keboola.docker.runner.test=" . $removeId;
         $fs->dumpFile($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
         $this->exec('cd ' . $temp->getTmpFolder() . ' && sudo docker build . ');
@@ -61,9 +54,6 @@ class GarbageCollectCommandTest extends WebTestCase
                 "sudo docker images --all --quiet --filter='label=com.keboola.docker.runner.test=" . $removeId . "'"
             ))
         ));
-
-        // make the image dangling
-        $this->exec('sudo docker rmi alpine:3.5');
 
         // prepare container to be removed
         $containerName = uniqid('test-container');
@@ -81,11 +71,24 @@ class GarbageCollectCommandTest extends WebTestCase
 
         // prepare builder image to be kept
         $keepId = uniqid('test-id');
-        $dockerFile = "FROM alpine:3.6\nLABEL " . ImageBuilder::COMMON_LABEL .
+        $dockerFile = "FROM alpine:3.5\nLABEL " . ImageBuilder::COMMON_LABEL .
             "\nLABEL com.keboola.docker.runner.test=" . $keepId;
         $fs->dumpFile($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
         $this->exec('cd ' . $temp->getTmpFolder() . ' && sudo docker build . ');
         $keepImages = array_merge($keepImages, explode(
+            "\n",
+            trim($this->exec(
+                "sudo docker images --all --quiet --filter='label=com.keboola.docker.runner.test=" . $keepId . "'"
+            ))
+        ));
+
+        // make a dangling image
+        $keepId = uniqid('test-id');
+        $dockerFile = "FROM alpine:3.6\nLABEL " . ImageBuilder::COMMON_LABEL .
+            "\nLABEL com.keboola.docker.runner.test=" . $keepId;
+        $fs->dumpFile($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile', $dockerFile);
+        $this->exec('cd ' . $temp->getTmpFolder() . ' && sudo docker build . ');
+        $removeImages = array_merge($removeImages, explode(
             "\n",
             trim($this->exec(
                 "sudo docker images --all --quiet --filter='label=com.keboola.docker.runner.test=" . $keepId . "'"
