@@ -24,6 +24,8 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
     public function testCreateImageDockerHub()
@@ -203,7 +205,10 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(3, $images);
         $this->assertEquals('quay.io/keboola/processor-unziper:3.0.4', $images[0]->getFullImageId());
         $this->assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
-        $this->assertEquals('quay.io/keboola/processor-iconv:1.0.2', $images[2]->getFullImageId());
+        $this->assertEquals(
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv:1.0.4',
+            $images[2]->getFullImageId()
+        );
         $this->assertFalse($images[0]->isMain());
         $this->assertTrue($images[1]->isMain());
         $this->assertFalse($images[2]->isMain());

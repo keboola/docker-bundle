@@ -75,6 +75,9 @@ class RunnerTest extends KernelTestCase
             $this->client->deleteFile($file['id']);
         }
 
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+
         self::bootKernel();
     }
 
@@ -164,7 +167,7 @@ class RunnerTest extends KernelTestCase
                 "id" => "keboola.processor.iconv",
                 "data" => [
                     "definition" => [
-                      "type" => "ecr",
+                      "type" => "aws-ecr",
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv",
                       "tag" => "1.0.4",
                     ],
@@ -175,7 +178,7 @@ class RunnerTest extends KernelTestCase
                 "id" => "keboola.processor.move-files",
                 "data" => [
                     "definition" => [
-                        "type" => "ecr",
+                        "type" => "aws-ecr",
                         "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files",
                         "tag" => "0.1.3",
                     ],
