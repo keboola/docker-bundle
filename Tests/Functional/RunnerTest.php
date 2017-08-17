@@ -164,20 +164,20 @@ class RunnerTest extends KernelTestCase
                 "id" => "keboola.processor.iconv",
                 "data" => [
                     "definition" => [
-                      "type" => "quayio",
-                      "uri" => "keboola/processor-iconv",
-                      "tag" => "1.0.2",
+                      "type" => "ecr",
+                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv",
+                      "tag" => "1.0.4",
                     ],
                     "inject_environment" => true,
-                ]
+                ],
             ],
             [
                 "id" => "keboola.processor.move-files",
                 "data" => [
                     "definition" => [
-                        "type" => "quayio",
-                        "uri" => "keboola/processor-move-files",
-                        "tag" => "0.1.0",
+                        "type" => "ecr",
+                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files",
+                        "tag" => "0.1.3",
                     ],
                     "inject_environment" => true,
                 ]
