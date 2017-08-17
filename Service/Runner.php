@@ -357,6 +357,9 @@ class Runner
 
         $counter = 0;
         foreach ($images as $priority => $image) {
+            if (!$image->isMain()) {
+                $this->loggerService->getLog()->info("Running processor " . $image->getFullImageId());
+            }
             $environment = new Environment(
                 $configId,
                 $image->getSourceComponent(),
