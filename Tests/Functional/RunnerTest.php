@@ -280,15 +280,15 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/r-transformation',
-                    'tag' => '0.0.14',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation',
+                    'tag' => '1.1.1',
                 ],
             ],
         ];
 
         $runner = $this->getRunner(new NullHandler());
-        $runner->run(
+        $output = $runner->run(
             $componentData,
             uniqid('test-'),
             $configurationData,
@@ -297,6 +297,45 @@ class RunnerTest extends KernelTestCase
             'run',
             '1234567'
         );
+        $this->assertEquals(
+            [
+                0 => [
+                    'id' => 'quay.io/keboola/processor-unziper:3.0.4',
+                    'digests' => [
+                        'quay.io/keboola/processor-unziper@sha256:2f83e206278f3a4dcb0344b9e90c0c2d9b32b185d1af70ac982ede36af00ddb5'
+                    ],
+                ],
+                1 => [
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files:0.1.3',
+                    'digests' => [
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files@sha256:adf78a2cf3bef196a0566877400e9697517f17780fdb4c1bbac7f7677a131d5b'
+                    ],
+                ],
+                2 => [
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv:1.0.4',
+                    'digests' => [
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv@sha256:6470cf32045b572fcc4b85bb5fb364867fe7f106af93222daa1fd7638a99f756'
+                    ],
+                ],
+                3 => [
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation:1.1.1',
+                    'digests' => [
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation@sha256:a332fdf1b764b329230dd420f54d642d042b8552f6b499cf26cd49ee504904d6'
+                    ],
+                ]
+            ],
+            $output->getImages()
+        );
+        $lines = explode("\n", $output->getProcessOutput());
+        $lines = array_map(function ($line) {
+            return substr($line, 23); // skip the date of event
+        }, $lines);
+        $this->assertEquals([
+            0 => ' : Initializing R transformation',
+            1 => ' : Running R script',
+            2 => ' : R script finished',
+            3 => false
+        ], $lines);
 
         $csvData = $this->client->exportTable('out.c-docker-pipeline.radio');
         $data = Client::parseCsv($csvData);

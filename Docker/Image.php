@@ -56,6 +56,11 @@ abstract class Image
      */
     private $component;
 
+    /**
+     * @var array
+     */
+    private $imageDigests;
+
     abstract protected function pullImage();
 
     /**
@@ -151,25 +156,43 @@ abstract class Image
     }
 
     /**
-     * Get and log hash of the image.
-     * @param string $name Image name including tag
-     */
-    public function logImageHash($name)
+     * Log repository hash (digest) of the image.
+    */
+    public function logImageHash()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $command = "sudo docker images --format \"{{.ID}}\" --no-trunc " . escapeshellarg($name);
+        $this->logger->notice(
+            "Using image " . $this->getFullImageId() . " with repo-digest " .
+            implode(', ', $this->getImageDigests())
+        );
+    }
 
-        $process = new Process($command);
-        $process->setTimeout(3600);
-        try {
-            $proxy->call(function () use ($process) {
-                $process->mustRun();
-            });
-            $this->logger->notice("Using image $name with hash " . trim($process->getOutput()));
-        } catch (\Exception $e) {
-            $this->logger->error("Failed to get hash for image " . $name);
+    /**
+     * Get repository hash (digest) of the image.
+     * @return string[]
+     */
+    public function getImageDigests()
+    {
+        if (empty($this->imageDigests)) {
+            $command = "sudo docker inspect " . escapeshellarg($this->getFullImageId());
+            $process = new Process($command);
+            $process->setTimeout(3600);
+            try {
+                $retryPolicy = new SimpleRetryPolicy(3);
+                $backOffPolicy = new ExponentialBackOffPolicy(10000);
+                $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+                $proxy->call(function () use ($process) {
+                    $process->mustRun();
+                });
+                $inspect = json_decode($process->getOutput(), true);
+                if ((json_last_error() != JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
+                    throw new \InvalidArgumentException("Inspect error " . json_last_error_msg());
+                }
+                $this->imageDigests = $inspect[0]['RepoDigests'];
+            } catch (\Exception $e) {
+                $this->logger->error("Failed to get hash for image " . $this->getFullImageId());
+                $this->imageDigests = ['err'];
+            }
         }
+        return $this->imageDigests;
     }
 }

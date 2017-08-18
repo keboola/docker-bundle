@@ -22,7 +22,7 @@ class DockerHub extends Image
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
-            $this->logImageHash($this->getFullImageId());
+            $this->logImageHash();
         } catch (\Exception $e) {
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
         }
