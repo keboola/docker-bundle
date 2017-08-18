@@ -13,9 +13,11 @@ class OutputTest extends \PHPUnit_Framework_TestCase
         $output->addImages(10, 'oranges', ['bar']);
         $output->addProcessOutput('bazBar');
         self::assertEquals('bazBar', $output->getProcessOutput());
-        self::assertEquals([
-            0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
-            10 => ['id' => 'oranges', 'digests' => ['bar']]],
+        self::assertEquals(
+            [
+                0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
+                10 => ['id' => 'oranges', 'digests' => ['bar']]
+            ],
             $output->getImages()
         );
     }
