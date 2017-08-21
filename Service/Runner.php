@@ -293,7 +293,7 @@ class Runner
      * @param $jobId
      * @param $configId
      * @param Component $component
-     * @return string
+     * @return Output
      */
     public function runComponent($jobId, $configId, Component $component)
     {
