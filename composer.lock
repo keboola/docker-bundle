@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b74a89a1dc6e8b4caa24f9be717c238c",
+    "content-hash": "ba2a125e09a77ed8a223a1e0b0579b5e",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1683,22 +1683,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "2.1.0",
+            "version": "3.0.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "63e1859168b10acf80c5bb03a3206ee27487d4b1"
+                "reference": "85b8e508a69db23919ad6d42b878ebc6567903fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/63e1859168b10acf80c5bb03a3206ee27487d4b1",
-                "reference": "63e1859168b10acf80c5bb03a3206ee27487d4b1",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/85b8e508a69db23919ad6d42b878ebc6567903fe",
+                "reference": "85b8e508a69db23919ad6d42b878ebc6567903fe",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^6.3",
+                "keboola/storage-api-client": "^7.0",
                 "symfony/config": "^2.8",
                 "symfony/finder": "^2.8",
                 "symfony/serializer": "^2.8",
@@ -1727,7 +1727,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2017-05-25T21:46:58+00:00"
+            "time": "2017-08-23T12:03:35+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1770,23 +1770,23 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "1.0.5",
+            "version": "2.0.0",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "5ca68ec69c4eecd1966a65d6587001231d92f090"
+                "reference": "a97b1fa8566722159c553edd4da60b8e04fac2d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/5ca68ec69c4eecd1966a65d6587001231d92f090",
-                "reference": "5ca68ec69c4eecd1966a65d6587001231d92f090",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/a97b1fa8566722159c553edd4da60b8e04fac2d2",
+                "reference": "a97b1fa8566722159c553edd4da60b8e04fac2d2",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "^2.0",
-                "keboola/storage-api-client": "^6.3",
+                "keboola/input-mapping": "^3.0",
+                "keboola/storage-api-client": "^7.0",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8",
                 "symfony/finder": "^2.8",
@@ -1816,7 +1816,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2017-06-20T17:39:05+00:00"
+            "time": "2017-08-23T13:31:48+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -1984,16 +1984,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "6.5.0",
+            "version": "7.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "5897a291f171200678b58393e712d4602bc56bf7"
+                "reference": "dda03e8faddec7fb39dba63b804003a2bf42abaa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/5897a291f171200678b58393e712d4602bc56bf7",
-                "reference": "5897a291f171200678b58393e712d4602bc56bf7",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/dda03e8faddec7fb39dba63b804003a2bf42abaa",
+                "reference": "dda03e8faddec7fb39dba63b804003a2bf42abaa",
                 "shasum": ""
             },
             "require": {
@@ -2023,20 +2023,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2017-07-26T07:55:16+00:00"
+            "time": "2017-08-23T11:02:06+00:00"
         },
         {
             "name": "keboola/syrup",
-            "version": "6.1.1",
+            "version": "7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "3ea4539c2daf13ae1416e802841e22f39985220a"
+                "reference": "9b7a6e84339ac888fe51f309217a61e5fe9f706c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/3ea4539c2daf13ae1416e802841e22f39985220a",
-                "reference": "3ea4539c2daf13ae1416e802841e22f39985220a",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/9b7a6e84339ac888fe51f309217a61e5fe9f706c",
+                "reference": "9b7a6e84339ac888fe51f309217a61e5fe9f706c",
                 "shasum": ""
             },
             "require": {
@@ -2051,7 +2051,7 @@
                 "keboola/php-encryption": "~0.2",
                 "keboola/php-temp": "~0.1.0",
                 "keboola/php-utils": "~1.0.0",
-                "keboola/storage-api-client": "^6.0",
+                "keboola/storage-api-client": "^7.0",
                 "php": "~5.6|^7.0",
                 "sensio/distribution-bundle": "~4.0.4",
                 "sensio/framework-extra-bundle": "~3.0",
@@ -2092,7 +2092,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2017-06-01T10:39:35+00:00"
+            "time": "2017-08-23T06:04:16+00:00"
         },
         {
             "name": "kriswallsmith/assetic",

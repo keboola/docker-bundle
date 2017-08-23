@@ -298,14 +298,14 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
 
-        $csvData = $this->client->exportTable('out.c-docker-pipeline.radio');
+        $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.radio');
         $data = Client::parseCsv($csvData);
         $this->assertEquals(9, count($data));
         $this->assertArrayHasKey('id', $data[0]);
         $this->assertArrayHasKey('text', $data[0]);
         $this->assertArrayHasKey('tag', $data[0]);
         $this->assertArrayHasKey('rev', $data[0]);
-        $csvData = $this->client->exportTable('out.c-docker-pipeline.texty');
+        $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.texty');
         $data = Client::parseCsv($csvData);
         $this->assertEquals(4, count($data));
         $this->assertArrayHasKey('id', $data[0]);
