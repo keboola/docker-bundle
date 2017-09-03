@@ -5,15 +5,14 @@
     "keywords": [],
     "authors": [],
     "require": {
-        "keboola/syrup": "^6.1",
+        "keboola/syrup": "^7.0",
         "keboola/php-utils": "^1.0",
         "symfony/symfony": "^2.8",
         "symfony/console": "^2.8",
         "keboola/oauth-v2-php-client": "^2.1",
-        "keboola/storage-api-client": "^6.4",
         "keboola/gelf-server": "^1.0",
-        "keboola/input-mapping": "^2.0",
-        "keboola/output-mapping": "^1.0",
+        "keboola/input-mapping": "^3.0",
+        "keboola/output-mapping": "^2.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {

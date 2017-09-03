@@ -225,7 +225,9 @@ class JobExecutorTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->exportTable('out.c-docker-test.transposed');
+        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed', [
+            'limit' => 1000,
+        ]);
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));
@@ -258,7 +260,9 @@ class JobExecutorTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->exportTable('out.c-docker-test.transposed');
+        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed', [
+            'limit' => 1000,
+        ]);
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));
@@ -293,7 +297,7 @@ class JobExecutorTest extends KernelTestCase
         $jobExecutor->execute($job);
 
         try {
-            $this->client->exportTable('out.c-docker-test.transposed');
+            $this->client->getTableDataPreview('out.c-docker-test.transposed');
             $this->fail("Table should not exist.");
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -330,7 +334,7 @@ class JobExecutorTest extends KernelTestCase
         $jobExecutor->execute($job);
 
         try {
-            $this->client->exportTable('out.c-docker-test.transposed');
+            $this->client->getTableDataPreview('out.c-docker-test.transposed');
             $this->fail("Table should not exist.");
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -366,7 +370,7 @@ class JobExecutorTest extends KernelTestCase
         $jobExecutor->execute($job);
 
         try {
-            $this->client->exportTable('out.c-docker-test.transposed');
+            $this->client->getTableDataPreview('out.c-docker-test.transposed');
             $this->fail("Table should not exist.");
         } catch (Exception $e) {
             if ($e->getCode() != 404) {

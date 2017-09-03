@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
@@ -18,7 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class LoggerTests extends KernelTestCase
+class LoggerTest extends KernelTestCase
 {
 
     private function getImageConfiguration()
@@ -126,7 +127,13 @@ class LoggerTests extends KernelTestCase
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-        $image = ImageFactory::getImage($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage(
+            $encryptor,
+            $logService->getLog(),
+            new Component($imageConfiguration),
+            new Temp(),
+            true
+        );
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         return new Container(
@@ -302,6 +309,128 @@ print "second message to stdout\n";'
         $this->assertTrue($containerHandler->hasWarning("A warning message."));
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasError("Error message."));
+    }
+
+    public function testGelfLogInvalid()
+    {
+        /* install a broken version of pygelf which does not sent required 'host' field
+        and check that it is handled gracefully. */
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/docker-custom-python",
+                    "tag" => "latest",
+                    "build_options" => [
+                        "parent_type" => "quayio",
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docs-example-logging-python.git",
+                            "type" => "git"
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /code/",
+                            "cd /code/",
+                            "pip3 install pygelf==0.3.1",
+                            "echo \"import logging\" > /code/my-main.py",
+                            "echo \"import pygelf\" >> /code/my-main.py",
+                            "echo \"import os\" >> /code/my-main.py",
+                            "echo \"logging.basicConfig(level=logging.INFO)\" >> /code/my-main.py",
+                            "echo \"logging.getLogger().removeHandler(logging.getLogger().handlers[0])\" >> /code/my-main.py",
+                            "echo \"pygelf_handler = pygelf.GelfTcpHandler(host=os.getenv('KBC_LOGGER_ADDR'), " .
+                                "port=os.getenv('KBC_LOGGER_PORT'), debug=False)\" >> /code/my-main.py",
+                            "echo \"logging.getLogger().addHandler(pygelf_handler)\" >> /code/my-main.py",
+                            "echo \"logging.info('A sample info message (pygelf)')\" >> /code/my-main.py"
+                        ],
+                        "entry_point" => "python /code/my-main.py"
+                    ],
+                ],
+                "logging" => [
+                    "type" => "gelf",
+                    "gelf_server_type" => "tcp"
+                ]
+            ]
+        ];
+        $handler = new TestHandler();
+        $containerHandler = new TestHandler();
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $temp->getTmpFolder(),
+            $handler,
+            $containerHandler
+        );
+        try {
+            $container->run();
+            self::fail("Must raise error");
+        } catch (ApplicationException $e) {
+            self::assertContains('Host parameter is missing from GELF message', $e->getMessage());
+        }
+    }
+
+    public function testGelfLogInvalidMessage()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = [
+            "data" => [
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "keboola/docker-custom-python",
+                    "tag" => "latest",
+                    "build_options" => [
+                        "parent_type" => "quayio",
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docs-example-logging-python.git",
+                            "type" => "git"
+                        ],
+                        "commands" => [
+                            "git clone {{repository}} /code/",
+                            "cd /code/",
+                            "pip3 install logging_gelf",
+                            "echo \"import logging\" > /code/my-main.py",
+                            "echo \"import logging_gelf.handlers\" >> /code/my-main.py",
+                            "echo \"import logging_gelf.formatters\" >> /code/my-main.py",
+                            "echo \"import os\" >> /code/my-main.py",
+                            "echo \"logger = logging.getLogger()\" >> /code/my-main.py",
+                            "echo \"logging.basicConfig(level=logging.INFO)\" >> /code/my-main.py",
+                            "echo \"logging.getLogger().removeHandler(logging.getLogger().handlers[0])\" >> /code/my-main.py",
+                            "echo \"logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(" .
+                                "host=os.getenv('KBC_LOGGER_ADDR'), port=int(os.getenv('KBC_LOGGER_PORT')))\" >> /code/my-main.py",
+                            "echo \"#logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))\" >> /code/my-main.py",
+                            "echo \"logger.addHandler(logging_gelf_handler)\" >> /code/my-main.py",
+                            "echo \"logging.info('A sample info message (invalid)\\x00')\" >> /code/my-main.py",
+                            "echo \"logging.warning('A sample warning message (invalid)\\x00')\" >> /code/my-main.py",
+                            "echo \"print('Client finished')\" >> /code/my-main.py",
+                        ],
+                        "entry_point" => "python /code/my-main.py"
+                    ],
+                ],
+                "logging" => [
+                    "type" => "gelf",
+                    "gelf_server_type" => "tcp"
+                ]
+            ]
+        ];
+        $handler = new TestHandler();
+        $containerHandler = new TestHandler();
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $temp->getTmpFolder(),
+            $handler,
+            $containerHandler
+        );
+        $process = $container->run();
+
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $this->assertEquals('', $err);
+        $this->assertEquals("Client finished\n", $out);
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(3, count($records));
+        $this->assertTrue($containerHandler->hasInfo("Client finished\n"));
+        $this->assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
+        $this->assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
     }
 
     public function testVerbosityDefault()
@@ -508,7 +637,13 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = ImageFactory::getImage($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage(
+            $encryptor,
+            $logService->getLog(),
+            new Component($imageConfiguration),
+            new Temp(),
+            true
+        );
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $logService->getLog()->notice("Test Notice");

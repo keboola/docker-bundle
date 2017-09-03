@@ -244,6 +244,9 @@ class Container
                     $containerId = $inspect['Id'];
                 }
                 // host is shortened containerId
+                if (empty($event['host'])) {
+                    throw new ApplicationException('Host parameter is missing from GELF message.');
+                }
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
                     $this->logger->notice("Invalid container host " . $event['host'], $event);
                 } else {
@@ -254,6 +257,10 @@ class Container
                         $event
                     );
                 }
+            },
+            null,
+            function ($event) {
+                $this->containerLogger->error("Invalid message: " . $event);
             }
         );
     }
