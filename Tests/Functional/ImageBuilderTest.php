@@ -3,11 +3,9 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
@@ -17,50 +15,6 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilderTest extends KernelTestCase
 {
-    const DOCKER_ERROR_MSG = 'Build failed (code: 1): Sending build context to Docker daemon 2.048 kB
-Step 1 : FROM quay.io/keboola/docker-custom-r:latest
----> a72869638513
-Step 2 : LABEL com.keboola.docker.runner.origin builder
----> Running in a87231b5bf43
----> 87f663f8c93c
-Removing intermediate container a87231b5bf43
-Step 3 : WORKDIR /home
----> Running in 683c54126fa8
----> 7dbffae5f1b6
-Removing intermediate container 683c54126fa8
-Step 4 : ENV APP_VERSION 1.7
----> Running in bc520b980770
----> 3661cfdbd53a
-Removing intermediate container bc520b980770
-Step 5 : RUN git clone -b 1.7 --depth 1 https://keboola/docker-demo-app /home/ || (echo "KBC::USER_ERR:Cannot access the Git repository https://github.com/keboola/docker-demo-app, please verify its URL, credentials and version.KBC::USER_ERR" && exit 1)
----> Running in 99e6f8091e9f
-[91mCloning into \'/home\'...
-[0m[91mNote: checking out \'af5c7a3995f61cc6515156be3f52d5eb6e3e91e7\'.
-
-You are in \'detached HEAD\' state. You can look around, make experimental
-changes and commit them, and you can discard any commits you make in this
-state without impacting any branches by performing another checkout.
-
-If you want to create a new branch to retain commits you create, you may
-do so (now or later) by using -b with the checkout command again. Example:
-
-git checkout -b new_branch_name
-
-[0m / open /dev/mapper/docker-202:1-661201-2430efb83129dd524011bfbae4eb39476ca783faa2a42180fe578e642f002656: no such file or directory';
-
-    const DOCKER_ERROR_MSG_2 = 'Build failed (code: 1): Sending build context to Docker daemon 3.584 kB
-
-Step 1 : FROM quay.io/keboola/docker-custom-python:1.2.3
----> 40458b762166
-Step 2 : LABEL com.keboola.docker.runner.origin builder
----> Using cache
----> 1d68d4503a7d
-Step 3 : WORKDIR /home
----> Using cache
----> 56d743f551fd
-Step 4 : ENV APP_VERSION v1.0.8
-/ devicemapper: Error running deviceResume dm_task_run failed';
-
     public function setUp()
     {
         self::bootKernel();
@@ -562,142 +516,6 @@ Step 4 : ENV APP_VERSION v1.0.8
             $this->fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());
-        }
-    }
-
-    public function a()
-    {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "quay.io/keboola/docker-custom-php",
-                    "build_options" => [
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app",
-                            "type" => "git",
-                        ],
-                        "commands" => [
-                            "git clone --depth 1 {{repository}} /home/" .
-                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
-                            "cd /home/",
-                            "composer install"
-                        ],
-                        "entry_point" => "php /home/run.php --data=/data"
-                    ]
-                ],
-                "configuration_format" => "json",
-            ]
-        ]);
-
-        $temp = new Temp();
-        $builder = $this->getMockBuilder(ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
-            ->setMethods(['getBuildCommand'])
-            ->getMock();
-        /** @var ImageBuilder $builder */
-        $builder->setTemp($temp);
-        $builder->method('getBuildCommand')
-            ->will($this->onConsecutiveCalls(
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
-            ));
-        $builder->prepare([]);
-    }
-
-    public function testWeirdBugError2()
-    {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-custom-php",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app",
-                            "type" => "git",
-                        ],
-                        "commands" => [
-                            "git clone --depth 1 {{repository}} /home/" .
-                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
-                            "cd /home/",
-                            "composer install"
-                        ],
-                        "entry_point" => "php /home/run.php --data=/data"
-                    ]
-                ],
-                "configuration_format" => "json",
-            ]
-        ]);
-
-        $temp = new Temp();
-        $builder = $this->getMockBuilder(ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
-            ->setMethods(['getBuildCommand'])
-            ->getMock();
-        /** @var ImageBuilder $builder */
-        $builder->setTemp($temp);
-        $builder->method('getBuildCommand')
-            ->will($this->onConsecutiveCalls(
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG_2 . '" && exit 1\'',
-                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
-            ));
-        $builder->prepare([]);
-    }
-
-    public function testWeirdBugTerminate()
-    {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
-        $imageConfig = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-custom-php",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app",
-                            "type" => "git",
-                        ],
-                        "commands" => [
-                            "git clone --depth 1 {{repository}} /home/" .
-                            " || (echo \"KBC::USER_ERR:Cannot access the repository.KBC::USER_ERR\" && exit 1)",
-                            "cd /home/",
-                            "composer install"
-                        ],
-                        "entry_point" => "php /home/run.php --data=/data"
-                    ]
-                ],
-                "configuration_format" => "json",
-            ]
-        ]);
-
-        $temp = new Temp();
-        $builder = $this->getMockBuilder(ImageBuilder::class)
-            ->setConstructorArgs([$encryptor, $imageConfig, new NullLogger()])
-            ->setMethods(['getBuildCommand'])
-            ->getMock();
-        /** @var ImageBuilder $builder */
-        $builder->setTemp($temp);
-        $builder->method('getBuildCommand')
-            ->will($this->onConsecutiveCalls(
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sh -c -e \'echo "' . self::DOCKER_ERROR_MSG . '" && exit 1\'',
-                'sudo docker build --tag=' . escapeshellarg($builder->getFullImageId()) . " " . $temp->getTmpFolder()
-            ));
-        try {
-            $builder->prepare([]);
-            $this->fail("Too many errors must fail");
-        } catch (ApplicationException $e) {
         }
     }
 

@@ -7,14 +7,9 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\DockerBundle\Exception\WeirdException;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class ImageBuilder extends Image
@@ -347,7 +342,9 @@ class ImageBuilder extends Image
                         $this->repoPassword = $value;
                         unset($this->parameters[$key]);
                     } elseif ($key === 'network') {
-                        $this->logger->info("Overriding image network configuration setting with runtime value $value.");
+                        $this->logger->info(
+                            "Overriding image network configuration setting with runtime value $value."
+                        );
                         $this->getSourceComponent()->setNetworkType($value);
                     }
                 }
@@ -401,12 +398,10 @@ class ImageBuilder extends Image
         } else {
             $noCache = '';
         }
-        return "sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) . " " . $this->temp->getTmpFolder();
+        return "sudo docker build$noCache --tag=" . escapeshellarg($this->getFullImageId()) .
+            " " . $this->temp->getTmpFolder();
     }
 
-    /**
-     * @throws WeirdException BuildParameterException BuildException
-     */
     public function buildImage()
     {
         $this->logger->debug("Building image");
@@ -423,10 +418,6 @@ class ImageBuilder extends Image
             if (preg_match('#KBC::USER_ERR:(.*?)KBC::USER_ERR#', $message, $matches)) {
                 $message = $matches[1];
                 throw new BuildParameterException($message);
-            } elseif ((strpos($message, WeirdException::ERROR_DEV_MAPPER_BUILD) !== false) ||
-                    (strpos($message, WeirdException::ERROR_DEVICE_RESUME_BUILD) !== false)) {
-                // in case of this weird docker error, throw a new exception to retry the container
-                throw new WeirdException($message);
             } else {
                 throw new BuildException($message);
             }
@@ -442,16 +433,8 @@ class ImageBuilder extends Image
         parent::prepare($configData);
         $this->temp->initRunFolder();
         $this->createDockerFile();
-        $retryPolicy = new SimpleRetryPolicy(5, [WeirdException::class]);
-        $backOffPolicy = new ExponentialBackOffPolicy(2, null, 4);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         try {
-            $proxy->call(function () {
-                $this->buildImage();
-            });
-        } catch (WeirdException $e) {
-            $this->logger->notice("Weird error occurred too many times.");
-            throw new ApplicationException($e->getMessage(), $e);
+            $this->buildImage();
         } catch (BuildParameterException $e) {
             throw $e;
         } catch (\Exception $e) {
