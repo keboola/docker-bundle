@@ -19,7 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class LoggerTests extends KernelTestCase
+class LoggerTest extends KernelTestCase
 {
 
     private function getImageConfiguration()
@@ -127,7 +127,13 @@ class LoggerTests extends KernelTestCase
             'token' => STORAGE_API_TOKEN,
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-        $image = ImageFactory::getImage($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage(
+            $encryptor,
+            $logService->getLog(),
+            new Component($imageConfiguration),
+            new Temp(),
+            true
+        );
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         return new Container(
@@ -631,7 +637,13 @@ print "second message to stdout\n";'
         ]));
         $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
 
-        $image = ImageFactory::getImage($encryptor, $logService->getLog(), new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage(
+            $encryptor,
+            $logService->getLog(),
+            new Component($imageConfiguration),
+            new Temp(),
+            true
+        );
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         $logService->getLog()->notice("Test Notice");
