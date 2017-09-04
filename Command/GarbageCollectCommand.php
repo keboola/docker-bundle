@@ -81,7 +81,7 @@ class GarbageCollectCommand extends BaseCommand
             ->setName('docker:garbage-collect')
             ->setDescription('Garbage collect unused images')
             ->setDefinition([
-                new InputArgument('timeout', InputArgument::OPTIONAL, 'Execution timeout', 120),
+                new InputArgument('timeout', InputArgument::OPTIONAL, 'Execution timeout', 600),
                 new InputArgument('image-age', InputArgument::OPTIONAL, 'Max image age', 86400),
                 new InputArgument('container-age', InputArgument::OPTIONAL, 'Max container age', 259200),
                 new InputArgument('command-timeout', InputArgument::OPTIONAL, 'Command timeout', 60),
