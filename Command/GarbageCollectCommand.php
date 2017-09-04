@@ -148,7 +148,8 @@ class GarbageCollectCommand extends BaseCommand
                 }
                 $inspect = array_pop($inspect);
                 if (empty($inspect['State']['Status']) ||
-                    (($inspect['State']['Status'] != 'exited') && ($inspect['State']['Status'] != 'dead'))) {
+                    (($inspect['State']['Status'] != 'exited') && ($inspect['State']['Status'] != 'dead')
+                        && ($inspect['State']['Status'] != 'created'))) {
                     $output->writeln('Container ' . $containerId . ' is not finished.');
                     continue;
                 }
