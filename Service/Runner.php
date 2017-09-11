@@ -15,6 +15,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
+use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\OAuthV2Api\Credentials;
@@ -195,7 +196,7 @@ class Runner
      * @param string $action
      * @param string $mode
      * @param string $jobId
-     * @return string
+     * @return Output
      */
     public function run(array $componentData, $configId, array $configData, array $state, $action, $mode, $jobId)
     {
@@ -292,7 +293,7 @@ class Runner
      * @param $jobId
      * @param $configId
      * @param Component $component
-     * @return string
+     * @return Output
      */
     public function runComponent($jobId, $configId, Component $component)
     {
@@ -320,7 +321,7 @@ class Runner
      * @param $mode
      * @param $configId
      * @param Component $component
-     * @return string
+     * @return Output
      */
     public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component)
     {
@@ -329,11 +330,11 @@ class Runner
         $this->stateFile->createStateFile();
         $this->dataLoader->loadInputData();
 
-        $componentOutput = '';
         if ($mode == 'dry-run') {
             $componentOutput = $this->runImages($jobId, $configId, $component);
         } else {
             $this->configFile->createConfigFile($configData);
+            $componentOutput = new Output();
         }
 
         $this->dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
@@ -346,11 +347,11 @@ class Runner
      * @param $jobId
      * @param $configId
      * @param Component $component
-     * @return string
+     * @return Output
      */
     private function runImages($jobId, $configId, Component $component)
     {
-        $componentOutput = '';
+        $componentOutput = new Output();
         $images = $this->imageCreator->prepareImages();
         $this->loggerService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
@@ -368,7 +369,7 @@ class Runner
                 $this->storageClient->getRunId(),
                 $this->storageClient->getApiUrl()
             );
-
+            $componentOutput->addImages($priority, $image->getFullImageId(), $image->getImageDigests());
             $this->configFile->createConfigFile($image->getConfigData());
 
             $containerIdParts = [];
@@ -397,7 +398,7 @@ class Runner
             try {
                 $process = $container->run();
                 if ($image->isMain()) {
-                    $componentOutput = $process->getOutput();
+                    $componentOutput->addProcessOutput($process->getOutput());
                 }
             } finally {
                 $this->dataDirectory->normalizePermissions();

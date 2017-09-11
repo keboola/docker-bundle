@@ -112,7 +112,7 @@ class PrivateRepository extends Image\DockerHub
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
-            $this->logImageHash($this->getFullImageId());
+            $this->logImageHash();
         } catch (\Exception $e) {
             if (strpos($process->getOutput(), "Login with your Docker ID to push and pull images from Docker Hub.") !== false) {
                 throw new LoginFailedException($process->getOutput());

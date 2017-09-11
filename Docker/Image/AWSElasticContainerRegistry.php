@@ -99,7 +99,7 @@ class AWSElasticContainerRegistry extends Image
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
-            $this->logImageHash($this->getFullImageId());
+            $this->logImageHash();
         } catch (\Exception $e) {
             if (strpos($process->getOutput(), "403 Forbidden") !== false) {
                 throw new LoginFailedException($process->getOutput());

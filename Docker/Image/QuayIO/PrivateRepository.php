@@ -112,7 +112,7 @@ class PrivateRepository extends Image\QuayIO
             $proxy->call(function () use ($process) {
                 $process->mustRun();
             });
-            $this->logImageHash($this->getFullImageId());
+            $this->logImageHash();
         } catch (\Exception $e) {
             if (strpos($process->getOutput(), "Username: EOF") !== false) {
                 throw new LoginFailedException($process->getOutput());
