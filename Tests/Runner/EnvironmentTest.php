@@ -26,6 +26,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     public function testExecutorEnvs()
     {
         $component = new Component([
+            'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -41,6 +42,8 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
+        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
         $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
         $this->assertArrayNotHasKey('KBC_URL', $envs);
         $this->assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
@@ -51,6 +54,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     public function testExecutorForwardToken()
     {
         $component = new Component([
+            'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -66,6 +70,8 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
+        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
         $this->assertArrayHasKey('KBC_TOKEN', $envs);
         $this->assertArrayHasKey('KBC_URL', $envs);
         $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
@@ -77,6 +83,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     public function testExecutorForwardTokenAndDetails()
     {
         $component = new Component([
+            'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -92,6 +99,8 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
+        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
         $this->assertArrayHasKey('KBC_TOKEN', $envs);
         $this->assertArrayHasKey('KBC_URL', $envs);
         $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
@@ -103,6 +112,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     public function testExecutorForwardDetails()
     {
         $component = new Component([
+            'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -122,6 +132,8 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
+        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
         $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
         $this->assertArrayNotHasKey('KBC_URL', $envs);
         $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
@@ -152,6 +164,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         $envs = $environment->getEnvironmentVariables();
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
+        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
         $this->assertArrayHasKey('KBC_PARAMETER_MYVARIABLE', $envs);
         $this->assertEquals($envs['KBC_PARAMETER_MYVARIABLE'], 'fooBar');
         $this->assertArrayHasKey('KBC_PARAMETER_KBC_CONFIGID', $envs);

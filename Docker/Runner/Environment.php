@@ -66,6 +66,7 @@ class Environment
             "KBC_PROJECTID" => $this->tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
+            "KBC_COMPONENTID" => $this->component->getId(),
         ]);
         if ($this->component->forwardToken()) {
             $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
