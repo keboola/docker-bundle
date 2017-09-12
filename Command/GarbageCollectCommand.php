@@ -139,6 +139,7 @@ class GarbageCollectCommand extends BaseCommand
     private function clearContainers(OutputInterface $output, $maxAge)
     {
         $containerIds = explode("\n", $this->exec('sudo docker ps --all --quiet'));
+        $containerIds = array_unique($containerIds);
         foreach ($containerIds as $containerId) {
             if (!$this->checkTimeout($output)) {
                 break;
@@ -153,11 +154,6 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
-            } catch (\Exception $e) {
-                // silently skip the container if we can't inspect
-                continue;
-            }
-            try {
                 if (empty($inspect['State']['Status']) ||
                     (($inspect['State']['Status'] != 'exited') && ($inspect['State']['Status'] != 'dead')
                         && ($inspect['State']['Status'] != 'created'))) {
@@ -194,6 +190,7 @@ class GarbageCollectCommand extends BaseCommand
             "\n",
             $this->exec('sudo docker images --all --quiet --filter=\'label=' . ImageBuilder::COMMON_LABEL . '\'')
         );
+        $imageIds = array_unique($imageIds);
         foreach ($imageIds as $imageId) {
             if (!$this->checkTimeout($output)) {
                 break;
@@ -208,11 +205,6 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
-            } catch (\Exception $e) {
-                // silently skip the image if we can't inspect
-                continue;
-            }
-            try {
                 if (empty($inspect['Created'])) {
                     $output->writeln('Container ' . $imageId . ' is not created?');
                     continue;
