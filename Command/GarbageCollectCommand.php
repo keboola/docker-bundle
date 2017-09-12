@@ -106,6 +106,12 @@ class GarbageCollectCommand extends BaseCommand
             $output->writeln('Clearing old containers failed ' . $e->getMessage());
         }
         try {
+            $output->writeln('Clearing dangling images');
+            $this->clearDanglingImages($output);
+        } catch (\Exception $e) {
+            $output->writeln('Clearing dangling images failed ' . $e->getMessage());
+        }
+        try {
             $output->writeln('Clearing builder images');
             $this->clearBuilderImages($output, $imageAge);
         } catch (\Exception $e) {
@@ -147,6 +153,11 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
+            } catch (\Exception $e) {
+                // silently skip the container if we can't inspect
+                continue;
+            }
+            try {
                 if (empty($inspect['State']['Status']) ||
                     (($inspect['State']['Status'] != 'exited') && ($inspect['State']['Status'] != 'dead')
                         && ($inspect['State']['Status'] != 'created'))) {
@@ -197,6 +208,11 @@ class GarbageCollectCommand extends BaseCommand
                     throw new \RuntimeException("Failed to decode inspect " . var_export($inspect, true));
                 }
                 $inspect = array_pop($inspect);
+            } catch (\Exception $e) {
+                // silently skip the image if we can't inspect
+                continue;
+            }
+            try {
                 if (empty($inspect['Created'])) {
                     $output->writeln('Container ' . $imageId . ' is not created?');
                     continue;
