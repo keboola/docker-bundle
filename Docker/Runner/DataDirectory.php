@@ -2,8 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Exception\WeirdException;
-use Keboola\Syrup\Exception\ApplicationException;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
@@ -68,38 +66,15 @@ class DataDirectory
 
     public function normalizePermissions()
     {
-        $retries = 0;
-        do {
-            $retry = false;
-            try {
-                $retryPolicy = new SimpleRetryPolicy(3);
-                $backOffPolicy = new ExponentialBackOffPolicy(10000);
-                $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-                $proxy->call(function () use (&$process) {
-                    $command = $this->getNormalizeCommand();
-                    $process = new Process($command);
-                    $process->setTimeout(60);
-                    $process->run();
-                });
-                if ($process->getExitCode() != 1) {
-                    $message = $process->getOutput() . $process->getErrorOutput();
-                    if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
-                        (strpos($message, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
-                        // in case of this weird docker error, throw a new exception to retry the container
-                        throw new WeirdException($message);
-                    }
-                }
-            } catch (WeirdException $e) {
-                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
-                sleep(random_int(1, 4));
-                $retry = true;
-                $retries++;
-                if ($retries >= 5) {
-                    $this->logger->notice("Weird error occurred too many times.");
-                    throw new ApplicationException($e->getMessage(), $e);
-                }
-            }
-        } while ($retry);
+        $retryPolicy = new SimpleRetryPolicy(3);
+        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy->call(function () use (&$process) {
+            $command = $this->getNormalizeCommand();
+            $process = new Process($command);
+            $process->setTimeout(60);
+            $process->run();
+        });
     }
 
     public function getDataDir()

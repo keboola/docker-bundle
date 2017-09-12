@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
-use Keboola\DockerBundle\Exception\WeirdException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
 use Keboola\Syrup\Job\Exception\InitializationException;
@@ -57,6 +56,16 @@ class Container
      * @var RunCommandOptions
      */
     private $runCommandOptions;
+
+    /**
+     * @var int
+     */
+    private $minLogPort;
+
+    /**
+     * @var int
+     */
+    private $maxLogPort;
 
     /**
      * @return string
@@ -138,56 +147,39 @@ class Container
      */
     public function run()
     {
-        $retries = 0;
-        do {
-            $retry = false;
-            if ($retries > 0) {
-                $this->id .= '.' . $retries;
+        $process = new Process($this->getRunCommand($this->id));
+        $process->setTimeout(null);
+
+        // create container
+        $startTime = time();
+        try {
+            $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
+            if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
+                $this->runWithLogger($process, $this->id);
+            } else {
+                $this->runWithoutLogger($process);
             }
+            $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 
-            $process = new Process($this->getRunCommand($this->id));
-            $process->setTimeout(null);
-
-            // create container
-            $startTime = time();
+            $this->checkOOM($this->inspectContainer($this->id));
+            if (!$process->isSuccessful()) {
+                $this->handleContainerFailure($process, $startTime);
+            }
+        } finally {
             try {
-                $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
-                if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
-                    $this->runWithLogger($process, $this->id);
-                } else {
-                    $this->runWithoutLogger($process);
-                }
-                $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
-
-                $this->checkOOM($this->inspectContainer($this->id));
-                if (!$process->isSuccessful()) {
-                    $this->handleContainerFailure($process, $startTime);
-                }
-            } catch (WeirdException $e) {
-                $this->logger->notice("Phantom of the opera is here: " . $e->getMessage());
-                sleep(random_int(1, 4));
-                $retry = true;
-                $retries++;
-                if ($retries >= 5) {
-                    $this->logger->notice("Weird error occurred too many times.");
-                    throw new ApplicationException($e->getMessage(), $e);
-                }
-            } finally {
-                try {
-                    $this->removeContainer($this->id);
-                } catch (ProcessFailedException $e) {
-                    $this->logger->notice(
-                        "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                    );
-                    // continue
-                } catch (ProcessTimedOutException $e) {
-                    $this->logger->notice(
-                        "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                    );
-                    // continue
-                }
+                $this->removeContainer($this->id);
+            } catch (ProcessFailedException $e) {
+                $this->logger->notice(
+                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
+                );
+                // continue
+            } catch (ProcessTimedOutException $e) {
+                $this->logger->notice(
+                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
+                );
+                // continue
             }
-        } while ($retry);
+        }
         return $process;
     }
 
@@ -309,25 +301,19 @@ class Container
             ];
             throw new UserException($message, null, $data);
         } else {
-            if ((strpos($message, WeirdException::ERROR_DEV_MAPPER) !== false) ||
-                (strpos($message, WeirdException::ERROR_DEVICE_RESUME) !== false)) {
-                // in case of this weird docker error, throw a new exception to retry the container
-                throw new WeirdException($message);
+            if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
+                throw new UserException(
+                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    null,
+                    $data
+                );
             } else {
-                if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
-                    throw new UserException(
-                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                        null,
-                        $data
-                    );
-                } else {
-                    // syrup will make sure that the actual exception message will be hidden to end-user
-                    throw new ApplicationException(
-                        "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
-                        null,
-                        $data
-                    );
-                }
+                // syrup will make sure that the actual exception message will be hidden to end-user
+                throw new ApplicationException(
+                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    null,
+                    $data
+                );
             }
         }
     }
