@@ -104,6 +104,5 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
         } else {
             throw new UserException("Incorrect Content-Type.");
         }
-
     }
 }

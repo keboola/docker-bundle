@@ -207,5 +207,4 @@ class EncryptTest extends WebTestCase
             $response["message"]
         );
     }
-
 }
