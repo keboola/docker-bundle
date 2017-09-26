@@ -46,13 +46,13 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
             $cryptoWrapper->setComponentId($componentId);
         }
-        
+
         /** @var ObjectEncryptor $encryptor */
         $encryptor = $this->container->get("syrup.object_encryptor");
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
@@ -63,7 +63,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             $encryptedValue = $encryptor->encrypt($params, $encryptorClassName);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
     }
 
@@ -91,7 +91,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
@@ -102,7 +102,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             $encryptedValue = $encryptor->encrypt($params, ComponentWrapper::class);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
 
     }

@@ -134,7 +134,7 @@ class PublicControllerTest extends WebTestCase
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals('error', $response['status']);
         $this->assertArrayHasKey('message', $response);
-        $this->assertEquals('Incorrect Content-Type header.', $response['message']);
+        $this->assertEquals('Incorrect Content-Type.', $response['message']);
     }
 
     public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()

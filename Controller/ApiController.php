@@ -316,7 +316,7 @@ class ApiController extends BaseApiController
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
@@ -327,7 +327,7 @@ class ApiController extends BaseApiController
             $encryptedValue = $encryptor->encrypt($params, ComponentProjectWrapper::class);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
-            throw new UserException("Incorrect Content-Type header.");
+            throw new UserException("Incorrect Content-Type.");
         }
     }
 
