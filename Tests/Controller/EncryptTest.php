@@ -120,4 +120,92 @@ class EncryptTest extends WebTestCase
         $this->assertCount(2, $response);
     }
 
+
+    public function testEncryptJsonHeaderWithCharset()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json; charset=UTF-8'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("value1", $response["key1"]);
+        $this->assertEquals("KBC::Encrypted==", substr($response["#key2"], 0, 16));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
+        $this->assertCount(2, $response);
+    }
+
+    public function testEncryptPlaintextHeaderWithCharset()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'text/plain; charset=UTF-8'],
+            'value'
+        );
+        $response = $client->getResponse()->getContent();
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("KBC::Encrypted==", substr($response, 0, 16));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value", $encryptor->decrypt($response));
+    }
+
+    public function testEncryptInvalidHeader()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'someotherheader;'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertArrayHasKey('message', $response);
+        $this->assertEquals('Incorrect Content-Type.', $response['message']);
+    }
+
+    public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt?componentId=keboola.r-transformation',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals(
+            "This API call is only supported for components that use the 'encrypt' flag.",
+            $response["message"]
+        );
+    }
+
 }
