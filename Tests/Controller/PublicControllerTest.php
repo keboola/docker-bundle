@@ -25,6 +25,23 @@ class PublicControllerTest extends WebTestCase
         self::$container = $kernel->getContainer();
     }
 
+    public function testEncryptEmptyValues()
+    {
+        $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals($json, $client->getResponse()->getContent());
+    }
+
+
     public function testEncrypt()
     {
         $client = $this->createClient();
@@ -166,5 +183,22 @@ class PublicControllerTest extends WebTestCase
         $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
+    }
+
+
+    public function testEncryptWithoutComponentEmptyValues()
+    {
+        $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals($json, $client->getResponse()->getContent());
     }
 }
