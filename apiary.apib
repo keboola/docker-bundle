@@ -8,9 +8,16 @@ Docker is a Keboola service, that runs Docker containers as workers in Keboola C
 
 Encrypts a string or a JSON
 
-## Base encryption [/encrypt]
+## Base encryption [/encrypt?componentId={componentId}&projectId={projectId}]
 
-Used for encrypting global values.
+Used for encrypting string values or JSON data. Deprecates all other encryption methods.
+
++ Parameters
+    + componentId(string) ... Keboola Connection Component Id
+    + projectId(string) ... Keboola Connection Project Id
+
+If any of the `componentId` or `projectId` is specified, a suitable encryptor is selected, so that the encrypted
+value can be decrypted only in an environment matching the parameters.
 
 ### Encrypt data [POST]
 
@@ -38,7 +45,7 @@ Used for encrypting global values.
                 "#test": "KBC::Encrypted==ENCODEDSTRING=="
             }
 
-## Image encryption [/{image}/encrypt]
+## DEPRECATED Image encryption [/{image}/encrypt]
 
 Used for encrypting values in image specification. Cipher text can be decrypted only in the specified image.
 
@@ -72,7 +79,7 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
                 "#test": "KBC::ComponentEncrypted==ENCODEDSTRING=="
             }
 
-## Image configuration encryption [/{image}/configs/encrypt]
+## DEPRECATED Image configuration encryption [/{image}/configs/encrypt]
 
 Used for encrypting values in image configuration. Cipher text can be decrypted only in the specified image
 only in the specified project - specified in StorageAPI token.  
@@ -115,7 +122,7 @@ only in the specified project - specified in StorageAPI token.
                 "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
             }
 
-## Encrypt and store configuration [/{image}/configs/{configId}]
+## DEPRECATED Encrypt and store configuration [/{image}/configs/{configId}]
 
 Wrapper for a native Storage API call, that encrypts (image configuration encryption is used) values before saving them.
 1:1 compatible with http://docs.keboola.apiary.io/#reference/components/manage-configs/update-config
