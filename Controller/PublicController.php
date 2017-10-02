@@ -34,15 +34,13 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             ], 400);
         }
 
-        $encryptorClassName = ComponentWrapper::class;
-
         if ($projectId) {
-            /** @var ComponentWrapper $cryptoWrapper */
+            /** @var ComponentProjectWrapper $cryptoWrapper */
             $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
             $cryptoWrapper->setComponentId($componentId);
             $cryptoWrapper->setProjectId($projectId);
-            $encryptorClassName = ComponentProjectWrapper::class;
         } else {
+            /** @var ComponentWrapper $cryptoWrapper */
             $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
             $cryptoWrapper->setComponentId($componentId);
         }
@@ -56,7 +54,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptor->encrypt($request->getContent(), $encryptorClassName);
+            $encryptedValue = $encryptor->encrypt($request->getContent(), get_class($cryptoWrapper));
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
         } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request, false);
