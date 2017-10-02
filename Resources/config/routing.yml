@@ -1,3 +1,8 @@
+keboola_docker_encrypt:
+    path:     /encrypt
+    defaults: { _controller: KeboolaDockerBundle:Public:encrypt }
+    methods:  [POST]
+
 keboola_docker_sandbox:
     path:     /sandbox
     defaults: { _controller: KeboolaDockerBundle:Api:sandbox }
@@ -29,10 +34,10 @@ keboola_docker_component_dry_run:
     defaults: { _controller: KeboolaDockerBundle:Api:dryRun }
     methods:  [POST]
 
-keboola_docker_encrypt:
+keboola_docker_component_encrypt:
     path:     /{component}/encrypt
     defaults:
-      _controller: KeboolaDockerBundle:Public:encrypt
+      _controller: KeboolaDockerBundle:Public:componentEncrypt
     methods:  [POST]
 
 keboola_docker_encrypt_config:
