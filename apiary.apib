@@ -13,8 +13,8 @@ Encrypts a string or a JSON
 Used for encrypting string values or JSON data. Deprecates all other encryption methods.
 
 + Parameters
-    + componentId(string) ... Keboola Connection Component Id
-    + projectId(string) ... Keboola Connection Project Id
+    + componentId(optional, string) ... Keboola Connection Component Id
+    + projectId(optional, string) ... Keboola Connection Project Id
 
 If any of the `componentId` or `projectId` is specified, a suitable encryptor is selected, so that the encrypted
 value can be decrypted only in an environment matching the parameters.
