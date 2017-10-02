@@ -58,7 +58,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
         } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request, false);
-            $encryptedValue = $encryptor->encrypt($params, $encryptorClassName);
+            $encryptedValue = $encryptor->encrypt($params, get_class($cryptoWrapper));
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
             throw new UserException("Incorrect Content-Type.");
