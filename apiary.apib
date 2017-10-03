@@ -24,7 +24,7 @@ value can be decrypted only in an environment matching the parameters.
 + Request Encrypt plain text (text/plain)
     + Body
 
-            abcd
+            MyStringToBeEncrypted
 
 + Response 200 (text/plain)
 
@@ -35,7 +35,7 @@ value can be decrypted only in an environment matching the parameters.
 
             {
                 "config": 1,
-                "#test": "aabb"
+                "#test": "MyValueToBeEncrypted"
             }
 
 + Response 202 (application/json)
