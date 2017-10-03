@@ -1,8 +1,8 @@
 FORMAT: 1A
 HOST: https://syrup.keboola.com/docker/
 
-# Docker
-Docker is a Keboola service, that runs Docker containers as workers in Keboola Connection jobs.
+# Docker Runner
+Docker Runner is a Keboola service, that runs Docker containers as workers in Keboola Connection jobs.
 
 # Group Encrypt
 
@@ -297,7 +297,7 @@ Create an execution job on a specified component while using a specific image ta
 
 + Parameters
     + component (string) - KBC component Id
-    + tag (string) - docker image tag to be used
+    + tag (string) - Docker image tag to be used
 
 ### Run job [POST]
 
@@ -365,7 +365,7 @@ They can dump the `data` folder for you before running the image, before uploadi
 
 This job will prepare the `data` folder including serialized configuration file in the given format.
 Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
-This call is useful when developing new docker component to obtain a sample of the development environment.
+This call is useful when developing new Docker component to obtain a sample of the development environment.
 
 Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder.
 
@@ -523,7 +523,7 @@ This API call is useful for verifying that a given input mapping and image confi
 ## Dry Run [/{image}/dry-run]
 
 This job will prepare the `data` folder including serialized configuration file in format set in the image configuration.
-Then it will execute the docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage.
+Then it will execute the Docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage.
 
 This API call is useful for verifying that the given image is producing the correct output without altering the real data in your KBC project.
 
