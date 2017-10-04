@@ -25,7 +25,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class JobExecutorTest extends KernelTestCase
+class JobExecutorInlineConfigTest extends KernelTestCase
 {
 
     /**
