@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Stack for testing provisioning-bundle",
+  "Description": "Stack for testing Docker Runner",
   "Parameters": {
     "KeboolaStack": {
       "Type": "String",
@@ -16,7 +16,6 @@
           "Version": "2008-10-17",
           "Statement": [
             {
-              "Sid": "najlos-test",
               "Effect": "Allow",
               "Principal": {
                   "AWS": {
