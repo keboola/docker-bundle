@@ -60,8 +60,7 @@ class DataDirectory
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         return "sudo docker run --rm --volume=" .
             $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R && "
-                . "find /data -type d -exec chmod 755 {} + && "
-                . "find /data -type f -exec chmod 644 {} +'";
+                . "chmod -R u+wrX /data'";
     }
 
     public function normalizePermissions()
