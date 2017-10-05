@@ -2,8 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinitionParser
 {
@@ -11,39 +11,40 @@ class JobDefinitionParser
      * @var JobDefinition[]
      */
     private $jobDefinitions = [];
-    /**
-     * @var array
-     */
-    private $components;
 
-    /**
-     * JobDefinitionParser constructor.
-     *
-     * @param array $components
-     */
-    public function __construct(array $components)
+
+    private function normalizeConfig($configData)
     {
-        $this->components = $components;
+        try {
+            $configData = (new Configuration\Container())->parse(['container' => $configData]);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
+        $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
+        $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
+        $configData['parameters'] = empty($configData['parameters']) ? [] : $configData['parameters'];
+
+        return $configData;
     }
 
     /**
-     * @param $componentId
+     * @param Component $component
      * @param array $configData
      */
-    public function parseConfigData($componentId, array $configData)
+    public function parseConfigData(Component $component, array $configData)
     {
         $jobDefinition = new JobDefinition();
-        $jobDefinition->setComponent($this->getComponent($componentId));
-        $jobDefinition->setConfiguration($configData);
+        $jobDefinition->setComponent($component);
+        $jobDefinition->setConfiguration($this->normalizeConfig($configData));
         $this->jobDefinitions[] = $jobDefinition;
     }
 
-    public function parseConfig($componentId, $config)
+    public function parseConfig(Component $component, $config)
     {
         if (!$config['rows']) {
             $jobDefinition = new JobDefinition();
-            $jobDefinition->setComponent($this->getComponent($componentId));
-            $jobDefinition->setConfiguration($config['configuration']);
+            $jobDefinition->setComponent($component);
+            $jobDefinition->setConfiguration($this->normalizeConfig($config['configuration']));
             $jobDefinition->setConfigId($config['id']);
             $jobDefinition->setConfigVersion($config['version']);
             $jobDefinition->setState($config['state']);
