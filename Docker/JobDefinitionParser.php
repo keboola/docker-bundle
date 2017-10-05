@@ -49,7 +49,7 @@ class JobDefinitionParser
             $jobDefinition->setState($config['state']);
             $this->jobDefinitions[] = $jobDefinition;
         } else {
-
+            return;
         }
     }
 

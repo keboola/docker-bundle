@@ -113,7 +113,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testMultiRowConfiguration()
     {
-
     }
 
     public function testComponentDoesNotExist()
