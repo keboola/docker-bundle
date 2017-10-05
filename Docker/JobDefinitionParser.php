@@ -17,11 +17,20 @@ class JobDefinitionParser
      */
     private $components;
 
+    /**
+     * JobDefinitionParser constructor.
+     *
+     * @param array $components
+     */
     public function __construct(array $components)
     {
         $this->components = $components;
     }
 
+    /**
+     * @param $componentId
+     * @param array $configData
+     */
     public function parseConfigData($componentId, array $configData)
     {
         $jobDefinition = new JobDefinition();
@@ -30,14 +39,12 @@ class JobDefinitionParser
         $this->jobDefinitions[] = $jobDefinition;
     }
 
-    public function parseConfig($componentId, array $config)
-    {
-
-    }
-
+    /**
+     * @return JobDefinition[]
+     */
     public function getJobDefinitions()
     {
-        return $this->jobDefinitions();
+        return $this->jobDefinitions;
     }
 
     /**
@@ -54,7 +61,6 @@ class JobDefinitionParser
         if (!isset($component)) {
             throw new UserException("Component '{$id}' not found.");
         }
-        return $component;
+        return new Component($component);
     }
-
 }

@@ -48,7 +48,7 @@ class JobDefinition
      */
     public function getComponentId()
     {
-        return $this->component["id"] ? $this->component["id"] : null;
+        return $this->component ? $this->component->getId() : null;
     }
 
     /**
