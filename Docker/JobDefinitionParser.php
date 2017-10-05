@@ -10,8 +10,7 @@ class JobDefinitionParser
     /**
      * @var JobDefinition[]
      */
-    private $jobDefinitions;
-
+    private $jobDefinitions = [];
     /**
      * @var array
      */
@@ -37,6 +36,21 @@ class JobDefinitionParser
         $jobDefinition->setComponent($this->getComponent($componentId));
         $jobDefinition->setConfiguration($configData);
         $this->jobDefinitions[] = $jobDefinition;
+    }
+
+    public function parseConfig($componentId, $config)
+    {
+        if (!$config['rows']) {
+            $jobDefinition = new JobDefinition();
+            $jobDefinition->setComponent($this->getComponent($componentId));
+            $jobDefinition->setConfiguration($config['configuration']);
+            $jobDefinition->setConfigId($config['id']);
+            $jobDefinition->setConfigVersion($config['version']);
+            $jobDefinition->setState($config['state']);
+            $this->jobDefinitions[] = $jobDefinition;
+        } else {
+
+        }
     }
 
     /**
