@@ -116,6 +116,7 @@ class EncryptionTests extends KernelTestCase
                     "#key4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                 ]
             ],
+            "rows" => [],
             "state" => []
         ];
         $componentsStub = $this->getMockBuilder(Components::class)

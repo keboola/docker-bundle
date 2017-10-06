@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
@@ -142,7 +144,12 @@ CMD
         ], uniqid());
 
         $jobId = $jobMapper->create($job);
-        $runner->run($componentData, 'test-configuration', [], [], 'run', 'run', $jobId);
+
+        $jobDefinition = new JobDefinition([]);
+        $jobDefinition->setConfigId('test-configuration');
+        $jobDefinition->setComponent(new Component($componentData));
+
+        $runner->run([$jobDefinition], 'run', 'run', $jobId);
 
         $job = $jobMapper->get($jobId);
         $this->assertEquals([

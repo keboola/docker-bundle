@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -52,6 +54,18 @@ class RunnerTest extends KernelTestCase
         }
     }
 
+    /**
+     * @param array $componentData
+     * @param $configId
+     * @param array $configData
+     * @param array $state
+     * @return JobDefinition[]
+     */
+    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
+    {
+        $jobDefinition->setConfigId($configId);
+        $jobDefinition->setComponent(new Component($componentData));
+        $jobDefinition->setState($state);
     public function setUp()
     {
         parent::setUp();
@@ -289,10 +303,6 @@ class RunnerTest extends KernelTestCase
 
         $runner = $this->getRunner(new NullHandler());
         $output = $runner->run(
-            $componentData,
-            uniqid('test-'),
-            $configurationData,
-            [],
             'run',
             'run',
             '1234567'
@@ -398,10 +408,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            uniqid('test-'),
-            $configurationData,
-            [],
             'run',
             'run',
             '1234567'
@@ -456,10 +462,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            uniqid('test-'),
-            $configurationData,
-            [],
             'run',
             'run',
             '1234567'
@@ -516,10 +518,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            uniqid('test-'),
-            $configurationData,
-            [],
             'run',
             'dry-run',
             '1234567'
@@ -577,10 +575,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'dummy-configuration',
-            [],
-            $state,
             'run',
             'run',
             '1234567'
@@ -643,10 +637,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'test-config',
-            $configurationData,
-            [],
             'run',
             'run',
             '1234567'
@@ -700,10 +690,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'test-configuration',
-            [],
-            [],
             'run',
             'run',
             '1234567'
@@ -753,10 +739,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'test-configuration',
-            [],
-            [],
             'run',
             'run',
             '1234567'
@@ -816,10 +798,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            '',
-            $configData,
-            [],
             'run',
             'run',
             '1234567'
@@ -886,10 +864,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            null,
-            $configData,
-            [],
             'run',
             'run',
             '1234567'
@@ -943,10 +917,6 @@ class RunnerTest extends KernelTestCase
 
         try {
             $runner->run(
-                $componentData,
-                'test-config',
-                $configurationData,
-                [],
                 'run',
                 'run',
                 '1234567'
@@ -1021,10 +991,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'test-config',
-            $configurationData,
-            [],
             'run',
             'run',
             '1234567'
@@ -1100,10 +1066,6 @@ class RunnerTest extends KernelTestCase
 
         try {
             $runner->run(
-                $componentData,
-                'test-config',
-                $configurationData,
-                [],
                 'some-sync-action',
                 'run',
                 '1234567'
@@ -1182,10 +1144,6 @@ class RunnerTest extends KernelTestCase
 
         try {
             $runner->run(
-                $componentData,
-                'test-config',
-                $configurationData,
-                [],
                 'run',
                 'run',
                 '1234567'
@@ -1222,7 +1180,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
             $this->fail("Application exception must be raised");
         } catch (ApplicationException $e) {
             $this->assertContains('Application error', $e->getMessage());
@@ -1256,7 +1213,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
             $this->fail('User exception must be raised');
         } catch (UserException $e) {
             $this->assertContains('Class 1 error', $e->getMessage());
@@ -1292,7 +1248,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
             $this->fail("Application exception must not be raised.");
         } catch (UserException $e) {
             $this->assertNotContains('Application error', $e->getMessage());
@@ -1328,7 +1283,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', [], [], 'run', 'run', '1234567');
             $this->fail("Application exception must be raised even though it is disabled.");
         } catch (ApplicationException $e) {
             $this->assertContains('Application error', $e->getMessage());
@@ -1372,7 +1326,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', $config, [], 'run', 'run', '1234567');
             $this->fail("User exception must be raised");
         } catch (UserException $e) {
             $this->assertContains('Unrecognized option "foo" under "container.storage.input.tables.0"', $e->getMessage());
@@ -1424,7 +1377,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         try {
-            $runner->run($componentData, 'test-config', $config, [], 'run', 'run', '1234567');
             $this->fail("User exception must be raised");
         } catch (UserException $e) {
             $this->assertContains('Invalid type for path "container.storage.input.tables.0.columns.0".', $e->getMessage());
@@ -1482,10 +1434,6 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner->run(
-            $componentData,
-            'test-configuration',
-            $config,
-            [],
             'run',
             'run',
             '1234567'

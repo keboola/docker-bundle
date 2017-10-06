@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\Syrup\Exception\UserException;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinitionParser
 {
@@ -12,39 +11,23 @@ class JobDefinitionParser
      */
     private $jobDefinitions = [];
 
-
-    private function normalizeConfig($configData)
-    {
-        try {
-            $configData = (new Configuration\Container())->parse(['container' => $configData]);
-        } catch (InvalidConfigurationException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-        $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
-        $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
-        $configData['parameters'] = empty($configData['parameters']) ? [] : $configData['parameters'];
-
-        return $configData;
-    }
-
     /**
      * @param Component $component
      * @param array $configData
      */
     public function parseConfigData(Component $component, array $configData)
     {
-        $jobDefinition = new JobDefinition();
+        $jobDefinition = new JobDefinition($configData);
         $jobDefinition->setComponent($component);
-        $jobDefinition->setConfiguration($this->normalizeConfig($configData));
-        $this->jobDefinitions[] = $jobDefinition;
+        $this->jobDefinitions = [$jobDefinition];
     }
 
     public function parseConfig(Component $component, $config)
     {
-        if (!$config['rows']) {
-            $jobDefinition = new JobDefinition();
+        $this->jobDefinitions = [];
+        if (count($config['rows']) == 0) {
+            $jobDefinition = new JobDefinition($config['configuration']);
             $jobDefinition->setComponent($component);
-            $jobDefinition->setConfiguration($this->normalizeConfig($config['configuration']));
             $jobDefinition->setConfigId($config['id']);
             $jobDefinition->setConfigVersion($config['version']);
             $jobDefinition->setState($config['state']);

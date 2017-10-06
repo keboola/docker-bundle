@@ -1,6 +1,9 @@
 <?php
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Syrup\Exception\UserException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+
 class JobDefinition
 {
     /**
@@ -31,17 +34,24 @@ class JobDefinition
     /**
      * @var array
      */
-    private $configuration;
+    private $configuration = [];
 
     /**
      * @var array
      */
-    private $state;
+    private $state = [];
 
     /**
      * @var bool
      */
     private $isDisabled = false;
+
+    public function __construct($configuration)
+    {
+        $this->configuration = $this->normalizeConfiguration($configuration);
+
+        return $this;
+    }
 
     /**
      * @return string
@@ -155,17 +165,6 @@ class JobDefinition
     }
 
     /**
-     * @param array $configuration
-     * @return $this
-     */
-    public function setConfiguration(array $configuration)
-    {
-        $this->configuration = $configuration;
-
-        return $this;
-    }
-
-    /**
      * @return array
      */
     public function getState()
@@ -201,5 +200,19 @@ class JobDefinition
         $this->isDisabled = $isDisabled;
 
         return $this;
+    }
+
+    private function normalizeConfiguration($configuration)
+    {
+        try {
+            $configuration = (new Configuration\Container())->parse(['container' => $configuration]);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
+        $configuration['storage'] = empty($configuration['storage']) ? [] : $configuration['storage'];
+        $configuration['processors'] = empty($configuration['processors']) ? [] : $configuration['processors'];
+        $configuration['parameters'] = empty($configuration['parameters']) ? [] : $configuration['parameters'];
+
+        return $configuration;
     }
 }

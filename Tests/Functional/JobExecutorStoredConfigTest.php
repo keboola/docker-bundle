@@ -12,8 +12,6 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Exception;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\Job;
@@ -24,7 +22,6 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Filesystem\Filesystem;
 
 class JobExecutorStoredConfigTest extends KernelTestCase
 {
@@ -138,6 +135,7 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             'id' => 'my-config',
             'version' => 1,
             'state' => [],
+            'rows' => [],
             'configuration' => [
                 'storage' => [
                     'input' => [
