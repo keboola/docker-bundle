@@ -294,6 +294,13 @@ class Runner
         }
         $componentOutput = new Output();
         foreach ($jobDefinitions as $jobDefinition) {
+            if ($jobDefinition->isDisabled()) {
+                $this->loggerService->getLog()->notice(
+                    "Skipping configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
+                    . ", rowId: " . $jobDefinition->getRowId() . ' version: ' . $jobDefinition->getRowVersion()
+                );
+                continue;
+            }
             $this->runRow($jobDefinition, $action, $mode, $jobId, $componentOutput);
         }
         return $componentOutput;
