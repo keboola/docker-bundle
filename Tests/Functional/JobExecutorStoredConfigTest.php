@@ -259,6 +259,5 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
-        $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 }
