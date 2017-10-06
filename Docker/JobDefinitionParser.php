@@ -33,7 +33,17 @@ class JobDefinitionParser
             $jobDefinition->setState($config['state']);
             $this->jobDefinitions[] = $jobDefinition;
         } else {
-            return;
+            foreach ($config['rows'] as $row) {
+                $jobDefinition = new JobDefinition(array_replace_recursive($config['configuration'], $row['configuration']));
+                $jobDefinition->setComponent($component);
+                $jobDefinition->setConfigId($config['id']);
+                $jobDefinition->setConfigVersion($config['version']);
+                $jobDefinition->setRowId($row['id']);
+                $jobDefinition->setRowVersion($row['version']);
+                $jobDefinition->setState($row['state']);
+                $jobDefinition->setIsDisabled($row['isDisabled']);
+                $this->jobDefinitions[] = $jobDefinition;
+            }
         }
     }
 

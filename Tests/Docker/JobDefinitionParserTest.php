@@ -218,5 +218,123 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
 
     public function testMultiRowConfiguration()
     {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'configuration' => [
+                'parameters' => [
+                    'credentials' => [
+                        'username' => 'user',
+                        '#password' => 'password'
+                    ],
+                ],
+            ],
+            'state' => ['key' => 'val'],
+            'rows' => [
+                [
+                    'id' => 'row1',
+                    'version' => 2,
+                    'isDisabled' => true,
+                    'configuration' => [
+                        'storage' => [
+                            'input' => [
+                                'tables' => [
+                                    [
+                                        'source' => 'in.c-docker-test.source',
+                                        'destination' => 'transpose.csv',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'parameters' => [
+                            'credentials' => [
+                                'username' => 'override user',
+                            ],
+                            'key' => 'val'
+                        ]
+                    ],
+                    'state' => [
+                        'key1' => 'val1'
+                    ]
+                ],
+                [
+                    'id' => 'row2',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'configuration' => [
+                        'storage' => [
+                            'input' => []
+                        ]
+                    ],
+                    'state' => [
+                        'key2' => 'val2'
+                    ]
+
+                ],
+            ],
+        ];
+
+        $expectedRow1 = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-test.source',
+                            'destination' => 'transpose.csv',
+                            'columns' => [],
+                            'where_values' => [],
+                            'where_operator' => 'eq',
+                        ]
+                    ],
+                    'files' => []
+                ],
+            ],
+            'parameters' => [
+                'credentials' => [
+                    'username' => 'override user',
+                    '#password' => 'password'
+                ],
+                'key' => 'val'
+            ],
+            'processors' => [],
+        ];
+
+        $expectedRow2 = [
+            'storage' => [
+                'input' => [
+                    'tables' => [],
+                    'files' => [],
+                ],
+            ],
+            'parameters' => [
+                'credentials' => [
+                    'username' => 'user',
+                    '#password' => 'password'
+                ],
+            ],
+            'processors' => [],
+        ];
+
+        $parser = new JobDefinitionParser();
+        $parser->parseConfig($this->getComponent(), $config);
+
+        $this->assertCount(2, $parser->getJobDefinitions());
+        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        $this->assertEquals($expectedRow1, $parser->getJobDefinitions()[0]->getConfiguration());
+        $this->assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
+        $this->assertEquals(3, $parser->getJobDefinitions()[0]->getConfigVersion());
+        $this->assertEquals('row1', $parser->getJobDefinitions()[0]->getRowId());
+        $this->assertEquals(2, $parser->getJobDefinitions()[0]->getRowVersion());
+        $this->assertTrue($parser->getJobDefinitions()[0]->isDisabled());
+        $this->assertEquals(['key1' => 'val1'], $parser->getJobDefinitions()[0]->getState());
+
+        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[1]->getComponentId());
+        $this->assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
+        $this->assertEquals('my-config', $parser->getJobDefinitions()[1]->getConfigId());
+        $this->assertEquals(3, $parser->getJobDefinitions()[1]->getConfigVersion());
+        $this->assertEquals('row2', $parser->getJobDefinitions()[1]->getRowId());
+        $this->assertEquals(1, $parser->getJobDefinitions()[1]->getRowVersion());
+        $this->assertFalse($parser->getJobDefinitions()[1]->isDisabled());
+        $this->assertEquals(['key2' => 'val2'], $parser->getJobDefinitions()[1]->getState());
     }
 }
