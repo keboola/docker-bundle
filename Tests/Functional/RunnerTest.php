@@ -673,8 +673,8 @@ class RunnerTest extends KernelTestCase
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
-                [],
+                'test-config',
+                $configurationData,
                 []
             ),
             'run',
@@ -732,8 +732,8 @@ class RunnerTest extends KernelTestCase
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
-                $configurationData,
+                'test-configuration',
+                [],
                 []
             ),
             'run',
