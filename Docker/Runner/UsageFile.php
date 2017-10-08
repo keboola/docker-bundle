@@ -69,7 +69,7 @@ class UsageFile
             $job = $this->jobMapper->get($this->jobId);
             if ($job !== null) {
                 $currentUsage = $job->getUsage();
-                foreach($usage as $usageItem) {
+                foreach ($usage as $usageItem) {
                     $currentUsage[] = $usageItem;
                 }
                 $job = $job->setUsage($currentUsage);
