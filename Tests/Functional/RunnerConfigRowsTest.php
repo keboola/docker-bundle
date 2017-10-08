@@ -308,4 +308,67 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
         $this->assertFalse($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
+
+    public function testRowMetadata()
+    {
+        $runner = $this->getRunner(new NullHandler());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+        $jobDefinition1->setComponent($this->getComponent());
+        $jobDefinition1->setConfigId('config');
+        $jobDefinition1->setRowId('row-1');
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+        $jobDefinition2->setComponent($this->getComponent());
+        $jobDefinition2->setConfigId('config');
+        $jobDefinition2->setRowId('row-2');
+
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567'
+        );
+        $metadata = new Metadata($this->client);
+        $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable'));
+        $table2Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable-2'));
+
+        $this->arrayHasKey('KBC.createdBy.component.id', $table1Metadata);
+        $this->arrayHasKey('KBC.createdBy.configuration.id', $table1Metadata);
+        $this->arrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata);
+        $this->assertEquals('docker-demo', $table1Metadata['KBC.createdBy.component.id']);
+        $this->assertEquals('config', $table1Metadata['KBC.createdBy.configuration.id']);
+        $this->assertEquals('row-1', $table1Metadata['KBC.createdBy.configurationRow.id']);
+
+        $this->arrayHasKey('KBC.createdBy.component.id', $table2Metadata);
+        $this->arrayHasKey('KBC.createdBy.configuration.id', $table2Metadata);
+        $this->arrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata);
+        $this->assertEquals('docker-demo', $table2Metadata['KBC.createdBy.component.id']);
+        $this->assertEquals('config', $table2Metadata['KBC.createdBy.configuration.id']);
+        $this->assertEquals('row-2', $table2Metadata['KBC.createdBy.configurationRow.id']);
+
+    }
 }

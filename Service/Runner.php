@@ -205,7 +205,8 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $jobDefinition->getConfigId()
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         } else {
             $dataLoader = new NullDataLoader(
@@ -214,7 +215,8 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $jobDefinition->getConfigId()
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         }
         $dataLoader->setFeatures($this->features);
@@ -245,7 +247,8 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $jobDefinition->getConfigId()
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         } else {
             $dataLoader = new NullDataLoader(
@@ -254,7 +257,8 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $jobDefinition->getConfigId()
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         }
         $dataLoader->setFeatures($this->features);

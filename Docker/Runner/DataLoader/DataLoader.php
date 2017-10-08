@@ -59,6 +59,11 @@ class DataLoader implements DataLoaderInterface
     private $configId;
 
     /**
+     * @var string
+     */
+    private $configRowId;
+
+    /**
      * DataLoader constructor.
      *
      * @param Client $storageClient
@@ -67,6 +72,7 @@ class DataLoader implements DataLoaderInterface
      * @param array $storageConfig
      * @param Component $component
      * @param string|null $configId
+     * @param string|null $configRowId
      */
     public function __construct(
         Client $storageClient,
@@ -74,7 +80,8 @@ class DataLoader implements DataLoaderInterface
         $dataDirectory,
         array $storageConfig,
         Component $component,
-        $configId = null
+        $configId = null,
+        $configRowId = null
     ) {
         $this->storageClient = $storageClient;
         $this->logger = $logger;
@@ -82,6 +89,7 @@ class DataLoader implements DataLoaderInterface
         $this->storageConfig = $storageConfig;
         $this->component = $component;
         $this->configId = $configId;
+        $this->configRowIdId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
     }
 
@@ -148,6 +156,9 @@ class DataLoader implements DataLoaderInterface
             'componentId' => $this->component->getId(),
             'configurationId' => $this->configId
         ];
+        if ($this->configRowId) {
+            $systemMetadata['configurationRowId'] = $this->configRowId;
+        }
 
         // Get default bucket
         if ($this->defaultBucketName) {

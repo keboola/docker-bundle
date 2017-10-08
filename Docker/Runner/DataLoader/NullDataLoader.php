@@ -8,7 +8,7 @@ use Psr\Log\LoggerInterface;
 
 class NullDataLoader implements DataLoaderInterface
 {
-    public function __construct(Client $storageClient, LoggerInterface $logger, $dataDirectory, array $storageConfig, Component $component, $configId = null)
+    public function __construct(Client $storageClient, LoggerInterface $logger, $dataDirectory, array $storageConfig, Component $component, $configId = null, $configRowId = null)
     {
     }
 
