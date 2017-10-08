@@ -185,11 +185,11 @@ class Runner
             $dataDirectory->getDataDir(),
             $this->storageClient,
             $jobDefinition->getState(),
+            $component->getConfigurationFormat(),
             $component->getId(),
             $jobDefinition->getConfigId(),
-            $component->getConfigurationFormat()
+            $jobDefinition->getRowId()
         );
-
 
         $usageFile = new UsageFile(
             $dataDirectory->getDataDir(),

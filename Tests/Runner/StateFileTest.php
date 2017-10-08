@@ -52,7 +52,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateStateFile()
     {
         $state = ['lastUpdate' => 'today'];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id');
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -67,7 +67,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateEmptyStateFile()
     {
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id');
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -87,7 +87,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
 
@@ -107,7 +107,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
@@ -128,7 +128,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
@@ -150,8 +150,30 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'docker-demo', 'config-id', 'json');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
         $state = [];
+        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
+        file_put_contents($fileName, json_encode($state));
+
+        $stateFile->storeStateFile();
+    }
+
+
+    public function testUpdateRowStateChange()
+    {
+        $sapiStub = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("apiPut")
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
+                $this->equalTo(["state" => '{"state":"fooBar"}'])
+            );
+
+        $state = ["state" => "fooBarBaz"];
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', 'row-id');
+        $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
 

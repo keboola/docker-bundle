@@ -15,6 +15,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
@@ -369,6 +370,82 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertEquals('docker-demo', $table2Metadata['KBC.createdBy.component.id']);
         $this->assertEquals('config', $table2Metadata['KBC.createdBy.configuration.id']);
         $this->assertEquals('row-2', $table2Metadata['KBC.createdBy.configurationRow.id']);
+    }
 
+    public function testExecutorStoreRowState()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "{\"baz\": \"bar\"}" > /data/out/state.json',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $jobDefinition1 = new JobDefinition([]);
+        $jobDefinition1->setConfigId('test-configuration');
+        $jobDefinition1->setRowId('row-1');
+        $jobDefinition1->setComponent(new Component($componentData));
+        $jobDefinition2 = new JobDefinition([]);
+        $jobDefinition2->setConfigId('test-configuration');
+        $jobDefinition2->setRowId('row-2');
+        $jobDefinition2->setComponent(new Component($componentData));
+
+        $runner->run(
+            [$jobDefinition1, $jobDefinition2],
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+
+        $this->assertEquals([], $configuration['state']);
+        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
+        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 }
