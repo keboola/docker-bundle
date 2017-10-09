@@ -180,7 +180,9 @@ class Runner
 
         $configData = $jobDefinition->getConfiguration();
 
-        $dataDirectory = new DataDirectory($this->temp->getTmpFolder(), $this->loggerService->getLog());
+        $temp = new Temp($this->temp->getTmpFolder());
+        $temp->initRunFolder();
+        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggerService->getLog());
         $stateFile = new StateFile(
             $dataDirectory->getDataDir(),
             $this->storageClient,
