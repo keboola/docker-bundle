@@ -22,7 +22,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class EncryptionTests extends KernelTestCase
+class EncryptionTest extends KernelTestCase
 {
 
     /**
@@ -106,7 +106,7 @@ class EncryptionTests extends KernelTestCase
 
         // mock components
         $configData = [
-            "id" => "fake",
+            "id" => "1",
             "version" => "1",
             "configuration" => [
                 "parameters" => [
@@ -119,13 +119,45 @@ class EncryptionTests extends KernelTestCase
             "rows" => [],
             "state" => []
         ];
+
+        $configDataRows = [
+            "id" => "1",
+            "version" => "1",
+            "configuration" => [
+                "parameters" => [
+                    "configKey1" => "value1",
+                    "#configKey2" => $encryptor->encrypt("value2"),
+                    "#configKey3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                    "#configKey4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
+                ]
+            ],
+            "rows" => [
+                [
+                    "id" => "row-1",
+                    "version" => 1,
+                    "isDisabled" => false,
+                    "configuration" => [
+                        "parameters" => [
+                            "rowKey1" => "value1",
+                            "#rowKey2" => $encryptor->encrypt("value2"),
+                            "#rowKey3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                            "#rowKey4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
+                        ]
+                    ],
+                    "state" => []
+                ]
+            ],
+            "state" => []
+        ];
         $componentsStub = $this->getMockBuilder(Components::class)
             ->disableOriginalConstructor()
             ->getMock();
         $componentsStub->expects($this->once())
             ->method("getConfiguration")
-            ->with("docker-dummy-component", 1)
-            ->will($this->returnValue($configData));
+            ->will($this->returnValueMap([
+                ["docker-dummy-component", "config", $configData],
+                ["docker-dummy-component", "config-rows", $configDataRows]
+            ]));
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
             ->disableOriginalConstructor()
@@ -203,7 +235,7 @@ class EncryptionTests extends KernelTestCase
             'params' => [
                 'component' => 'docker-dummy-component',
                 'mode' => 'run',
-                'config' => 1
+                'config' => 'config'
             ]
         ];
 
@@ -241,7 +273,7 @@ class EncryptionTests extends KernelTestCase
             'params' => [
                 'component' => 'docker-dummy-component',
                 'mode' => 'run',
-                'config' => 1
+                'config' => 'config'
             ]
         ];
 
@@ -265,5 +297,41 @@ class EncryptionTests extends KernelTestCase
         $this->assertEquals("value2", $config["parameters"]["#key2"]);
         $this->assertEquals("value3", $config["parameters"]["#key3"]);
         $this->assertEquals("value4", $config["parameters"]["#key4"]);
+    }
+
+
+    public function testStoredConfigRowDecryptEncryptComponent()
+    {
+        $data = [
+            'params' => [
+                'component' => 'docker-dummy-component',
+                'mode' => 'run',
+                'config' => 'config-rows'
+            ]
+        ];
+
+        // fake image data
+        $indexActionValue = $this->getComponentDefinition();
+        $indexActionValue['components']['0']['flags'] = ['encrypt'];
+
+        $handler = new TestHandler();
+        /** @var ComponentWrapper $ecWrapper */
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        /** @var ObjectEncryptor $encryptor */
+        $jobExecutor = $this->getJobExecutor($encryptor, $ecWrapper, $ecpWrapper, $handler, $indexActionValue);
+        $job = new Job($encryptor, $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $ret = $handler->getRecords();
+        $this->assertEquals(1, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $config = json_decode($ret[0]['message'], true);
+        $this->assertEquals("value2", $config["parameters"]["#configKey2"]);
+        $this->assertEquals("value3", $config["parameters"]["#configKey3"]);
+        $this->assertEquals("value4", $config["parameters"]["#configKey4"]);
+        $this->assertEquals("value2", $config["parameters"]["#rowKey2"]);
+        $this->assertEquals("value3", $config["parameters"]["#rowKey3"]);
+        $this->assertEquals("value4", $config["parameters"]["#rowKey4"]);
     }
 }
