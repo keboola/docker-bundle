@@ -89,7 +89,7 @@ class DataLoader implements DataLoaderInterface
         $this->storageConfig = $storageConfig;
         $this->component = $component;
         $this->configId = $configId;
-        $this->configRowIdId = $configRowId;
+        $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
     }
 

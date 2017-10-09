@@ -357,19 +357,19 @@ class RunnerConfigRowsTest extends KernelTestCase
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable'));
         $table2Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable-2'));
 
-        $this->arrayHasKey('KBC.createdBy.component.id', $table1Metadata);
-        $this->arrayHasKey('KBC.createdBy.configuration.id', $table1Metadata);
-        $this->arrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata);
-        $this->assertEquals('docker-demo', $table1Metadata['KBC.createdBy.component.id']);
-        $this->assertEquals('config', $table1Metadata['KBC.createdBy.configuration.id']);
-        $this->assertEquals('row-1', $table1Metadata['KBC.createdBy.configurationRow.id']);
+        $this->assertArrayHasKey('KBC.createdBy.component.id', $table1Metadata['system']);
+        $this->assertArrayHasKey('KBC.createdBy.configuration.id', $table1Metadata['system']);
+        $this->assertArrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata['system']);
+        $this->assertEquals('docker-demo', $table1Metadata['system']['KBC.createdBy.component.id']);
+        $this->assertEquals('config', $table1Metadata['system']['KBC.createdBy.configuration.id']);
+        $this->assertEquals('row-1', $table1Metadata['system']['KBC.createdBy.configurationRow.id']);
 
-        $this->arrayHasKey('KBC.createdBy.component.id', $table2Metadata);
-        $this->arrayHasKey('KBC.createdBy.configuration.id', $table2Metadata);
-        $this->arrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata);
-        $this->assertEquals('docker-demo', $table2Metadata['KBC.createdBy.component.id']);
-        $this->assertEquals('config', $table2Metadata['KBC.createdBy.configuration.id']);
-        $this->assertEquals('row-2', $table2Metadata['KBC.createdBy.configurationRow.id']);
+        $this->assertArrayHasKey('KBC.createdBy.component.id', $table2Metadata['system']);
+        $this->assertArrayHasKey('KBC.createdBy.configuration.id', $table2Metadata['system']);
+        $this->assertArrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata['system']);
+        $this->assertEquals('docker-demo', $table2Metadata['system']['KBC.createdBy.component.id']);
+        $this->assertEquals('config', $table2Metadata['system']['KBC.createdBy.configuration.id']);
+        $this->assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);
     }
 
     public function testExecutorStoreRowState()

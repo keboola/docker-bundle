@@ -129,6 +129,62 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
+
+    public function testDefaultSystemConfigRowMetadata()
+    {
+        $metadataApi = new Metadata($this->client);
+        $temp = new Temp();
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createDataDir();
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+
+        $dataLoader = new DataLoader(
+            $this->client,
+            new NullLogger(),
+            $data->getDataDir(),
+            [],
+            $this->getDefaultBucketComponent(),
+            "whatever",
+            "whateverRow"
+        );
+        $dataLoader->storeOutput();
+
+        $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
+        $expectedBucketMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'whatever',
+                'KBC.createdBy.configurationRow.id' => 'whateverRow'
+            ]
+        ];
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $expectedTableMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'whatever',
+                'KBC.createdBy.configurationRow.id' => 'whateverRow'
+            ]
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+
+        // let's run the data loader again.
+        // This time the tables should receive "update" metadata
+        $dataLoader->storeOutput();
+
+        $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'whatever';
+        $expectedTableMetadata['system']['KBC.lastUpdatedBy.configurationRow.id'] = 'whateverRow';
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+    }
+
     public function testExecutorConfigMetadata()
     {
         $temp = new Temp();
