@@ -68,7 +68,7 @@ class ActionController extends BaseApiController
         $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
 
-        $configData = $requestJsonData["configData"];
+        $configData = isset($requestJsonData["configData"]) ? $requestJsonData["configData"] : [];
         if (in_array("encrypt", $component["flags"])) {
             $configData = $this->container->get('syrup.object_encryptor')->encrypt($configData);
             $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
