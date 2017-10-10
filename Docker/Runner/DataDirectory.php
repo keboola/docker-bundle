@@ -54,28 +54,7 @@ class DataDirectory
 
         $fs->mkdir($structure);
     }
-
-    public function getNormalizeCommand()
-    {
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        return "sudo docker run --rm --volume=" .
-            $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R && "
-                . "chmod -R u+wrX /data'";
-    }
-
-    public function normalizePermissions()
-    {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $proxy->call(function () use (&$process) {
-            $command = $this->getNormalizeCommand();
-            $process = new Process($command);
-            $process->setTimeout(60);
-            $process->run();
-        });
-    }
-
+    
     public function getDataDir()
     {
         return $this->workingDir . "/data";
