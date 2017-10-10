@@ -54,7 +54,7 @@ class DataDirectory
 
         $fs->mkdir($structure);
     }
-    
+
     public function getDataDir()
     {
         return $this->workingDir . "/data";
