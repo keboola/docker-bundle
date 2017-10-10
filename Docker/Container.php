@@ -337,15 +337,11 @@ class Container
             $labels .= ' --label ' . escapeshellarg($label);
         }
 
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        $gid = trim((new Process('id -g'))->mustRun()->getOutput());
-
         $command .= " --volume " . escapeshellarg($dataDir . ":/data")
             . " --memory " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
             . " --memory-swap " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
             . " --cpu-shares " . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
             . " --net " . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
-            . " --user " . escapeshellarg($uid) . ":" . escapeshellarg($gid)
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)

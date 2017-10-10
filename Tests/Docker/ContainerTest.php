@@ -132,10 +132,6 @@ EOF;
                 'com.keboola.runner.runId=10.20.30',
             ], $envs)
         );
-
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        $gid = trim((new Process('id -g'))->mustRun()->getOutput());
-
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
             . " --volume '/tmp:/data'"
@@ -143,7 +139,6 @@ EOF;
             . " --memory-swap '64m'"
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
-            . " --user " . escapeshellarg($uid) . ":" . escapeshellarg($gid)
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
