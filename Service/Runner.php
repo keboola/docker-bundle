@@ -172,7 +172,7 @@ class Runner
     {
         $this->loggerService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-            . ", rowId: " . $jobDefinition->getRowId() . ' version: ' . $jobDefinition->getRowVersion()
+            . ", rowId: " . $jobDefinition->getRowId()
         );
         $component = $jobDefinition->getComponent();
         $this->loggerService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
@@ -303,7 +303,7 @@ class Runner
             if ($jobDefinition->isDisabled()) {
                 $this->loggerService->getLog()->notice(
                     "Skipping configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-                    . ", rowId: " . $jobDefinition->getRowId() . ' version: ' . $jobDefinition->getRowVersion()
+                    . ", rowId: " . $jobDefinition->getRowId()
                 );
                 continue;
             }

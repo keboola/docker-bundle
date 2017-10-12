@@ -146,9 +146,7 @@ CMD
 
         $jobId = $jobMapper->create($job);
 
-        $jobDefinition = new JobDefinition([]);
-        $jobDefinition->setConfigId('test-configuration');
-        $jobDefinition->setComponent(new Component($componentData));
+        $jobDefinition = new JobDefinition([], new Component($componentData), 'test-configuration');
 
         $runner->run([$jobDefinition], 'run', 'run', $jobId);
 
@@ -272,17 +270,10 @@ CMD
 
         $jobId = $jobMapper->create($job);
 
-        $jobDefinition1 = new JobDefinition([]);
-        $jobDefinition1->setConfigId('test-configuration');
-        $jobDefinition1->setRowId('row-1');
-        $jobDefinition1->setComponent(new Component($componentData));
+        $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
 
-        $jobDefinition2 = new JobDefinition([]);
-        $jobDefinition2->setConfigId('test-configuration');
-        $jobDefinition2->setRowId('row-2');
-        $jobDefinition2->setComponent(new Component($componentData));
-
-        $runner->run([$jobDefinition2, $jobDefinition2], 'run', 'run', $jobId);
+        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', $jobId);
 
         $job = $jobMapper->get($jobId);
         $this->assertEquals([

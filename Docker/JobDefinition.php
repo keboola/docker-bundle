@@ -22,11 +22,6 @@ class JobDefinition
     private $configVersion;
 
     /**
-     * @var string
-     */
-    private $rowVersion;
-
-    /**
      * @var Component
      */
     private $component;
@@ -46,9 +41,26 @@ class JobDefinition
      */
     private $isDisabled = false;
 
-    public function __construct($configuration)
+    /**
+     * JobDefinition constructor.
+     *
+     * @param array $configuration
+     * @param Component $component
+     * @param string $configId
+     * @param string $configVersion
+     * @param array $state
+     * @param string $rowId
+     * @param bool $isDisabled
+     */
+    public function __construct(array $configuration, Component $component, $configId = null, $configVersion = null, array $state = [], $rowId = null, $isDisabled = false)
     {
         $this->configuration = $this->normalizeConfiguration($configuration);
+        $this->component = $component;
+        $this->configId = $configId;
+        $this->configVersion = $configVersion;
+        $this->rowId = $rowId;
+        $this->isDisabled = $isDisabled;
+        $this->state = $state;
 
         return $this;
     }
@@ -70,33 +82,11 @@ class JobDefinition
     }
 
     /**
-     * @param mixed $configId
-     * @return $this
-     */
-    public function setConfigId($configId)
-    {
-        $this->configId = $configId;
-
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getRowId()
     {
         return $this->rowId;
-    }
-
-    /**
-     * @param string $rowId
-     * @return $this
-     */
-    public function setRowId($rowId)
-    {
-        $this->rowId = $rowId;
-
-        return $this;
     }
 
     /**
@@ -108,52 +98,11 @@ class JobDefinition
     }
 
     /**
-     * @param string $configVersion
-     * @return $this
-     */
-    public function setConfigVersion($configVersion)
-    {
-        $this->configVersion = $configVersion;
-
-        return $this;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRowVersion()
-    {
-        return $this->rowVersion;
-    }
-
-    /**
-     * @param string $rowVersion
-     * @return $this
-     */
-    public function setRowVersion($rowVersion)
-    {
-        $this->rowVersion = $rowVersion;
-
-        return $this;
-    }
-
-    /**
      * @return Component
      */
     public function getComponent()
     {
         return $this->component;
-    }
-
-    /**
-     * @param Component $component
-     * @return $this
-     */
-    public function setComponent(Component $component)
-    {
-        $this->component = $component;
-
-        return $this;
     }
 
     /**
@@ -173,33 +122,11 @@ class JobDefinition
     }
 
     /**
-     * @param array $state
-     * @return $this
-     */
-    public function setState(array $state)
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    /**
      * @return bool
      */
     public function isDisabled()
     {
         return $this->isDisabled;
-    }
-
-    /**
-     * @param bool $isDisabled
-     * @return $this
-     */
-    public function setIsDisabled($isDisabled)
-    {
-        $this->isDisabled = $isDisabled;
-
-        return $this;
     }
 
     private function normalizeConfiguration($configuration)

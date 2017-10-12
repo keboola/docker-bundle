@@ -2,8 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\Syrup\Exception\UserException;
-
 class JobDefinitionParser
 {
     /**
@@ -17,8 +15,7 @@ class JobDefinitionParser
      */
     public function parseConfigData(Component $component, array $configData)
     {
-        $jobDefinition = new JobDefinition($configData);
-        $jobDefinition->setComponent($component);
+        $jobDefinition = new JobDefinition($configData, $component);
         $this->jobDefinitions = [$jobDefinition];
     }
 
@@ -26,22 +23,19 @@ class JobDefinitionParser
     {
         $this->jobDefinitions = [];
         if (count($config['rows']) == 0) {
-            $jobDefinition = new JobDefinition($config['configuration']);
-            $jobDefinition->setComponent($component);
-            $jobDefinition->setConfigId($config['id']);
-            $jobDefinition->setConfigVersion($config['version']);
-            $jobDefinition->setState($config['state']);
+            $jobDefinition = new JobDefinition($config['configuration'], $component, $config['id'], $config['version'], $config['state']);
             $this->jobDefinitions[] = $jobDefinition;
         } else {
             foreach ($config['rows'] as $row) {
-                $jobDefinition = new JobDefinition(array_replace_recursive($config['configuration'], $row['configuration']));
-                $jobDefinition->setComponent($component);
-                $jobDefinition->setConfigId($config['id']);
-                $jobDefinition->setConfigVersion($config['version']);
-                $jobDefinition->setRowId($row['id']);
-                $jobDefinition->setRowVersion($row['version']);
-                $jobDefinition->setState($row['state']);
-                $jobDefinition->setIsDisabled($row['isDisabled']);
+                $jobDefinition = new JobDefinition(
+                    array_replace_recursive($config['configuration'], $row['configuration']),
+                    $component,
+                    $config['id'],
+                    $config['version'],
+                    $row['state'],
+                    $row['id'],
+                    $row['isDisabled']
+                );
                 $this->jobDefinitions[] = $jobDefinition;
             }
         }

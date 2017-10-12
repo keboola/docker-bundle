@@ -63,11 +63,7 @@ class RunnerConfigRowsTest extends KernelTestCase
      */
     protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
     {
-        $jobDefinition = new JobDefinition($configData);
-        $jobDefinition->setConfigId($configId);
-        $jobDefinition->setComponent(new Component($componentData));
-        $jobDefinition->setState($state);
-
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, null, $state);
         return [$jobDefinition];
     }
 
@@ -240,8 +236,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition1->setComponent($this->getComponent());
+        ], $this->getComponent());
         $jobDefinition2 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -254,8 +249,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition2->setComponent($this->getComponent());
+        ], $this->getComponent());
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
@@ -282,8 +276,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition1->setComponent($this->getComponent());
+        ], $this->getComponent());
         $jobDefinition2 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -296,9 +289,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition2->setComponent($this->getComponent());
-        $jobDefinition2->setIsDisabled(true);
+        ], $this->getComponent(), null, null, [], null, true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
@@ -325,10 +316,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition1->setComponent($this->getComponent());
-        $jobDefinition1->setConfigId('config');
-        $jobDefinition1->setRowId('row-1');
+        ], $this->getComponent(), 'config', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -341,10 +329,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ]);
-        $jobDefinition2->setComponent($this->getComponent());
-        $jobDefinition2->setConfigId('config');
-        $jobDefinition2->setRowId('row-2');
+        ], $this->getComponent(), 'config', null, [], 'row-2');
 
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
@@ -424,14 +409,8 @@ class RunnerConfigRowsTest extends KernelTestCase
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition([]);
-        $jobDefinition1->setConfigId('test-configuration');
-        $jobDefinition1->setRowId('row-1');
-        $jobDefinition1->setComponent(new Component($componentData));
-        $jobDefinition2 = new JobDefinition([]);
-        $jobDefinition2->setConfigId('test-configuration');
-        $jobDefinition2->setRowId('row-2');
-        $jobDefinition2->setComponent(new Component($componentData));
+        $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
 
         $runner->run(
             [$jobDefinition1, $jobDefinition2],

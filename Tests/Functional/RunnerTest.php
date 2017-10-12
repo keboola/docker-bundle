@@ -63,10 +63,7 @@ class RunnerTest extends KernelTestCase
      */
     protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
     {
-        $jobDefinition = new JobDefinition($configData);
-        $jobDefinition->setConfigId($configId);
-        $jobDefinition->setComponent(new Component($componentData));
-        $jobDefinition->setState($state);
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, null, $state);
         return [$jobDefinition];
     }
 

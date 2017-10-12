@@ -110,7 +110,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertNull($parser->getJobDefinitions()[0]->getConfigId());
         $this->assertNull($parser->getJobDefinitions()[0]->getConfigVersion());
         $this->assertNull($parser->getJobDefinitions()[0]->getRowId());
-        $this->assertNull($parser->getJobDefinitions()[0]->getRowVersion());
         $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         $this->assertEmpty($parser->getJobDefinitions()[0]->getState());
     }
@@ -211,7 +210,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
         $this->assertEquals(1, $parser->getJobDefinitions()[0]->getConfigVersion());
         $this->assertNull($parser->getJobDefinitions()[0]->getRowId());
-        $this->assertNull($parser->getJobDefinitions()[0]->getRowVersion());
         $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         $this->assertEquals($config['state'], $parser->getJobDefinitions()[0]->getState());
     }
@@ -324,7 +322,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
         $this->assertEquals(3, $parser->getJobDefinitions()[0]->getConfigVersion());
         $this->assertEquals('row1', $parser->getJobDefinitions()[0]->getRowId());
-        $this->assertEquals(2, $parser->getJobDefinitions()[0]->getRowVersion());
         $this->assertTrue($parser->getJobDefinitions()[0]->isDisabled());
         $this->assertEquals(['key1' => 'val1'], $parser->getJobDefinitions()[0]->getState());
 
@@ -333,7 +330,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('my-config', $parser->getJobDefinitions()[1]->getConfigId());
         $this->assertEquals(3, $parser->getJobDefinitions()[1]->getConfigVersion());
         $this->assertEquals('row2', $parser->getJobDefinitions()[1]->getRowId());
-        $this->assertEquals(1, $parser->getJobDefinitions()[1]->getRowVersion());
         $this->assertFalse($parser->getJobDefinitions()[1]->isDisabled());
         $this->assertEquals(['key2' => 'val2'], $parser->getJobDefinitions()[1]->getState());
     }
