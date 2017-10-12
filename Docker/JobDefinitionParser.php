@@ -54,21 +54,4 @@ class JobDefinitionParser
     {
         return $this->jobDefinitions;
     }
-
-    /**
-     * @param $id
-     * @return array
-     */
-    protected function getComponent($id)
-    {
-        foreach ($this->components as $c) {
-            if ($c["id"] == $id) {
-                $component = $c;
-            }
-        }
-        if (!isset($component)) {
-            throw new UserException("Component '{$id}' not found.");
-        }
-        return new Component($component);
-    }
 }
