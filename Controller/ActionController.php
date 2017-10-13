@@ -86,9 +86,9 @@ class ActionController extends BaseApiController
         $runner->setFeatures($tokenInfo["owner"]["features"]);
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
         $jobDefinition = new JobDefinition($configData, new Component($component));
-        $output = $runner->run([$jobDefinition], $request->get("action"), 'run', 0);
+        $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0);
 
-        $message = $output->getProcessOutput();
+        $message = $outputs[0]->getProcessOutput();
         if ($message == '' || !$message) {
             throw new UserException("No response from component.");
         }

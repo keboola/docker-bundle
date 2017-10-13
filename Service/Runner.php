@@ -163,12 +163,12 @@ class Runner
 
     /**
      * @param JobDefinition $jobDefinition
-     * @param $action
-     * @param $mode
-     * @param $jobId
-     * @param Output $output
+     * @param string $action
+     * @param string $mode
+     * @param string $jobId
+     * @return Output
      */
-    public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, Output &$output)
+    public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
     {
         $this->loggerService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -274,16 +274,17 @@ class Runner
 
         switch ($mode) {
             case 'run':
-                $this->runComponent($jobId, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $output);
+                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $output);
+                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
         }
+        return $output;
     }
 
     /**
@@ -291,14 +292,14 @@ class Runner
      * @param $action
      * @param $mode
      * @param $jobId
-     * @return Output
+     * @return Output[]
      */
     public function run(array $jobDefinitions, $action, $mode, $jobId)
     {
         if (count($jobDefinitions) > 1 && $mode != 'run') {
             throw new UserException('Only 1 row allowed for sandbox calls.');
         }
-        $componentOutput = new Output();
+        $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
                 $this->loggerService->getLog()->notice(
@@ -307,9 +308,9 @@ class Runner
                 );
                 continue;
             }
-            $this->runRow($jobDefinition, $action, $mode, $jobId, $componentOutput);
+            $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
         }
-        return $componentOutput;
+        return $outputs;
     }
 
     /**
@@ -322,16 +323,16 @@ class Runner
      * @param StateFile $stateFile
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
-     * @param Output $output
+     * @return Output
      */
-    public function runComponent($jobId, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, Output &$output)
+    public function runComponent($jobId, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $output);
+        $output = $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
 
         // finalize
         $dataLoader->storeOutput();
@@ -341,6 +342,7 @@ class Runner
 
         $dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
+        return $output;
     }
 
     /**
@@ -355,9 +357,9 @@ class Runner
      * @param StateFile $stateFile
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
-     * @param Output $output
+     * @return Output
      */
-    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, Output &$output)
+    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         // initialize
         $dataDirectory->createDataDir();
@@ -365,33 +367,37 @@ class Runner
         $dataLoader->loadInputData();
 
         if ($mode == 'dry-run') {
-            $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $output);
+            $output = $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
         } else {
             $configFile->createConfigFile($configData);
+            $output = new Output();
         }
 
         $dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
         // finalize
         $dataDirectory->dropDataDir();
+        return $output;
     }
 
     /**
-     * @param $jobId
-     * @param $configId
+     * @param string $jobId
+     * @param string $configId
      * @param Component $component
      * @param UsageFile $usageFile
      * @param DataDirectory $dataDirectory
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
-     * @param Output $output
+     * @return Output
      */
-    private function runImages($jobId, $configId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, Output &$output)
+    private function runImages($jobId, $configId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         $images = $imageCreator->prepareImages();
         $this->loggerService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
+        $imageDigests = [];
+        $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
                 $this->loggerService->getLog()->info("Running processor " . $image->getFullImageId());
@@ -404,7 +410,10 @@ class Runner
                 $this->storageClient->getRunId(),
                 $this->storageClient->getApiUrl()
             );
-            $output->addImages($priority, $image->getFullImageId(), $image->getImageDigests());
+            $imageDigests[] = [
+                'id' => $image->getFullImageId(),
+                'digests' => $image->getImageDigests()
+            ];
             $configFile->createConfigFile($image->getConfigData());
 
             $containerIdParts = [];
@@ -434,7 +443,7 @@ class Runner
             try {
                 $process = $container->run();
                 if ($image->isMain()) {
-                    $output->addProcessOutput($process->getOutput());
+                    $outputMessage = $process->getOutput();
                 }
             } finally {
                 $dataDirectory->normalizePermissions();
@@ -447,6 +456,7 @@ class Runner
                 $dataDirectory->moveOutputToInput();
             }
         }
+        return new Output($imageDigests, $outputMessage);
     }
 
     /**

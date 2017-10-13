@@ -303,7 +303,7 @@ class RunnerTest extends KernelTestCase
         ];
 
         $runner = $this->getRunner(new NullHandler());
-        $output = $runner->run(
+        $outputs = $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
                 uniqid('test-'),
@@ -341,9 +341,9 @@ class RunnerTest extends KernelTestCase
                     ],
                 ]
             ],
-            $output->getImages()
+            $outputs[0]->getImages()
         );
-        $lines = explode("\n", $output->getProcessOutput());
+        $lines = explode("\n", $outputs[0]->getProcessOutput());
         $lines = array_map(function ($line) {
             return substr($line, 23); // skip the date of event
         }, $lines);

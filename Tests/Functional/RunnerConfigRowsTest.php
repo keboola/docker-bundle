@@ -427,4 +427,45 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
+
+    public function testOutput()
+    {
+        $runner = $this->getRunner(new NullHandler());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent());
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent());
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $outputs = $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567'
+        );
+        $this->assertCount(2, $outputs);
+        $this->assertCount(1, $outputs[0]->getImages());
+        $this->assertCount(1, $outputs[1]->getImages());
+    }
 }
