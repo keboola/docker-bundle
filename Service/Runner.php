@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
@@ -29,7 +28,6 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Runner
 {
@@ -71,7 +69,17 @@ class Runner
     /**
      * @var array
      */
-    protected $features = [];
+    private $features = [];
+
+    /**
+     * @var int
+     */
+    private $minLogPort;
+
+    /**
+     * @var int
+     */
+    private $maxLogPort;
 
     /**
      * Runner constructor.
