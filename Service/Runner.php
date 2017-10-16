@@ -282,7 +282,7 @@ class Runner
 
         switch ($mode) {
             case 'run':
-                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
+                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
                 break;
             case 'sandbox':
             case 'input':
@@ -324,6 +324,7 @@ class Runner
     /**
      * @param $jobId
      * @param $configId
+     * @param $rowId
      * @param Component $component
      * @param UsageFile $usageFile
      * @param DataLoaderInterface $dataLoader
@@ -333,14 +334,14 @@ class Runner
      * @param ConfigFile $configFile
      * @return Output
      */
-    public function runComponent($jobId, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
 
         // finalize
         $dataLoader->storeOutput();
@@ -375,7 +376,7 @@ class Runner
         $dataLoader->loadInputData();
 
         if ($mode == 'dry-run') {
-            $output = $this->runImages($jobId, $configId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
+            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
         } else {
             $configFile->createConfigFile($configData);
             $output = new Output();
@@ -390,6 +391,7 @@ class Runner
     /**
      * @param string $jobId
      * @param string $configId
+     * @param string $rowId
      * @param Component $component
      * @param UsageFile $usageFile
      * @param DataDirectory $dataDirectory
@@ -397,7 +399,7 @@ class Runner
      * @param ConfigFile $configFile
      * @return Output
      */
-    private function runImages($jobId, $configId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         $images = $imageCreator->prepareImages();
         $this->loggerService->setVerbosity($component->getLoggerVerbosity());
@@ -424,9 +426,9 @@ class Runner
             ];
             $configFile->createConfigFile($image->getConfigData());
 
-            $containerIdParts = [];
             $containerIdParts[] = $jobId;
             $containerIdParts[] = $this->storageClient->getRunId() ?: 'norunid';
+            $containerIdParts[] = $rowId;
             $containerIdParts[] = $priority;
             $containerIdParts[] = $image->getSourceComponent()->getSanitizedComponentId();
 
@@ -442,6 +444,7 @@ class Runner
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
+                        'com.keboola.docker-runner.rowId=' . $rowId,
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts)
                     ],
                     $environment->getEnvironmentVariables()

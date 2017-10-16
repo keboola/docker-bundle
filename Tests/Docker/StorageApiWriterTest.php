@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;

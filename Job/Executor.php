@@ -3,6 +3,7 @@ namespace Keboola\DockerBundle\Job;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
+use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -174,7 +175,7 @@ class Executor extends BaseExecutor
         $outputs = $this->runner->run($jobDefinitionParser->getJobDefinitions(), 'run', $params['mode'], $job->getId());
         return [
             "message" => "Component processing finished.",
-            "images" => array_map(function ($output) {
+            "images" => array_map(function (Output $output) {
                 return $output->getImages();
             }, $outputs)
         ];
