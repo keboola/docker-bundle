@@ -61,6 +61,9 @@
                   "days": {
                     "type": "integer"
                   },
+                  "changed_since": {
+                    "type": "string"
+                  },
                   "where_column": {
                     "type": "string"
                   },
