@@ -175,7 +175,7 @@ echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
 sleep(5);
 error_log("second message to stderr\n");
-print "second message to stdout\n";'
+print "second message to stdout";'
         );
         $container = $this->getContainerDummyLogger(
             $this->getImageConfiguration(),
