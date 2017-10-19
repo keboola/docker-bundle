@@ -425,10 +425,10 @@ print "second message to stdout\n";'
         $records = $handler->getRecords();
         $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals("Client finished", $out);
+        $this->assertEquals("Client finished\n", $out);
         $records = $containerHandler->getRecords();
         $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasInfo("Client finished"));
+        $this->assertTrue($containerHandler->hasInfo("Client finished\n"));
         $this->assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
         $this->assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
     }
@@ -607,12 +607,12 @@ print "second message to stdout\n";'
         }
         $this->assertCount(2, $error);
         sort($error);
-        $this->assertEquals("first message to stderr", $error[0]);
-        $this->assertEquals("second message to stderr", $error[1]);
+        $this->assertEquals("first message to stderr\n", $error[0]);
+        $this->assertEquals("second message to stderr\n\n", $error[1]);
         sort($info);
         $this->assertCount(2, $info);
-        $this->assertEquals("first message to stdout", $info[0]);
-        $this->assertEquals("second message to stdout", $info[1]);
+        $this->assertEquals("first message to stdout\n", $info[0]);
+        $this->assertEquals("second message to stdout\n", $info[1]);
     }
 
     public function testRunnerLogs()
