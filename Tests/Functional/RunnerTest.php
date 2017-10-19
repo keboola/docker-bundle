@@ -334,7 +334,6 @@ class RunnerTest extends KernelTestCase
             0 => ' : Initializing R transformation',
             1 => ' : Running R script',
             2 => ' : R script finished',
-            3 => false
         ], $lines);
 
         $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.radio');
