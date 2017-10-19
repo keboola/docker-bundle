@@ -34,7 +34,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
+        $log->pushHandler(new NullHandler());
         $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfig), new Temp(), true);
         $image->prepare([]);
 
