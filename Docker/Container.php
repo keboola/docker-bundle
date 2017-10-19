@@ -9,7 +9,7 @@ use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Symfony\Component\Process\Process;
+use Keboola\DockerBundle\Docker\Container\Process;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 
@@ -124,6 +124,9 @@ class Container
         return $this->dataDir;
     }
 
+    /**
+     *
+     */
     public function cleanUp()
     {
         // Check if container not running
@@ -183,6 +186,9 @@ class Container
         return $process;
     }
 
+    /**
+     * @param Process $process
+     */
     private function runWithoutLogger(Process $process)
     {
         $process->run(function ($type, $buffer) {
@@ -197,6 +203,10 @@ class Container
         });
     }
 
+    /**
+     * @param Process $process
+     * @param $containerName
+     */
     private function runWithLogger(Process $process, $containerName)
     {
         $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
@@ -257,6 +267,10 @@ class Container
         );
     }
 
+    /**
+     * @param Process $process
+     * @param $startTime
+     */
     private function handleContainerFailure(Process $process, $startTime)
     {
         $duration = time() - $startTime;
@@ -275,9 +289,12 @@ class Container
             }
         }
 
-        $message = trim($process->getErrorOutput());
+        $errorOutput = $this->sanitizeUtf8($process->getErrorOutput());
+        $output = $this->sanitizeUtf8($process->getOutput());
+
+        $message = $errorOutput;
         if (!$message) {
-            $message = trim($process->getOutput());
+            $message = $output;
         }
         if (!$message) {
             $message = "No error message.";
@@ -290,8 +307,8 @@ class Container
 
         // put the whole message to exception data, but make sure not use too much memory
         $data = [
-            "output" => mb_substr($process->getOutput(), -1000000),
-            "errorOutput" => mb_substr($process->getErrorOutput(), -1000000)
+            "output" => mb_substr($output, -1000000),
+            "errorOutput" => mb_substr($errorOutput, -1000000)
         ];
 
         if ($process->getExitCode() == 1) {
@@ -429,5 +446,17 @@ class Container
                 $data
             );
         }
+    }
+
+    /**
+     *
+     * taken from https://api.nette.org/2.4/source-Utils.Strings.php.html#34-43
+     *
+     * @param $string
+     * @return string
+     */
+    private function sanitizeUtf8($string)
+    {
+        return htmlspecialchars_decode(htmlspecialchars(trim($string), ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);
     }
 }
