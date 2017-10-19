@@ -582,7 +582,9 @@ print "second message to stdout\n";'
             '<?php
 echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
-sleep(5);
+sleep(2);
+print "\n"; // test an empty message
+sleep(2);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
