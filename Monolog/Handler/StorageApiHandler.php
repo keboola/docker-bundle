@@ -82,7 +82,9 @@ class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
     {
         $this->initStorageApiClient();
 
-        if (!$this->storageApiClient || ($this->verbosity[$record['level']] == self::VERBOSITY_NONE)) {
+        if (!$this->storageApiClient || ($this->verbosity[$record['level']] == self::VERBOSITY_NONE) ||
+            empty($record['message'])
+        ) {
             return false;
         }
 
