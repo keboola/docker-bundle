@@ -175,7 +175,7 @@ echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
 sleep(5);
 error_log("second message to stderr\n");
-print "second message to stdout\n";'
+print "second message to stdout";'
         );
         $container = $this->getContainerDummyLogger(
             $this->getImageConfiguration(),
@@ -187,8 +187,8 @@ print "second message to stdout\n";'
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr", $err);
+        $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
+        $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
@@ -201,10 +201,10 @@ print "second message to stdout\n";'
         $this->assertEquals(4, count($records));
         $this->assertTrue($containerHandler->hasErrorRecords());
         $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
-        $this->assertTrue($containerHandler->hasInfo("second message to stdout"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr"));
-        $this->assertTrue($containerHandler->hasError("second message to stderr"));
+        $this->assertTrue($containerHandler->hasInfo("first message to stdout\n"));
+        $this->assertTrue($containerHandler->hasInfo("second message to stdout\n"));
+        $this->assertTrue($containerHandler->hasError("first message to stderr\n"));
+        $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
