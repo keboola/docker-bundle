@@ -187,8 +187,8 @@ print "second message to stdout\n";'
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout\n", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr\n\n", $err);
+        $this->assertEquals("first message to stdout\nsecond message to stdout", $out);
+        $this->assertEquals("first message to stderr\nsecond message to stderr", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
@@ -201,10 +201,10 @@ print "second message to stdout\n";'
         $this->assertEquals(4, count($records));
         $this->assertTrue($containerHandler->hasErrorRecords());
         $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasInfo("first message to stdout\n"));
-        $this->assertTrue($containerHandler->hasInfo("second message to stdout\n"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr\n"));
-        $this->assertTrue($containerHandler->hasError("second message to stderr\n\n"));
+        $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
+        $this->assertTrue($containerHandler->hasInfo("second message to stdout"));
+        $this->assertTrue($containerHandler->hasError("first message to stderr"));
+        $this->assertTrue($containerHandler->hasError("second message to stderr"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
@@ -425,10 +425,10 @@ print "second message to stdout\n";'
         $records = $handler->getRecords();
         $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals("Client finished\n", $out);
+        $this->assertEquals("Client finished", $out);
         $records = $containerHandler->getRecords();
         $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasInfo("Client finished\n"));
+        $this->assertTrue($containerHandler->hasInfo("Client finished"));
         $this->assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
         $this->assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
     }
@@ -607,12 +607,12 @@ print "second message to stdout\n";'
         }
         $this->assertCount(2, $error);
         sort($error);
-        $this->assertEquals("first message to stderr\n", $error[0]);
-        $this->assertEquals("second message to stderr\n\n", $error[1]);
+        $this->assertEquals("first message to stderr", $error[0]);
+        $this->assertEquals("second message to stderr", $error[1]);
         sort($info);
         $this->assertCount(2, $info);
-        $this->assertEquals("first message to stdout\n", $info[0]);
-        $this->assertEquals("second message to stdout\n", $info[1]);
+        $this->assertEquals("first message to stdout", $info[0]);
+        $this->assertEquals("second message to stdout", $info[1]);
     }
 
     public function testRunnerLogs()
