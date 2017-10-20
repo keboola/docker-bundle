@@ -1,6 +1,9 @@
 <?php
 namespace Keboola\DockerBundle\Job;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinitionParser;
+use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\DockerBundle\Encryption\ComponentWrapper;
@@ -116,9 +119,8 @@ class Executor extends BaseExecutor
             $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
         }
         $params = $job->getParams();
-        $containerId = null;
-        $state = [];
-        $configId = null;
+
+        $jobDefinitionParser = new JobDefinitionParser();
 
         if ($params['mode'] == 'sandbox') {
             if (empty($params["configData"]) || !is_array($params["configData"])) {
@@ -136,8 +138,13 @@ class Executor extends BaseExecutor
                 }
             }
             $component = ['data' => ['definition' => ['type' => 'dockerhub', 'uri' => 'sandbox-dummy-wont-download']]];
+            $jobDefinitionParser->parseConfigData(new Component($component), $configData);
         } else {
             $component = $this->getComponent($params["component"]);
+            if (!empty($params['tag'])) {
+                $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
+                $component['data']['definition']['tag'] = $params['tag'];
+            }
 
             if (!$this->storageApi->getRunId()) {
                 $this->storageApi->setRunId($this->storageApi->generateRunId());
@@ -145,18 +152,17 @@ class Executor extends BaseExecutor
 
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
-                $configData = $params["configData"];
+                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"]);
             } else {
                 // Read config from storage
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-                    $this->logger->notice("Using configuration id: " . $configuration['id'] . ' version:' . $configuration['version']);
+
                     if (in_array("encrypt", $component["flags"])) {
-                        $configData = $this->encryptor->decrypt($configuration["configuration"]);
+                        $jobDefinitionParser->parseConfig(new Component($component), $this->encryptor->decrypt($configuration));
                     } else {
-                        $configData = $configuration["configuration"];
+                        $jobDefinitionParser->parseConfig(new Component($component), $configuration);
                     }
-                    $state = $configuration["state"];
                 } catch (ClientException $e) {
                     throw new UserException(
                         "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
@@ -165,19 +171,13 @@ class Executor extends BaseExecutor
                 }
             }
         }
-        if ($params && isset($params["config"])) {
-            $configId = $params['config'];
-        } else {
-            $configId = null;
-        }
-        if (!empty($params['tag'])) {
-            $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
-            $component['data']['definition']['tag'] = $params['tag'];
-        }
-        $output = $this->runner->run($component, $configId, $configData, $state, 'run', $params['mode'], $job->getId());
+
+        $outputs = $this->runner->run($jobDefinitionParser->getJobDefinitions(), 'run', $params['mode'], $job->getId());
         return [
             "message" => "Component processing finished.",
-            "images" => $output->getImages()
+            "images" => array_map(function (Output $output) {
+                return $output->getImages();
+            }, $outputs)
         ];
     }
 

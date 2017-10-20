@@ -15,22 +15,14 @@ class Output
     private $output;
 
     /**
-     * Add image digests
-     * @param int $priority
-     * @param string $imageId
-     * @param array $imageDigests
+     * Output constructor.
+     *
+     * @param array $images
+     * @param string|null $output
      */
-    public function addImages($priority, $imageId, $imageDigests)
+    public function __construct(array $images = [], $output = null)
     {
-        $this->images[$priority] = ['id' => $imageId, 'digests' => $imageDigests];
-    }
-
-    /**
-     * Add output of process
-     * @param $output
-     */
-    public function addProcessOutput($output)
-    {
+        $this->images = $images;
         $this->output = $output;
     }
 

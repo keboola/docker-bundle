@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\Csv\CsvFile;
 use Keboola\InputMapping\Configuration\Table\Manifest\Adapter as TableAdapter;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Runner\Output;
 
@@ -8,15 +8,16 @@ class OutputTest extends \PHPUnit_Framework_TestCase
 {
     public function testAccessors()
     {
-        $output = new Output();
-        $output->addImages(0, 'apples', ['foo', 'baz']);
-        $output->addImages(10, 'oranges', ['bar']);
-        $output->addProcessOutput('bazBar');
+        $images = [
+            ['id' => 'apples', 'digests' => ['foo', 'baz']],
+            ['id' => 'oranges', 'digests' => ['bar']]
+        ];
+        $output = new Output($images, 'bazBar');
         self::assertEquals('bazBar', $output->getProcessOutput());
         self::assertEquals(
             [
                 0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
-                10 => ['id' => 'oranges', 'digests' => ['bar']]
+                1 => ['id' => 'oranges', 'digests' => ['bar']]
             ],
             $output->getImages()
         );

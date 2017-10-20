@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b638af0f4666a1012d8ab821f5a30da9",
+    "content-hash": "a0bdd0d54e501291c853edfac5b6f469",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.36.28",
+            "version": "3.36.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "65ca98c303ea1489b2719b6d892d800dd604d4b2"
+                "reference": "356d36a46e5cfd2f061fa33a5604fa8ab7acf4f2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/65ca98c303ea1489b2719b6d892d800dd604d4b2",
-                "reference": "65ca98c303ea1489b2719b6d892d800dd604d4b2",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/356d36a46e5cfd2f061fa33a5604fa8ab7acf4f2",
+                "reference": "356d36a46e5cfd2f061fa33a5604fa8ab7acf4f2",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-10-17T19:51:40+00:00"
+            "time": "2017-10-19T17:42:39+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -3958,16 +3958,16 @@
         },
         {
             "name": "symfony/swiftmailer-bundle",
-            "version": "v2.6.3",
+            "version": "v2.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/swiftmailer-bundle.git",
-                "reference": "11555c338f3c367b0a1bd2f024a53aa813f4ce00"
+                "reference": "c4808f5169efc05567be983909d00f00521c53ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/swiftmailer-bundle/zipball/11555c338f3c367b0a1bd2f024a53aa813f4ce00",
-                "reference": "11555c338f3c367b0a1bd2f024a53aa813f4ce00",
+                "url": "https://api.github.com/repos/symfony/swiftmailer-bundle/zipball/c4808f5169efc05567be983909d00f00521c53ec",
+                "reference": "c4808f5169efc05567be983909d00f00521c53ec",
                 "shasum": ""
             },
             "require": {
@@ -4013,7 +4013,7 @@
             ],
             "description": "Symfony SwiftmailerBundle",
             "homepage": "http://symfony.com",
-            "time": "2017-07-22T07:18:13+00:00"
+            "time": "2017-10-19T01:06:41+00:00"
         },
         {
             "name": "symfony/symfony",

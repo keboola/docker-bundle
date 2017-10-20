@@ -68,7 +68,11 @@ class UsageFile
             $usage = $this->adapter->readFromFile($usageFileName);
             $job = $this->jobMapper->get($this->jobId);
             if ($job !== null) {
-                $job = $job->setUsage($usage);
+                $currentUsage = $job->getUsage();
+                foreach ($usage as $usageItem) {
+                    $currentUsage[] = $usageItem;
+                }
+                $job = $job->setUsage($currentUsage);
                 $this->jobMapper->update($job);
             } else {
                 throw new ApplicationException('Job not found', null, ['jobId' => $this->jobId]);

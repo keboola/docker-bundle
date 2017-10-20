@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
@@ -31,6 +32,11 @@ class StateFile
     private $configurationId;
 
     /**
+     * @var string
+     */
+    private $configurationRowId;
+
+    /**
      * @var array
      */
     private $state;
@@ -44,14 +50,16 @@ class StateFile
         $dataDirectory,
         Client $storageClient,
         array $state,
+        $format,
         $componentId,
         $configurationId,
-        $format
+        $configurationRowId = null
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->storageClient = $storageClient;
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
+        $this->configurationRowId = $configurationRowId;
         $this->state = $state;
         $this->format = $format;
     }
@@ -88,8 +96,15 @@ class StateFile
             $configuration = new Configuration();
             $configuration->setComponentId($this->componentId);
             $configuration->setConfigurationId($this->configurationId);
-            $configuration->setState($currentState);
-            $components->updateConfiguration($configuration);
+            if ($this->configurationRowId) {
+                $configurationRow = new ConfigurationRow($configuration);
+                $configurationRow->setRowId($this->configurationRowId);
+                $configurationRow->setState($currentState);
+                $components->updateConfigurationRow($configurationRow);
+            } else {
+                $configuration->setState($currentState);
+                $components->updateConfiguration($configuration);
+            }
         }
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Service\Runner;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
@@ -66,13 +68,12 @@ class ActionController extends BaseApiController
         $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
         $cryptoWrapper->setComponentId($request->get("component"));
 
-        $configData = $requestJsonData["configData"];
+        $configData = isset($requestJsonData["configData"]) ? $requestJsonData["configData"] : [];
         if (in_array("encrypt", $component["flags"])) {
             $configData = $this->container->get('syrup.object_encryptor')->encrypt($configData);
             $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
         }
 
-        $state = [];
         if (!$this->storageApi->getRunId()) {
             $this->storageApi->setRunId($this->storageApi->generateRunId());
         }
@@ -84,9 +85,10 @@ class ActionController extends BaseApiController
         $runner = $this->container->get('docker_bundle.runner');
         $runner->setFeatures($tokenInfo["owner"]["features"]);
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
-        $output = $runner->run($component, null, $configData, $state, $request->get("action"), 'run', 0);
+        $jobDefinition = new JobDefinition($configData, new Component($component));
+        $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0);
 
-        $message = $output->getProcessOutput();
+        $message = $outputs[0]->getProcessOutput();
         if ($message == '' || !$message) {
             throw new UserException("No response from component.");
         }

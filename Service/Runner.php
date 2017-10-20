@@ -3,8 +3,8 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
@@ -28,7 +28,6 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
-use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Runner
 {
@@ -58,31 +57,6 @@ class Runner
     private $loggerService;
 
     /**
-     * @var DataDirectory
-     */
-    private $dataDirectory;
-
-    /**
-     * @var StateFile
-     */
-    private $stateFile;
-
-    /**
-     * @var ConfigFile
-     */
-    private $configFile;
-
-    /**
-     * @var DataLoaderInterface
-     */
-    private $dataLoader;
-
-    /**
-     * @var ImageCreator
-     */
-    private $imageCreator;
-
-    /**
      * @var string
      */
     private $commandToGetHostIp;
@@ -93,13 +67,19 @@ class Runner
     private $jobMapper;
 
     /**
-     * @var UsageFile
-     */
-    private $usageFile;
-    /**
      * @var array
      */
-    protected $features = [];
+    private $features = [];
+
+    /**
+     * @var int
+     */
+    private $minLogPort;
+
+    /**
+     * @var int
+     */
+    private $maxLogPort;
 
     /**
      * Runner constructor.
@@ -144,16 +124,17 @@ class Runner
      * @param Image $image
      * @param $containerId
      * @param RunCommandOptions $runCommandOptions
+     * @param DataDirectory $dataDirectory
      * @return Container
      */
-    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions)
+    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory)
     {
         return new Container(
             $containerId,
             $image,
             $this->loggerService->getLog(),
             $this->loggerService->getContainerLog(),
-            $this->dataDirectory->getDataDir(),
+            $dataDirectory->getDataDir(),
             $this->commandToGetHostIp,
             $this->minLogPort,
             $this->maxLogPort,
@@ -189,40 +170,70 @@ class Runner
     }
 
     /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
+     * @param JobDefinition $jobDefinition
      * @param string $action
      * @param string $mode
      * @param string $jobId
      * @return Output
      */
-    public function run(array $componentData, $configId, array $configData, array $state, $action, $mode, $jobId)
+    public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
     {
-        $component = new Component($componentData);
-        $this->loggerService->getLog()->info("Running Component " . $component->getId(), $configData);
+        $this->loggerService->getLog()->notice(
+            "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
+            . ", rowId: " . $jobDefinition->getRowId()
+        );
+        $component = $jobDefinition->getComponent();
+        $this->loggerService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
         $this->loggerService->setComponentId($component->getId());
 
-        $sandboxed = $mode != 'run';
-        try {
-            $configData = (new Configuration\Container())->parse(['container' => $configData]);
-        } catch (InvalidConfigurationException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-        $configData['storage'] = empty($configData['storage']) ? [] : $configData['storage'];
-        $configData['processors'] = empty($configData['processors']) ? [] : $configData['processors'];
-        $configData['parameters'] = empty($configData['parameters']) ? [] : $configData['parameters'];
+        $configData = $jobDefinition->getConfiguration();
 
-        $this->dataDirectory = new DataDirectory($this->temp->getTmpFolder(), $this->loggerService->getLog());
-        $this->stateFile = new StateFile(
-            $this->dataDirectory->getDataDir(),
+        $temp = new Temp($this->temp->getTmpFolder());
+        $temp->initRunFolder();
+        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggerService->getLog());
+        $stateFile = new StateFile(
+            $dataDirectory->getDataDir(),
             $this->storageClient,
-            $state,
+            $jobDefinition->getState(),
+            $component->getConfigurationFormat(),
             $component->getId(),
-            $configId,
-            $component->getConfigurationFormat()
+            $jobDefinition->getConfigId(),
+            $jobDefinition->getRowId()
         );
+
+        $usageFile = new UsageFile(
+            $dataDirectory->getDataDir(),
+            $component->getConfigurationFormat(),
+            $this->jobMapper,
+            $jobId
+        );
+
+        if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
+            $dataLoader = new DataLoader(
+                $this->storageClient,
+                $this->loggerService->getLog(),
+                $dataDirectory->getDataDir(),
+                $configData['storage'],
+                $component,
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
+            );
+        } else {
+            $dataLoader = new NullDataLoader(
+                $this->storageClient,
+                $this->loggerService->getLog(),
+                $dataDirectory->getDataDir(),
+                $configData['storage'],
+                $component,
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
+            );
+        }
+        $dataLoader->setFeatures($this->features);
+
+        $sandboxed = $mode != 'run';
+        $configData = $jobDefinition->getConfiguration();
+
         $authorization = new Authorization($this->oauthClient, $this->encryptor, $component->getId(), $sandboxed);
 
         if ($sandboxed) {
@@ -231,8 +242,8 @@ class Runner
         } else {
             $imageParameters = $this->encryptor->decrypt($component->getImageParameters());
         }
-        $this->configFile = new ConfigFile(
-            $this->dataDirectory->getDataDir(),
+        $configFile = new ConfigFile(
+            $dataDirectory->getDataDir(),
             $imageParameters,
             $authorization,
             $action,
@@ -240,26 +251,28 @@ class Runner
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
-            $this->dataLoader = new DataLoader(
+            $dataLoader = new DataLoader(
                 $this->storageClient,
                 $this->loggerService->getLog(),
-                $this->dataDirectory->getDataDir(),
+                $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $configId
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         } else {
-            $this->dataLoader = new NullDataLoader(
+            $dataLoader = new NullDataLoader(
                 $this->storageClient,
                 $this->loggerService->getLog(),
-                $this->dataDirectory->getDataDir(),
+                $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $configId
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId()
             );
         }
-        $this->dataLoader->setFeatures($this->features);
-        $this->imageCreator = new ImageCreator(
+        $dataLoader->setFeatures($this->features);
+        $imageCreator = new ImageCreator(
             $this->encryptor,
             $this->loggerService->getLog(),
             $this->storageClient,
@@ -267,52 +280,78 @@ class Runner
             $configData
         );
 
-        $this->usageFile = new UsageFile(
-            $this->dataDirectory->getDataDir(),
-            $component->getConfigurationFormat(),
-            $this->jobMapper,
-            $jobId
-        );
-
         switch ($mode) {
             case 'run':
-                $componentOutput = $this->runComponent($jobId, $configId, $component);
+                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $componentOutput = $this->sandboxComponent($jobId, $configData, $mode, $configId, $component);
+                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
         }
-        return $componentOutput;
+        return $output;
+    }
+
+    /**
+     * @param JobDefinition[] $jobDefinitions
+     * @param $action
+     * @param $mode
+     * @param $jobId
+     * @return Output[]
+     */
+    public function run(array $jobDefinitions, $action, $mode, $jobId)
+    {
+        if (count($jobDefinitions) > 1 && $mode != 'run') {
+            throw new UserException('Only 1 row allowed for sandbox calls.');
+        }
+        $outputs = [];
+        foreach ($jobDefinitions as $jobDefinition) {
+            if ($jobDefinition->isDisabled()) {
+                $this->loggerService->getLog()->notice(
+                    "Skipping configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
+                    . ", rowId: " . $jobDefinition->getRowId()
+                );
+                continue;
+            }
+            $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
+        }
+        return $outputs;
     }
 
     /**
      * @param $jobId
      * @param $configId
+     * @param $rowId
      * @param Component $component
+     * @param UsageFile $usageFile
+     * @param DataLoaderInterface $dataLoader
+     * @param DataDirectory $dataDirectory
+     * @param StateFile $stateFile
+     * @param ImageCreator $imageCreator
+     * @param ConfigFile $configFile
      * @return Output
      */
-    public function runComponent($jobId, $configId, Component $component)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         // initialize
-        $this->dataDirectory->createDataDir();
-        $this->stateFile->createStateFile();
-        $this->dataLoader->loadInputData();
+        $dataDirectory->createDataDir();
+        $stateFile->createStateFile();
+        $dataLoader->loadInputData();
 
-        $componentOutput = $this->runImages($jobId, $configId, $component);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
 
         // finalize
-        $this->dataLoader->storeOutput();
+        $dataLoader->storeOutput();
         if ($this->shouldStoreState($component->getId(), $configId)) {
-            $this->stateFile->storeStateFile();
+            $stateFile->storeStateFile();
         }
 
-        $this->dataDirectory->dropDataDir();
+        $dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
-        return $componentOutput;
+        return $output;
     }
 
     /**
@@ -321,42 +360,54 @@ class Runner
      * @param $mode
      * @param $configId
      * @param Component $component
+     * @param UsageFile $usageFile
+     * @param DataLoaderInterface $dataLoader
+     * @param DataDirectory $dataDirectory
+     * @param StateFile $stateFile
+     * @param ImageCreator $imageCreator
+     * @param ConfigFile $configFile
      * @return Output
      */
-    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component)
+    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
     {
         // initialize
-        $this->dataDirectory->createDataDir();
-        $this->stateFile->createStateFile();
-        $this->dataLoader->loadInputData();
+        $dataDirectory->createDataDir();
+        $stateFile->createStateFile();
+        $dataLoader->loadInputData();
 
         if ($mode == 'dry-run') {
-            $componentOutput = $this->runImages($jobId, $configId, $component);
+            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
         } else {
-            $this->configFile->createConfigFile($configData);
-            $componentOutput = new Output();
+            $configFile->createConfigFile($configData);
+            $output = new Output();
         }
 
-        $this->dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
+        $dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
         // finalize
-        $this->dataDirectory->dropDataDir();
-        return $componentOutput;
+        $dataDirectory->dropDataDir();
+        return $output;
     }
 
     /**
-     * @param $jobId
-     * @param $configId
+     * @param string $jobId
+     * @param string $configId
+     * @param string $rowId
      * @param Component $component
+     * @param UsageFile $usageFile
+     * @param DataDirectory $dataDirectory
+     * @param ImageCreator $imageCreator
+     * @param ConfigFile $configFile
      * @return Output
      */
-    private function runImages($jobId, $configId, Component $component)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile)
     {
-        $componentOutput = new Output();
-        $images = $this->imageCreator->prepareImages();
+        $images = $imageCreator->prepareImages();
         $this->loggerService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
+        $imageDigests = [];
+        $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
                 $this->loggerService->getLog()->info("Running processor " . $image->getFullImageId());
@@ -369,12 +420,15 @@ class Runner
                 $this->storageClient->getRunId(),
                 $this->storageClient->getApiUrl()
             );
-            $componentOutput->addImages($priority, $image->getFullImageId(), $image->getImageDigests());
-            $this->configFile->createConfigFile($image->getConfigData());
+            $imageDigests[] = [
+                'id' => $image->getFullImageId(),
+                'digests' => $image->getImageDigests()
+            ];
+            $configFile->createConfigFile($image->getConfigData());
 
-            $containerIdParts = [];
             $containerIdParts[] = $jobId;
             $containerIdParts[] = $this->storageClient->getRunId() ?: 'norunid';
+            $containerIdParts[] = $rowId;
             $containerIdParts[] = $priority;
             $containerIdParts[] = $image->getSourceComponent()->getSanitizedComponentId();
 
@@ -390,28 +444,30 @@ class Runner
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
+                        'com.keboola.docker-runner.rowId=' . $rowId,
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts)
                     ],
                     $environment->getEnvironmentVariables()
-                )
+                ),
+                $dataDirectory
             );
             try {
                 $process = $container->run();
                 if ($image->isMain()) {
-                    $componentOutput->addProcessOutput($process->getOutput());
+                    $outputMessage = $process->getOutput();
                 }
             } finally {
-                $this->dataDirectory->normalizePermissions();
+                $dataDirectory->normalizePermissions();
                 if ($image->isMain()) {
-                    $this->usageFile->storeUsage();
+                    $usageFile->storeUsage();
                 }
             }
             $counter++;
             if ($counter < count($images)) {
-                $this->dataDirectory->moveOutputToInput();
+                $dataDirectory->moveOutputToInput();
             }
         }
-        return $componentOutput;
+        return new Output($imageDigests, $outputMessage);
     }
 
     /**
