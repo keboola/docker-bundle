@@ -582,7 +582,9 @@ print "second message to stdout\n";'
             '<?php
 echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
-sleep(5);
+sleep(2);
+print "\n"; // test an empty message
+sleep(2);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
@@ -651,6 +653,7 @@ print "second message to stdout\n";'
         $logService->getLog()->info("Test Info");
         $logService->getLog()->warn("Test Warn");
         $logService->getLog()->debug("Test Debug");
+        $logService->getLog()->warn('');
 
         sleep(5); // give storage a little timeout to realize that events are in
         $events = $sapiService->getClient()->listEvents(
