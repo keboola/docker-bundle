@@ -15,7 +15,7 @@ class Process extends \Symfony\Component\Process\Process
      */
     public function getOutput()
     {
-        return Process::sanitizeUtf8(parent::getOutput());
+        return \Keboola\Utils\sanitizeUtf8(parent::getOutput());
     }
 
     /**
@@ -23,7 +23,7 @@ class Process extends \Symfony\Component\Process\Process
      */
     public function getErrorOutput()
     {
-        return Process::sanitizeUtf8(parent::getErrorOutput());
+        return \Keboola\Utils\sanitizeUtf8(parent::getErrorOutput());
     }
 
     /**
@@ -34,18 +34,9 @@ class Process extends \Symfony\Component\Process\Process
     {
         $myCallback = function ($type, $buffer) use ($callback) {
             if ($callback) {
-                $callback($type, Process::sanitizeUtf8($buffer));
+                $callback($type, \Keboola\Utils\sanitizeUtf8($buffer));
             }
         };
         return parent::run($myCallback);
-    }
-
-    /**
-     * @param $string
-     * @return string
-     */
-    public static function sanitizeUtf8($string)
-    {
-        return htmlspecialchars_decode(htmlspecialchars(trim($string), ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);
     }
 }

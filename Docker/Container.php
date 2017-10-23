@@ -289,8 +289,8 @@ class Container
             }
         }
 
-        $errorOutput = $this->sanitizeUtf8($process->getErrorOutput());
-        $output = $this->sanitizeUtf8($process->getOutput());
+        $errorOutput = \Keboola\Utils\sanitizeUtf8($process->getErrorOutput());
+        $output = \Keboola\Utils\sanitizeUtf8($process->getOutput());
 
         $message = $errorOutput;
         if (!$message) {
@@ -446,17 +446,5 @@ class Container
                 $data
             );
         }
-    }
-
-    /**
-     *
-     * taken from https://api.nette.org/2.4/source-Utils.Strings.php.html#34-43
-     *
-     * @param $string
-     * @return string
-     */
-    private function sanitizeUtf8($string)
-    {
-        return htmlspecialchars_decode(htmlspecialchars(trim($string), ENT_NOQUOTES | ENT_IGNORE, 'UTF-8'), ENT_NOQUOTES);
     }
 }
