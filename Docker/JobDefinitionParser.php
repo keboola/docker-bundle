@@ -12,13 +12,18 @@ class JobDefinitionParser
     /**
      * @param Component $component
      * @param array $configData
+     * @param null $configId
      */
-    public function parseConfigData(Component $component, array $configData)
+    public function parseConfigData(Component $component, array $configData, $configId = null)
     {
-        $jobDefinition = new JobDefinition($configData, $component);
+        $jobDefinition = new JobDefinition($configData, $component, $configId);
         $this->jobDefinitions = [$jobDefinition];
     }
 
+    /**
+     * @param Component $component
+     * @param $config
+     */
     public function parseConfig(Component $component, $config)
     {
         $this->jobDefinitions = [];

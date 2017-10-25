@@ -27,12 +27,10 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class JobExecutorInlineConfigTest extends KernelTestCase
 {
-
     /**
      * @var Client
      */
     private $client;
-
     /**
      * @var Temp
      */
@@ -40,23 +38,28 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
     private function getJobExecutor(&$encryptor, $handler = null)
     {
-        $storageApiClient = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-            'userAgent' => 'docker-bundle',
-        ]);
+        $storageApiClient = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+                'userAgent' => 'docker-bundle',
+            ]
+        );
 
         $tokenData = $storageApiClient->verifyToken();
 
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $storageServiceStub->expects($this->any())
             ->method("getClient")
-            ->will($this->returnValue($this->client));
+            ->will($this->returnValue($this->client))
+        ;
         $storageServiceStub->expects($this->any())
             ->method("getTokenData")
-            ->will($this->returnValue($tokenData));
+            ->will($this->returnValue($tokenData))
+        ;
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -67,13 +70,16 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $containerLogger->pushHandler(new NullHandler());
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $loggersServiceStub->expects($this->any())
             ->method("getLog")
-            ->will($this->returnValue($log));
+            ->will($this->returnValue($log))
+        ;
         $loggersServiceStub->expects($this->any())
             ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger));
+            ->will($this->returnValue($containerLogger))
+        ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
@@ -114,6 +120,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             $ecpWrapper
         );
         $jobExecutor->setStorageApi($this->client);
+
         return $jobExecutor;
     }
 
@@ -126,17 +133,21 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                 'configData' => [
                     'storage' => [
                         'input' => [
-                            'tables' => [[
-                                'source' => 'in.c-docker-test.source',
-                                'destination' => 'transpose.csv'
-                            ]]
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-docker-test.source',
+                                    'destination' => 'transpose.csv',
+                                ],
+                            ],
                         ],
                         'output' => [
-                            'tables' => [[
-                                'source' => 'transpose.csv',
-                                'destination' => 'out.c-docker-test.transposed'
-                            ]]
-                        ]
+                            'tables' => [
+                                [
+                                    'source' => 'transpose.csv',
+                                    'destination' => 'out.c-docker-test.transposed',
+                                ],
+                            ],
+                        ],
                     ],
                     'parameters' => [
                         'script' => [
@@ -144,40 +155,31 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                             'tdata <- t(data[, !(names(data) %in% ("name"))])',
                             'colnames(tdata) <- data[["name"]]',
                             'tdata <- data.frame(column = rownames(tdata), tdata)',
-                            'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)'
-                        ]
-                    ]
-                ]
-            ]
+                            'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
+                        ],
+                    ],
+                ],
+            ],
         ];
+
         return $data;
     }
 
+    /**
+     *
+     */
     public function setUp()
     {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]
+        );
         $this->temp = new Temp('docker');
         $this->temp->initRunFolder();
-        if ($this->client->bucketExists("in.c-docker-test")) {
-            // Delete tables
-            foreach ($this->client->listTables("in.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("in.c-docker-test");
-        }
-        if ($this->client->bucketExists("out.c-docker-test")) {
-            // Delete tables
-            foreach ($this->client->listTables("out.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-test");
+        foreach ($this->client->listBuckets() as $bucket) {
+            $this->client->dropBucket($bucket["id"], ["force" => true]);
         }
 
         // remove uploaded files
@@ -225,9 +227,12 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed', [
-            'limit' => 1000,
-        ]);
+        $csvData = $this->client->getTableDataPreview(
+            'out.c-docker-test.transposed',
+            [
+                'limit' => 1000,
+            ]
+        );
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));
@@ -260,9 +265,12 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed', [
-            'limit' => 1000,
-        ]);
+        $csvData = $this->client->getTableDataPreview(
+            'out.c-docker-test.transposed',
+            [
+                'limit' => 1000,
+            ]
+        );
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));
@@ -276,7 +284,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
     public function testSandbox()
     {
-         // Create table
+        // Create table
         if (!$this->client->tableExists("in.c-docker-test.source")) {
             $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
             $csv->writeRow(['name', 'oldValue', 'newValue']);
@@ -408,13 +416,16 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $data = $this->getJobParameters();
         $data['params']['configData']['storage'] = [
             'input' => [
-                'files' => [[
-                    'query' => 'tags: toprocess AND NOT tags: downloaded',
-                    'processed_tags' => [
-                        'downloaded', 'experimental'
+                'files' => [
+                    [
+                        'query' => 'tags: toprocess AND NOT tags: downloaded',
+                        'processed_tags' => [
+                            'downloaded',
+                            'experimental',
+                        ],
                     ],
-                ]]
-            ]
+                ],
+            ],
         ];
         $data['params']['configData']['parameters'] = [
             'script' => [
@@ -425,8 +436,8 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                 "    fn <- paste0(outDirectory, file, '.csv');",
                 "    file.copy(paste0(inDirectory, file), fn);",
                 "    app\$writeFileManifest(fn, c('processed', 'docker-bundle-test'))",
-                "}"
-            ]
+                "}",
+            ],
         ];
         $jobExecutor = $this->getJobExecutor($encryptor);
         $job = new Job($encryptor, $data);
