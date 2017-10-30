@@ -16,7 +16,6 @@ use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
-use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -29,20 +28,12 @@ class UsageFileTest extends KernelTestCase
      */
     private $storageApiClient;
 
-    /**
-     * @var Temp
-     */
-    private $temp;
-
     public function setUp()
     {
         $this->storageApiClient = new Client([
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
-
-        $this->temp = new Temp('functional-usage-file-test');
-        $this->temp->initRunFolder();
 
         self::bootKernel();
     }
@@ -84,7 +75,6 @@ class UsageFileTest extends KernelTestCase
         /** @var LoggersService $loggersServiceStub */
         /** @var StorageApiService $storageServiceStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
@@ -198,7 +188,6 @@ CMD
         /** @var LoggersService $loggersServiceStub */
         /** @var StorageApiService $storageServiceStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

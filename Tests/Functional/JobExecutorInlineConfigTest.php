@@ -99,7 +99,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

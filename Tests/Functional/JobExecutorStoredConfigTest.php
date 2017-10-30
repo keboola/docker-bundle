@@ -29,6 +29,7 @@ class JobExecutorStoredConfigTest extends KernelTestCase
      * @var Client
      */
     private $client;
+
     /**
      * @var Temp
      */
@@ -97,7 +98,6 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

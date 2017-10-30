@@ -16,17 +16,12 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
-use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -36,10 +31,6 @@ class RunnerConfigRowsTest extends KernelTestCase
      * @var Client
      */
     private $client;
-    /**
-     * @var Temp
-     */
-    private $temp;
 
     protected function clearBuckets()
     {
@@ -76,8 +67,6 @@ class RunnerConfigRowsTest extends KernelTestCase
                 'token' => STORAGE_API_TOKEN,
             ]
         );
-        $this->temp = new Temp('docker');
-        $this->temp->initRunFolder();
         $this->clearBuckets();
 
         // Create buckets
@@ -156,7 +145,6 @@ class RunnerConfigRowsTest extends KernelTestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

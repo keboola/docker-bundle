@@ -83,7 +83,6 @@ class Runner
 
     /**
      * Runner constructor.
-     * @param Temp $temp
      * @param ObjectEncryptor $encryptor
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
@@ -94,7 +93,6 @@ class Runner
      * @param int $maxLogPort
      */
     public function __construct(
-        Temp $temp,
         ObjectEncryptor $encryptor,
         StorageApiService $storageApi,
         LoggersService $loggersService,
@@ -106,7 +104,6 @@ class Runner
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
-        $this->temp = $temp;
         $this->encryptor = $encryptor;
         $this->storageClient = $storageApi->getClient();
         $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
@@ -188,7 +185,7 @@ class Runner
 
         $configData = $jobDefinition->getConfiguration();
 
-        $temp = new Temp($this->temp->getTmpFolder());
+        $temp = new Temp("docker");
         $temp->initRunFolder();
         $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggerService->getLog());
         $stateFile = new StateFile(
