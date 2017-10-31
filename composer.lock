@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "9e34a23c18ee362a4f50374bb64f7601",
+    "content-hash": "365460582cecf14dfa3c3b331ec480ae",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -651,23 +651,23 @@
         },
         {
             "name": "doctrine/doctrine-migrations-bundle",
-            "version": "v1.2.1",
+            "version": "v1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/DoctrineMigrationsBundle.git",
-                "reference": "6276139e0b913a4e5120fc36bb5b0eae8ac549bc"
+                "reference": "8ddb4ad9207945c3e3f6287ee2485a51f249358b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/DoctrineMigrationsBundle/zipball/6276139e0b913a4e5120fc36bb5b0eae8ac549bc",
-                "reference": "6276139e0b913a4e5120fc36bb5b0eae8ac549bc",
+                "url": "https://api.github.com/repos/doctrine/DoctrineMigrationsBundle/zipball/8ddb4ad9207945c3e3f6287ee2485a51f249358b",
+                "reference": "8ddb4ad9207945c3e3f6287ee2485a51f249358b",
                 "shasum": ""
             },
             "require": {
                 "doctrine/doctrine-bundle": "~1.0",
                 "doctrine/migrations": "^1.1",
                 "php": ">=5.4.0",
-                "symfony/framework-bundle": "~2.3|~3.0"
+                "symfony/framework-bundle": "~2.7|~3.3|~4.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "~4.8"
@@ -675,7 +675,7 @@
             "type": "symfony-bundle",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.2-dev"
+                    "dev-master": "1.3-dev"
                 }
             },
             "autoload": {
@@ -708,7 +708,7 @@
                 "migrations",
                 "schema"
             ],
-            "time": "2016-12-05T18:36:37+00:00"
+            "time": "2017-10-30T19:37:38+00:00"
         },
         {
             "name": "doctrine/inflector",
@@ -1773,17 +1773,17 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "2.1.0",
+            "version": "3.0.0",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "476ec0ae547191c3d4bac247b6c2830583715342"
+                "reference": "021e7c4cbec3284b44eef0d3e453abc1539b03f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/476ec0ae547191c3d4bac247b6c2830583715342",
-                "reference": "476ec0ae547191c3d4bac247b6c2830583715342",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/021e7c4cbec3284b44eef0d3e453abc1539b03f3",
+                "reference": "021e7c4cbec3284b44eef0d3e453abc1539b03f3",
                 "shasum": ""
             },
             "require": {
@@ -1819,7 +1819,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2017-10-08T18:43:32+00:00"
+            "time": "2017-10-31T10:44:37+00:00"
         },
         {
             "name": "keboola/php-encryption",
