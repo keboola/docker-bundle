@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "365460582cecf14dfa3c3b331ec480ae",
+    "content-hash": "4f30b8fb480067694dab231aff4d6c6d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1734,21 +1734,21 @@
         },
         {
             "name": "keboola/oauth-v2-php-client",
-            "version": "2.1.0",
+            "version": "2.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/oauth-v2-php-client.git",
-                "reference": "db794d441ed2f3535a2781c3a53d610360d602af"
+                "reference": "04fb8a0d887cf6d0e4531912e28f5e21999e4387"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/db794d441ed2f3535a2781c3a53d610360d602af",
-                "reference": "db794d441ed2f3535a2781c3a53d610360d602af",
+                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/04fb8a0d887cf6d0e4531912e28f5e21999e4387",
+                "reference": "04fb8a0d887cf6d0e4531912e28f5e21999e4387",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.1",
-                "keboola/php-utils": "~1.0.0"
+                "keboola/php-utils": "~2.0"
             },
             "require-dev": {
                 "codeclimate/php-test-reporter": "~0.2",
@@ -1769,7 +1769,7 @@
                 }
             ],
             "description": "Keboola OAuth v2 API Client",
-            "time": "2017-03-02T12:38:24+00:00"
+            "time": "2017-10-23T10:25:19+00:00"
         },
         {
             "name": "keboola/output-mapping",
@@ -1920,16 +1920,16 @@
         },
         {
             "name": "keboola/php-utils",
-            "version": "1.0.3",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/php-utils.git",
-                "reference": "509010a62ee19c6a2634c539d82e119df8db9c55"
+                "reference": "0070b23f6103b0c8f73863043394cb4c01882348"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/php-utils/zipball/509010a62ee19c6a2634c539d82e119df8db9c55",
-                "reference": "509010a62ee19c6a2634c539d82e119df8db9c55",
+                "url": "https://api.github.com/repos/keboola/php-utils/zipball/0070b23f6103b0c8f73863043394cb4c01882348",
+                "reference": "0070b23f6103b0c8f73863043394cb4c01882348",
                 "shasum": ""
             },
             "require": {
@@ -1983,7 +1983,7 @@
             "keywords": [
                 "utility"
             ],
-            "time": "2017-06-05T15:10:59+00:00"
+            "time": "2017-10-23T10:38:15+00:00"
         },
         {
             "name": "keboola/storage-api-client",
@@ -2030,16 +2030,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "7.0.0",
+            "version": "7.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "9b7a6e84339ac888fe51f309217a61e5fe9f706c"
+                "reference": "1211fc7554f6a70256d1e3ba0ddee0f19312c282"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/9b7a6e84339ac888fe51f309217a61e5fe9f706c",
-                "reference": "9b7a6e84339ac888fe51f309217a61e5fe9f706c",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/1211fc7554f6a70256d1e3ba0ddee0f19312c282",
+                "reference": "1211fc7554f6a70256d1e3ba0ddee0f19312c282",
                 "shasum": ""
             },
             "require": {
@@ -2053,7 +2053,7 @@
                 "keboola/debug-log-uploader": "^1.0",
                 "keboola/php-encryption": "~0.2",
                 "keboola/php-temp": "~0.1.0",
-                "keboola/php-utils": "~1.0.0",
+                "keboola/php-utils": "~2.0",
                 "keboola/storage-api-client": "^7.0",
                 "php": "~5.6|^7.0",
                 "sensio/distribution-bundle": "~4.0.4",
@@ -2095,7 +2095,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2017-08-23T06:04:16+00:00"
+            "time": "2017-10-23T11:47:10+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
