@@ -15,7 +15,7 @@ class Process extends \Symfony\Component\Process\Process
      */
     public function getOutput()
     {
-        return \Keboola\Utils\sanitizeUtf8(parent::getOutput());
+        return trim(\Keboola\Utils\sanitizeUtf8(parent::getOutput()));
     }
 
     /**
@@ -23,7 +23,7 @@ class Process extends \Symfony\Component\Process\Process
      */
     public function getErrorOutput()
     {
-        return \Keboola\Utils\sanitizeUtf8(parent::getErrorOutput());
+        return trim(\Keboola\Utils\sanitizeUtf8(parent::getErrorOutput()));
     }
 
     /**
@@ -34,7 +34,7 @@ class Process extends \Symfony\Component\Process\Process
     {
         $myCallback = function ($type, $buffer) use ($callback) {
             if ($callback) {
-                $callback($type, \Keboola\Utils\sanitizeUtf8($buffer));
+                $callback($type, trim(\Keboola\Utils\sanitizeUtf8($buffer)));
             }
         };
         return parent::run($myCallback);

@@ -289,8 +289,8 @@ class Container
             }
         }
 
-        $errorOutput = \Keboola\Utils\sanitizeUtf8($process->getErrorOutput());
-        $output = \Keboola\Utils\sanitizeUtf8($process->getOutput());
+        $errorOutput = $process->getErrorOutput();
+        $output = $process->getOutput();
 
         $message = $errorOutput;
         if (!$message) {
