@@ -11,7 +11,8 @@ use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Exception;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\Job;
@@ -22,14 +23,14 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Filesystem\Filesystem;
 
-class JobExecutorStoredConfigTest extends KernelTestCase
+class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
 {
     /**
      * @var Client
      */
     private $client;
-
     /**
      * @var Temp
      */
@@ -52,31 +53,31 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             ->getMock()
         ;
         $storageServiceStub->expects($this->any())
-            ->method("getClient")
+            ->method('getClient')
             ->will($this->returnValue($this->client))
         ;
         $storageServiceStub->expects($this->any())
-            ->method("getTokenData")
+            ->method('getTokenData')
             ->will($this->returnValue($tokenData))
         ;
 
-        $log = new Logger("null");
+        $log = new Logger('null');
         $log->pushHandler(new NullHandler());
         if ($handler) {
             $log->pushHandler($handler);
         }
-        $containerLogger = new ContainerLogger("null");
+        $containerLogger = new ContainerLogger('null');
         $containerLogger->pushHandler(new NullHandler());
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock()
         ;
         $loggersServiceStub->expects($this->any())
-            ->method("getLog")
+            ->method('getLog')
             ->will($this->returnValue($log))
         ;
         $loggersServiceStub->expects($this->any())
-            ->method("getContainerLog")
+            ->method('getContainerLog')
             ->will($this->returnValue($containerLogger))
         ;
 
@@ -90,7 +91,7 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         $ecWrapper->setComponentId('keboola.r-transformation');
         $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
         $ecpWrapper->setComponentId('keboola.r-transformation');
-        $ecpWrapper->setProjectId($tokenData["owner"]["id"]);
+        $ecpWrapper->setProjectId($tokenData['owner']['id']);
         $encryptor->pushWrapper($ecWrapper);
         $encryptor->pushWrapper($ecpWrapper);
 
@@ -102,81 +103,93 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
-            "dummy",
+            'dummy',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
         );
+        $componentsService = new ComponentsService($storageServiceStub);
 
-        $componentsStub = $this->getMockBuilder(Components::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $componentsStub->expects($this->once())
-            ->method("getConfiguration")
-            ->with("keboola.r-transformation", "my-config")
-            ->will($this->returnValue($this->getConfiguration()))
-        ;
+        $jobExecutorMock = $this->getMockBuilder(Executor::class)
+            ->setMethods(['getComponent'])
+            ->setConstructorArgs(
+                [
+                    $loggersServiceStub->getLog(),
+                    $runner,
+                    $encryptor,
+                    $componentsService,
+                    $ecWrapper,
+                    $ecpWrapper,
+                ]
+            )
+            ->getMock();
 
-        $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $componentsServiceStub->expects($this->any())
-            ->method("getComponents")
-            ->will($this->returnValue($componentsStub))
-        ;
-
-        $jobExecutor = new Executor(
-            $loggersServiceStub->getLog(),
-            $runner,
-            $encryptor,
-            $componentsServiceStub,
-            $ecWrapper,
-            $ecpWrapper
+        $componentDefinition = array(
+            'id' => 'keboola.r-transformation',
+            'type' => 'other',
+            'name' => 'R Transformation',
+            'description' => 'Backend for R Transformations',
+            'longDescription' => null,
+            'hasUI' => false,
+            'hasRun' => false,
+            'ico32' => 'https://assets-cdn.keboola.com/developer-portal/icons/default-32.png',
+            'ico64' => 'https://assets-cdn.keboola.com/developer-portal/icons/default-64.png',
+            'data' =>
+                array(
+                    'definition' =>
+                        array(
+                            'type' => 'aws-ecr',
+                            'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation',
+                            'tag' => '1.2.4',
+                        ),
+                    'vendor' =>
+                        array(
+                            'contact' =>
+                                array(
+                                    0 => 'Keboola',
+                                    1 => 'Křižíkova 488/115, Praha, CZ',
+                                    2 => 'support@keboola.com',
+                                ),
+                        ),
+                    'configuration_format' => 'json',
+                    'network' => 'bridge',
+                    'memory' => '8192m',
+                    'process_timeout' => 21600,
+                    'forward_token' => false,
+                    'forward_token_details' => false,
+                    'default_bucket' => true,
+                    'default_bucket_stage' => 'out',
+                    'staging_storage' =>
+                        array(
+                            'input' => 'local',
+                        ),
+                ),
+            'flags' =>
+                array(
+                    0 => 'excludeFromNewList',
+                ),
+            'configurationSchema' =>
+                array(),
+            'emptyConfiguration' =>
+                array(),
+            'uiOptions' =>
+                array(),
+            'configurationDescription' => null,
+            'uri' => 'https://syrup.keboola.com/docker/keboola.r-transformation',
         );
-        $jobExecutor->setStorageApi($this->client);
+        $jobExecutorMock
+            ->expects($this->once())
+            ->method('getComponent')
+            ->will(
+                $this->returnValue(
+                    $componentDefinition
+                )
+            )
+        ;
 
-        return $jobExecutor;
-    }
+        $jobExecutorMock->setStorageApi($this->client);
 
-    private function getConfiguration()
-    {
-        return [
-            'id' => 'my-config',
-            'version' => 1,
-            'state' => [],
-            'rows' => [],
-            'configuration' => [
-                'storage' => [
-                    'input' => [
-                        'tables' => [
-                            [
-                                'source' => 'in.c-docker-test.source',
-                                'destination' => 'transpose.csv',
-                            ],
-                        ],
-                    ],
-                    'output' => [
-                        'tables' => [
-                            [
-                                'source' => 'transpose.csv',
-                                'destination' => 'out.c-docker-test.transposed',
-                            ],
-                        ],
-                    ],
-                ],
-                'parameters' => [
-                    'script' => [
-                        'data <- read.csv(file = "/data/in/tables/transpose.csv");',
-                        'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                        'colnames(tdata) <- data[["name"]]',
-                        'tdata <- data.frame(column = rownames(tdata), tdata)',
-                        'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
-                    ],
-                ],
-            ],
-        ];
+        return $jobExecutorMock;
     }
 
     private function getJobParameters()
@@ -185,7 +198,28 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             'params' => [
                 'component' => 'keboola.r-transformation',
                 'mode' => 'run',
-                'config' => 'my-config',
+                'config' => 'docker-test',
+                'configData' => [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-docker-test.source',
+                                    'destination' => 'transpose.csv',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'script' => [
+                            'data <- read.csv(file = "/data/in/tables/transpose.csv");',
+                            'tdata <- t(data[, !(names(data) %in% ("name"))])',
+                            'colnames(tdata) <- data[["name"]]',
+                            'tdata <- data.frame(column = rownames(tdata), tdata)',
+                            'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
+                        ],
+                    ],
+                ],
             ],
         ];
 
@@ -251,19 +285,6 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->getTableDataPreview(
-            'out.c-docker-test.transposed',
-            [
-                'limit' => 1000,
-            ]
-        );
-        $data = Client::parseCsv($csvData);
-
-        $this->assertEquals(2, count($data));
-        $this->assertArrayHasKey('column', $data[0]);
-        $this->assertArrayHasKey('price', $data[0]);
-        $this->assertArrayHasKey('size', $data[0]);
-        $this->assertArrayHasKey('age', $data[0]);
-        $this->assertArrayHasKey('kindness', $data[0]);
+        $this->assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
     }
 }

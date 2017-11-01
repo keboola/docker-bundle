@@ -16,7 +16,6 @@ use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
-use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -30,19 +29,12 @@ class EncryptionTest extends KernelTestCase
      */
     private $client;
 
-    /**
-     * @var Temp
-     */
-    private $temp;
-
     public function setUp()
     {
         $this->client = new Client([
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
-        $this->temp = new Temp('docker');
-        $this->temp->initRunFolder();
         self::bootKernel();
     }
 
@@ -93,7 +85,6 @@ class EncryptionTest extends KernelTestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

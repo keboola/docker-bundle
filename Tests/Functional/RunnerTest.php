@@ -148,7 +148,6 @@ class RunnerTest extends KernelTestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,

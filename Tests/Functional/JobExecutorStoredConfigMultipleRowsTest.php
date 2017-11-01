@@ -25,12 +25,10 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 {
-
     /**
      * @var Client
      */
     private $client;
-
     /**
      * @var Temp
      */
@@ -38,23 +36,28 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
     private function getJobExecutor(&$encryptor, $handler = null)
     {
-        $storageApiClient = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-            'userAgent' => 'docker-bundle',
-        ]);
+        $storageApiClient = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+                'userAgent' => 'docker-bundle',
+            ]
+        );
 
         $tokenData = $storageApiClient->verifyToken();
 
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $storageServiceStub->expects($this->any())
             ->method("getClient")
-            ->will($this->returnValue($this->client));
+            ->will($this->returnValue($this->client))
+        ;
         $storageServiceStub->expects($this->any())
             ->method("getTokenData")
-            ->will($this->returnValue($tokenData));
+            ->will($this->returnValue($tokenData))
+        ;
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -65,13 +68,16 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $containerLogger->pushHandler(new NullHandler());
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $loggersServiceStub->expects($this->any())
             ->method("getLog")
-            ->will($this->returnValue($log));
+            ->will($this->returnValue($log))
+        ;
         $loggersServiceStub->expects($this->any())
             ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger));
+            ->will($this->returnValue($containerLogger))
+        ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
@@ -91,7 +97,6 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $this->temp,
             $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
@@ -104,18 +109,22 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $componentsStub = $this->getMockBuilder(Components::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $componentsStub->expects($this->once())
             ->method("getConfiguration")
             ->with("keboola.r-transformation", "my-config")
-            ->will($this->returnValue($this->getConfiguration()));
+            ->will($this->returnValue($this->getConfiguration()))
+        ;
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
             ->disableOriginalConstructor()
-            ->getMock();
+            ->getMock()
+        ;
         $componentsServiceStub->expects($this->any())
             ->method("getComponents")
-            ->will($this->returnValue($componentsStub));
+            ->will($this->returnValue($componentsStub))
+        ;
 
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),
@@ -126,6 +135,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             $ecpWrapper
         );
         $jobExecutor->setStorageApi($this->client);
+
         return $jobExecutor;
     }
 
@@ -144,17 +154,21 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
                     'configuration' => [
                         'storage' => [
                             'input' => [
-                                'tables' => [[
-                                    'source' => 'in.c-docker-test.source',
-                                    'destination' => 'transpose.csv'
-                                ]]
+                                'tables' => [
+                                    [
+                                        'source' => 'in.c-docker-test.source',
+                                        'destination' => 'transpose.csv',
+                                    ],
+                                ],
                             ],
                             'output' => [
-                                'tables' => [[
-                                    'source' => 'transpose.csv',
-                                    'destination' => 'out.c-docker-test.transposed'
-                                ]]
-                            ]
+                                'tables' => [
+                                    [
+                                        'source' => 'transpose.csv',
+                                        'destination' => 'out.c-docker-test.transposed',
+                                    ],
+                                ],
+                            ],
                         ],
                         'parameters' => [
                             'script' => [
@@ -162,10 +176,10 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
                                 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                                 'colnames(tdata) <- data[["name"]]',
                                 'tdata <- data.frame(column = rownames(tdata), tdata)',
-                                'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)'
-                            ]
-                        ]
-                    ]
+                                'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
+                            ],
+                        ],
+                    ],
                 ],
                 [
                     'id' => 'row2',
@@ -175,17 +189,21 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
                     'configuration' => [
                         'storage' => [
                             'input' => [
-                                'tables' => [[
-                                    'source' => 'in.c-docker-test.source',
-                                    'destination' => 'transpose.csv'
-                                ]]
+                                'tables' => [
+                                    [
+                                        'source' => 'in.c-docker-test.source',
+                                        'destination' => 'transpose.csv',
+                                    ],
+                                ],
                             ],
                             'output' => [
-                                'tables' => [[
-                                    'source' => 'transpose.csv',
-                                    'destination' => 'out.c-docker-test.transposed-2'
-                                ]]
-                            ]
+                                'tables' => [
+                                    [
+                                        'source' => 'transpose.csv',
+                                        'destination' => 'out.c-docker-test.transposed-2',
+                                    ],
+                                ],
+                            ],
                         ],
                         'parameters' => [
                             'script' => [
@@ -193,13 +211,13 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
                                 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                                 'colnames(tdata) <- data[["name"]]',
                                 'tdata <- data.frame(column = rownames(tdata), tdata)',
-                                'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)'
-                            ]
-                        ]
-                    ]
-                ]
+                                'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
+                            ],
+                        ],
+                    ],
+                ],
             ],
-            'configuration' => []
+            'configuration' => [],
         ];
     }
 
@@ -209,37 +227,25 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             'params' => [
                 'component' => 'keboola.r-transformation',
                 'mode' => 'run',
-                'config' => 'my-config'
-            ]
+                'config' => 'my-config',
+            ],
         ];
+
         return $data;
     }
 
     public function setUp()
     {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]
+        );
         $this->temp = new Temp('docker');
         $this->temp->initRunFolder();
-        if ($this->client->bucketExists("in.c-docker-test")) {
-            // Delete tables
-            foreach ($this->client->listTables("in.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("in.c-docker-test");
-        }
-        if ($this->client->bucketExists("out.c-docker-test")) {
-            // Delete tables
-            foreach ($this->client->listTables("out.c-docker-test") as $table) {
-                $this->client->dropTable($table["id"]);
-            }
-
-            // Delete bucket
-            $this->client->dropBucket("out.c-docker-test");
+        foreach ($this->client->listBuckets() as $bucket) {
+            $this->client->dropBucket($bucket["id"], ["force" => true]);
         }
 
         // remove uploaded files
@@ -287,9 +293,12 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed', [
-            'limit' => 1000,
-        ]);
+        $csvData = $this->client->getTableDataPreview(
+            'out.c-docker-test.transposed',
+            [
+                'limit' => 1000,
+            ]
+        );
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));
@@ -299,9 +308,12 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-test.transposed-2', [
-            'limit' => 1000,
-        ]);
+        $csvData = $this->client->getTableDataPreview(
+            'out.c-docker-test.transposed-2',
+            [
+                'limit' => 1000,
+            ]
+        );
         $data = Client::parseCsv($csvData);
 
         $this->assertEquals(2, count($data));

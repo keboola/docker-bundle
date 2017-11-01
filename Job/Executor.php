@@ -152,7 +152,11 @@ class Executor extends BaseExecutor
 
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
-                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"]);
+                $configId = null;
+                if (isset($params["config"])) {
+                    $configId = $params["config"];
+                }
+                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
             } else {
                 // Read config from storage
                 try {
@@ -181,7 +185,9 @@ class Executor extends BaseExecutor
         ];
     }
 
-
+    /**
+     * @param Job $job
+     */
     public function cleanup(Job $job)
     {
         $this->logger->info("Terminating job {$job->getId()}");
