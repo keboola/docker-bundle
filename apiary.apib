@@ -367,7 +367,7 @@ This job will prepare the `data` folder including serialized configuration file 
 Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
 This call is useful when developing new Docker component to obtain a sample of the development environment.
 
-Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder.
+Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder. The configuration must correspond to the [Configuration Schema](https://github.com/keboola/docker-bundle/blob/master/Resources/schemas/configuration.json)
 
 Note: only 50 first rows of each table will be exported.
 
