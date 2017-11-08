@@ -338,13 +338,10 @@ class Runner
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile);
 
         // finalize
         $dataLoader->storeOutput();
-        if ($this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->storeStateFile();
-        }
 
         $dataDirectory->dropDataDir();
         $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
@@ -373,7 +370,7 @@ class Runner
         $dataLoader->loadInputData();
 
         if ($mode == 'dry-run') {
-            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile);
+            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile);
         } else {
             $configFile->createConfigFile($configData);
             $output = new Output();
@@ -386,17 +383,18 @@ class Runner
     }
 
     /**
-     * @param string $jobId
-     * @param string $configId
-     * @param string $rowId
+     * @param $jobId
+     * @param $configId
+     * @param $rowId
      * @param Component $component
      * @param UsageFile $usageFile
      * @param DataDirectory $dataDirectory
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
+     * @param StateFile $stateFile
      * @return Output
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile)
     {
         $images = $imageCreator->prepareImages();
         $this->loggerService->setVerbosity($component->getLoggerVerbosity());
@@ -452,6 +450,9 @@ class Runner
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
+                    if ($this->shouldStoreState($component->getId(), $configId)) {
+                        $stateFile->storeStateFile();
+                    }
                 }
             } finally {
                 $dataDirectory->normalizePermissions();
