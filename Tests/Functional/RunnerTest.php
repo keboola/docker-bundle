@@ -741,7 +741,7 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
-    
+
     public function testExecutorStoreStateWithProcessor()
     {
         $runner = $this->getRunner(new NullHandler());
