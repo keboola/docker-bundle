@@ -741,6 +741,83 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
+    
+    public function testExecutorStoreStateWithProcessor()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configData = [
+            'processors' => [
+                'after' => [
+                    [
+                        'definition' => [
+                            'component'=> 'keboola.processor-move-files'
+                        ],
+                        'parameters' => [
+                            'direction' => 'tables'
+                        ]
+                    ]
+
+                ]
+            ]
+        ];
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+        ];
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
+    }
 
     public function testExecutorNoStoreState()
     {
