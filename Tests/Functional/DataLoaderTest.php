@@ -188,7 +188,6 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $temp = new Temp();
-        $temp->setPreserveRunFolder(true);
         $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
         $data->createDataDir();
 
