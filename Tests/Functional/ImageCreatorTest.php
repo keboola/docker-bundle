@@ -189,7 +189,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'after' => [
                     [
                         'definition' => [
-                            'component' => 'keboola.processor.iconv',
+                            'component' => 'keboola.processor-iconv',
                         ],
                         'parameters' => ['source_encoding' => 'CP1250']
                     ],
@@ -206,7 +206,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('quay.io/keboola/processor-unziper:3.0.4', $images[0]->getFullImageId());
         $this->assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
         $this->assertEquals(
-            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv:1.0.4',
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.1',
             $images[2]->getFullImageId()
         );
         $this->assertFalse($images[0]->isMain());
