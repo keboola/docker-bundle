@@ -178,12 +178,12 @@ class RunnerTest extends KernelTestCase
     {
         $components = [
             [
-                "id" => "keboola.processor.iconv",
+                "id" => "keboola.processor-iconv",
                 "data" => [
                     "definition" => [
                       "type" => "aws-ecr",
-                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv",
-                      "tag" => "1.0.4",
+                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv",
+                      "tag" => "2.0.1",
                     ],
                     "inject_environment" => true,
                 ],
@@ -279,7 +279,7 @@ class RunnerTest extends KernelTestCase
                     ],
                     [
                         'definition' => [
-                            'component' => 'keboola.processor.iconv',
+                            'component' => 'keboola.processor-iconv',
                         ],
                         'parameters' => ['source_encoding' => 'CP1250']
                     ],
@@ -328,9 +328,9 @@ class RunnerTest extends KernelTestCase
                     ],
                 ],
                 2 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv:1.0.4',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.1',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv@sha256:6470cf32045b572fcc4b85bb5fb364867fe7f106af93222daa1fd7638a99f756'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv@sha256:b279ad5117d6a69beb3ddbc21c17a8ee5eb9bfc7271ae3c24389a8dfe0776175'
                     ],
                 ],
                 3 => [
