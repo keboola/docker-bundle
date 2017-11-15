@@ -200,14 +200,13 @@ class RunnerTest extends KernelTestCase
                 ]
             ],
             [
-                "id" => "keboola.processor.unzipper",
+                "id" => "keboola.processor-decompress",
                 "data" => [
                     "definition" => [
-                        "type" => "quayio",
-                        "uri" => "keboola/processor-unziper",
-                        "tag" => "3.0.4",
-                    ],
-                    "inject_environment" => true,
+                        "type" => "aws-ecr",
+                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress",
+                        "tag" => "0.1.0",
+                    ]
                 ]
             ],
         ];
@@ -268,7 +267,7 @@ class RunnerTest extends KernelTestCase
                 'before' => [
                     [
                         'definition' => [
-                            'component' => 'keboola.processor.unzipper',
+                            'component' => 'keboola.processor-decompress',
                         ],
                     ],
                     [
@@ -316,9 +315,9 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals(
             [
                 0 => [
-                    'id' => 'quay.io/keboola/processor-unziper:3.0.4',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress:0.1.0',
                     'digests' => [
-                        'quay.io/keboola/processor-unziper@sha256:2f83e206278f3a4dcb0344b9e90c0c2d9b32b185d1af70ac982ede36af00ddb5'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress@sha256:fb54c9d22b8b3de5a8a528b7d594ecad9d413a23f5601186111fdddc503b0349'
                     ],
                 ],
                 1 => [
@@ -330,7 +329,7 @@ class RunnerTest extends KernelTestCase
                 2 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.1',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.iconv@sha256:b279ad5117d6a69beb3ddbc21c17a8ee5eb9bfc7271ae3c24389a8dfe0776175'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:b279ad5117d6a69beb3ddbc21c17a8ee5eb9bfc7271ae3c24389a8dfe0776175'
                     ],
                 ],
                 3 => [

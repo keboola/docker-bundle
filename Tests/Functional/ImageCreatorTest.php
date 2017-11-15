@@ -182,7 +182,7 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
                 'before' => [
                     [
                         'definition' => [
-                            'component' => 'keboola.processor.unzipper',
+                            'component' => 'keboola.processor-decompress',
                         ],
                     ],
                 ],
@@ -203,12 +203,9 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         $imageCreator = new ImageCreator($encryptor, new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         $this->assertCount(3, $images);
-        $this->assertEquals('quay.io/keboola/processor-unziper:3.0.4', $images[0]->getFullImageId());
+        $this->assertContains('keboola.processor-decompress', $images[0]->getFullImageId());
         $this->assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
-        $this->assertEquals(
-            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.1',
-            $images[2]->getFullImageId()
-        );
+        $this->assertContains('keboola.processor-iconv', $images[2]->getFullImageId());
         $this->assertFalse($images[0]->isMain());
         $this->assertTrue($images[1]->isMain());
         $this->assertFalse($images[2]->isMain());
