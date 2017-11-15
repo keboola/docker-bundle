@@ -189,12 +189,12 @@ class RunnerTest extends KernelTestCase
                 ],
             ],
             [
-                "id" => "keboola.processor.move-files",
+                "id" => "keboola.processor-move-files",
                 "data" => [
                     "definition" => [
                         "type" => "aws-ecr",
-                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files",
-                        "tag" => "0.1.3",
+                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files",
+                        "tag" => "1.1.0",
                     ],
                     "inject_environment" => true,
                 ]
@@ -273,7 +273,7 @@ class RunnerTest extends KernelTestCase
                     ],
                     [
                         'definition' => [
-                            'component' => 'keboola.processor.move-files',
+                            'component' => 'keboola.processor-move-files',
                         ],
                         'parameters' => ['direction' => 'tables']
                     ],
@@ -322,9 +322,9 @@ class RunnerTest extends KernelTestCase
                     ],
                 ],
                 1 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files:0.1.3',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files:1.1.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor.move-files@sha256:adf78a2cf3bef196a0566877400e9697517f17780fdb4c1bbac7f7677a131d5b'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files@sha256:0d0a5275dbf68b1d54abc4a8dd081559e5662d515447613e5d6c9c0177e36d38'
                     ],
                 ],
                 2 => [
