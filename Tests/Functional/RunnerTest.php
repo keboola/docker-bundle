@@ -178,6 +178,18 @@ class RunnerTest extends KernelTestCase
     {
         $components = [
             [
+                "id" => "keboola.processor-last-file",
+                "data" => [
+                    "definition" => [
+                      "type" => "aws-ecr",
+                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file",
+                      "tag" => "0.3.0",
+                    ],
+                    "inject_environment" => true,
+                ],
+            ],
+
+            [
                 "id" => "keboola.processor-iconv",
                 "data" => [
                     "definition" => [
@@ -225,27 +237,19 @@ class RunnerTest extends KernelTestCase
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->client->uploadFile(
-            $dataDir . 'texty.zip',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'pipeline'])
-        );
-        $this->client->uploadFile(
-            $dataDir . 'radio.zip',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'pipeline'])
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(['docker-bundle-test', 'texty.csv.gz'])
         );
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'files' => [[
-                        'tags' => ['pipeline']
+                        'tags' => ['texty.csv.gz']
                     ]]
                 ],
                 'output' => [
                     'tables' => [
-                        [
-                            'source' => 'radio.csv',
-                            'destination' => 'out.c-docker-pipeline.radio'
-                        ],
                         [
                             'source' => 'texty.csv',
                             'destination' => 'out.c-docker-pipeline.texty'
@@ -255,9 +259,6 @@ class RunnerTest extends KernelTestCase
             ],
             'parameters' => [
                 'script' => [
-                    'data <- read.csv(file = "/data/in/tables/radio.csv", stringsAsFactors = FALSE, encoding = "UTF-8");',
-                    'data$rev <- unlist(lapply(data[["text"]], function(x) { paste(rev(strsplit(x, NULL)[[1]]), collapse=\'\') }))',
-                    'write.csv(data, file = "/data/out/tables/radio.csv", row.names = FALSE)',
                     'data <- read.csv(file = "/data/in/tables/texty.csv", stringsAsFactors = FALSE, encoding = "UTF-8");',
                     'data$rev <- unlist(lapply(data[["text"]], function(x) { paste(rev(strsplit(x, NULL)[[1]]), collapse=\'\') }))',
                     'write.csv(data, file = "/data/out/tables/texty.csv", row.names = FALSE)',
@@ -265,6 +266,12 @@ class RunnerTest extends KernelTestCase
             ],
             'processors' => [
                 'before' => [
+                    [
+                        'definition' => [
+                            'component' => 'keboola.processor-last-file',
+                        ],
+                        'parameters' => ['tag' => 'texty.csv.gz']
+                    ],
                     [
                         'definition' => [
                             'component' => 'keboola.processor-decompress',
@@ -315,24 +322,30 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals(
             [
                 0 => [
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file:0.3.0',
+                    'digests' => [
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file@sha256:0c730bd4d91ca6962d72cd0d878a97857a1ef7c37eadd2eafd770ca26e627b0e'
+                    ],
+                ],
+                1 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress:0.1.0',
                     'digests' => [
                         '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress@sha256:fb54c9d22b8b3de5a8a528b7d594ecad9d413a23f5601186111fdddc503b0349'
                     ],
                 ],
-                1 => [
+                2 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files:1.1.0',
                     'digests' => [
                         '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files@sha256:0d0a5275dbf68b1d54abc4a8dd081559e5662d515447613e5d6c9c0177e36d38'
                     ],
                 ],
-                2 => [
+                3 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.3',
                     'digests' => [
                         '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:30ed1d74f9aa41ac0f47d30c3ae43829f4f39f14c14d309ed2081643a4258d3b'
                     ],
                 ],
-                3 => [
+                4 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation:1.1.1',
                     'digests' => [
                         '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation@sha256:a332fdf1b764b329230dd420f54d642d042b8552f6b499cf26cd49ee504904d6'
@@ -351,13 +364,6 @@ class RunnerTest extends KernelTestCase
             2 => ' : R script finished',
         ], $lines);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.radio');
-        $data = Client::parseCsv($csvData);
-        $this->assertEquals(9, count($data));
-        $this->assertArrayHasKey('id', $data[0]);
-        $this->assertArrayHasKey('text', $data[0]);
-        $this->assertArrayHasKey('tag', $data[0]);
-        $this->assertArrayHasKey('rev', $data[0]);
         $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.texty');
         $data = Client::parseCsv($csvData);
         $this->assertEquals(4, count($data));
