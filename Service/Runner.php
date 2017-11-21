@@ -19,23 +19,19 @@ use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 
 class Runner
 {
-    /**
-     * @var Temp
-     */
-    private $temp;
-
     /**
      * @var ObjectEncryptor
      */
@@ -83,7 +79,7 @@ class Runner
 
     /**
      * Runner constructor.
-     * @param ObjectEncryptor $encryptor
+     * @param ObjectEncryptorFactory $encryptorFactory
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param JobMapper $jobMapper
@@ -93,7 +89,7 @@ class Runner
      * @param int $maxLogPort
      */
     public function __construct(
-        ObjectEncryptor $encryptor,
+        ObjectEncryptorFactory $encryptorFactory,
         StorageApiService $storageApi,
         LoggersService $loggersService,
         JobMapper $jobMapper,
@@ -104,7 +100,7 @@ class Runner
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
-        $this->encryptor = $encryptor;
+        $this->encryptor = $encryptorFactory->getEncryptor();
         $this->storageClient = $storageApi->getClient();
         $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
             'url' => $oauthApiUrl

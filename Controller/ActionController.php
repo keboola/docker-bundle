@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Controller;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -58,20 +59,16 @@ class ActionController extends BaseApiController
             throw new HttpException(400, "Attribute 'configData' missing in request body");
         }
 
-        // set params for component_project_wrapper
-        $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
-        $cryptoWrapper->setComponentId($request->get("component"));
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory->setProjectId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
-        $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-
-        // set params for component_project_wrapper
-        $cryptoWrapper = $this->container->get("syrup.encryption.component_wrapper");
-        $cryptoWrapper->setComponentId($request->get("component"));
+        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
 
         $configData = isset($requestJsonData["configData"]) ? $requestJsonData["configData"] : [];
         if (in_array("encrypt", $component["flags"])) {
-            $configData = $this->container->get('syrup.object_encryptor')->encrypt($configData);
-            $configData = $this->container->get('syrup.object_encryptor')->decrypt($configData);
+            $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
+            $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
         }
 
         if (!$this->storageApi->getRunId()) {

@@ -21,10 +21,8 @@ services:
         arguments:
           - "@logger"
           - "@docker_bundle.runner"
-          - "@syrup.object_encryptor"
+          - "@docker_bundle.object_encryptor_factory"
           - "@syrup.components"
-          - "@syrup.encryption.component_wrapper"
-          - "@syrup.encryption.component_project_wrapper"
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
@@ -51,8 +49,12 @@ services:
     docker_bundle.runner:
         class: Keboola\DockerBundle\Service\Runner
         arguments:
-          - "@syrup.object_encryptor"
+          - "@docker_bundle.object_encryptor_factory"
           - "@syrup.storage_api"
           - "@docker_bundle.loggers"
           - "@syrup.elasticsearch.current_component_job_mapper"
           - "%oauth_api.url%"
+
+    docker_bundle.object_encryptor_factory:
+        class: Keboola\ObjectEncryptor\ObjectEncryptorFactory
+        arguments: ["%general_key%", "%encryption_key%", "%encryption_key%", "%stack_key%", "%stack_id%"]

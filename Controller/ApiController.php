@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -307,12 +308,11 @@ class ApiController extends BaseApiController
             ], 400);
         }
 
-        /** @var ComponentProjectWrapper $cryptoWrapper */
-        $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
-        $cryptoWrapper->setComponentId($request->get("component"));
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
-        $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-        $encryptor = $this->container->get("syrup.object_encryptor");
+        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
@@ -320,11 +320,11 @@ class ApiController extends BaseApiController
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptor->encrypt($request->getContent(), ComponentProjectWrapper::class);
+            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($request->getContent(), ComponentProjectWrapper::class);
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
         } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request, false);
-            $encryptedValue = $encryptor->encrypt($params, ComponentProjectWrapper::class);
+            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($params, ComponentProjectWrapper::class);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
             throw new UserException("Incorrect Content-Type.");
@@ -344,12 +344,12 @@ class ApiController extends BaseApiController
         if ($request->get("configuration")) {
             $configuration = json_decode($request->get("configuration"));
             if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $request->get("component"))) {
-                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
-                $cryptoWrapper->setComponentId($request->get("component"));
+                /** @var ObjectEncryptorFactory $encryptorFactory */
+                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+                $encryptorFactory->setComponentId($request->get("component"));
                 $tokenInfo = $this->storageApi->verifyToken();
-                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-                $encryptor = $this->container->get("syrup.object_encryptor");
-                $configuration = $encryptor->encrypt($configuration, ComponentProjectWrapper::class);
+                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+                $configuration = $encryptorFactory->getEncryptor()->encrypt($configuration, ComponentProjectWrapper::class);
             }
             $options->setConfiguration($configuration);
         }
