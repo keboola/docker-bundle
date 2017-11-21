@@ -3,13 +3,13 @@
 namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 
 use Defuse\Crypto\Key;
-use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;

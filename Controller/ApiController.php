@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
-use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
