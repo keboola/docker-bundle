@@ -361,9 +361,9 @@ print "second message to stdout\n";'
         );
         try {
             $container->run();
-            $this->fail("Must raise error");
+            self::fail("Must raise error");
         } catch (ApplicationException $e) {
-            $this->assertContains('Host parameter is missing from GELF message', $e->getMessage());
+            self::assertContains('Host parameter is missing from GELF message', $e->getMessage());
         }
     }
 

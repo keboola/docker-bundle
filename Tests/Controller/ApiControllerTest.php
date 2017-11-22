@@ -309,7 +309,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testInputDisabledByEncrypt()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/docker-config-encrypt-verify/input',
@@ -331,7 +331,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testDryRunDisabledByEncrypt()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/docker-config-encrypt-verify/dry-run',
@@ -416,7 +416,7 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
-        $storageClientStub->expects(self::once())
+        $storageClientStub->expects($this->once())
             ->method("verifyToken")
             ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
@@ -430,7 +430,7 @@ class ApiControllerTest extends WebTestCase
         $encryptorFactory->setComponentId('docker-dummy-test');
         $encryptorFactory->setProjectId('123');
 
-        $storageClientStub->expects(self::once())
+        $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", self::callback(function ($body) use ($encryptorFactory) {
                 $params = json_decode($body["configuration"], true);
@@ -513,7 +513,7 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
-        $storageClientStub->expects(self::once())
+        $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", self::callback(function ($body) {
                 $params = json_decode($body["configuration"], true);
@@ -595,7 +595,7 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
-        $storageClientStub->expects(self::once())
+        $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", self::callback(function ($body) {
                 if (isset($body["changeDescription"])) {

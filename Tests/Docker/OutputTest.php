@@ -13,8 +13,8 @@ class OutputTest extends \PHPUnit_Framework_TestCase
             ['id' => 'oranges', 'digests' => ['bar']]
         ];
         $output = new Output($images, 'bazBar');
-        $this->assertEquals('bazBar', $output->getProcessOutput());
-        $this->assertEquals(
+        self::assertEquals('bazBar', $output->getProcessOutput());
+        self::assertEquals(
             [
                 0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
                 1 => ['id' => 'oranges', 'digests' => ['bar']]

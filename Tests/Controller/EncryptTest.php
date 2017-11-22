@@ -28,7 +28,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncrypt()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt',
@@ -54,7 +54,7 @@ class EncryptTest extends WebTestCase
     public function testEncryptEmptyValues()
     {
         $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt',
@@ -69,7 +69,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptComponent()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt?componentId=docker-config-encrypt-verify',
@@ -95,7 +95,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptComponentProject()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt?componentId=docker-config-encrypt-verify&projectId=123',
@@ -123,7 +123,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptJsonHeaderWithCharset()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt',
@@ -147,7 +147,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptPlaintextHeaderWithCharset()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt',
@@ -166,7 +166,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptInvalidHeader()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt',
@@ -188,7 +188,7 @@ class EncryptTest extends WebTestCase
 
     public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
     {
-        $client = self::createClient();
+        $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/encrypt?componentId=keboola.r-transformation',

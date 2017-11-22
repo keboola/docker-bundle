@@ -108,7 +108,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'KBC.createdBy.configuration.id' => 'whatever'
             ]
         ];
-        $this->assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
 
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
         $expectedTableMetadata = [
@@ -117,7 +117,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'KBC.createdBy.configuration.id' => 'whatever'
             ]
         ];
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         // let's run the data loader again.
         // This time the tables should receive "update" metadata
@@ -126,7 +126,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'whatever';
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
 
@@ -162,7 +162,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'KBC.createdBy.configurationRow.id' => 'whateverRow'
             ]
         ];
-        $this->assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
 
         $tableMetadata = $metadataApi->listTableMetadata('in.c-docker-demo-whatever.sliced');
         $expectedTableMetadata = [
@@ -172,7 +172,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'KBC.createdBy.configurationRow.id' => 'whateverRow'
             ]
         ];
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         // let's run the data loader again.
         // This time the tables should receive "update" metadata
@@ -182,7 +182,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'whatever';
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.configurationRow.id'] = 'whateverRow';
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
     public function testExecutorConfigMetadata()
@@ -268,7 +268,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'table.key.two' => 'table value two',
             ],
         ];
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
         $expectedColumnMetadata = [
@@ -277,7 +277,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'column.key.two' => 'column value two id',
             ],
         ];
-        $this->assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 
     public function testExecutorManifestMetadata()
@@ -350,7 +350,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'table.key.two' => 'table value two',
             ],
         ];
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
         $expectedColumnMetadata = [
@@ -359,7 +359,7 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'column.key.two' => 'column value two id',
             ],
         ];
-        $this->assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 
     public function testExecutorManifestMetadataCombined()
@@ -433,10 +433,10 @@ class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
                 'table.key.two' => 'table value four',
             ],
         ];
-        $this->assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $metadataApi->listColumnMetadata('in.c-docker-demo-whatever.sliced.id');
         $expectedColumnMetadata = [];
-        $this->assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
+        self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 }

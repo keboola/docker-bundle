@@ -125,14 +125,14 @@ JSON;
         );
 
         $jobMapperStub
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('get')
             ->willReturn(new Job($encryptorFactory->getEncryptor()));
 
         $jobMapperStub
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('update')
-            ->with(self::callback(function ($job) use ($usage) {
+            ->with($this->callback(function ($job) use ($usage) {
                 /** @var $job Job */
                 return $job->getUsage() === \json_decode($usage, true);
             }));
@@ -163,7 +163,7 @@ JSON;
         ;
 
         $jobMapperStub
-            ->expects(self::once())
+            ->expects($this->once())
             ->method('get')
             ->willReturn(null);
 

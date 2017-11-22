@@ -119,7 +119,7 @@ class NetworkTest extends KernelTestCase
         $container = $this->getContainer($imageConfig, []);
         try {
             $container->run();
-            self::fail("Ping must fail");
+            $this->fail("Ping must fail");
         } catch (UserException $e) {
             $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
@@ -156,7 +156,7 @@ class NetworkTest extends KernelTestCase
         $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         try {
             $container->run();
-            self::fail("Ping must fail");
+            $this->fail("Ping must fail");
         } catch (UserException $e) {
             $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
@@ -289,7 +289,7 @@ class NetworkTest extends KernelTestCase
 
         try {
             $this->getContainer($imageConfig, ['runtime' => ['network' => 'fooBar']]);
-            self::fail("Invalid network must fail.");
+            $this->fail("Invalid network must fail.");
         } catch (ApplicationException $e) {
             $this->assertContains('not supported', $e->getMessage());
         }
