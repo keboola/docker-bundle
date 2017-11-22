@@ -129,7 +129,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            self::fail("Must raise an exception");
+            $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('Parse error', $e->getMessage());
         }
@@ -143,7 +143,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            self::fail("Must raise an exception");
+            $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('graceful error', $e->getMessage());
         }
@@ -158,7 +158,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            self::fail("Must raise an exception");
+            $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('graceful error', $e->getMessage());
         }
@@ -221,7 +221,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $testStartTime = time();
         try {
             $container->run();
-            self::fail("Must raise an exception");
+            $this->fail("Must raise an exception");
         } catch (UserException $e) {
             $testDuration = time() - $testStartTime;
             $this->assertContains('timeout', $e->getMessage());
@@ -276,7 +276,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
         try {
             $this->getContainer($imageConfiguration, $dataDir, []);
-            self::fail("Must raise an exception for invalid image.");
+            $this->fail("Must raise an exception for invalid image.");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
         }

@@ -9,11 +9,10 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class UsageFileTest extends TestCase
+class UsageFileTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Temp

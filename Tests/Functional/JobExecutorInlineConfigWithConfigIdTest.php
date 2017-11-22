@@ -68,13 +68,13 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method('getLog')
-            ->will(self::returnValue($log))
+            ->will($this->returnValue($log))
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method('getContainerLog')
-            ->will(self::returnValue($containerLogger))
+            ->will($this->returnValue($containerLogger))
         ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
@@ -176,7 +176,7 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
             ->expects(self::once())
             ->method('getComponent')
             ->will(
-                self::returnValue(
+                $this->returnValue(
                     $componentDefinition
                 )
             )
@@ -282,6 +282,6 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        self::assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
+        $this->assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
     }
 }

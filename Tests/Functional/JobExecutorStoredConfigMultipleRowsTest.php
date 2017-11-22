@@ -49,13 +49,13 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $storageServiceStub->expects(self::any())
+        $storageServiceStub->expects($this->any())
             ->method("getClient")
-            ->will(self::returnValue($this->client))
+            ->will($this->returnValue($this->client))
         ;
-        $storageServiceStub->expects(self::any())
+        $storageServiceStub->expects($this->any())
             ->method("getTokenData")
-            ->will(self::returnValue($tokenData))
+            ->will($this->returnValue($tokenData))
         ;
 
         $log = new Logger("null");
@@ -69,13 +69,13 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method("getLog")
-            ->will(self::returnValue($log))
+            ->will($this->returnValue($log))
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method("getContainerLog")
-            ->will(self::returnValue($containerLogger))
+            ->will($this->returnValue($containerLogger))
         ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
@@ -114,16 +114,16 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $componentsStub->expects(self::once())
             ->method("getConfiguration")
             ->with("keboola.r-transformation", "my-config")
-            ->will(self::returnValue(self::getConfiguration()))
+            ->will($this->returnValue(self::getConfiguration()))
         ;
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $componentsServiceStub->expects(self::any())
+        $componentsServiceStub->expects($this->any())
             ->method("getComponents")
-            ->will(self::returnValue($componentsStub))
+            ->will($this->returnValue($componentsStub))
         ;
 
         /** @var ComponentsService $componentsServiceStub */

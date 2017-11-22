@@ -50,13 +50,13 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $storageServiceStub->expects(self::any())
+        $storageServiceStub->expects($this->any())
             ->method("getClient")
-            ->will(self::returnValue($this->client))
+            ->will($this->returnValue($this->client))
         ;
-        $storageServiceStub->expects(self::any())
+        $storageServiceStub->expects($this->any())
             ->method("getTokenData")
-            ->will(self::returnValue($tokenData))
+            ->will($this->returnValue($tokenData))
         ;
 
         $log = new Logger("null");
@@ -70,13 +70,13 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method("getLog")
-            ->will(self::returnValue($log))
+            ->will($this->returnValue($log))
         ;
-        $loggersServiceStub->expects(self::any())
+        $loggersServiceStub->expects($this->any())
             ->method("getContainerLog")
-            ->will(self::returnValue($containerLogger))
+            ->will($this->returnValue($containerLogger))
         ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
@@ -115,16 +115,16 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         $componentsStub->expects(self::once())
             ->method("getConfiguration")
             ->with("keboola.r-transformation", "my-config")
-            ->will(self::returnValue($this->getConfiguration()))
+            ->will($this->returnValue($this->getConfiguration()))
         ;
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $componentsServiceStub->expects(self::any())
+        $componentsServiceStub->expects($this->any())
             ->method("getComponents")
-            ->will(self::returnValue($componentsStub))
+            ->will($this->returnValue($componentsStub))
         ;
 
         /** @var ComponentsService $componentsServiceStub */
@@ -259,11 +259,11 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         );
         $data = Client::parseCsv($csvData);
 
-        self::assertEquals(2, count($data));
-        self::assertArrayHasKey('column', $data[0]);
-        self::assertArrayHasKey('price', $data[0]);
-        self::assertArrayHasKey('size', $data[0]);
-        self::assertArrayHasKey('age', $data[0]);
-        self::assertArrayHasKey('kindness', $data[0]);
+        $this->assertEquals(2, count($data));
+        $this->assertArrayHasKey('column', $data[0]);
+        $this->assertArrayHasKey('price', $data[0]);
+        $this->assertArrayHasKey('size', $data[0]);
+        $this->assertArrayHasKey('age', $data[0]);
+        $this->assertArrayHasKey('kindness', $data[0]);
     }
 }

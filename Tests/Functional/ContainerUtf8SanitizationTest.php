@@ -12,12 +12,11 @@ use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
-use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class ContainerUtf8SanitizationTest extends TestCase
+class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
 {
     private function createScript(Temp $temp, $contents)
     {

@@ -10,13 +10,12 @@ use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
-use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class ContainerTest extends TestCase
+class ContainerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var ObjectEncryptorFactory

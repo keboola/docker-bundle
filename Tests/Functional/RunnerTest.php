@@ -612,7 +612,7 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
         $cfg = $cmp->getConfiguration('docker-demo', 'dummy-configuration');
-        self::assertEquals([], $cfg['state']);
+        $this->assertEquals([], $cfg['state']);
         $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
     }
 
@@ -1014,7 +1014,7 @@ class RunnerTest extends KernelTestCase
                 'KBC.createdBy.component.id' => 'docker-demo'
             ]
         ];
-        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+        $this->assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
     }
 
     public function testExecutorInvalidConfiguration()

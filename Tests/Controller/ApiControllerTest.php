@@ -297,14 +297,14 @@ class ApiControllerTest extends WebTestCase
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
         $response = $ctrl->encryptConfigAction($request);
-        self::assertEquals(200, $response->getStatusCode());
+        $this->assertEquals(200, $response->getStatusCode());
         $result = json_decode($response->getContent(), true);
-        self::assertEquals("value1", $result["key1"]);
-        self::assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
+        $this->assertEquals("value1", $result["key1"]);
+        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        self::assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        self::assertCount(2, $result);
+        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
+        $this->assertCount(2, $result);
     }
 
     public function testInputDisabledByEncrypt()
@@ -321,9 +321,9 @@ class ApiControllerTest extends WebTestCase
              }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(400, $client->getResponse()->getStatusCode());
-        self::assertEquals("error", $response["status"]);
-        self::assertEquals(
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals(
             "This API call is not supported for components that use the 'encrypt' flag.",
             $response["message"]
         );
@@ -343,9 +343,9 @@ class ApiControllerTest extends WebTestCase
              }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(400, $client->getResponse()->getStatusCode());
-        self::assertEquals("error", $response["status"]);
-        self::assertEquals(
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals(
             "This API call is not supported for components that use the 'encrypt' flag.",
             $response["message"]
         );
@@ -379,9 +379,9 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::atLeastOnce())
+        $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
+            ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = array(
@@ -413,12 +413,12 @@ class ApiControllerTest extends WebTestCase
 
         $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"KBC::Encrypt==ABCDEFGH"}}},"state":{}}';
 
-        $storageClientStub->expects(self::atLeastOnce())
+        $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
+            ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects(self::once())
             ->method("verifyToken")
-            ->will(self::returnValue(["owner" => ["id" => "123", "features" => []]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         $encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
@@ -439,7 +439,7 @@ class ApiControllerTest extends WebTestCase
                 }
                 return false;
             }))
-            ->will(self::returnValue(json_decode($responseJson, true)));
+            ->will($this->returnValue(json_decode($responseJson, true)));
 
         $container->set("syrup.storage_api", $storageServiceStub);
 
@@ -476,9 +476,9 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::atLeastOnce())
+        $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
+            ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = array(
@@ -510,9 +510,9 @@ class ApiControllerTest extends WebTestCase
 
         $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"test"}}},"state":{}}';
 
-        $storageClientStub->expects(self::atLeastOnce())
+        $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
+            ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects(self::once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", self::callback(function ($body) {
@@ -522,7 +522,7 @@ class ApiControllerTest extends WebTestCase
                 }
                 return false;
             }))
-            ->will(self::returnValue(json_decode($responseJson, true)));
+            ->will($this->returnValue(json_decode($responseJson, true)));
 
         $container->set("syrup.storage_api", $storageServiceStub);
 
@@ -560,9 +560,9 @@ class ApiControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::atLeastOnce())
+        $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
+            ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = array(
@@ -592,9 +592,9 @@ class ApiControllerTest extends WebTestCase
                 )
         );
 
-        $storageClientStub->expects(self::atLeastOnce())
+        $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
+            ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects(self::once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", self::callback(function ($body) {

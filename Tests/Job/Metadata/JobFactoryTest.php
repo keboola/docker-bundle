@@ -7,9 +7,8 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
-use PHPUnit\Framework\TestCase;
 
-class JobFactoryTest extends TestCase
+class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @param bool $encrypt
@@ -54,9 +53,9 @@ class JobFactoryTest extends TestCase
                 )
         );
 
-        $storageClientStub->expects(self::any())
+        $storageClientStub->expects($this->any())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
+            ->will($this->returnValue($indexActionValue));
 
         $storageApiClient = new Client([
             'url' => STORAGE_API_URL,
@@ -65,12 +64,12 @@ class JobFactoryTest extends TestCase
         ]);
         $tokenData = $storageApiClient->verifyToken();
 
-        $storageClientStub->expects(self::any())
+        $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will(self::returnValue($tokenData));
-        $storageClientStub->expects(self::any())
+            ->will($this->returnValue($tokenData));
+        $storageClientStub->expects($this->any())
             ->method("getTokenString")
-            ->will(self::returnValue($storageApiClient->getTokenString()));
+            ->will($this->returnValue($storageApiClient->getTokenString()));
         /** @var Client $storageClientStub */
         return $storageClientStub;
     }
@@ -92,12 +91,12 @@ class JobFactoryTest extends TestCase
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::any())
+        $storageServiceStub->expects($this->any())
             ->method("getClient")
-            ->will(self::returnValue($this->getSapiStub($encrypt)));
-        $storageServiceStub->expects(self::any())
+            ->will($this->returnValue($this->getSapiStub($encrypt)));
+        $storageServiceStub->expects($this->any())
             ->method("getTokenData")
-            ->will(self::returnValue($tokenData));
+            ->will($this->returnValue($tokenData));
 
         /** @var StorageApiService $storageServiceStub */
         return $storageServiceStub;
@@ -129,19 +128,19 @@ class JobFactoryTest extends TestCase
 
         $job = $jobFactory->create($command, ['configData' => $param, 'component' => 'docker-dummy-test'], $lock);
 
-        self::assertEquals($command, $job->getCommand());
-        self::assertEquals($lock, $job->getLockName());
-        self::assertEquals(['configData' => $param, 'component' => 'docker-dummy-test'], $job->getParams());
-        self::assertArrayHasKey('id', $job->getProject());
-        self::assertEquals($tokenData['owner']['id'], $job->getProject()['id']);
-        self::assertArrayHasKey('name', $job->getProject());
-        self::assertEquals($tokenData['owner']['name'], $job->getProject()['name']);
-        self::assertArrayHasKey('id', $job->getToken());
-        self::assertEquals($tokenData['id'], $job->getToken()['id']);
-        self::assertArrayHasKey('description', $job->getToken());
-        self::assertEquals($tokenData['description'], $job->getToken()['description']);
-        self::assertArrayHasKey('token', $job->getToken());
-        self::assertEquals($tokenData['token'], $this->encryptorFactory->getEncryptor()->decrypt($job->getToken()['token']));
+        $this->assertEquals($command, $job->getCommand());
+        $this->assertEquals($lock, $job->getLockName());
+        $this->assertEquals(['configData' => $param, 'component' => 'docker-dummy-test'], $job->getParams());
+        $this->assertArrayHasKey('id', $job->getProject());
+        $this->assertEquals($tokenData['owner']['id'], $job->getProject()['id']);
+        $this->assertArrayHasKey('name', $job->getProject());
+        $this->assertEquals($tokenData['owner']['name'], $job->getProject()['name']);
+        $this->assertArrayHasKey('id', $job->getToken());
+        $this->assertEquals($tokenData['id'], $job->getToken()['id']);
+        $this->assertArrayHasKey('description', $job->getToken());
+        $this->assertEquals($tokenData['description'], $job->getToken()['description']);
+        $this->assertArrayHasKey('token', $job->getToken());
+        $this->assertEquals($tokenData['token'], $this->encryptorFactory->getEncryptor()->decrypt($job->getToken()['token']));
     }
 
     public function testJobEncryptFlagSandbox()
@@ -159,11 +158,11 @@ class JobFactoryTest extends TestCase
         $lock = uniqid();
 
         $job = $jobFactory->create($command, $this->encryptorFactory->getEncryptor()->encrypt($param), $lock);
-        self::assertFalse($job->isEncrypted());
-        self::assertEquals($command, $job->getCommand());
-        self::assertEquals($lock, $job->getLockName());
-        self::assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
-        self::assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
+        $this->assertFalse($job->isEncrypted());
+        $this->assertEquals($command, $job->getCommand());
+        $this->assertEquals($lock, $job->getLockName());
+        $this->assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
+        $this->assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
     }
 
     public function testJobEncryptFlagNonEncryptComponent()
@@ -180,11 +179,11 @@ class JobFactoryTest extends TestCase
         $lock = uniqid();
 
         $job = $jobFactory->create($command, $this->encryptorFactory->getEncryptor()->encrypt($param), $lock);
-        self::assertFalse($job->isEncrypted());
-        self::assertEquals($command, $job->getCommand());
-        self::assertEquals($lock, $job->getLockName());
-        self::assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
-        self::assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
+        $this->assertFalse($job->isEncrypted());
+        $this->assertEquals($command, $job->getCommand());
+        $this->assertEquals($lock, $job->getLockName());
+        $this->assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
+        $this->assertEquals("KBC::Encrypted==", substr($job->getParams()["configData"]["#key2"], 0, 16));
     }
 
     public function testJobEncryptFlagEncryptComponent()
@@ -201,10 +200,10 @@ class JobFactoryTest extends TestCase
         $lock = uniqid();
 
         $job = $jobFactory->create($command, $this->encryptorFactory->getEncryptor()->encrypt($param), $lock);
-        self::assertTrue($job->isEncrypted());
-        self::assertEquals($command, $job->getCommand());
-        self::assertEquals($lock, $job->getLockName());
-        self::assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
-        self::assertEquals("value2", $job->getParams()["configData"]["#key2"]);
+        $this->assertTrue($job->isEncrypted());
+        $this->assertEquals($command, $job->getCommand());
+        $this->assertEquals($lock, $job->getLockName());
+        $this->assertEquals("KBC::Encrypted==", substr($job->getRawParams()["configData"]["#key2"], 0, 16));
+        $this->assertEquals("value2", $job->getParams()["configData"]["#key2"]);
     }
 }

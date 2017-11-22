@@ -9,10 +9,9 @@ use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-class ImageTest extends TestCase
+class ImageTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var ObjectEncryptorFactory

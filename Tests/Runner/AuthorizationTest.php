@@ -11,9 +11,8 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
-use PHPUnit\Framework\TestCase;
 
-class AuthorizationTest extends TestCase
+class AuthorizationTest extends \PHPUnit_Framework_TestCase
 {
     public function testOauthDecrypt()
     {
@@ -43,15 +42,15 @@ class AuthorizationTest extends TestCase
             '#appSecret' => '654321',
         ];
         $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'whatever')
-            ->will(self::returnValue($oauthResponse));
+            ->will($this->returnValue($oauthResponse));
         $config = ['oauth_api' => ['id' => 'whatever']];
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
-        self::assertEquals(
+        $this->assertEquals(
             $credentials,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
@@ -85,15 +84,15 @@ class AuthorizationTest extends TestCase
             '#appSecret' => '654321',
         ];
         $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method("getDetail")
             ->with('keboola.docker-demo', 'whatever')
-            ->will(self::returnValue($oauthResponse));
+            ->will($this->returnValue($oauthResponse));
         $config = ['oauth_api' => ['id' => 'whatever']];
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', true);
-        self::assertEquals(
+        $this->assertEquals(
             $oauthResponse,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
@@ -127,10 +126,10 @@ class AuthorizationTest extends TestCase
             '#appSecret' => '654321',
         ];
         $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method("getDetail")
             ->with('keboola.docker-demo', 'test-credentials-45')
-            ->will(self::returnValue($oauthResponse));
+            ->will($this->returnValue($oauthResponse));
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
         $temp = new Temp();
@@ -162,7 +161,7 @@ class AuthorizationTest extends TestCase
             ],
             'action' => 'run',
         ];
-        self::assertEquals($sampleData, $data);
+        $this->assertEquals($sampleData, $data);
     }
 
     public function testOauthConfigDecryptSandboxed()
@@ -193,10 +192,10 @@ class AuthorizationTest extends TestCase
             '#appSecret' => '654321',
         ];
         $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method("getDetail")
             ->with('keboola.docker-demo', 'test-credentials-45')
-            ->will(self::returnValue($oauthResponse));
+            ->will($this->returnValue($oauthResponse));
         $config = ["authorization" => ["oauth_api" => ["id" => "test-credentials-45"]]];
 
         $temp = new Temp();
@@ -238,7 +237,7 @@ class AuthorizationTest extends TestCase
             0,
             16
         );
-        self::assertEquals($sampleData, $data);
+        $this->assertEquals($sampleData, $data);
     }
 
     public function testOauthInjected()
@@ -272,7 +271,7 @@ class AuthorizationTest extends TestCase
             ->getMock();
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
-        self::assertEquals(
+        $this->assertEquals(
             $credentials,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
@@ -293,7 +292,7 @@ class AuthorizationTest extends TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method("getDetail")
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException("OAuth API error: No data found for api: keboola.docker-demo", 400)));
@@ -303,7 +302,7 @@ class AuthorizationTest extends TestCase
             $auth->getAuthorization($config);
             self::fail("Must raise UserException");
         } catch (UserException $e) {
-            self::assertContains('No data found for api', $e->getMessage());
+            $this->assertContains('No data found for api', $e->getMessage());
         }
     }
 
@@ -322,7 +321,7 @@ class AuthorizationTest extends TestCase
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $oauthClientStub->expects(self::once())
+        $oauthClientStub->expects($this->once())
             ->method("getDetail")
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException("Internal Server Error", 500)));
@@ -332,7 +331,7 @@ class AuthorizationTest extends TestCase
             $auth->getAuthorization($config);
             self::fail("Must raise ApplicationException");
         } catch (ApplicationException $e) {
-            self::assertContains('Internal Server Error', $e->getMessage());
+            $this->assertContains('Internal Server Error', $e->getMessage());
         }
     }
 
@@ -366,7 +365,7 @@ class AuthorizationTest extends TestCase
             ->getMock();
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', true);
-        self::assertEquals(
+        $this->assertEquals(
             $config,
             $auth->getAuthorization($config)
         );
@@ -430,7 +429,7 @@ class AuthorizationTest extends TestCase
             ],
             'action' => 'run',
         ];
-        self::assertEquals($sampleData, $data);
+        $this->assertEquals($sampleData, $data);
     }
 
 
@@ -492,6 +491,6 @@ class AuthorizationTest extends TestCase
             ],
             'action' => 'run',
         ];
-        self::assertEquals($sampleData, $data);
+        $this->assertEquals($sampleData, $data);
     }
 }

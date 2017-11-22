@@ -7,10 +7,9 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-class ImageCreatorTest extends TestCase
+class ImageCreatorTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Client

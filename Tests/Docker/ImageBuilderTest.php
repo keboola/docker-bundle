@@ -9,10 +9,9 @@ use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\Log\NullLogger;
 
-class ImageBuilderTest extends TestCase
+class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var ObjectEncryptorFactory

@@ -49,9 +49,9 @@ class ActionControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::atLeastOnce())
+        $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
+            ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = [
@@ -79,12 +79,12 @@ class ActionControllerTest extends WebTestCase
             ]
         ];
 
-        $storageClientStub->expects(self::any())
+        $storageClientStub->expects($this->any())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
-        $storageClientStub->expects(self::any())
+            ->will($this->returnValue($indexActionValue));
+        $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will(self::returnValue(["owner" => ["id" => "123", "features" => []]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         return $storageServiceStub;
     }
@@ -97,9 +97,9 @@ class ActionControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::atLeastOnce())
+        $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
+            ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = [
@@ -163,15 +163,15 @@ class ActionControllerTest extends WebTestCase
             ]
         ];
 
-        $storageClientStub->expects(self::any())
+        $storageClientStub->expects($this->any())
             ->method("indexAction")
-            ->will(self::returnValue($indexActionValue));
-        $storageClientStub->expects(self::any())
+            ->will($this->returnValue($indexActionValue));
+        $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will(self::returnValue(["owner" => ["id" => "123", "features" => []]]));
-        $storageClientStub->expects(self::any())
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
+        $storageClientStub->expects($this->any())
             ->method("getRunId")
-            ->will(self::returnValue(uniqid()));
+            ->will($this->returnValue(uniqid()));
 
         return $storageServiceStub;
     }
