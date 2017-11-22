@@ -1832,16 +1832,16 @@
         },
         {
             "name": "keboola/object-encryptor",
-            "version": "0.0.3",
+            "version": "0.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/object-encryptor.git",
-                "reference": "f231f5668e50cc5adbd89db0d846d7351a872fdf"
+                "reference": "e57ef9955b64c7b66237ca4f9bb9587b9afde0fb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/f231f5668e50cc5adbd89db0d846d7351a872fdf",
-                "reference": "f231f5668e50cc5adbd89db0d846d7351a872fdf",
+                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/e57ef9955b64c7b66237ca4f9bb9587b9afde0fb",
+                "reference": "e57ef9955b64c7b66237ca4f9bb9587b9afde0fb",
                 "shasum": ""
             },
             "require": {
@@ -1877,7 +1877,7 @@
                 "encryption",
                 "json"
             ],
-            "time": "2017-11-22T09:10:31+00:00"
+            "time": "2017-11-22T21:01:32+00:00"
         },
         {
             "name": "keboola/output-mapping",

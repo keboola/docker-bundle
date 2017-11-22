@@ -261,7 +261,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            self::fail("Building from private image without login should fail");
+            $this->fail("Building from private image without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('Failed to pull parent image', $e->getMessage());
         }
@@ -301,7 +301,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            self::fail("Building from private repository without login should fail");
+            $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
                 'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
@@ -343,7 +343,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            self::fail("Building from private repository without login should fail");
+            $this->fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
                 'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
@@ -454,7 +454,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            self::fail("Invalid repository must raise exception.");
+            $this->fail("Invalid repository must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('Cannot access the repository', $e->getMessage());
         }
@@ -513,7 +513,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
-            self::fail("Invalid repository address must fail");
+            $this->fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());
         }
