@@ -206,7 +206,10 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
 
 # Group Run
 
-Run a configuration of a component.
+Run a configuration of a component. The configuration is specified either in `config` or `configData` property of the request body. 
+The `config` property contains the Id of an existing configuration. When you want to run configuration without storing it, use the 
+`configData` property to specify the entire configuration.
+One of `config` or `configData` must always be specified. If both `config` and `configData` are specified, then `config` is ignored.
 
 ## Create a job [/{component}/run]
 
