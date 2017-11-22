@@ -86,7 +86,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            substr(hash('sha256', uniqid()), 0, 32),
+            hash('sha256', uniqid()),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );
