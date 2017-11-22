@@ -24,7 +24,7 @@ class ImageBuilderTest extends TestCase
         $this->encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );
@@ -68,9 +68,9 @@ class ImageBuilderTest extends TestCase
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker:latest
 LABEL com.keboola.docker.runner.origin=builder
@@ -83,7 +83,7 @@ RUN composer install
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data
 DOCKERFILE;
-        self::assertEquals($expectedFile, trim($dockerFile));
+        $this->assertEquals($expectedFile, trim($dockerFile));
     }
 
     public function testDockerFileVersion()
@@ -124,9 +124,9 @@ DOCKERFILE;
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
             'FROM keboolaprivatetest/docker-demo-docker:latest
 LABEL com.keboola.docker.runner.origin=builder
@@ -139,7 +139,7 @@ RUN cd /home/
 RUN composer install
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data';
-        self::assertEquals($expectedFile, trim($dockerFile));
+        $this->assertEquals($expectedFile, trim($dockerFile));
     }
 
 
@@ -195,9 +195,9 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $this->assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
             'FROM keboolaprivatetest/docker-demo-docker:latest
 LABEL com.keboola.docker.runner.origin=builder
@@ -209,7 +209,7 @@ RUN cd fooBar baz
 RUN composer install
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data';
-        self::assertEquals($expectedFile, trim($dockerFile));
+        $this->assertEquals($expectedFile, trim($dockerFile));
     }
 
 
@@ -260,7 +260,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
         // password in parameters will not be used for repository
-        self::assertEquals('', $image->getRepoPassword());
+        $this->assertEquals('', $image->getRepoPassword());
 
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
@@ -275,10 +275,10 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection->invoke($image, $tempDir->getTmpFolder());
             self::fail("Missing parameter must cause exception.");
         } catch (BuildParameterException $e) {
-            self::assertContains('{{#password}}', $e->getMessage());
-            self::assertNotContains('{{otherParam}}', $e->getMessage());
+            $this->assertContains('{{#password}}', $e->getMessage());
+            $this->assertNotContains('{{otherParam}}', $e->getMessage());
         }
-        self::assertEquals('fooBar', $image->getRepoPassword());
+        $this->assertEquals('fooBar', $image->getRepoPassword());
     }
 
 
@@ -325,7 +325,7 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection->invoke($image, $tempDir->getTmpFolder());
             self::fail("Missing parameter definition must raise exception.");
         } catch (BuildParameterException $e) {
-            self::assertContains('Orphaned parameter', $e->getMessage());
+            $this->assertContains('Orphaned parameter', $e->getMessage());
         }
     }
 
@@ -377,7 +377,7 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection->invoke($image, $tempDir->getTmpFolder());
             self::fail("Missing value of parameter must raise exception");
         } catch (BuildParameterException $e) {
-            self::assertContains('has no value', $e->getMessage());
+            $this->assertContains('has no value', $e->getMessage());
         }
     }
 
@@ -420,8 +420,8 @@ ENTRYPOINT php /home/run.php --data=/data';
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
 FROM keboolaprivatetest/docker-demo-docker:latest
@@ -439,9 +439,9 @@ RUN composer install
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data
 DOCKERFILE;
-        self::assertEquals($expectedFile, trim($dockerFile));
+        $this->assertEquals($expectedFile, trim($dockerFile));
         $credentials = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
-        self::assertEquals(
+        $this->assertEquals(
             'https://' . GIT_PRIVATE_USERNAME . ':' . GIT_PRIVATE_PASSWORD . '@github.com/keboola/docker-demo-app',
             trim($credentials)
         );
@@ -508,8 +508,8 @@ DOCKERFILE;
 
         /** @var ImageBuilder $image */
         $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
-        self::assertInstanceOf(ImageBuilder::class, $image);
-        self::assertTrue($image->getCache(), 'caching should be enabled by default');
+        $this->assertInstanceOf(ImageBuilder::class, $image);
+        $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
@@ -520,9 +520,9 @@ DOCKERFILE;
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $tempDir->getTmpFolder());
-        self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
-        self::assertEquals('master', $image->getVersion(), 'version should be set from runtime parameters');
-        self::assertFalse($image->getCache(), 'version set to master should disable caching');
+        $this->assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
+        $this->assertEquals('master', $image->getVersion(), 'version should be set from runtime parameters');
+        $this->assertFalse($image->getCache(), 'version set to master should disable caching');
 
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
@@ -536,6 +536,6 @@ RUN quick brown master fox jumped
 WORKDIR /data
 ENTRYPOINT php /home/run.php --data=/data
 DOCKERFILE;
-        self::assertEquals($expectedFile, trim($dockerFile));
+        $this->assertEquals($expectedFile, trim($dockerFile));
     }
 }

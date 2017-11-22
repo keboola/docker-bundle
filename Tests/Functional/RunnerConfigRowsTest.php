@@ -132,7 +132,7 @@ class RunnerConfigRowsTest extends KernelTestCase
         $encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );

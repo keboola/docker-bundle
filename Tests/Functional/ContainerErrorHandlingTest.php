@@ -2,13 +2,15 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -17,6 +19,22 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
+    public function setUp()
+    {
+        $this->encryptorFactory = new ObjectEncryptorFactory(
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'us-east-1'
+        );
+    }
+
     private function createScript(Temp $temp, $contents)
     {
         $temp->initRunFolder();
@@ -30,12 +48,11 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
     private function getContainer($imageConfig, $dataDir, $envs)
     {
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
-        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfig), new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfig), new Temp(), true);
         $image->prepare([]);
 
         $container = new Container(
@@ -112,7 +129,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            $this->fail("Must raise an exception");
+            self::fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('Parse error', $e->getMessage());
         }
@@ -126,7 +143,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            $this->fail("Must raise an exception");
+            self::fail("Must raise an exception");
         } catch (UserException $e) {
             $this->assertContains('graceful error', $e->getMessage());
         }
@@ -141,7 +158,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
         try {
             $container->run();
-            $this->fail("Must raise an exception");
+            self::fail("Must raise an exception");
         } catch (ApplicationException $e) {
             $this->assertContains('graceful error', $e->getMessage());
         }
@@ -163,13 +180,12 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['process_timeout'] = 10;
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php echo "done";');
         $container = new Container(
@@ -205,7 +221,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $testStartTime = time();
         try {
             $container->run();
-            $this->fail("Must raise an exception");
+            self::fail("Must raise an exception");
         } catch (UserException $e) {
             $testDuration = time() - $testStartTime;
             $this->assertContains('timeout', $e->getMessage());
@@ -223,13 +239,12 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     {
         $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
         $dataDir = $this->createScript($temp, '<?php sleep(100);');
         $container = new Container(
@@ -261,7 +276,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $dataDir = $this->createScript($temp, '<?php sleep(10);');
         try {
             $this->getContainer($imageConfiguration, $dataDir, []);
-            $this->fail("Must raise an exception for invalid image.");
+            self::fail("Must raise an exception for invalid image.");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
         }
@@ -269,7 +284,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
     public function testOutOfMemory()
     {
-        $this->expectException(\Keboola\DockerBundle\Exception\OutOfMemoryException::class);
+        $this->expectException(OutOfMemoryException::class);
         $this->expectExceptionMessage('Component out of memory');
 
         $temp = new Temp('docker');
@@ -291,7 +306,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
 
     public function testOutOfMemoryCrippledComponent()
     {
-        $this->expectException(\Keboola\DockerBundle\Exception\OutOfMemoryException::class);
+        $this->expectException(OutOfMemoryException::class);
         $this->expectExceptionMessage('Component out of memory');
 
         $temp = new Temp('docker');

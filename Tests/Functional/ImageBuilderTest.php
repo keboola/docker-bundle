@@ -6,8 +6,8 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -35,7 +35,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -80,7 +80,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -123,7 +123,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $process = new Process("sudo docker images quay.io/keboola/docker-custom-php:1.1.0 | grep docker-custom-php | wc -l");
         $process->run();
@@ -176,7 +176,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -226,7 +226,7 @@ class ImageBuilderTest extends KernelTestCase
         $process->run();
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -261,7 +261,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            $this->fail("Building from private image without login should fail");
+            self::fail("Building from private image without login should fail");
         } catch (BuildException $e) {
             $this->assertContains('Failed to pull parent image', $e->getMessage());
         }
@@ -271,7 +271,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreatePrivateRepoMissingPassword()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -301,7 +301,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            $this->fail("Building from private repository without login should fail");
+            self::fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
                 'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
@@ -314,7 +314,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreatePrivateRepoMissingCredentials()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -343,7 +343,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            $this->fail("Building from private repository without login should fail");
+            self::fail("Building from private repository without login should fail");
         } catch (BuildParameterException $e) {
             $this->assertContains(
                 'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
@@ -359,7 +359,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -425,7 +425,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testInvalidRepo()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -454,7 +454,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
-            $this->fail("Invalid repository must raise exception.");
+            self::fail("Invalid repository must raise exception.");
         } catch (UserException $e) {
             $this->assertContains('Cannot access the repository', $e->getMessage());
         }
@@ -463,7 +463,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreateInvalidUrl()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -513,7 +513,7 @@ class ImageBuilderTest extends KernelTestCase
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
-            $this->fail("Invalid repository address must fail");
+            self::fail("Invalid repository address must fail");
         } catch (UserException $e) {
             $this->assertContains('Invalid repository address', $e->getMessage());
         }
@@ -526,7 +526,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -567,7 +567,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);

@@ -6,9 +6,9 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -26,7 +26,8 @@ class NetworkTest extends KernelTestCase
 
     private function getContainer(Component $imageConfig, array $componentConfig)
     {
-        $encryptor = new ObjectEncryptor();
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
@@ -118,7 +119,7 @@ class NetworkTest extends KernelTestCase
         $container = $this->getContainer($imageConfig, []);
         try {
             $container->run();
-            $this->fail("Ping must fail");
+            self::fail("Ping must fail");
         } catch (UserException $e) {
             $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
@@ -155,7 +156,7 @@ class NetworkTest extends KernelTestCase
         $container = $this->getContainer($imageConfig, ['runtime' => ['network' => 'none']]);
         try {
             $container->run();
-            $this->fail("Ping must fail");
+            self::fail("Ping must fail");
         } catch (UserException $e) {
             $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
         }
@@ -288,7 +289,7 @@ class NetworkTest extends KernelTestCase
 
         try {
             $this->getContainer($imageConfig, ['runtime' => ['network' => 'fooBar']]);
-            $this->fail("Invalid network must fail.");
+            self::fail("Invalid network must fail.");
         } catch (ApplicationException $e) {
             $this->assertContains('not supported', $e->getMessage());
         }

@@ -51,13 +51,13 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $storageServiceStub->expects($this->any())
+        $storageServiceStub->expects(self::any())
             ->method("getClient")
-            ->will($this->returnValue($this->client))
+            ->will(self::returnValue($this->client))
         ;
-        $storageServiceStub->expects($this->any())
+        $storageServiceStub->expects(self::any())
             ->method("getTokenData")
-            ->will($this->returnValue($tokenData))
+            ->will(self::returnValue($tokenData))
         ;
 
         $log = new Logger("null");
@@ -71,13 +71,13 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $loggersServiceStub->expects($this->any())
+        $loggersServiceStub->expects(self::any())
             ->method("getLog")
-            ->will($this->returnValue($log))
+            ->will(self::returnValue($log))
         ;
-        $loggersServiceStub->expects($this->any())
+        $loggersServiceStub->expects(self::any())
             ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger))
+            ->will(self::returnValue($containerLogger))
         ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
@@ -88,7 +88,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );

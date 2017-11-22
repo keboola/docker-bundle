@@ -81,7 +81,6 @@ class ApiController extends BaseApiController
         }
     }
 
-
     /**
      * Create syrup Job from request parameters.
      * @param array $params
@@ -101,12 +100,12 @@ class ApiController extends BaseApiController
             if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $params["component"])
                 && isset($params["configData"])
             ) {
-                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
-                $cryptoWrapper->setComponentId($params["component"]);
+                /** @var ObjectEncryptorFactory $encryptorFactory */
+                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+                $encryptorFactory->setComponentId($params["component"]);
                 $tokenInfo = $this->storageApi->verifyToken();
-                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
-                $encryptor = $this->container->get("syrup.object_encryptor");
-                $params["configData"] = $encryptor->encrypt($params["configData"]);
+                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+                $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
             }
 
             // Create new job

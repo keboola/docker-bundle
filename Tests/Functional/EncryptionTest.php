@@ -23,7 +23,6 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class EncryptionTest extends KernelTestCase
 {
-
     /**
      * @var Client
      */
@@ -45,12 +44,12 @@ class EncryptionTest extends KernelTestCase
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects($this->any())
+        $storageServiceStub->expects(self::any())
             ->method("getClient")
-            ->will($this->returnValue($this->client));
-        $storageServiceStub->expects($this->any())
+            ->will(self::returnValue($this->client));
+        $storageServiceStub->expects(self::any())
             ->method("getTokenData")
-            ->will($this->returnValue($tokenData));
+            ->will(self::returnValue($tokenData));
 
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
@@ -59,12 +58,12 @@ class EncryptionTest extends KernelTestCase
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $loggersServiceStub->expects($this->any())
+        $loggersServiceStub->expects(self::any())
             ->method("getLog")
-            ->will($this->returnValue($log));
-        $loggersServiceStub->expects($this->any())
+            ->will(self::returnValue($log));
+        $loggersServiceStub->expects(self::any())
             ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger));
+            ->will(self::returnValue($containerLogger));
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
@@ -83,6 +82,7 @@ class EncryptionTest extends KernelTestCase
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
+        /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
             $encryptorFactory,
             $storageServiceStub,
@@ -142,9 +142,9 @@ class EncryptionTest extends KernelTestCase
         $componentsStub = $this->getMockBuilder(Components::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $componentsStub->expects($this->once())
+        $componentsStub->expects(self::once())
             ->method("getConfiguration")
-            ->will($this->returnValueMap([
+            ->will(self::returnValueMap([
                 ["docker-dummy-component", "config", $configData],
                 ["docker-dummy-component", "config-rows", $configDataRows]
             ]));
@@ -152,9 +152,9 @@ class EncryptionTest extends KernelTestCase
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $componentsServiceStub->expects($this->once())
+        $componentsServiceStub->expects(self::once())
             ->method("getComponents")
-            ->will($this->returnValue($componentsStub));
+            ->will(self::returnValue($componentsStub));
 
         /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor(
@@ -168,12 +168,12 @@ class EncryptionTest extends KernelTestCase
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->any())
+        $sapiStub->expects(self::any())
             ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
-        $sapiStub->expects($this->any())
+            ->will(self::returnValue($indexActionValue));
+        $sapiStub->expects(self::any())
             ->method("verifyToken")
-            ->will($this->returnValue($tokenData));
+            ->will(self::returnValue($tokenData));
         /** @noinspection PhpParamsInspection */
         $jobExecutor->setStorageApi($sapiStub);
         return $jobExecutor;
@@ -269,12 +269,12 @@ class EncryptionTest extends KernelTestCase
         $jobExecutor->execute($job);
 
         $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
+        self::assertEquals(1, count($ret));
+        self::assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#key2"]);
-        $this->assertEquals("value3", $config["parameters"]["#key3"]);
-        $this->assertEquals("value4", $config["parameters"]["#key4"]);
+        self::assertEquals("value2", $config["parameters"]["#key2"]);
+        self::assertEquals("value3", $config["parameters"]["#key3"]);
+        self::assertEquals("value4", $config["parameters"]["#key4"]);
     }
 
 
@@ -300,14 +300,14 @@ class EncryptionTest extends KernelTestCase
         $jobExecutor->execute($job);
 
         $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
+        self::assertEquals(1, count($ret));
+        self::assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#configKey2"]);
-        $this->assertEquals("value3", $config["parameters"]["#configKey3"]);
-        $this->assertEquals("value4", $config["parameters"]["#configKey4"]);
-        $this->assertEquals("value2", $config["parameters"]["#rowKey2"]);
-        $this->assertEquals("value3", $config["parameters"]["#rowKey3"]);
-        $this->assertEquals("value4", $config["parameters"]["#rowKey4"]);
+        self::assertEquals("value2", $config["parameters"]["#configKey2"]);
+        self::assertEquals("value3", $config["parameters"]["#configKey3"]);
+        self::assertEquals("value4", $config["parameters"]["#configKey4"]);
+        self::assertEquals("value2", $config["parameters"]["#rowKey2"]);
+        self::assertEquals("value3", $config["parameters"]["#rowKey3"]);
+        self::assertEquals("value4", $config["parameters"]["#rowKey4"]);
     }
 }

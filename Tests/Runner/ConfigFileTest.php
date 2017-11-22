@@ -2,27 +2,40 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 
 class ConfigFileTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
+    public function setUp()
+    {
+        $this->encryptorFactory = new ObjectEncryptorFactory(
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'us-east-1'
+        );
+    }
+
     public function testConfig()
     {
         $temp = new Temp();
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
-
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         $config->createConfigFile(['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]]);
         $data = file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json');
@@ -47,14 +60,12 @@ SAMPLE;
     public function testInvalidConfig()
     {
         $temp = new Temp();
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
 
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         try {
@@ -90,14 +101,12 @@ SAMPLE;
         ];
 
         $temp = new Temp();
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -116,14 +125,12 @@ SAMPLE;
         $configData = [];
 
         $temp = new Temp();
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
 
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $encryptor, 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);

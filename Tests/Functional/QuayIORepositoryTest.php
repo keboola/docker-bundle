@@ -2,9 +2,10 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -38,8 +39,15 @@ class QuayIORepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $encryptorFactory = new ObjectEncryptorFactory(
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()),0, 32),
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'us-east-1'
+        );
+
+        $image = ImageFactory::getImage($encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());

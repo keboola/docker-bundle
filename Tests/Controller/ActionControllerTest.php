@@ -3,8 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ActionController;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -49,9 +49,9 @@ class ActionControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects($this->atLeastOnce())
+        $storageServiceStub->expects(self::atLeastOnce())
             ->method("getClient")
-            ->will($this->returnValue($storageClientStub));
+            ->will(self::returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = [
@@ -79,12 +79,12 @@ class ActionControllerTest extends WebTestCase
             ]
         ];
 
-        $storageClientStub->expects($this->any())
+        $storageClientStub->expects(self::any())
             ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
-        $storageClientStub->expects($this->any())
+            ->will(self::returnValue($indexActionValue));
+        $storageClientStub->expects(self::any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
+            ->will(self::returnValue(["owner" => ["id" => "123", "features" => []]]));
 
         return $storageServiceStub;
     }
@@ -97,9 +97,9 @@ class ActionControllerTest extends WebTestCase
         $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects($this->atLeastOnce())
+        $storageServiceStub->expects(self::atLeastOnce())
             ->method("getClient")
-            ->will($this->returnValue($storageClientStub));
+            ->will(self::returnValue($storageClientStub));
 
         // mock client to return image data
         $indexActionValue = [
@@ -163,15 +163,15 @@ class ActionControllerTest extends WebTestCase
             ]
         ];
 
-        $storageClientStub->expects($this->any())
+        $storageClientStub->expects(self::any())
             ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
-        $storageClientStub->expects($this->any())
+            ->will(self::returnValue($indexActionValue));
+        $storageClientStub->expects(self::any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
-        $storageClientStub->expects($this->any())
+            ->will(self::returnValue(["owner" => ["id" => "123", "features" => []]]));
+        $storageClientStub->expects(self::any())
             ->method("getRunId")
-            ->will($this->returnValue(uniqid()));
+            ->will(self::returnValue(uniqid()));
 
         return $storageServiceStub;
     }
@@ -446,7 +446,7 @@ class ActionControllerTest extends WebTestCase
         /**
          * @var $encryptor ObjectEncryptor
          */
-        $encryptor = $container->get('syrup.object_encryptor');
+        $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $encryptedPassword = $encryptor->encrypt('password');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
@@ -502,14 +502,11 @@ class ActionControllerTest extends WebTestCase
     {
         $container = self::$container;
 
-        /**
-         * @var $encryptor ObjectEncryptor
-         */
-        $encryptor = $container->get('syrup.object_encryptor');
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $encryptedPassword = $encryptor->encrypt('mismatch');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
-        $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 

@@ -24,7 +24,7 @@ class ImageTest extends TestCase
         $this->encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );
@@ -51,9 +51,9 @@ class ImageTest extends TestCase
         ]);
 
         $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
-        self::assertEquals(DockerHub::class, get_class($image));
-        self::assertEquals("master", $image->getTag());
-        self::assertEquals("keboola/docker-demo:master", $image->getFullImageId());
+        $this->assertEquals(DockerHub::class, get_class($image));
+        $this->assertEquals("master", $image->getTag());
+        $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());
     }
 
     public function testDockerHubPrivateRepository()
@@ -76,14 +76,14 @@ class ImageTest extends TestCase
         ]);
         /** @var DockerHub\PrivateRepository $image */
         $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
-        self::assertEquals(DockerHub\PrivateRepository::class, get_class($image));
-        self::assertEquals("bb", $image->getLoginPassword());
-        self::assertEquals("cc", $image->getLoginUsername());
-        self::assertEquals("dd", $image->getLoginServer());
+        $this->assertEquals(DockerHub\PrivateRepository::class, get_class($image));
+        $this->assertEquals("bb", $image->getLoginPassword());
+        $this->assertEquals("cc", $image->getLoginUsername());
+        $this->assertEquals("dd", $image->getLoginServer());
 
-        self::assertEquals("--username='cc' --password='bb' 'dd'", $image->getLoginParams());
-        self::assertEquals("'dd'", $image->getLogoutParams());
-        self::assertEquals("keboola/docker-demo:latest", $image->getFullImageId());
+        $this->assertEquals("--username='cc' --password='bb' 'dd'", $image->getLoginParams());
+        $this->assertEquals("'dd'", $image->getLogoutParams());
+        $this->assertEquals("keboola/docker-demo:latest", $image->getFullImageId());
     }
 
     public function testQuayIO()
@@ -104,8 +104,8 @@ class ImageTest extends TestCase
         ]);
 
         $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
-        self::assertEquals(QuayIO::class, get_class($image));
-        self::assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
+        $this->assertEquals(QuayIO::class, get_class($image));
+        $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }
 
 
@@ -128,13 +128,13 @@ class ImageTest extends TestCase
         ]);
         /** @var QuayIO\PrivateRepository $image */
         $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
-        self::assertEquals(QuayIO\PrivateRepository::class, get_class($image));
-        self::assertEquals("bb", $image->getLoginPassword());
-        self::assertEquals("cc", $image->getLoginUsername());
-        self::assertEquals("quay.io", $image->getLoginServer());
+        $this->assertEquals(QuayIO\PrivateRepository::class, get_class($image));
+        $this->assertEquals("bb", $image->getLoginPassword());
+        $this->assertEquals("cc", $image->getLoginUsername());
+        $this->assertEquals("quay.io", $image->getLoginServer());
 
-        self::assertEquals("--username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
-        self::assertEquals("'quay.io'", $image->getLogoutParams());
-        self::assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());
+        $this->assertEquals("--username='cc' --password='bb' 'quay.io'", $image->getLoginParams());
+        $this->assertEquals("'quay.io'", $image->getLogoutParams());
+        $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());
     }
 }

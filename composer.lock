@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.39.0",
+            "version": "3.39.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "fd829dedc766a23e00cb155fb3c417f3cc025ef9"
+                "reference": "314ab6aedfde4364f2a5321153638324182e8c13"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/fd829dedc766a23e00cb155fb3c417f3cc025ef9",
-                "reference": "fd829dedc766a23e00cb155fb3c417f3cc025ef9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/314ab6aedfde4364f2a5321153638324182e8c13",
+                "reference": "314ab6aedfde4364f2a5321153638324182e8c13",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2017-11-20T23:33:24+00:00"
+            "time": "2017-11-22T01:18:54+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1832,16 +1832,16 @@
         },
         {
             "name": "keboola/object-encryptor",
-            "version": "0.0.2",
+            "version": "0.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/object-encryptor.git",
-                "reference": "9e723e60b4b9e311a5e181b9de587d4795c523ca"
+                "reference": "f231f5668e50cc5adbd89db0d846d7351a872fdf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/9e723e60b4b9e311a5e181b9de587d4795c523ca",
-                "reference": "9e723e60b4b9e311a5e181b9de587d4795c523ca",
+                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/f231f5668e50cc5adbd89db0d846d7351a872fdf",
+                "reference": "f231f5668e50cc5adbd89db0d846d7351a872fdf",
                 "shasum": ""
             },
             "require": {
@@ -1877,7 +1877,7 @@
                 "encryption",
                 "json"
             ],
-            "time": "2017-11-21T16:23:17+00:00"
+            "time": "2017-11-22T09:10:31+00:00"
         },
         {
             "name": "keboola/output-mapping",
@@ -2142,12 +2142,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "223d7f36da51f76d9f3b7a9296cd1af2dff6120d"
+                "reference": "a9e88a1f957a381d44cc9c5db39e080d1758aea7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/223d7f36da51f76d9f3b7a9296cd1af2dff6120d",
-                "reference": "223d7f36da51f76d9f3b7a9296cd1af2dff6120d",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/a9e88a1f957a381d44cc9c5db39e080d1758aea7",
+                "reference": "a9e88a1f957a381d44cc9c5db39e080d1758aea7",
                 "shasum": ""
             },
             "require": {
@@ -2210,7 +2210,7 @@
                 "source": "https://github.com/keboola/syrup/tree/encryption-lib",
                 "issues": "https://github.com/keboola/syrup/issues"
             },
-            "time": "2017-11-21T12:38:22+00:00"
+            "time": "2017-11-22T00:10:31+00:00"
         },
         {
             "name": "kriswallsmith/assetic",

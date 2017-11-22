@@ -68,13 +68,13 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $loggersServiceStub->expects($this->any())
+        $loggersServiceStub->expects(self::any())
             ->method('getLog')
-            ->will($this->returnValue($log))
+            ->will(self::returnValue($log))
         ;
-        $loggersServiceStub->expects($this->any())
+        $loggersServiceStub->expects(self::any())
             ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger))
+            ->will(self::returnValue($containerLogger))
         ;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
@@ -85,7 +85,7 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
         $encryptorFactory = new ObjectEncryptorFactory(
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
+            substr(hash('sha256', uniqid()), 0, 32),
             Key::createNewRandomKey()->saveToAsciiSafeString(),
             'us-east-1'
         );
@@ -173,15 +173,16 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
             'uri' => 'https://syrup.keboola.com/docker/keboola.r-transformation',
         );
         $jobExecutorMock
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('getComponent')
             ->will(
-                $this->returnValue(
+                self::returnValue(
                     $componentDefinition
                 )
             )
         ;
 
+        /** @var Executor $jobExecutorMock */
         $jobExecutorMock->setStorageApi($this->client);
 
         return $jobExecutorMock;
@@ -281,6 +282,6 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $this->assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
+        self::assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
     }
 }

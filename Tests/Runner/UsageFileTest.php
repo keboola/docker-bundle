@@ -2,16 +2,18 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
-use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class UsageFileTest extends \PHPUnit_Framework_TestCase
+class UsageFileTest extends TestCase
 {
     /**
      * @var Temp
@@ -69,6 +71,7 @@ JSON;
             ->getMock()
         ;
 
+        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -92,6 +95,7 @@ YAML;
             ->getMock()
         ;
 
+        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -113,19 +117,28 @@ JSON;
             ->getMock()
         ;
 
-        $jobMapperStub
-            ->expects($this->once())
-            ->method('get')
-            ->willReturn(new Job(new ObjectEncryptor));
+        $encryptorFactory = new ObjectEncryptorFactory(
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid()),
+            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'us-east-1'
+        );
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
+            ->method('get')
+            ->willReturn(new Job($encryptorFactory->getEncryptor()));
+
+        $jobMapperStub
+            ->expects(self::once())
             ->method('update')
-            ->with($this->callback(function ($job) use ($usage) {
+            ->with(self::callback(function ($job) use ($usage) {
                 /** @var $job Job */
                 return $job->getUsage() === \json_decode($usage, true);
             }));
 
+        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -151,10 +164,11 @@ JSON;
         ;
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('get')
             ->willReturn(null);
 
+        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }

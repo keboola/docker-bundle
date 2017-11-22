@@ -119,25 +119,25 @@ class GarbageCollectCommandTest extends WebTestCase
         ]);
 
         // check the results
-        self::assertContains('Finished', $applicationTester->getDisplay());
-        self::assertEquals(0, $applicationTester->getStatusCode());
+        $this->assertContains('Finished', $applicationTester->getDisplay());
+        $this->assertEquals(0, $applicationTester->getStatusCode());
         $images = explode("\n", $this->exec('sudo docker images --quiet --all'));
         $containers = explode("\n", $this->exec('sudo docker ps --quiet --all'));
-        self::assertCount(2, $keepImages);
-        self::assertCount(2, $removeImages);
-        self::assertCount(1, $keepContainers);
-        self::assertCount(1, $removeContainers);
+        $this->assertCount(2, $keepImages);
+        $this->assertCount(2, $removeImages);
+        $this->assertCount(1, $keepContainers);
+        $this->assertCount(1, $removeContainers);
         foreach ($keepImages as $id) {
-            self::assertTrue(in_array($id, $images));
+            $this->assertTrue(in_array($id, $images));
         }
         foreach ($removeImages as $id) {
-            self::assertFalse(in_array($id, $images));
+            $this->assertFalse(in_array($id, $images));
         }
         foreach ($keepContainers as $id) {
-            self::assertTrue(in_array($id, $containers));
+            $this->assertTrue(in_array($id, $containers));
         }
         foreach ($removeContainers as $id) {
-            self::assertFalse(in_array($id, $containers));
+            $this->assertFalse(in_array($id, $containers));
         }
     }
 
@@ -166,8 +166,8 @@ class GarbageCollectCommandTest extends WebTestCase
             'container-age' => 20,
             'command-timeout' => 5
         ]);
-        self::assertContains('Timeout reached, terminating', $applicationTester->getDisplay());
-        self::assertContains('Finished', $applicationTester->getDisplay());
-        self::assertEquals(0, $applicationTester->getStatusCode());
+        $this->assertContains('Timeout reached, terminating', $applicationTester->getDisplay());
+        $this->assertContains('Finished', $applicationTester->getDisplay());
+        $this->assertEquals(0, $applicationTester->getStatusCode());
     }
 }

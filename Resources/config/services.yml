@@ -4,18 +4,6 @@ services:
         class: Keboola\DockerBundle\Service\ComponentsService
         arguments: ["@syrup.storage_api"]
 
-    syrup.encryption.component_wrapper:
-        class: Keboola\DockerBundle\Encryption\ComponentWrapper
-        arguments: ["%encryption_key%"]
-        tags:
-            - { name: syrup.encryption.wrapper }
-
-    syrup.encryption.component_project_wrapper:
-        class: Keboola\DockerBundle\Encryption\ComponentProjectWrapper
-        arguments: ["%encryption_key%"]
-        tags:
-            - { name: syrup.encryption.wrapper }
-
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
         arguments:
@@ -26,7 +14,7 @@ services:
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory
-        arguments: ["%app_name%", "@syrup.object_encryptor", "@syrup.storage_api"]
+        arguments: ["%app_name%", "@docker_bundle.object_encryptor_factory", "@syrup.storage_api"]
 
     docker_bundle.loggers:
         class: Keboola\DockerBundle\Service\LoggersService

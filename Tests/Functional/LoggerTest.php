@@ -7,9 +7,9 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
@@ -21,7 +21,6 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class LoggerTest extends KernelTestCase
 {
-
     private function getImageConfiguration()
     {
         return [
@@ -92,7 +91,8 @@ class LoggerTest extends KernelTestCase
         /** @var LoggersService $logService */
         $logService = self::$kernel->getContainer()->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
-        $encryptor = new ObjectEncryptor();
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $log = $logService->getLog();
         $containerLog = $logService->getContainerLog();
         $log->pushHandler($handler);
@@ -117,7 +117,7 @@ class LoggerTest extends KernelTestCase
         $serviceContainer = self::$kernel->getContainer();
         /** @var LoggersService $logService */
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         /** @var LoggersService $logService */
         $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
@@ -427,10 +427,10 @@ print "second message to stdout\n";'
         $this->assertEquals('', $err);
         $this->assertEquals("Client finished", $out);
         $records = $containerHandler->getRecords();
-        $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasInfo("Client finished"));
-        $this->assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
-        $this->assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
+        self::assertEquals(3, count($records));
+        self::assertTrue($containerHandler->hasInfo("Client finished"));
+        self::assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
+        self::assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
     }
 
     public function testVerbosityDefault()
@@ -448,7 +448,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(7, $events);
+        self::assertCount(7, $events);
         $error = [];
         $info = [];
         $warn = [];
@@ -463,18 +463,18 @@ print "second message to stdout\n";'
                 $warn[] = $event['message'];
             }
         }
-        $this->assertCount(1, $warn);
-        $this->assertEquals('A warning message.', $warn[0]);
-        $this->assertCount(2, $info);
+        self::assertCount(1, $warn);
+        self::assertEquals('A warning message.', $warn[0]);
+        self::assertCount(2, $info);
         sort($info);
-        $this->assertEquals(5827, strlen($info[0]));
-        $this->assertEquals('Client finished', $info[1]);
+        self::assertEquals(5827, strlen($info[0]));
+        self::assertEquals('Client finished', $info[1]);
         sort($error);
-        $this->assertCount(4, $error);
-        $this->assertEquals('Application error', $error[0]);
-        $this->assertEquals('Application error', $error[1]);
-        $this->assertEquals('Application error', $error[2]);
-        $this->assertEquals('Error message.', $error[3]);
+        self::assertCount(4, $error);
+        self::assertEquals('Application error', $error[0]);
+        self::assertEquals('Application error', $error[1]);
+        self::assertEquals('Application error', $error[2]);
+        self::assertEquals('Error message.', $error[3]);
     }
 
     public function testGelfVerbosityVerbose()
@@ -501,7 +501,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(8, $events);
+        self::assertCount(8, $events);
         $error = [];
         $info = [];
         $warn = [];
@@ -524,26 +524,26 @@ print "second message to stdout\n";'
                 $structure = $event;
             }
         }
-        $this->assertCount(1, $warn);
-        $this->assertEquals('A warning message.', $warn[0]);
-        $this->assertCount(3, $info);
+        self::assertCount(1, $warn);
+        self::assertEquals('A warning message.', $warn[0]);
+        self::assertCount(3, $info);
         sort($info);
-        $this->assertEquals('A debug message.', $info[0]);
-        $this->assertEquals(5827, strlen($info[1]));
-        $this->assertEquals('Client finished', $info[2]);
+        self::assertEquals('A debug message.', $info[0]);
+        self::assertEquals(5827, strlen($info[1]));
+        self::assertEquals('Client finished', $info[2]);
         sort($error);
-        $this->assertCount(4, $error);
-        $this->assertEquals('An alert message', $error[0]);
-        $this->assertEquals('Error message.', $error[1]);
-        $this->assertEquals('Exception example', $error[2]);
-        $this->assertEquals('Structured message', $error[3]);
-        $this->assertNotEmpty($exception);
-        $this->assertContains('file', $exception['results']);
-        $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
-        $this->assertContains('full_message', $exception['results']);
-        $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
-        $this->assertArrayHasKey('several', $structure['results']['_structure']['with']);
-        $this->assertEquals('nested', $structure['results']['_structure']['with']['several']);
+        self::assertCount(4, $error);
+        self::assertEquals('An alert message', $error[0]);
+        self::assertEquals('Error message.', $error[1]);
+        self::assertEquals('Exception example', $error[2]);
+        self::assertEquals('Structured message', $error[3]);
+        self::assertNotEmpty($exception);
+        self::assertContains('file', $exception['results']);
+        self::assertEquals('/src/TcpClient.php', $exception['results']['file']);
+        self::assertContains('full_message', $exception['results']);
+        self::assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
+        self::assertArrayHasKey('several', $structure['results']['_structure']['with']);
+        self::assertEquals('nested', $structure['results']['_structure']['with']['several']);
     }
 
     public function testGelfVerbosityNone()
@@ -570,7 +570,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(0, $events);
+        self::assertCount(0, $events);
     }
 
     public function testStdoutVerbosity()
@@ -596,7 +596,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(4, $events);
+        self::assertCount(4, $events);
         $error = [];
         $info = [];
         foreach ($events as $event) {
@@ -607,14 +607,14 @@ print "second message to stdout\n";'
                 $info[] = $event['message'];
             }
         }
-        $this->assertCount(2, $error);
+        self::assertCount(2, $error);
         sort($error);
-        $this->assertEquals("first message to stderr", $error[0]);
-        $this->assertEquals("second message to stderr", $error[1]);
+        self::assertEquals("first message to stderr", $error[0]);
+        self::assertEquals("second message to stderr", $error[1]);
         sort($info);
-        $this->assertCount(2, $info);
-        $this->assertEquals("first message to stdout", $info[0]);
-        $this->assertEquals("second message to stdout", $info[1]);
+        self::assertCount(2, $info);
+        self::assertEquals("first message to stdout", $info[0]);
+        self::assertEquals("second message to stdout", $info[1]);
     }
 
     public function testRunnerLogs()
