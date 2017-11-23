@@ -627,7 +627,7 @@ print "second message to stdout\n";'
         $serviceContainer = $kernel->getContainer();
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         /** @var LoggersService $logService */
         $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
