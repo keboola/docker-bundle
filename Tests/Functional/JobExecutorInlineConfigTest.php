@@ -300,7 +300,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $data['params']['mode'] = 'sandbox';
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $jobExecutor = $this->getJobExecutor($encryptorFactory);
-        $job = new Job($encryptorFactory, $data);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
