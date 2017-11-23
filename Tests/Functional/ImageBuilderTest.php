@@ -569,17 +569,11 @@ class ImageBuilderTest extends KernelTestCase
         /** @var ObjectEncryptor $encryptor */
         $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
 
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => AWS_ECR_REGISTRY_URI,
-                    "repository" => [
-                        "region" => AWS_ECR_REGISTRY_REGION
-                    ],
+                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo",
                     "build_options" => [
                         "parent_type" => "aws-ecr",
                         "repository" => [
