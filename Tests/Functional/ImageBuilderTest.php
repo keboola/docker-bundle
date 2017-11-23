@@ -18,6 +18,8 @@ class ImageBuilderTest extends KernelTestCase
     public function setUp()
     {
         self::bootKernel();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
     public function tearDown()
