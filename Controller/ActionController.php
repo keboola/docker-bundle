@@ -61,7 +61,7 @@ class ActionController extends BaseApiController
 
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setProjectId($request->get("component"));
+        $encryptorFactory->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
 
