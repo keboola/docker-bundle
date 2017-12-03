@@ -2,10 +2,10 @@
 
 namespace Keboola\DockerBundle\Tests\Controller;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Controller\ApiController;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Client;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -373,10 +373,10 @@ class ApiControllerTest extends WebTestCase
         $container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
+        $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $storageServiceStub->expects($this->atLeastOnce())
@@ -384,34 +384,22 @@ class ApiControllerTest extends WebTestCase
             ->will($this->returnValue($storageClientStub));
 
         // mock client to return image data
-        $indexActionValue = array(
-            'components' =>
-                array(
-                    0 =>
-                        array(
-                            'id' => 'docker-dummy-test',
-                            'type' => 'other',
-                            'name' => 'Docker Config Dump',
-                            'description' => 'Testing Docker',
-                            'longDescription' => null,
-                            'hasUI' => false,
-                            'hasRun' => true,
-                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
-                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array(
-                                'definition' =>
-                                    array(
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/docker-dummy-test',
-                                    ),
-                            ),
-                            'flags' => array('encrypt'),
-                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-                        )
-                )
-        );
-
-        $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"KBC::Encrypt==ABCDEFGH"}}},"state":{}}';
+        $indexActionValue = [
+            'components' => [[
+                'id' => 'docker-dummy-test',
+                'type' => 'other',
+                'name' => 'Docker Config Dump',
+                'data' => [
+                    'definition' =>
+                        [
+                            'type' => 'dockerhub',
+                            'uri' => 'keboola/docker-dummy-test',
+                        ],
+                ],
+                'flags' => ['encrypt'],
+                'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
+            ]]
+        ];
 
         $storageClientStub->expects($this->atLeastOnce())
             ->method("indexAction")
@@ -420,16 +408,11 @@ class ApiControllerTest extends WebTestCase
             ->method("verifyToken")
             ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
-        );
+        $encryptorFactory = $container->get('docker_bundle.object_encryptor_factory');
         $encryptorFactory->setComponentId('docker-dummy-test');
         $encryptorFactory->setProjectId('123');
 
+        $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"KBC::Encrypt==ABCDEFGH"}}},"state":{}}';
         $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) use ($encryptorFactory) {
