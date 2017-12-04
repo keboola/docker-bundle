@@ -29,7 +29,9 @@ class ApiController extends BaseApiController
         if (!isset($body["config"]) && !isset($body["configData"])) {
             throw new UserException("Specify 'config' or 'configData'.");
         }
-
+        if (!isset($body["row"]) && !isset($body["config"])) {
+            throw new UserException("Specify 'row' and 'config'.");
+        }
         if (isset($body["config"]) && isset($body["configData"])) {
             $this->logger->info("Both config and configData specified, 'config' ignored.");
             unset($body["config"]);

@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Syrup\Exception\UserException;
+
 class JobDefinitionParser
 {
     /**
@@ -47,10 +49,19 @@ class JobDefinitionParser
     }
 
     /**
+     * @param string|null $rowId
      * @return JobDefinition[]
      */
-    public function getJobDefinitions()
+    public function getJobDefinitions($rowId = null)
     {
-        return $this->jobDefinitions;
+        if (!$rowId) {
+            return $this->jobDefinitions;
+        }
+        foreach ($this->jobDefinitions as $jobDefinition) {
+            if ($jobDefinition->getRowId() == $rowId) {
+                return [$jobDefinition];
+            }
+        }
+        throw new UserException("Row {$rowId} not found.");
     }
 }
