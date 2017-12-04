@@ -99,6 +99,7 @@ class Executor extends BaseExecutor
         if (isset($job->getRawParams()["component"])) {
             $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
         }
+        $job->setEncryptor($this->encryptorFactory->getEncryptor());
         $params = $job->getParams();
 
         $jobDefinitionParser = new JobDefinitionParser();
