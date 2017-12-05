@@ -170,19 +170,19 @@ class Runner
      */
     public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
     {
-        $this->loggerService->getLog()->notice(
+        $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-            . ", rowId: " . $jobDefinition->getRowId()
+            . ", row id: " . $jobDefinition->getRowId()
         );
         $component = $jobDefinition->getComponent();
-        $this->loggerService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
-        $this->loggerService->setComponentId($component->getId());
+        $this->loggersService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
+        $this->loggersService->setComponentId($component->getId());
 
         $configData = $jobDefinition->getConfiguration();
 
         $temp = new Temp("docker");
         $temp->initRunFolder();
-        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggerService->getLog());
+        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $stateFile = new StateFile(
             $dataDirectory->getDataDir(),
             $this->storageClient,
@@ -292,9 +292,10 @@ class Runner
      * @param $action
      * @param $mode
      * @param $jobId
-     * @return Output[]
+     * @param array $jobParams
+     * @return array
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, array $jobParams = [])
     {
         if (count($jobDefinitions) > 1 && $mode != 'run') {
             throw new UserException('Only 1 row allowed for sandbox calls.');
@@ -302,11 +303,20 @@ class Runner
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
-                $this->loggerService->getLog()->notice(
-                    "Skipping configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-                    . ", rowId: " . $jobDefinition->getRowId()
-                );
-                continue;
+                if (count($jobDefinitions) === 1 && isset($jobParams['row']) && $jobParams['row'] === $jobDefinition->getRowId()) {
+                    $this->loggersService->getLog()->notice(
+                        "Force running disabled configuration: " . $jobDefinition->getConfigId()
+                        . ', version:' . $jobDefinition->getConfigVersion()
+                        . ", row: " . $jobDefinition->getRowId()
+                    );
+                } else {
+                    $this->loggersService->getLog()->notice(
+                        "Skipping disabled configuration: " . $jobDefinition->getConfigId()
+                        . ', version:' . $jobDefinition->getConfigVersion()
+                        . ", row: " . $jobDefinition->getRowId()
+                    );
+                    continue;
+                }
             }
             $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
         }
