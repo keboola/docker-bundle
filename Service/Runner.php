@@ -32,11 +32,6 @@ use Keboola\Temp\Temp;
 class Runner
 {
     /**
-     * @var Temp
-     */
-    private $temp;
-
-    /**
      * @var ObjectEncryptor
      */
     private $encryptor;
