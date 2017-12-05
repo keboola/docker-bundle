@@ -49,7 +49,7 @@ class Runner
     /**
      * @var LoggersService
      */
-    private $loggerService;
+    private $loggersService;
 
     /**
      * @var string
@@ -105,7 +105,7 @@ class Runner
             'url' => $oauthApiUrl
         ]);
         $this->oauthClient->enableReturnArrays(true);
-        $this->loggerService = $loggersService;
+        $this->loggersService = $loggersService;
         $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
@@ -124,8 +124,8 @@ class Runner
         return new Container(
             $containerId,
             $image,
-            $this->loggerService->getLog(),
-            $this->loggerService->getContainerLog(),
+            $this->loggersService->getLog(),
+            $this->loggersService->getContainerLog(),
             $dataDirectory->getDataDir(),
             $this->commandToGetHostIp,
             $this->minLogPort,
@@ -203,7 +203,7 @@ class Runner
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $dataLoader = new DataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -213,7 +213,7 @@ class Runner
         } else {
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -245,7 +245,7 @@ class Runner
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $dataLoader = new DataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -255,7 +255,7 @@ class Runner
         } else {
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -266,7 +266,7 @@ class Runner
         $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
             $this->encryptor,
-            $this->loggerService->getLog(),
+            $this->loggersService->getLog(),
             $this->storageClient,
             $component,
             $configData
@@ -339,7 +339,7 @@ class Runner
         $dataLoader->storeOutput();
 
         $dataDirectory->dropDataDir();
-        $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
+        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
 
@@ -392,7 +392,7 @@ class Runner
     private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile)
     {
         $images = $imageCreator->prepareImages();
-        $this->loggerService->setVerbosity($component->getLoggerVerbosity());
+        $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
@@ -400,7 +400,7 @@ class Runner
         $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
-                $this->loggerService->getLog()->info("Running processor " . $image->getFullImageId());
+                $this->loggersService->getLog()->info("Running processor " . $image->getFullImageId());
             }
             $environment = new Environment(
                 $configId,
