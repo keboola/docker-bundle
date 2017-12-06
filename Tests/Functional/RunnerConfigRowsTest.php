@@ -309,7 +309,7 @@ class RunnerConfigRowsTest extends KernelTestCase
             'run',
             '1234567'
         );
-        $this->assertTrue($logHandler->hasNoticeThatContains('Skipping disabled configuration: my-config, version:1, row: disabled-row'));
+        $this->assertTrue($logHandler->hasInfoThatContains('Skipping disabled configuration: my-config, version:1, row: disabled-row'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
         $this->assertFalse($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
@@ -340,7 +340,7 @@ class RunnerConfigRowsTest extends KernelTestCase
             '1234567',
             'disabled-row'
         );
-        $this->assertTrue($logHandler->hasNoticeThatContains('Force running disabled configuration: my-config, version:1, row: disabled-row'));
+        $this->assertTrue($logHandler->hasInfoThatContains('Force running disabled configuration: my-config, version:1, row: disabled-row'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
     }
 

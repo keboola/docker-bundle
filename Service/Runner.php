@@ -304,13 +304,13 @@ class Runner
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
                 if (count($jobDefinitions) === 1 && $rowId !== null && $rowId === $jobDefinition->getRowId()) {
-                    $this->loggersService->getLog()->notice(
+                    $this->loggersService->getLog()->info(
                         "Force running disabled configuration: " . $jobDefinition->getConfigId()
                         . ', version:' . $jobDefinition->getConfigVersion()
                         . ", row: " . $jobDefinition->getRowId()
                     );
                 } else {
-                    $this->loggersService->getLog()->notice(
+                    $this->loggersService->getLog()->info(
                         "Skipping disabled configuration: " . $jobDefinition->getConfigId()
                         . ', version:' . $jobDefinition->getConfigVersion()
                         . ", row: " . $jobDefinition->getRowId()
