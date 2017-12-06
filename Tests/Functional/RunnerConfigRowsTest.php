@@ -338,7 +338,7 @@ class RunnerConfigRowsTest extends KernelTestCase
             'run',
             'run',
             '1234567',
-            ['row' => 'disabled-row']
+            'disabled-row'
         );
         $this->assertTrue($logHandler->hasNoticeThatContains('Force running disabled configuration: my-config, version:1, row: disabled-row'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));

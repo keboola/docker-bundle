@@ -292,10 +292,10 @@ class Runner
      * @param $action
      * @param $mode
      * @param $jobId
-     * @param array $jobParams
+     * @param string|null $rowId
      * @return array
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, array $jobParams = [])
+    public function run(array $jobDefinitions, $action, $mode, $jobId, $rowId = null)
     {
         if (count($jobDefinitions) > 1 && $mode != 'run') {
             throw new UserException('Only 1 row allowed for sandbox calls.');
@@ -303,7 +303,7 @@ class Runner
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
-                if (count($jobDefinitions) === 1 && isset($jobParams['row']) && $jobParams['row'] === $jobDefinition->getRowId()) {
+                if (count($jobDefinitions) === 1 && $rowId !== null && $rowId === $jobDefinition->getRowId()) {
                     $this->loggersService->getLog()->notice(
                         "Force running disabled configuration: " . $jobDefinition->getConfigId()
                         . ', version:' . $jobDefinition->getConfigVersion()
