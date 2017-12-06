@@ -675,5 +675,4 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(400, $client->getResponse()->getStatusCode());
         $this->assertEquals('Specify both \'row\' and \'config\'.', json_decode($client->getResponse()->getContent(), true)['message']);
     }
-
 }
