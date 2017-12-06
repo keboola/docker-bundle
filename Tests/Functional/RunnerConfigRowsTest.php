@@ -19,6 +19,7 @@ use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\HandlerInterface;
@@ -271,6 +272,88 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
 
+    public function testRunMultipleRowsFiltered()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-2');
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            'row-2'
+        );
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+    }
+
+    public function testRunUnknownRow()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        $jobDefinitions = [$jobDefinition1];
+        try {
+            $runner->run(
+                $jobDefinitions,
+                'run',
+                'run',
+                '1234567',
+                'row-2'
+            );
+            $this->fail("Exception not caught.");
+        } catch (UserException $e) {
+            $this->assertEquals("Row row-2 not found.", $e->getMessage());
+        }
+    }
+
+    public function testRunEmptyJobDefinitions()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $runner->run(
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+    }
+
     public function testRunDisabled()
     {
         $logHandler = new TestHandler();
@@ -309,7 +392,7 @@ class RunnerConfigRowsTest extends KernelTestCase
             'run',
             '1234567'
         );
-        $this->assertTrue($logHandler->hasInfoThatContains('Skipping disabled configuration: my-config, version:1, row: disabled-row'));
+        $this->assertTrue($logHandler->hasInfoThatContains('Skipping disabled configuration: my-config, version: 1, row: disabled-row'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
         $this->assertFalse($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
@@ -319,7 +402,7 @@ class RunnerConfigRowsTest extends KernelTestCase
         $logHandler = new TestHandler();
         $loggersServiceStub = $this->getLoggersServiceStub($logHandler);
         $runner = $this->getRunner($loggersServiceStub);
-        $jobDefinition = new JobDefinition([
+        $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
                     "tables" => [
@@ -331,8 +414,21 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
+        ], $this->getComponent());
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
         ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
-        $jobDefinitions = [$jobDefinition];
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
             'run',
@@ -340,8 +436,8 @@ class RunnerConfigRowsTest extends KernelTestCase
             '1234567',
             'disabled-row'
         );
-        $this->assertTrue($logHandler->hasInfoThatContains('Force running disabled configuration: my-config, version:1, row: disabled-row'));
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+        $this->assertTrue($logHandler->hasInfoThatContains('Force running disabled configuration: my-config, version: 1, row: disabled-row'));
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRowMetadata()

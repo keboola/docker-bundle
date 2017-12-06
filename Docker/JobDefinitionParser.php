@@ -52,16 +52,8 @@ class JobDefinitionParser
      * @param string|null $rowId
      * @return JobDefinition[]
      */
-    public function getJobDefinitions($rowId = null)
+    public function getJobDefinitions()
     {
-        if (!$rowId) {
-            return $this->jobDefinitions;
-        }
-        foreach ($this->jobDefinitions as $jobDefinition) {
-            if ($jobDefinition->getRowId() == $rowId) {
-                return [$jobDefinition];
-            }
-        }
-        throw new UserException("Row {$rowId} not found.");
+        return $this->jobDefinitions;
     }
 }

@@ -297,22 +297,34 @@ class Runner
      */
     public function run(array $jobDefinitions, $action, $mode, $jobId, $rowId = null)
     {
+        if ($rowId) {
+            $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowId) {
+                /**
+                 * @var JobDefinition $jobDefinition
+                 */
+                return $jobDefinition->getRowId() === $rowId;
+            });
+            if (count($jobDefinitions) === 0) {
+                throw new UserException("Row {$rowId} not found.");
+            }
+        }
+
         if (count($jobDefinitions) > 1 && $mode != 'run') {
             throw new UserException('Only 1 row allowed for sandbox calls.');
         }
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
-                if (count($jobDefinitions) === 1 && $rowId !== null && $rowId === $jobDefinition->getRowId()) {
+                if ($rowId !== null) {
                     $this->loggersService->getLog()->info(
                         "Force running disabled configuration: " . $jobDefinition->getConfigId()
-                        . ', version:' . $jobDefinition->getConfigVersion()
+                        . ', version: ' . $jobDefinition->getConfigVersion()
                         . ", row: " . $jobDefinition->getRowId()
                     );
                 } else {
                     $this->loggersService->getLog()->info(
                         "Skipping disabled configuration: " . $jobDefinition->getConfigId()
-                        . ', version:' . $jobDefinition->getConfigVersion()
+                        . ', version: ' . $jobDefinition->getConfigVersion()
                         . ", row: " . $jobDefinition->getRowId()
                     );
                     continue;

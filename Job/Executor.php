@@ -176,11 +176,7 @@ class Executor extends BaseExecutor
             }
         }
 
-        if (isset($params['row'])) {
-            $jobDefinitions = $jobDefinitionParser->getJobDefinitions($params['row']);
-        } else {
-            $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
-        }
+        $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
 
         $outputs = $this->runner->run(
             $jobDefinitions,
