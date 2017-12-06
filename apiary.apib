@@ -207,9 +207,15 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
 # Group Run
 
 Run a configuration of a component. The configuration is specified either in `config` or `configData` property of the request body.
-The `config` property contains the Id of an existing configuration. When you want to run configuration without storing it, use the
+The `config` property contains the Id of an existing configuration. When you want to run a inline defined configuration, use the
 `configData` property to specify the entire configuration.
-One of `config` or `configData` must always be specified. If both `config` and `configData` are specified, then `config` is ignored.
+One of `config` or `configData` must always be specified.
+If both `config` and `configData` are specified, then `config` is only used in conjunction with `default_bucket`
+option to resolve the bucket name for output mapping.
+
+When the `config` property is specified, a configuration with multiple rows can also use the `row` property to specify a single row to be executed.
+This setting will also override the `isDisabled` property of the configuration row.
+That means that it will execute a disabled configuration row.
 
 ## Create a job [/{component}/run]
 
