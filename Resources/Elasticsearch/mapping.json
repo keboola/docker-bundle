@@ -8,6 +8,9 @@
             "config": {
                 "type": "string"
             },
+            "row": {
+                "type": "string"
+            },
             "configData": {
                 "type": "object",
                 "enabled": "false"

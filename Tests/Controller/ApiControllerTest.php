@@ -97,6 +97,23 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
+    public function testRunConfigRow()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy-with-rows","row":"dummy-row"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+    }
+
     public function testRunTag()
     {
         $client = $this->createClient();
@@ -240,6 +257,27 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('error', $response['status']);
         $this->assertArrayHasKey('message', $response);
         $this->assertEquals('Specify \'config\' or \'configData\'.', $response['message']);
+    }
+
+    public function testRunConfigData()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "configData": {
+                    "foo": "bar"
+                }
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
     }
 
     public function testBodyOverload()
@@ -600,5 +638,41 @@ class ApiControllerTest extends WebTestCase
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
         $ctrl->saveConfigAction($request);
+    }
+
+    public function testRunEmptyParams()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals('Specify \'config\' or \'configData\'.', json_decode($client->getResponse()->getContent(), true)['message']);
+    }
+
+    public function testRunRowOnly()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"row":"my-row"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals('Specify both \'row\' and \'config\'.', json_decode($client->getResponse()->getContent(), true)['message']);
     }
 }

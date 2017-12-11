@@ -176,7 +176,15 @@ class Executor extends BaseExecutor
             }
         }
 
-        $outputs = $this->runner->run($jobDefinitionParser->getJobDefinitions(), 'run', $params['mode'], $job->getId());
+        $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
+
+        $outputs = $this->runner->run(
+            $jobDefinitions,
+            'run',
+            $params['mode'],
+            $job->getId(),
+            isset($params['row']) ? $params['row'] : null
+        );
         return [
             "message" => "Component processing finished.",
             "images" => array_map(function (Output $output) {

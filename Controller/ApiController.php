@@ -26,15 +26,15 @@ class ApiController extends BaseApiController
      */
     private function validateParams($body)
     {
+        if (isset($body["row"]) && !isset($body["config"])) {
+            throw new UserException("Specify both 'row' and 'config'.");
+        }
         if (!isset($body["config"]) && !isset($body["configData"])) {
             throw new UserException("Specify 'config' or 'configData'.");
         }
-
         if (isset($body["config"]) && isset($body["configData"])) {
             $this->logger->info("Both config and configData specified, 'config' ignored.");
-            unset($body["config"]);
         }
-        return $body;
     }
 
 
@@ -55,7 +55,8 @@ class ApiController extends BaseApiController
             ], 400);
         }
 
-        return $this->validateParams($params);
+        $this->validateParams($params);
+        return $params;
     }
 
     /**
@@ -172,7 +173,7 @@ class ApiController extends BaseApiController
     {
         // Get params from request
         $params = $this->getPostJson($request);
-        $params = $this->validateParams($params);
+        $this->validateParams($params);
         $params['mode'] = 'sandbox';
 
         # TODO deprecated, remove later

@@ -82,7 +82,7 @@ Used for encrypting values in image specification. Cipher text can be decrypted 
 ## DEPRECATED Image configuration encryption [/{image}/configs/encrypt]
 
 Used for encrypting values in image configuration. Cipher text can be decrypted only in the specified image
-only in the specified project - specified in StorageAPI token.  
+only in the specified project - specified in StorageAPI token.
 
 
 + Parameters
@@ -206,10 +206,16 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
 
 # Group Run
 
-Run a configuration of a component. The configuration is specified either in `config` or `configData` property of the request body. 
-The `config` property contains the Id of an existing configuration. When you want to run configuration without storing it, use the 
+Run a configuration of a component. The configuration is specified either in `config` or `configData` property of the request body.
+The `config` property contains the Id of an existing configuration. When you want to run a inline defined configuration, use the
 `configData` property to specify the entire configuration.
-One of `config` or `configData` must always be specified. If both `config` and `configData` are specified, then `config` is ignored.
+One of `config` or `configData` must always be specified.
+If both `config` and `configData` are specified, then `config` is only used in conjunction with `default_bucket`
+option to resolve the bucket name for output mapping.
+
+When the `config` property is specified, a configuration with multiple rows can also use the `row` property to specify a single row to be executed.
+This setting will also override the `isDisabled` property of the configuration row.
+That means that it will execute a disabled configuration row.
 
 ## Create a job [/{component}/run]
 
@@ -228,7 +234,8 @@ Create an execution job on a specified component.
     + Body
 
             {
-                "config": "next-order-1"
+                "config": "next-order-1",
+                "row": "my-row"
             }
 
 + Request Custom configuration (application/json)
@@ -312,7 +319,8 @@ Create an execution job on a specified component while using a specific image ta
     + Body
 
             {
-                "config": "next-order-1"
+                "config": "next-order-1",
+                "row": "my-row"
             }
 
 + Request Custom configuration (application/json)
@@ -459,7 +467,8 @@ This API call is useful for verifying that a given input mapping and image confi
     + Body
 
             {
-                "config": "next-order-1"
+                "config": "next-order-1",
+                "row": "my-row"
             }
 
 + Request Custom configuration (application/json)
@@ -545,7 +554,8 @@ Note that the archive will contain all files in the `data` folder including any 
     + Body
 
             {
-                "config": "next-order-1"
+                "config": "next-order-1",
+                "row": "my-row"
             }
 
 + Request Custom configuration (application/json)

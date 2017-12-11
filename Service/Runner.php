@@ -32,11 +32,6 @@ use Keboola\Temp\Temp;
 class Runner
 {
     /**
-     * @var Temp
-     */
-    private $temp;
-
-    /**
      * @var ObjectEncryptor
      */
     private $encryptor;
@@ -54,7 +49,7 @@ class Runner
     /**
      * @var LoggersService
      */
-    private $loggerService;
+    private $loggersService;
 
     /**
      * @var string
@@ -110,7 +105,7 @@ class Runner
             'url' => $oauthApiUrl
         ]);
         $this->oauthClient->enableReturnArrays(true);
-        $this->loggerService = $loggersService;
+        $this->loggersService = $loggersService;
         $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
@@ -129,8 +124,8 @@ class Runner
         return new Container(
             $containerId,
             $image,
-            $this->loggerService->getLog(),
-            $this->loggerService->getContainerLog(),
+            $this->loggersService->getLog(),
+            $this->loggersService->getContainerLog(),
             $dataDirectory->getDataDir(),
             $this->commandToGetHostIp,
             $this->minLogPort,
@@ -175,19 +170,19 @@ class Runner
      */
     public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
     {
-        $this->loggerService->getLog()->notice(
+        $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-            . ", rowId: " . $jobDefinition->getRowId()
+            . ", row id: " . $jobDefinition->getRowId()
         );
         $component = $jobDefinition->getComponent();
-        $this->loggerService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
-        $this->loggerService->setComponentId($component->getId());
+        $this->loggersService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
+        $this->loggersService->setComponentId($component->getId());
 
         $configData = $jobDefinition->getConfiguration();
 
         $temp = new Temp("docker");
         $temp->initRunFolder();
-        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggerService->getLog());
+        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $stateFile = new StateFile(
             $dataDirectory->getDataDir(),
             $this->storageClient,
@@ -208,7 +203,7 @@ class Runner
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $dataLoader = new DataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -218,7 +213,7 @@ class Runner
         } else {
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -250,7 +245,7 @@ class Runner
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $dataLoader = new DataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -260,7 +255,7 @@ class Runner
         } else {
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
-                $this->loggerService->getLog(),
+                $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
@@ -271,7 +266,7 @@ class Runner
         $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
             $this->encryptor,
-            $this->loggerService->getLog(),
+            $this->loggersService->getLog(),
             $this->storageClient,
             $component,
             $configData
@@ -297,21 +292,43 @@ class Runner
      * @param $action
      * @param $mode
      * @param $jobId
-     * @return Output[]
+     * @param string|null $rowId
+     * @return array
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, $rowId = null)
     {
+        if ($rowId) {
+            $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowId) {
+                /**
+                 * @var JobDefinition $jobDefinition
+                 */
+                return $jobDefinition->getRowId() === $rowId;
+            });
+            if (count($jobDefinitions) === 0) {
+                throw new UserException("Row {$rowId} not found.");
+            }
+        }
+
         if (count($jobDefinitions) > 1 && $mode != 'run') {
             throw new UserException('Only 1 row allowed for sandbox calls.');
         }
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if ($jobDefinition->isDisabled()) {
-                $this->loggerService->getLog()->notice(
-                    "Skipping configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-                    . ", rowId: " . $jobDefinition->getRowId()
-                );
-                continue;
+                if ($rowId !== null) {
+                    $this->loggersService->getLog()->info(
+                        "Force running disabled configuration: " . $jobDefinition->getConfigId()
+                        . ', version: ' . $jobDefinition->getConfigVersion()
+                        . ", row: " . $jobDefinition->getRowId()
+                    );
+                } else {
+                    $this->loggersService->getLog()->info(
+                        "Skipping disabled configuration: " . $jobDefinition->getConfigId()
+                        . ', version: ' . $jobDefinition->getConfigVersion()
+                        . ", row: " . $jobDefinition->getRowId()
+                    );
+                    continue;
+                }
             }
             $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
         }
@@ -344,7 +361,7 @@ class Runner
         $dataLoader->storeOutput();
 
         $dataDirectory->dropDataDir();
-        $this->loggerService->getLog()->info("Component " . $component->getId() . " finished.");
+        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
 
@@ -397,7 +414,7 @@ class Runner
     private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile)
     {
         $images = $imageCreator->prepareImages();
-        $this->loggerService->setVerbosity($component->getLoggerVerbosity());
+        $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
 
         $counter = 0;
@@ -405,7 +422,7 @@ class Runner
         $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
-                $this->loggerService->getLog()->info("Running processor " . $image->getFullImageId());
+                $this->loggersService->getLog()->info("Running processor " . $image->getFullImageId());
             }
             $environment = new Environment(
                 $configId,

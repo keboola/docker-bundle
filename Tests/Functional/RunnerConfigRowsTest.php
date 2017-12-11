@@ -19,9 +19,12 @@ use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Encryption\BaseWrapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -55,6 +58,7 @@ class RunnerConfigRowsTest extends KernelTestCase
     protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
     {
         $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, null, $state);
+
         return [$jobDefinition];
     }
 
@@ -93,7 +97,43 @@ class RunnerConfigRowsTest extends KernelTestCase
         parent::tearDown();
     }
 
-    private function getRunner($handler, &$encryptor = null)
+    /**
+     * @param HandlerInterface|null $logHandler
+     * @param HandlerInterface|null $containerLogHandler
+     * @return LoggersService
+     */
+    private function getLoggersServiceStub(HandlerInterface $logHandler = null, HandlerInterface $containerLogHandler = null)
+    {
+        $log = new Logger('null');
+        $log->pushHandler(new NullHandler());
+        if ($logHandler) {
+            $log->pushHandler($logHandler);
+        }
+        $containerLogger = new ContainerLogger('null');
+        $containerLogger->pushHandler(new NullHandler());
+        if ($containerLogHandler) {
+            $containerLogger->pushHandler($containerLogHandler);
+        }
+        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+        $loggersServiceStub->expects($this->any())
+            ->method('getLog')
+            ->will($this->returnValue($log))
+        ;
+        $loggersServiceStub->expects($this->any())
+            ->method('getContainerLog')
+            ->will($this->returnValue($containerLogger))
+        ;
+        return $loggersServiceStub;
+    }
+
+    /**
+     * @param LoggersService $loggersService
+     * @return Runner
+     */
+    private function getRunner(LoggersService $loggersService)
     {
         $tokenInfo = $this->client->verifyToken();
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
@@ -107,23 +147,6 @@ class RunnerConfigRowsTest extends KernelTestCase
         $storageServiceStub->expects($this->any())
             ->method('getTokenData')
             ->will($this->returnValue($tokenInfo))
-        ;
-
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler($handler);
-        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $loggersServiceStub->expects($this->any())
-            ->method('getLog')
-            ->will($this->returnValue($log))
-        ;
-        $loggersServiceStub->expects($this->any())
-            ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger))
         ;
 
         /** @var JobMapper $jobMapperStub */
@@ -147,7 +170,7 @@ class RunnerConfigRowsTest extends KernelTestCase
         $runner = new Runner(
             $encryptor,
             $storageServiceStub,
-            $loggersServiceStub,
+            $loggersService,
             $jobMapperStub,
             "dummy",
             RUNNER_COMMAND_TO_GET_HOST_IP,
@@ -211,7 +234,7 @@ class RunnerConfigRowsTest extends KernelTestCase
 
     public function testRunMultipleRows()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -249,9 +272,93 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
 
+    public function testRunMultipleRowsFiltered()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-2');
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            'row-2'
+        );
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+    }
+
+    public function testRunUnknownRow()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        $jobDefinitions = [$jobDefinition1];
+        try {
+            $runner->run(
+                $jobDefinitions,
+                'run',
+                'run',
+                '1234567',
+                'row-2'
+            );
+            $this->fail("Exception not caught.");
+        } catch (UserException $e) {
+            $this->assertEquals("Row row-2 not found.", $e->getMessage());
+        }
+    }
+
+    public function testRunEmptyJobDefinitions()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $runner->run(
+            [],
+            'run',
+            'run',
+            '1234567'
+        );
+    }
+
     public function testRunDisabled()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $logHandler = new TestHandler();
+        $loggersServiceStub = $this->getLoggersServiceStub($logHandler);
+        $runner = $this->getRunner($loggersServiceStub);
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -277,7 +384,7 @@ class RunnerConfigRowsTest extends KernelTestCase
                     ]
                 ]
             ]
-        ], $this->getComponent(), null, null, [], null, true);
+        ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
@@ -285,13 +392,57 @@ class RunnerConfigRowsTest extends KernelTestCase
             'run',
             '1234567'
         );
+        $this->assertTrue($logHandler->hasInfoThatContains('Skipping disabled configuration: my-config, version: 1, row: disabled-row'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
         $this->assertFalse($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
 
+    public function testRunRowDisabled()
+    {
+        $logHandler = new TestHandler();
+        $loggersServiceStub = $this->getLoggersServiceStub($logHandler);
+        $runner = $this->getRunner($loggersServiceStub);
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent());
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            'disabled-row'
+        );
+        $this->assertTrue($logHandler->hasInfoThatContains('Force running disabled configuration: my-config, version: 1, row: disabled-row'));
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+    }
+
     public function testRowMetadata()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -347,7 +498,7 @@ class RunnerConfigRowsTest extends KernelTestCase
 
     public function testExecutorStoreRowState()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner($this->getLoggersServiceStub());
 
         $component = new Components($this->client);
         try {
@@ -418,7 +569,7 @@ class RunnerConfigRowsTest extends KernelTestCase
 
     public function testExecutorStoreRowStateWithProcessor()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner($this->getLoggersServiceStub());
 
         $component = new Components($this->client);
         try {
@@ -508,7 +659,7 @@ class RunnerConfigRowsTest extends KernelTestCase
 
     public function testOutput()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
