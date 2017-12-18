@@ -87,6 +87,53 @@
       "DependsOn": [
         "DockerRunnerUser"
       ]
+    },
+    "DockerRunnerKMSKey": {
+      "Type": "AWS::KMS::Key",
+      "Properties": {
+        "Description" : "Docker Runner Test Key",
+        "KeyPolicy": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "Enable IAM User Permissions",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::061240556736:root"
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow use of the key",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::061240556736:user/odin"
+              },
+              "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    },
+    "DockerRunnerKMSKeyAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": "alias/docker-testing",
+        "TargetKeyId" : {
+          "Ref": "DockerRunnerKMSKey"
+        }
+      },
+      "DependsOn": [
+        "DockerRunnerKMSKey"
+      ]
     }
   },
   "Outputs": {

@@ -1,9 +1,8 @@
 parameters:
     app_name: docker
     encryption_key: 123456789012345678901234567890ab
-    general_key: def00000cc6665425df83ed9093dc9b319a99d741a7aa32052eecb3a8acbe1340301791cb69285d1cb54f34934f32e60e4eb15e7dbcd2d4edaf7054c723e7e1696d75d7e
-    stack_key: def0000003f0a2f2a4e1f0d55e8a8a9707047ea543f06f1114ce24fc90f0677021daee175222acd35ba442774eccd10571da2b0170c0083fc4ada43430a90e2491e9d4db
-    stack_id: us-east-1    
+    kms_key_id: alias/docker-testing
+    kms_key_region: us-east-1
     components:
         docker:
             bundle: Keboola\DockerBundle\KeboolaDockerBundle
