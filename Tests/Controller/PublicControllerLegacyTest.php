@@ -7,7 +7,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class PublicControllerTest extends WebTestCase
+class PublicControllerLegacyTest extends WebTestCase
 {
     /**
      * @var ContainerInterface
