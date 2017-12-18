@@ -45,4 +45,4 @@ services:
 
     docker_bundle.object_encryptor_factory:
         class: Keboola\ObjectEncryptor\ObjectEncryptorFactory
-        arguments: ["%general_key%", "%encryption_key%", "%encryption_key%", "%stack_key%", "%stack_id%"]
+        arguments: ["%kms_key_id%", "%kms_key_region%", "%encryption_key%", "%encryption_key%"]
