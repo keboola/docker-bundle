@@ -109,7 +109,7 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertStringStartsWith("KBC::ConfigSecure::", $response["#key2"]);
         /** @var ObjectEncryptorFactory $encryptorFactory */
@@ -137,16 +137,9 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
-        $this->assertEquals("value1", $response["key1"]);
-        $this->assertStringStartsWith("KBC::ConfigSecure::", $response["#key2"]);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setConfigurationId('123456789');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
-        $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
-        $this->assertCount(2, $response);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals("The configId parameter must be used together with projectId.", $response["message"]);
     }
 
     public function testEncryptJsonHeaderWithCharset()
