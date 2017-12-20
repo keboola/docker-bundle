@@ -108,7 +108,9 @@
               "Sid": "Allow use of the key",
               "Effect": "Allow",
               "Principal": {
-                "AWS": "arn:aws:iam::061240556736:user/odin"
+                "AWS": {
+                  "Fn::Join": ["", ["arn:aws:iam::061240556736:user/", {"Ref": "DockerRunnerUser"}]]
+                }
               },
               "Action": [
                 "kms:Encrypt",
