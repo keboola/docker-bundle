@@ -25,6 +25,8 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
