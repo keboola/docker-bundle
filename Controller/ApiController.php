@@ -429,7 +429,7 @@ class ApiController extends BaseApiController
             }
             return $this->createJsonResponse($response, 201, ["Content-Type" => "application/json"]);
         } else {
-            return $this->createJsonResponse([], 204, ["Content-Type" => "application/json"]);
+            return $this->createJsonResponse([], 202, ["Content-Type" => "application/json"]);
         }
     }
 }

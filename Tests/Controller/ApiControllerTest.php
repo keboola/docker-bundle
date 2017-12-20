@@ -439,7 +439,6 @@ class ApiControllerTest extends WebTestCase
 
     public function testMigrateConfigNoMigration()
     {
-        /** @var StorageApiService $sapi */
         $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
         $configuration = new Configuration();
         $configId = uniqid('config');
@@ -460,7 +459,7 @@ class ApiControllerTest extends WebTestCase
             null
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(204, $client->getResponse()->getStatusCode());
+        self::assertEquals(202, $client->getResponse()->getStatusCode());
         self::assertEquals([], $response);
         $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
         self::assertEquals('b', $configData['a']);
@@ -499,9 +498,9 @@ class ApiControllerTest extends WebTestCase
             null
         );
         $response = json_decode($client->getResponse()->getContent(), true);
+        self::assertEquals(202, $client->getResponse()->getStatusCode());
         self::assertEquals($configId, $response['id']);
         self::assertEquals('new-config', $response['name']);
-        self::assertEquals(201, $client->getResponse()->getStatusCode());
         $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
         self::assertEquals('b', $configData['a']);
         self::assertStringStartsWith('KBC::ProjectSecure::', $configData['c']['#d']);
