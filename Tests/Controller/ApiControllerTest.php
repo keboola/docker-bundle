@@ -498,7 +498,7 @@ class ApiControllerTest extends WebTestCase
             null
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(202, $client->getResponse()->getStatusCode());
+        self::assertEquals(201, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         self::assertEquals($configId, $response['id']);
         self::assertEquals('new-config', $response['name']);
         $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
