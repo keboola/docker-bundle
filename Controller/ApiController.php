@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Controller;
 
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -376,5 +377,41 @@ class ApiController extends BaseApiController
         }
 
         return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
+    }
+
+    public function migrateConfigAction(Request $request)
+    {
+        /** @var StorageApiService $storage */
+        $storage = $this->container->get("syrup.storage_api");
+        $componentId = $request->get("component");
+        $configId = $request->get("configId");
+        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $componentId)) {
+            throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
+        }
+
+        $components = new Components($this->storageApi);
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setConfigurationId($request->get("configId"));
+        $configData = $components->getConfiguration($componentId, $configId);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory->setComponentId($request->get("component"));
+        $tokenInfo = $this->storageApi->verifyToken();
+        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+        $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configData, ProjectWrapper::class);
+        if ($configData !== $configDataMigrated) {
+            if ($request->get("changeDescription")) {
+                $configuration->setChangeDescription("Encryption migration");
+            }
+            try {
+                $response = $components->updateConfiguration($configuration);
+            } catch (ClientException $e) {
+                throw new UserException($e->getMessage(), $e);
+            }
+            return $this->createJsonResponse($response, 201, ["Content-Type" => "application/json"]);
+        } else {
+            return $this->createJsonResponse(null, 204, ["Content-Type" => "application/json"]);
+        }
     }
 }

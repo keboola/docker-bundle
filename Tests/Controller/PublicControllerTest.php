@@ -26,22 +26,6 @@ class PublicControllerTest extends WebTestCase
         self::$container = $kernel->getContainer();
     }
 
-    public function testEncryptEmptyValues()
-    {
-        $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            $json
-        );
-        $this->assertEquals($json, $client->getResponse()->getContent());
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
-    }
-
     public function testEncrypt()
     {
         $client = $this->createClient();
@@ -66,6 +50,22 @@ class PublicControllerTest extends WebTestCase
         $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
+    }
+
+    public function testEncryptEmptyValues()
+    {
+        $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new',
+            ['componentId' => 'docker-config-encrypt-verify'],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals($json, $client->getResponse()->getContent());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
 
     public function testEncryptProject()
@@ -117,6 +117,33 @@ class PublicControllerTest extends WebTestCase
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setProjectId('123');
+        $encryptorFactory->setConfigurationId('123456789');
+        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
+        $this->assertCount(2, $response);
+    }
+
+    public function testEncryptConfigurationNoProject()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new',
+            ['componentId' => 'docker-config-encrypt-verify', 'configId' => '123456789'],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals("value1", $response["key1"]);
+        $this->assertStringStartsWith("KBC::ConfigSecure::", $response["#key2"]);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setConfigurationId('123456789');
         $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
@@ -232,28 +259,8 @@ class PublicControllerTest extends WebTestCase
         );
 
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertEquals("value1", $response["key1"]);
-        $this->assertStringStartsWith("KBC::Encrypted==", $response["#key2"]);
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
-        $this->assertCount(2, $response);
-    }
-
-    public function testEncryptWithoutComponentEmptyValues()
-    {
-        $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/encrypt',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            $json
-        );
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertEquals($json, $client->getResponse()->getContent());
+        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals("Component Id is required.", $response["message"]);
     }
 }
