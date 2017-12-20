@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Controller;
 
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -138,7 +137,7 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertStringStartsWith("KBC::ConfigSecure::", $response["#key2"]);
         /** @var ObjectEncryptorFactory $encryptorFactory */
@@ -165,7 +164,7 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertStringStartsWith("KBC::ComponentSecure::", $response["#key2"]);
         /** @var ObjectEncryptorFactory $encryptorFactory */
@@ -188,7 +187,7 @@ class PublicControllerTest extends WebTestCase
             'value'
         );
         $response = $client->getResponse()->getContent();
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertStringStartsWith("KBC::ComponentSecure::", $response);
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
@@ -212,7 +211,7 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals('error', $response['status']);
         $this->assertArrayHasKey('message', $response);
@@ -235,7 +234,7 @@ class PublicControllerTest extends WebTestCase
         );
 
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("error", $response["status"]);
         $this->assertEquals(
             "This API call is only supported for components that use the 'encrypt' flag.",
@@ -259,7 +258,7 @@ class PublicControllerTest extends WebTestCase
         );
 
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("error", $response["status"]);
         $this->assertEquals("Component Id is required.", $response["message"]);
     }
