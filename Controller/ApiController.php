@@ -261,7 +261,7 @@ class ApiController extends BaseApiController
      * Run docker component with the provided configuration.
      *
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return void
      */
     public function disabledAction(Request $request)
     {
@@ -294,6 +294,7 @@ class ApiController extends BaseApiController
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function encryptConfigAction(Request $request)
     {
@@ -331,6 +332,11 @@ class ApiController extends BaseApiController
         }
     }
 
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
+     */
     public function saveConfigAction(Request $request)
     {
         /** @var StorageApiService $storage */
@@ -379,12 +385,19 @@ class ApiController extends BaseApiController
         return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
     }
 
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Keboola\ObjectEncryptor\Exception\UserException
+     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
+     */
     public function migrateConfigAction(Request $request)
     {
         /** @var StorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
         $componentId = $request->get("component");
         $configId = $request->get("configId");
+        $stackId = $this->container->getParameter("stack_id");
         if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $componentId)) {
             throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
         }
@@ -393,14 +406,19 @@ class ApiController extends BaseApiController
         $configuration = new Configuration();
         $configuration->setComponentId($componentId);
         $configuration->setConfigurationId($request->get("configId"));
-        $configData = $components->getConfiguration($componentId, $configId);
+        $configData = $components->getConfiguration($componentId, $configId)['configuration'];
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-        $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configData, ProjectWrapper::class);
+
+        $configDataMigrated = $encryptorFactory->getEncryptor()->decrypt($configData);
+        $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configDataMigrated, ProjectWrapper::class);
+
         if ($configData !== $configDataMigrated) {
+            $configuration->setConfiguration($configDataMigrated);
             if ($request->get("changeDescription")) {
                 $configuration->setChangeDescription("Encryption migration");
             }
@@ -411,7 +429,7 @@ class ApiController extends BaseApiController
             }
             return $this->createJsonResponse($response, 201, ["Content-Type" => "application/json"]);
         } else {
-            return $this->createJsonResponse(null, 204, ["Content-Type" => "application/json"]);
+            return $this->createJsonResponse([], 204, ["Content-Type" => "application/json"]);
         }
     }
 }

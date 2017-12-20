@@ -242,6 +242,42 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
             }
 
 
+## Configuration Migration [/{componentId}/configs/{configId}/migrate]
+
+Used to migrate configuration from legacy ciphers to new ciphers.
+
++ Parameters
+    + componentId (required, string) ... KBC component Id
+    + configId (required, string) ... KBC configuration Id
+
+### Run job [POST]
+
+Migrate the given configuration. Migrated configuration is returned and stored in Storage as a new version.
+If the configuration contains no ciphers, it is not modified.
+
++ Request (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
++ Response Not Modified 204 (application/json)
+
+        {
+        }
+
++ Response Modified 201 (application/json)
+
+        {
+            "id": "some-id",
+            "name": "Configuration name",
+            "configuration": {
+                ...
+            }
+            ...
+        }
+
 
 # Group Run
 
