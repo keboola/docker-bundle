@@ -8,7 +8,6 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ConfigurationWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -34,6 +33,9 @@ class ApiControllerTest extends WebTestCase
 
         //get the DI container
         self::$container = $kernel->getContainer();
+
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
     protected function getStorageServiceStub($encrypt = false)
