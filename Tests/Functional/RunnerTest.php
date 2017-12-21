@@ -137,7 +137,7 @@ class RunnerTest extends KernelTestCase
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
-        );;
+        );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
 

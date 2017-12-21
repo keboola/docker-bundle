@@ -116,11 +116,11 @@ JSON;
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-        'alias/dummy-key',
-        'us-east-1',
-        hash('sha256', uniqid()),
-        hash('sha256', uniqid())
-    );
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
 
         $jobMapperStub
             ->expects($this->once())
