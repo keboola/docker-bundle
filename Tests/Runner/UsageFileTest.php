@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -117,12 +116,11 @@ JSON;
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
-        );
+        'alias/dummy-key',
+        'us-east-1',
+        hash('sha256', uniqid()),
+        hash('sha256', uniqid())
+    );
 
         $jobMapperStub
             ->expects($this->once())

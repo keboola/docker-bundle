@@ -200,7 +200,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                 ],
             'processors' => [],
         ];
-        
+
         $parser = new JobDefinitionParser();
         $parser->parseConfig($this->getComponent(), $config);
 

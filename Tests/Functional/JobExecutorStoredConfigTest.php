@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Defuse\Crypto\Key;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
@@ -85,11 +84,10 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenData["owner"]["id"]);

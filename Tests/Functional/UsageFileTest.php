@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -66,11 +65,10 @@ class UsageFileTest extends KernelTestCase
             ->will($this->returnValue($containerLogger));
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
 
         /** @var $jobMapper JobMapper */
@@ -184,11 +182,10 @@ CMD
             ->will($this->returnValue($containerLogger));
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
 
         /** @var $jobMapper JobMapper */

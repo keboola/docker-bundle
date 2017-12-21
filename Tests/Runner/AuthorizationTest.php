@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\OAuthV2Api\Credentials;
@@ -17,11 +16,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthDecrypt()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -59,11 +57,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthDecryptSandboxed()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -101,11 +98,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthConfigDecrypt()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -167,11 +163,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthConfigDecryptSandboxed()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -243,11 +238,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthInjected()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -280,11 +274,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthUserError()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
         $config = ['oauth_api' => ['id' => 'test-credentials-45']];
@@ -309,11 +302,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthApplicationError()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
         $config = ['oauth_api' => ['id' => 'test-credentials-45']];
@@ -338,11 +330,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthInjectedSandboxed()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
         $credentials = [
@@ -374,11 +365,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthInjectedConfigDecrypt()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 
@@ -436,11 +426,10 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
     public function testOauthInjectedConfigDecryptSandboxed()
     {
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.docker-demo');
 

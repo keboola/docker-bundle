@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
@@ -71,11 +70,10 @@ class EncryptionTest extends KernelTestCase
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('docker-dummy-component');
         $encryptorFactory->setProjectId($tokenData["owner"]["id"]);

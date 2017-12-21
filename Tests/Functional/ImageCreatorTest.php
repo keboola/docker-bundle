@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -31,11 +30,10 @@ class ImageCreatorTest extends \PHPUnit_Framework_TestCase
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
         $this->encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $this->encryptorFactory->setComponentId('keboola.docker-demo');
     }

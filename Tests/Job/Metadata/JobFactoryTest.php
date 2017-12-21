@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Job\Metadata;
 
-use Defuse\Crypto\Key;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
@@ -110,11 +109,10 @@ class JobFactoryTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
     }
 

@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Defuse\Crypto\Key;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
@@ -84,11 +83,10 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
@@ -220,7 +218,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         ];
     }
 
-    private function getJobParameters()
+    private function getJobParameters($rowId = null)
     {
         $data = [
             'params' => [
@@ -229,6 +227,10 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
                 'config' => 'my-config',
             ],
         ];
+
+        if ($rowId) {
+            $data['params']['row'] = $rowId;
+        }
 
         return $data;
     }
@@ -322,5 +324,44 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $this->assertArrayHasKey('size', $data[0]);
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
+    }
+
+
+    public function testRunOneRow()
+    {
+        // Create table
+        if (!$this->client->tableExists("in.c-docker-test.source")) {
+            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+            $csv->writeRow(['name', 'oldValue', 'newValue']);
+            $csv->writeRow(['price', '100', '1000']);
+            $csv->writeRow(['size', 'small', 'big']);
+            $csv->writeRow(['age', 'low', 'high']);
+            $csv->writeRow(['kindness', 'no', 'yes']);
+            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        }
+
+        $handler = new TestHandler();
+        $data = $this->getJobParameters('row1');
+        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
+        $job = new Job($encryptor, $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $csvData = $this->client->getTableDataPreview(
+            'out.c-docker-test.transposed',
+            [
+                'limit' => 1000,
+            ]
+        );
+        $data = Client::parseCsv($csvData);
+
+        $this->assertEquals(2, count($data));
+        $this->assertArrayHasKey('column', $data[0]);
+        $this->assertArrayHasKey('price', $data[0]);
+        $this->assertArrayHasKey('size', $data[0]);
+        $this->assertArrayHasKey('age', $data[0]);
+        $this->assertArrayHasKey('kindness', $data[0]);
+
+        $this->assertFalse($this->client->tableExists('out.c-docker-test.transposed-2'));
     }
 }

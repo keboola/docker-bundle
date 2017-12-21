@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Defuse\Crypto\Key;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
@@ -27,11 +26,10 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->encryptorFactory = new ObjectEncryptorFactory(
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
+            'alias/dummy-key',
+            'us-east-1',
             hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            Key::createNewRandomKey()->saveToAsciiSafeString(),
-            'us-east-1'
+            hash('sha256', uniqid())
         );
     }
 
