@@ -342,8 +342,9 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters('row1');
+        /** @var ObjectEncryptorFactory $encryptor */
         $jobExecutor = $this->getJobExecutor($encryptor, $handler);
-        $job = new Job($encryptor, $data);
+        $job = new Job($encryptor->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
