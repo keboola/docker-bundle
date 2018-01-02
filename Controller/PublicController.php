@@ -23,6 +23,10 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
         $componentId = $request->get("componentId");
         $projectId = $request->get("projectId");
         $configurationId = $request->get("configId");
+        $diff = array_diff(array_keys($request->query->all()), ['componentId', 'projectId', 'configId']);
+        if ($diff) {
+            throw new UserException("Unknown parameter: '" . implode(',', $diff) . "'.");
+        }
         $stackId = $this->container->getParameter("stack_id");
         if (!$componentId) {
             throw new UserException("Component Id is required.");

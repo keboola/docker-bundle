@@ -30,8 +30,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             '{
@@ -40,7 +40,7 @@ class PublicControllerTest extends WebTestCase
             }'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertStringStartsWith("KBC::ComponentSecure::", $response["#key2"]);
         /** @var ObjectEncryptorFactory $encryptorFactory */
@@ -57,8 +57,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             $json
@@ -72,8 +72,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify', 'projectId' => 123],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             '{
@@ -99,8 +99,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify', 'projectId' => 123, 'configId' => '123456789'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123&configId=123456789',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             '{
@@ -127,8 +127,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify', 'configId' => '123456789'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&configId=123456789',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             '{
@@ -147,8 +147,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json; charset=UTF-8'],
             '{
@@ -173,8 +173,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
             [],
             ['CONTENT_TYPE' => 'text/plain; charset=UTF-8'],
             'value'
@@ -194,8 +194,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'docker-config-encrypt-verify'],
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
             [],
             ['CONTENT_TYPE' => 'someotherheader;'],
             '{
@@ -216,8 +216,8 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
-            ['componentId' => 'keboola.r-transformation'],
+            '/docker/encrypt-new?componentId=keboola.r-transformation',
+            [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
             '{
@@ -254,5 +254,25 @@ class PublicControllerTest extends WebTestCase
         $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
         $this->assertEquals("error", $response["status"]);
         $this->assertEquals("Component Id is required.", $response["message"]);
+    }
+
+    public function testEncryptInvalidParams()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123&nonExistentParameter=123456789',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": "value1",
+                "#key2": "value2"
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals("Unknown parameter: 'nonExistentParameter'.", $response["message"]);
     }
 }
