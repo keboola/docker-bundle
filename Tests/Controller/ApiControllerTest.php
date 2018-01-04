@@ -9,8 +9,6 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -477,37 +475,46 @@ class ApiControllerTest extends WebTestCase
         $ctrl->saveConfigAction($request);
     }
 
-    public function testMigrateConfigNoMigration()
+    public function testMigrateNoMigration()
     {
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
-        $configuration = new Configuration();
-        $configId = uniqid('config');
-        $configuration->setConfigurationId($configId);
-        $configuration->setName('new-config');
-        $configuration->setComponentId('docker-config-encrypt-verify');
-        $configuration->setConfiguration(['a' => 'b', 'c' => ['d' => 'not-secret']]);
-        $component = new Components($client);
-        $component->addConfiguration($configuration);
-
+        $data = ['a' => 'b', 'c' => ['d' => 'not-secret']];
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/docker-config-encrypt-verify/configs/' . $configId . '/migrate',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertEquals($data, $response);
+    }
+
+    public function testMigrateNoContentType()
+    {
+        $data = ['a' => 'b', 'c' => ['d' => 'not-secret']];
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            null
+            json_encode($data)
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(202, $client->getResponse()->getStatusCode());
-        self::assertEquals([], $response);
-        $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
-        self::assertEquals('b', $configData['a']);
-        self::assertEquals('not-secret', $configData['c']['d']);
-        $component->deleteConfiguration('docker-config-encrypt-verify', $configId);
+        self::assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertStringStartsWith(
+            'Incorrect Content-Type.',
+            json_decode($client->getResponse()->getContent(), true)['message']
+        );
     }
 
-    public function testMigrateConfigBase()
+    public function testMigrateBase()
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
@@ -516,40 +523,53 @@ class ApiControllerTest extends WebTestCase
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
 
-        /** @var StorageApiService $sapi */
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
-        $configuration = new Configuration();
-        $configId = uniqid('config');
-        $configuration->setConfigurationId($configId);
-        $configuration->setName('new-config');
-        $configuration->setComponentId('docker-config-encrypt-verify');
-        self::assertStringStartsWith('KBC::Encrypted==', $encrypted);
-        $configuration->setConfiguration(['a' => 'b', 'c' => ['#d' => $encrypted]]);
-        $component = new Components($client);
-        $component->addConfiguration($configuration);
-
+        $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/docker-config-encrypt-verify/configs/' . $configId . '/migrate',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
             [],
             [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            null
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals(201, $client->getResponse()->getStatusCode(), (string)$client->getResponse()->getContent());
-        self::assertEquals($configId, $response['id']);
-        self::assertEquals('new-config', $response['name']);
-        $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
-        self::assertEquals('b', $configData['a']);
-        self::assertStringStartsWith('KBC::ProjectSecure::', $configData['c']['#d']);
-        $component->deleteConfiguration('docker-config-encrypt-verify', $configId);
+        self::assertStringStartsWith('KBC::Encrypted==', $encrypted);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertNotEquals($data, $response);
+        self::assertEquals('b', $response['a']);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $response['c']['#d']);
     }
 
-    public function testMigrateConfigComponent()
+    public function testMigrateBaseToComponent()
     {
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
+        $stackId = self::$container->getParameter('stack_id');
+        $encryptorFactory->setStackId($stackId);
+        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
+
+        $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/migrate?componentId=docker-config-encrypt-verify',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        self::assertStringStartsWith('KBC::Encrypted==', $encrypted);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertNotEquals($data, $response);
+        self::assertEquals('b', $response['a']);
+        self::assertStringStartsWith('KBC::ComponentSecure::', $response['c']['#d']);
+    }
+
+    public function testMigrateComponent()
+    {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
         $stackId = self::$container->getParameter('stack_id');
@@ -557,73 +577,106 @@ class ApiControllerTest extends WebTestCase
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
 
-        $configuration = new Configuration();
-        $configId = uniqid('config');
-        $configuration->setConfigurationId($configId);
-        $configuration->setName('new-config');
-        $configuration->setComponentId('docker-config-encrypt-verify');
-        self::assertStringStartsWith('KBC::ComponentEncrypted==', $encrypted);
-        $configuration->setConfiguration(['a' => 'b', 'c' => ['#d' => $encrypted]]);
-        $component = new Components($client);
-        $component->addConfiguration($configuration);
-
+        $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/docker-config-encrypt-verify/configs/' . $configId . '/migrate',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
             [],
             [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            null
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals($configId, $response['id']);
-        self::assertEquals('new-config', $response['name']);
-        self::assertEquals(201, $client->getResponse()->getStatusCode());
-        $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
-        self::assertEquals('b', $configData['a']);
-        self::assertStringStartsWith('KBC::ProjectSecure::', $configData['c']['#d']);
-        $component->deleteConfiguration('docker-config-encrypt-verify', $configId);
+        self::assertStringStartsWith('KBC::ComponentEncrypted==', $encrypted);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertNotEquals($data, $response);
+        self::assertEquals('b', $response['a']);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $response['c']['#d']);
     }
 
-    public function testMigrateConfigComponentProject()
+    public function testMigrateComponentProject()
     {
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
         $stackId = self::$container->getParameter('stack_id');
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setProjectId($client->verifyToken()['owner']['id']);
+        $encryptorFactory->setProjectId('123');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentProjectWrapper::class);
 
-        $configuration = new Configuration();
-        $configId = uniqid('config');
-        $configuration->setConfigurationId($configId);
-        $configuration->setName('new-config');
-        $configuration->setComponentId('docker-config-encrypt-verify');
-        self::assertStringStartsWith('KBC::ComponentProjectEncrypted==', $encrypted);
-        $configuration->setConfiguration(['a' => 'b', 'c' => ['#d' => $encrypted]]);
-        $component = new Components($client);
-        $component->addConfiguration($configuration);
-
+        $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/docker-config-encrypt-verify/configs/' . $configId . '/migrate',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
             [],
             [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            null
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
         );
         $response = json_decode($client->getResponse()->getContent(), true);
-        self::assertEquals($configId, $response['id']);
-        self::assertEquals('new-config', $response['name']);
-        self::assertEquals(201, $client->getResponse()->getStatusCode());
-        $configData = $component->getConfiguration('docker-config-encrypt-verify', $configId)['configuration'];
-        self::assertEquals('b', $configData['a']);
-        self::assertStringStartsWith('KBC::ProjectSecure::', $configData['c']['#d']);
-        $component->deleteConfiguration('docker-config-encrypt-verify', $configId);
+        self::assertStringStartsWith('KBC::ComponentProjectEncrypted==', $encrypted);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertNotEquals($data, $response);
+        self::assertEquals('b', $response['a']);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $response['c']['#d']);
+    }
+
+    public function testMigrateFail()
+    {
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
+        $stackId = self::$container->getParameter('stack_id');
+        $encryptorFactory->setStackId($stackId);
+        $encryptorFactory->setComponentId('a-different-component');
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
+
+        $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
+            json_encode($data)
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        self::assertStringStartsWith('KBC::ComponentEncrypted==', $encrypted);
+        self::assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('error', $response['status']);
+        $this->assertStringStartsWith(
+            'Invalid cipher text for key c Invalid cipher text for key #d Value KBC::ComponentEncrypted==',
+            json_decode($client->getResponse()->getContent(), true)['message']
+        );
+    }
+
+    public function testMigratePlain()
+    {
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
+        $stackId = self::$container->getParameter('stack_id');
+        $encryptorFactory->setStackId($stackId);
+        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
+
+        $data = $encrypted;
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/migrate?componentId=docker-config-encrypt-verify&projectId=123',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'text/plain'],
+            $data
+        );
+        $response = $client->getResponse()->getContent();
+        self::assertStringStartsWith('KBC::ComponentEncrypted==', $encrypted);
+        self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        self::assertNotEquals($data, $response);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $response);
     }
 
     public function testSaveUnencryptedConfig()

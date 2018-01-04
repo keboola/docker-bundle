@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Controller;
 
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -393,43 +394,51 @@ class ApiController extends BaseApiController
      */
     public function migrateConfigAction(Request $request)
     {
-        /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-        $componentId = $request->get("component");
-        $configId = $request->get("configId");
+        $componentId = $request->get("componentId");
+        $projectId = $request->get("projectId");
         $stackId = $this->container->getParameter("stack_id");
-        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $componentId)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag($this->storageApi, $componentId)) {
             throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
         }
+        if (!$componentId || !$stackId) {
+            throw new UserException("Stack id and component id must be entered.");
+        }
 
-        $components = new Components($this->storageApi);
-        $configuration = new Configuration();
-        $configuration->setComponentId($componentId);
-        $configuration->setConfigurationId($request->get("configId"));
-        $configData = $components->getConfiguration($componentId, $configId)['configuration'];
+        $contentTypeHeader = $request->headers->get("Content-Type");
+        if (!is_string($contentTypeHeader)) {
+            throw new UserException("Incorrect Content-Type.");
+        }
+
+        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
+            $configData = $request->getContent();
+        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
+            $configData = $this->getPostJson($request, false);
+        } else {
+            throw new UserException("Incorrect Content-Type.");
+        }
+
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setStackId($stackId);
-        $encryptorFactory->setComponentId($request->get("component"));
-        $tokenInfo = $this->storageApi->verifyToken();
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-
-        $configDataMigrated = $encryptorFactory->getEncryptor()->decrypt($configData);
-        $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configDataMigrated, ProjectWrapper::class);
-
-        if ($configData !== $configDataMigrated) {
-            $configuration->setConfiguration($configDataMigrated);
-            if ($request->get("changeDescription")) {
-                $configuration->setChangeDescription("Encryption migration");
-            }
-            try {
-                $response = $components->updateConfiguration($configuration);
-            } catch (ClientException $e) {
-                throw new UserException($e->getMessage(), $e);
-            }
-            return $this->createJsonResponse($response, 201, ["Content-Type" => "application/json"]);
+        $encryptorFactory->setComponentId($componentId);
+        if ($projectId) {
+            $encryptorFactory->setProjectId($projectId);
+            $wrapperClass = ProjectWrapper::class;
         } else {
-            return $this->createJsonResponse([], 202, ["Content-Type" => "application/json"]);
+            $wrapperClass = ComponentWrapper::class;
+        }
+
+        try {
+            $configDataMigrated = $encryptorFactory->getEncryptor()->decrypt($configData);
+            $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configDataMigrated, $wrapperClass);
+        } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
+
+        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
+            return $this->createResponse($configDataMigrated, 200, ["Content-Type" => "text/plain"]);
+        } else {
+            return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
         }
     }
 }

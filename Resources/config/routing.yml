@@ -8,6 +8,12 @@ keboola_docker_encrypt:
     defaults: { _controller: KeboolaDockerBundle:Public:encrypt }
     methods:  [POST]
 
+keboola_docker_migrate_config:
+    path:     /migrate
+    defaults:
+      _controller: KeboolaDockerBundle:Api:migrateConfig
+    methods:  [POST]
+
 keboola_docker_sandbox:
     path:     /sandbox
     defaults: { _controller: KeboolaDockerBundle:Api:sandbox }
@@ -56,12 +62,6 @@ keboola_docker_save_config:
     defaults:
       _controller: KeboolaDockerBundle:Api:saveConfig
     methods:  [PUT]
-
-keboola_docker_migrate_config:
-    path:     /{component}/configs/{configId}/migrate
-    defaults:
-      _controller: KeboolaDockerBundle:Api:migrateConfig
-    methods:  [POST]
 
 # run sync actions
 keboola_docker_sync_action:
