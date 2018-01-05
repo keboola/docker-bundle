@@ -99,7 +99,16 @@
               "Sid": "Enable IAM User Permissions",
               "Effect": "Allow",
               "Principal": {
-                "AWS": "arn:aws:iam::061240556736:root"
+                "Fn::Join": [
+                  "", 
+                  [
+                    "arn:aws:iam::", 
+                    {
+                      "Ref": "AWS::AccountId"
+                    }, 
+                    ":root"
+                  ]
+                ]
               },
               "Action": "kms:*",
               "Resource": "*"
@@ -109,7 +118,19 @@
               "Effect": "Allow",
               "Principal": {
                 "AWS": {
-                  "Fn::Join": ["", ["arn:aws:iam::061240556736:user/", {"Ref": "DockerRunnerUser"}]]
+                  "Fn::Join": [
+                    "", 
+                    [
+                      "arn:aws:iam::",
+                      {
+                        "Ref": "AWS::AccountId"
+                      },
+                      ":user/",
+                      {
+                        "Ref": "DockerRunnerUser"
+                      }
+                    ]
+                  ]
                 }
               },
               "Action": [
