@@ -30,7 +30,7 @@ value can be decrypted only in an environment matching the parameters.
 
 + Response 200 (text/plain)
 
-        KBC::Encrypted==ENCODEDSTRING==
+        KBC::ProjectSecure::ENCODEDSTRING==
 
 + Request Encrypt JSON structure (application/json)
     + Body
@@ -46,6 +46,47 @@ value can be decrypted only in an environment matching the parameters.
                 "config": 1,
                 "#test": "KBC::ProjectSecure::ENCODEDSTRING=="
             }
+
+
+## Encryption Migration [/migrate?componentId={componentId}&projectId={projectId}&configId={configId}]
+
+Used to migrate legacy ciphers (KBC::XXXEncrypted==) to new format (KBC::XXXSecure::).
+
++ Parameters
+    + componentId(required, string) ... Keboola Connection Component Id
+    + projectId(optional, string) ... Keboola Connection Project Id
+    + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
+
+If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
+`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
+### Convert Ciphers [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Body
+
+            KBC::Encrypted==ENCODEDSTRING==
+
++ Response 200 (text/plain)
+
+        KBC::ProjectSecure::ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Body
+
+            {
+                "config": 1,
+                "#test": "KBC::Encrypted==ENCODEDSTRING=="
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::ProjectSecure::ENCODEDSTRING=="
+            }
+
 
 ## Legacy Encryption [/encrypt?componentId={componentId}&projectId={projectId}]
 
@@ -240,43 +281,6 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
                 "config": 1,
                 "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
             }
-
-
-## Configuration Migration [/{componentId}/configs/{configId}/migrate]
-
-Used to migrate configuration from legacy ciphers to new ciphers.
-
-+ Parameters
-    + componentId (required, string) ... KBC component Id
-    + configId (required, string) ... KBC configuration Id
-
-### Run job [POST]
-
-Migrate the given configuration. Migrated configuration is returned and stored in Storage as a new version.
-If the configuration contains no ciphers, it is not modified.
-
-+ Request (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
-    + Body
-
-+ Response Not Modified 202 (application/json)
-
-        {
-        }
-
-+ Response Modified 201 (application/json)
-
-        {
-            "id": "some-id",
-            "name": "Configuration name",
-            "configuration": {
-                ...
-            }
-            ...
-        }
 
 
 # Group Run
