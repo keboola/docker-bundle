@@ -16,7 +16,7 @@
         }
     ],
     "require": {
-        "keboola/syrup": "dev-encryption-lib",
+        "keboola/syrup": "^8.0",
         "keboola/php-utils": "^2.0",
         "symfony/symfony": "^2.8",
         "symfony/console": "^2.8",
