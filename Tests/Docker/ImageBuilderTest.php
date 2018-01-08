@@ -3,33 +3,23 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Temp\Temp;
 use Symfony\Component\HttpKernel\Log\NullLogger;
 
 class ImageBuilderTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    public function setUp()
-    {
-        $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $this->encryptorFactory->setComponentId('keboola.docker-demo-app');
-    }
 
     public function testDockerFile()
     {
+        $encryptor = new ObjectEncryptor();
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -55,7 +45,7 @@ class ImageBuilderTest extends \PHPUnit_Framework_TestCase
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
@@ -85,6 +75,8 @@ DOCKERFILE;
 
     public function testDockerFileVersion()
     {
+        $encryptor = new ObjectEncryptor();
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -111,7 +103,7 @@ DOCKERFILE;
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
@@ -142,6 +134,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParameters()
     {
+        $encryptor = new ObjectEncryptor();
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -182,7 +176,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
@@ -212,6 +206,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testRepositoryPasswordHandling()
     {
+        $encryptor = new ObjectEncryptor();
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -246,7 +241,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         /** @var ImageBuilder $image */
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke(
@@ -270,7 +265,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         try {
             // password in definition will not be used in Dockerfile
             $reflection->invoke($image, $tempDir->getTmpFolder());
-            self::fail("Missing parameter must cause exception.");
+            $this->fail("Missing parameter must cause exception.");
         } catch (BuildParameterException $e) {
             $this->assertContains('{{#password}}', $e->getMessage());
             $this->assertNotContains('{{otherParam}}', $e->getMessage());
@@ -281,6 +276,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileUndefParameters()
     {
+        $encryptor = new ObjectEncryptor();
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -312,7 +309,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -320,7 +317,7 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
             $reflection->setAccessible(true);
             $reflection->invoke($image, $tempDir->getTmpFolder());
-            self::fail("Missing parameter definition must raise exception.");
+            $this->fail("Missing parameter definition must raise exception.");
         } catch (BuildParameterException $e) {
             $this->assertContains('Orphaned parameter', $e->getMessage());
         }
@@ -329,6 +326,8 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testDockerFileParametersMissingValue()
     {
+        $encryptor = new ObjectEncryptor();
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -364,7 +363,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         try {
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
             $reflection->setAccessible(true);
@@ -372,14 +371,21 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
             $reflection->setAccessible(true);
             $reflection->invoke($image, $tempDir->getTmpFolder());
-            self::fail("Missing value of parameter must raise exception");
+            $this->fail("Missing value of parameter must raise exception");
         } catch (BuildParameterException $e) {
             $this->assertContains('has no value', $e->getMessage());
         }
     }
 
+
     public function testGitCredentials()
     {
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -390,7 +396,7 @@ ENTRYPOINT php /home/run.php --data=/data';
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
-                            "#password" => $this->encryptorFactory->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
+                            "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
                             "username" => GIT_PRIVATE_USERNAME,
                         ],
                         "commands" => [
@@ -407,7 +413,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
@@ -447,6 +453,7 @@ DOCKERFILE;
     public function testDockerFileBothParameters()
     {
         // test that both values from parameters and definition are treated equally
+        $encryptor = new ObjectEncryptor();
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -504,7 +511,7 @@ DOCKERFILE;
         $tempDir->initRunFolder();
 
         /** @var ImageBuilder $image */
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $this->assertInstanceOf(ImageBuilder::class, $image);
         $this->assertTrue($image->getCache(), 'caching should be enabled by default');
 

@@ -47,13 +47,10 @@ services:
     environment:
       - "DOCKER_HOST"
       - "PHP_IDE_CONFIG=serverName=Dockerserver"
-      - "AWS_ACCESS_KEY_ID"
-      - "AWS_SECRET_ACCESS_KEY"
     command: /code/docker-tests/run-job/run-job.sh
     volumes:
       - ../../:/code/
       - ./tmp/:/tmp/
-#      - /tmp/:/tmp/
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "800:80"

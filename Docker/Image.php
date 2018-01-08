@@ -2,7 +2,10 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\DockerBundle\Docker\Image\DockerHub;
+use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;

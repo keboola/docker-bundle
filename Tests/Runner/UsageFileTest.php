@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
@@ -69,7 +69,6 @@ JSON;
             ->getMock()
         ;
 
-        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -93,7 +92,6 @@ YAML;
             ->getMock()
         ;
 
-        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -115,17 +113,10 @@ JSON;
             ->getMock()
         ;
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-
         $jobMapperStub
             ->expects($this->once())
             ->method('get')
-            ->willReturn(new Job($encryptorFactory->getEncryptor()));
+            ->willReturn(new Job(new ObjectEncryptor));
 
         $jobMapperStub
             ->expects($this->once())
@@ -135,7 +126,6 @@ JSON;
                 return $job->getUsage() === \json_decode($usage, true);
             }));
 
-        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }
@@ -165,7 +155,6 @@ JSON;
             ->method('get')
             ->willReturn(null);
 
-        /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
         $usageFile->storeUsage();
     }

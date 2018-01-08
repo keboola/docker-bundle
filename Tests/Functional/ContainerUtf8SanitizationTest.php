@@ -6,8 +6,9 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
@@ -30,12 +31,7 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
 
     private function getContainer($imageConfig, $dataDir, $envs, Logger $log = null, ContainerLogger $containerLog = null)
     {
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
+        $encryptor = new ObjectEncryptor();
         if (!$log) {
             $log = new Logger("null");
             $log->pushHandler(new NullHandler());
@@ -44,7 +40,7 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
             $containerLog = new ContainerLogger("null");
             $containerLog->pushHandler(new NullHandler());
         }
-        $image = ImageFactory::getImage($encryptorFactory->getEncryptor(), $log, new Component($imageConfig), new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfig), new Temp(), true);
         $image->prepare([]);
 
         $container = new Container(

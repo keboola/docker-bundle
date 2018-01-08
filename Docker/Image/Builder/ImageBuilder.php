@@ -7,7 +7,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;

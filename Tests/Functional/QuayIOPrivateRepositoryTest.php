@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -33,8 +33,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        $encryptor = new ObjectEncryptor();
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
@@ -45,7 +44,8 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
     public function testInvalidCredentials()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -79,7 +79,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
         $imageConfig = new Component([
             "data" => [
                 "definition" => [

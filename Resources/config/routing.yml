@@ -1,17 +1,6 @@
-keboola_docker_encrypt_legacy:
-    path:     /encrypt
-    defaults: { _controller: KeboolaDockerBundle:PublicLegacy:encrypt }
-    methods:  [POST]
-
 keboola_docker_encrypt:
-    path:     /encrypt-new
+    path:     /encrypt
     defaults: { _controller: KeboolaDockerBundle:Public:encrypt }
-    methods:  [POST]
-
-keboola_docker_migrate_config:
-    path:     /migrate
-    defaults:
-      _controller: KeboolaDockerBundle:Api:migrateConfig
     methods:  [POST]
 
 keboola_docker_sandbox:
@@ -48,7 +37,7 @@ keboola_docker_component_dry_run:
 keboola_docker_component_encrypt:
     path:     /{component}/encrypt
     defaults:
-      _controller: KeboolaDockerBundle:PublicLegacy:componentEncrypt
+      _controller: KeboolaDockerBundle:Public:componentEncrypt
     methods:  [POST]
 
 keboola_docker_encrypt_config:

@@ -3,17 +3,19 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\Job;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -32,7 +34,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
      */
     private $temp;
 
-    private function getJobExecutor(&$encryptorFactory, $handler = null)
+    private function getJobExecutor(&$encryptor, $handler = null)
     {
         $storageApiClient = new Client(
             [
@@ -82,20 +84,20 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->getMock()
         ;
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.r-transformation');
-        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
+        $encryptor = new ObjectEncryptor();
+        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+        $ecWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        $ecpWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper->setProjectId($tokenData["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $encryptorFactory,
+            $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
@@ -109,10 +111,10 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
-        $componentsStub->expects(self::once())
+        $componentsStub->expects($this->once())
             ->method("getConfiguration")
             ->with("keboola.r-transformation", "my-config")
-            ->will($this->returnValue(self::getConfiguration()))
+            ->will($this->returnValue($this->getConfiguration()))
         ;
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
@@ -124,12 +126,13 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->will($this->returnValue($componentsStub))
         ;
 
-        /** @var ComponentsService $componentsServiceStub */
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),
             $runner,
-            $encryptorFactory,
-            $componentsServiceStub
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper
         );
         $jobExecutor->setStorageApi($this->client);
 
@@ -289,9 +292,8 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
+        $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -342,9 +344,8 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters('row1');
-        /** @var ObjectEncryptorFactory $encryptor */
         $jobExecutor = $this->getJobExecutor($encryptor, $handler);
-        $job = new Job($encryptor->getEncryptor(), $data);
+        $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 

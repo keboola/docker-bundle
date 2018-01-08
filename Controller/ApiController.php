@@ -2,10 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
-use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -24,6 +21,7 @@ class ApiController extends BaseApiController
      * Validate request body configuration.
      *
      * @param array $body Configuration parameters
+     * @return array Validated configuration parameters.
      * @throws UserException In case of error.
      */
     private function validateParams($body)
@@ -83,6 +81,7 @@ class ApiController extends BaseApiController
         }
     }
 
+
     /**
      * Create syrup Job from request parameters.
      * @param array $params
@@ -102,12 +101,12 @@ class ApiController extends BaseApiController
             if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $params["component"])
                 && isset($params["configData"])
             ) {
-                /** @var ObjectEncryptorFactory $encryptorFactory */
-                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-                $encryptorFactory->setComponentId($params["component"]);
+                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
+                $cryptoWrapper->setComponentId($params["component"]);
                 $tokenInfo = $this->storageApi->verifyToken();
-                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-                $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
+                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+                $encryptor = $this->container->get("syrup.object_encryptor");
+                $params["configData"] = $encryptor->encrypt($params["configData"]);
             }
 
             // Create new job
@@ -262,7 +261,7 @@ class ApiController extends BaseApiController
      * Run docker component with the provided configuration.
      *
      * @param Request $request
-     * @return void
+     * @return \Symfony\Component\HttpFoundation\Response
      */
     public function disabledAction(Request $request)
     {
@@ -295,7 +294,6 @@ class ApiController extends BaseApiController
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function encryptConfigAction(Request $request)
     {
@@ -310,11 +308,12 @@ class ApiController extends BaseApiController
             ], 400);
         }
 
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setComponentId($request->get("component"));
+        /** @var ComponentProjectWrapper $cryptoWrapper */
+        $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
+        $cryptoWrapper->setComponentId($request->get("component"));
         $tokenInfo = $this->storageApi->verifyToken();
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+        $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = $this->container->get("syrup.object_encryptor");
 
         $contentTypeHeader = $request->headers->get("Content-Type");
         if (!is_string($contentTypeHeader)) {
@@ -322,22 +321,17 @@ class ApiController extends BaseApiController
         }
 
         if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($request->getContent(), ComponentProjectWrapper::class);
+            $encryptedValue = $encryptor->encrypt($request->getContent(), ComponentProjectWrapper::class);
             return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
         } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
             $params = $this->getPostJson($request, false);
-            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($params, ComponentProjectWrapper::class);
+            $encryptedValue = $encryptor->encrypt($params, ComponentProjectWrapper::class);
             return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
         } else {
             throw new UserException("Incorrect Content-Type.");
         }
     }
 
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
-     */
     public function saveConfigAction(Request $request)
     {
         /** @var StorageApiService $storage */
@@ -351,12 +345,12 @@ class ApiController extends BaseApiController
         if ($request->get("configuration")) {
             $configuration = json_decode($request->get("configuration"));
             if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $request->get("component"))) {
-                /** @var ObjectEncryptorFactory $encryptorFactory */
-                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-                $encryptorFactory->setComponentId($request->get("component"));
+                $cryptoWrapper = $this->container->get("syrup.encryption.component_project_wrapper");
+                $cryptoWrapper->setComponentId($request->get("component"));
                 $tokenInfo = $this->storageApi->verifyToken();
-                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-                $configuration = $encryptorFactory->getEncryptor()->encrypt($configuration, ComponentProjectWrapper::class);
+                $cryptoWrapper->setProjectId($tokenInfo["owner"]["id"]);
+                $encryptor = $this->container->get("syrup.object_encryptor");
+                $configuration = $encryptor->encrypt($configuration, ComponentProjectWrapper::class);
             }
             $options->setConfiguration($configuration);
         }
@@ -384,61 +378,5 @@ class ApiController extends BaseApiController
         }
 
         return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
-    }
-
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\UserException
-     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
-     */
-    public function migrateConfigAction(Request $request)
-    {
-        $componentId = $request->get("componentId");
-        $projectId = $request->get("projectId");
-        $stackId = $this->container->getParameter("stack_id");
-        if (!(new ControllerHelper)->hasComponentEncryptFlag($this->storageApi, $componentId)) {
-            throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
-        }
-        if (!$componentId || !$stackId) {
-            throw new UserException("Stack id and component id must be entered.");
-        }
-
-        $contentTypeHeader = $request->headers->get("Content-Type");
-        if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type.");
-        }
-
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $configData = $request->getContent();
-        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
-            $configData = $this->getPostJson($request, false);
-        } else {
-            throw new UserException("Incorrect Content-Type.");
-        }
-
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setStackId($stackId);
-        $encryptorFactory->setComponentId($componentId);
-        if ($projectId) {
-            $encryptorFactory->setProjectId($projectId);
-            $wrapperClass = ProjectWrapper::class;
-        } else {
-            $wrapperClass = ComponentWrapper::class;
-        }
-
-        try {
-            $configDataMigrated = $encryptorFactory->getEncryptor()->decrypt($configData);
-            $configDataMigrated = $encryptorFactory->getEncryptor()->encrypt($configDataMigrated, $wrapperClass);
-        } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            return $this->createResponse($configDataMigrated, 200, ["Content-Type" => "text/plain"]);
-        } else {
-            return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
-        }
     }
 }

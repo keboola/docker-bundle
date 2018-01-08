@@ -45,9 +45,9 @@ class DataDirectoryTest extends \PHPUnit_Framework_TestCase
         $fs->dumpFile($dataDir->getDataDir() . '/out/tables/table.manifest', $tableManifestFile);
         $fs->dumpFile($dataDir->getDataDir() . '/out/state.json', $stateFile);
         $dataDir->moveOutputToInput();
-        $this->assertEquals($tableFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table'));
-        $this->assertEquals($tableManifestFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table.manifest'));
-        $this->assertEquals($stateFile, file_get_contents($dataDir->getDataDir() . '/in/state.json'));
+        self::assertEquals($tableFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table'));
+        self::assertEquals($tableManifestFile, file_get_contents($dataDir->getDataDir() . '/in/tables/table.manifest'));
+        self::assertEquals($stateFile, file_get_contents($dataDir->getDataDir() . '/in/state.json'));
         $dataDir->dropDataDir();
     }
 }

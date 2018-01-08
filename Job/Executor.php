@@ -5,12 +5,14 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
@@ -26,14 +28,24 @@ class Executor extends BaseExecutor
     protected $temp;
 
     /**
-     * @var ObjectEncryptorFactory
+     * @var ObjectEncryptor
      */
-    protected $encryptorFactory;
+    protected $encryptor;
 
     /**
      * @var Components
      */
     protected $components;
+
+    /**
+     * @var ComponentWrapper
+     */
+    protected $encryptionComponent;
+
+    /**
+     * @var ComponentProjectWrapper
+     */
+    protected $encryptionComponentProject;
 
     /**
      * @var array Cached token information
@@ -53,24 +65,29 @@ class Executor extends BaseExecutor
     /**
      * @param Logger $logger
      * @param Runner $runner
-     * @param ObjectEncryptorFactory $encryptorFactory
+     * @param ObjectEncryptor $encryptor
      * @param ComponentsService $components
+     * @param ComponentWrapper $componentWrapper
+     * @param ComponentProjectWrapper $componentProjectWrapper
      */
     public function __construct(
         Logger $logger,
         Runner $runner,
-        ObjectEncryptorFactory $encryptorFactory,
-        ComponentsService $components
+        ObjectEncryptor $encryptor,
+        ComponentsService $components,
+        ComponentWrapper $componentWrapper,
+        ComponentProjectWrapper $componentProjectWrapper
     ) {
-        $this->encryptorFactory = $encryptorFactory;
+        $this->encryptor = $encryptor;
         $this->components = $components->getComponents();
+        $this->encryptionComponent = $componentWrapper;
+        $this->encryptionComponentProject = $componentProjectWrapper;
         $this->logger = $logger;
         $this->runner = $runner;
     }
 
     /**
      * @param $id
-     * @return array
      */
     protected function getComponent($id)
     {
@@ -96,11 +113,11 @@ class Executor extends BaseExecutor
     {
         $this->tokenInfo = $this->storageApi->verifyToken();
         $this->runner->setFeatures($this->tokenInfo["owner"]["features"]);
-        $this->encryptorFactory->setProjectId($this->tokenInfo["owner"]["id"]);
+        $this->encryptionComponentProject->setProjectId($this->tokenInfo["owner"]["id"]);
         if (isset($job->getRawParams()["component"])) {
-            $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
+            $this->encryptionComponent->setComponentId($job->getRawParams()["component"]);
+            $this->encryptionComponentProject->setComponentId($job->getRawParams()["component"]);
         }
-        $job->setEncryptor($this->encryptorFactory->getEncryptor());
         $params = $job->getParams();
 
         $jobDefinitionParser = new JobDefinitionParser();
@@ -146,7 +163,7 @@ class Executor extends BaseExecutor
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
 
                     if (in_array("encrypt", $component["flags"])) {
-                        $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+                        $jobDefinitionParser->parseConfig(new Component($component), $this->encryptor->decrypt($configuration));
                     } else {
                         $jobDefinitionParser->parseConfig(new Component($component), $configuration);
                     }

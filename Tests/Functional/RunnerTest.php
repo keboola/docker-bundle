@@ -5,10 +5,11 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -17,8 +18,10 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -99,7 +102,7 @@ class RunnerTest extends KernelTestCase
         parent::tearDown();
     }
 
-    private function getRunner($handler, &$encryptorFactory = null)
+    private function getRunner($handler, &$encryptor = null)
     {
         $tokenInfo = $this->client->verifyToken();
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
@@ -132,19 +135,20 @@ class RunnerTest extends KernelTestCase
             ->getMock()
         ;
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.r-transformation');
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptor = new ObjectEncryptor();
+        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+        $ecWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        $ecpWrapper->setComponentId('keboola.r-transformation');
+        $ecpWrapper->setProjectId($tokenInfo['owner']['id']);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
+        $encryptor->pushWrapper(new BaseWrapper(hash('sha256', uniqid())));
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
-            $encryptorFactory,
+            $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
@@ -377,9 +381,9 @@ class RunnerTest extends KernelTestCase
             ]
         ];
         $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('someString');
+        $runner = $this->getRunner($handler, $encryptor);
+        /** @var ObjectEncryptor $encryptor */
+        $encrypted = $encryptor->encrypt('someString');
 
         $componentData = [
             'id' => 'docker-dummy-component',
@@ -446,7 +450,7 @@ class RunnerTest extends KernelTestCase
             ]
         ];
         $handler = new TestHandler();
-        $runner = $this->getRunner($handler);
+        $runner = $this->getRunner($handler, $encryptor);
         $componentData = [
             'id' => 'docker-dummy-component',
             'type' => 'other',
@@ -500,9 +504,9 @@ class RunnerTest extends KernelTestCase
             ]
         ];
         $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('someString');
+        $runner = $this->getRunner($handler, $encryptor);
+        /** @var ObjectEncryptor $encryptor */
+        $encrypted = $encryptor->encrypt('someString');
 
         $componentData = [
             'id' => 'docker-dummy-component',
@@ -560,7 +564,7 @@ class RunnerTest extends KernelTestCase
     public function testClearState()
     {
         $state = ['key' => 'value'];
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner(new NullHandler(), $encryptor);
         $cmp = new Components($this->client);
         try {
             $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');

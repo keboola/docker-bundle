@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Syrup\Exception\UserException;
+
 class JobDefinitionParser
 {
     /**
@@ -47,6 +49,7 @@ class JobDefinitionParser
     }
 
     /**
+     * @param string|null $rowId
      * @return JobDefinition[]
      */
     public function getJobDefinitions()

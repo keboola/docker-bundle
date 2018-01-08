@@ -3,8 +3,8 @@
 namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ActionController;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -446,7 +446,7 @@ class ActionControllerTest extends WebTestCase
         /**
          * @var $encryptor ObjectEncryptor
          */
-        $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        $encryptor = $container->get('syrup.object_encryptor');
         $encryptedPassword = $encryptor->encrypt('password');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
@@ -502,11 +502,14 @@ class ActionControllerTest extends WebTestCase
     {
         $container = self::$container;
 
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        /**
+         * @var $encryptor ObjectEncryptor
+         */
+        $encryptor = $container->get('syrup.object_encryptor');
         $encryptedPassword = $encryptor->encrypt('mismatch');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
+        $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 

@@ -6,30 +6,17 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 
 class ImageTest extends \PHPUnit_Framework_TestCase
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    public function setUp()
-    {
-        $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $this->encryptorFactory->setComponentId('keboola.docker-demo-app');
-    }
-
     public function testDockerHub()
     {
+        $encryptor = new ObjectEncryptor();
         $configuration = new Component([
             "data" => [
                 "definition" => [
@@ -47,7 +34,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
         $this->assertEquals(DockerHub::class, get_class($image));
         $this->assertEquals("master", $image->getTag());
         $this->assertEquals("keboola/docker-demo:master", $image->getFullImageId());
@@ -55,13 +42,19 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testDockerHubPrivateRepository()
     {
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
         $configuration = new Component([
             "data" => [
                 "definition" => [
                     "type" => "dockerhub-private",
                     "uri" => "keboola/docker-demo",
                     "repository" => [
-                        "#password" => $this->encryptorFactory->getEncryptor()->encrypt("bb"),
+                        "#password" => $encryptor->encrypt("bb"),
                         "username" => "cc",
                         "server" => "dd"
                     ]
@@ -72,7 +65,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
         /** @var DockerHub\PrivateRepository $image */
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
         $this->assertEquals(DockerHub\PrivateRepository::class, get_class($image));
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());
@@ -85,6 +78,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testQuayIO()
     {
+        $encryptor = new ObjectEncryptor();
         $configuration = new Component([
             "data" => [
                 "definition" => [
@@ -100,7 +94,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
         $this->assertEquals(QuayIO::class, get_class($image));
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
     }
@@ -108,13 +102,19 @@ class ImageTest extends \PHPUnit_Framework_TestCase
 
     public function testQuayIOPrivateRepository()
     {
+        $wrapper = new ComponentWrapper(md5(uniqid()));
+        $wrapper->setComponentId(123);
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($wrapper);
+        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+
         $configuration = new Component([
             "data" => [
                 "definition" => [
                     "type" => "quayio-private",
                     "uri" => "keboola/docker-demo-private",
                     "repository" => [
-                        "#password" => $this->encryptorFactory->getEncryptor()->encrypt("bb"),
+                        "#password" => $encryptor->encrypt("bb"),
                         "username" => "cc"
                     ]
                 ],
@@ -124,7 +124,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase
             ]
         ]);
         /** @var QuayIO\PrivateRepository $image */
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
+        $image = ImageFactory::getImage($encryptor, new NullLogger(), $configuration, new Temp(), true);
         $this->assertEquals(QuayIO\PrivateRepository::class, get_class($image));
         $this->assertEquals("bb", $image->getLoginPassword());
         $this->assertEquals("cc", $image->getLoginUsername());

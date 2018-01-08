@@ -4,9 +4,9 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\RequestException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\ObjectEncryptor;
 
 class Authorization
 {

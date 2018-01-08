@@ -2,18 +2,19 @@
 
 namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 
+use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
+use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Job\Metadata\Job;
+use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
@@ -22,6 +23,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class EncryptionTest extends KernelTestCase
 {
+
     /**
      * @var Client
      */
@@ -36,7 +38,7 @@ class EncryptionTest extends KernelTestCase
         self::bootKernel();
     }
 
-    private function getJobExecutor(&$encryptorFactory, $handler, $indexActionValue)
+    private function getJobExecutor(&$encryptor, &$ecWrapper, &$ecpWrapper, $handler, $indexActionValue)
     {
         $tokenData = $this->client->verifyToken();
 
@@ -69,20 +71,21 @@ class EncryptionTest extends KernelTestCase
             ->getMock()
         ;
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('docker-dummy-component');
-        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
+        $encryptor = new ObjectEncryptor();
+        $baseWrapper = new BaseWrapper(hash('sha256', uniqid()));
+        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
+        $ecWrapper->setComponentId('docker-dummy-component');
+        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
+        $ecpWrapper->setComponentId('docker-dummy-component');
+        $ecpWrapper->setProjectId($tokenData["owner"]["id"]);
+        $encryptor->pushWrapper($ecWrapper);
+        $encryptor->pushWrapper($ecpWrapper);
+        $encryptor->pushWrapper($baseWrapper);
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
-        /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $encryptorFactory,
+            $encryptor,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
@@ -99,9 +102,9 @@ class EncryptionTest extends KernelTestCase
             "configuration" => [
                 "parameters" => [
                     "key1" => "value1",
-                    "#key2" => $encryptorFactory->getEncryptor()->encrypt("value2"),
-                    "#key3" => $encryptorFactory->getEncryptor()->encrypt("value3", ComponentWrapper::class),
-                    "#key4" => $encryptorFactory->getEncryptor()->encrypt("value4", ComponentProjectWrapper::class),
+                    "#key2" => $encryptor->encrypt("value2"),
+                    "#key3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                    "#key4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                 ]
             ],
             "rows" => [],
@@ -114,9 +117,9 @@ class EncryptionTest extends KernelTestCase
             "configuration" => [
                 "parameters" => [
                     "configKey1" => "value1",
-                    "#configKey2" => $encryptorFactory->getEncryptor()->encrypt("value2"),
-                    "#configKey3" => $encryptorFactory->getEncryptor()->encrypt("value3", ComponentWrapper::class),
-                    "#configKey4" => $encryptorFactory->getEncryptor()->encrypt("value4", ComponentProjectWrapper::class),
+                    "#configKey2" => $encryptor->encrypt("value2"),
+                    "#configKey3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                    "#configKey4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                 ]
             ],
             "rows" => [
@@ -127,9 +130,9 @@ class EncryptionTest extends KernelTestCase
                     "configuration" => [
                         "parameters" => [
                             "rowKey1" => "value1",
-                            "#rowKey2" => $encryptorFactory->getEncryptor()->encrypt("value2"),
-                            "#rowKey3" => $encryptorFactory->getEncryptor()->encrypt("value3", ComponentWrapper::class),
-                            "#rowKey4" => $encryptorFactory->getEncryptor()->encrypt("value4", ComponentProjectWrapper::class),
+                            "#rowKey2" => $encryptor->encrypt("value2"),
+                            "#rowKey3" => $encryptor->encrypt("value3", ComponentWrapper::class),
+                            "#rowKey4" => $encryptor->encrypt("value4", ComponentProjectWrapper::class),
                         ]
                     ],
                     "state" => []
@@ -158,8 +161,10 @@ class EncryptionTest extends KernelTestCase
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),
             $runner,
-            $encryptorFactory,
-            $componentsServiceStub
+            $encryptor,
+            $componentsServiceStub,
+            $ecWrapper,
+            $ecpWrapper
         );
 
         // mock client to return image data
@@ -230,9 +235,11 @@ class EncryptionTest extends KernelTestCase
         $indexActionValue['components']['0']['flags'] = [];
 
         $handler = new TestHandler();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        /** @var ComponentWrapper $ecWrapper */
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        /** @var ObjectEncryptor $encryptor */
+        $jobExecutor = $this->getJobExecutor($encryptor, $ecWrapper, $ecpWrapper, $handler, $indexActionValue);
+        $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -240,9 +247,15 @@ class EncryptionTest extends KernelTestCase
         $this->assertEquals(1, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
-        $this->assertStringStartsWith("KBC::Encrypted==", $config["parameters"]["#key2"]);
-        $this->assertStringStartsWith("KBC::ComponentEncrypted==", $config["parameters"]["#key3"]);
-        $this->assertStringStartsWith("KBC::ComponentProjectEncrypted==", $config["parameters"]["#key4"]);
+        $this->assertEquals("KBC::Encrypted==", substr($config["parameters"]["#key2"], 0, 16));
+        $this->assertEquals(
+            $ecWrapper->getPrefix(),
+            substr($config["parameters"]["#key3"], 0, strlen($ecWrapper->getPrefix()))
+        );
+        $this->assertEquals(
+            $ecpWrapper->getPrefix(),
+            substr($config["parameters"]["#key4"], 0, strlen($ecpWrapper->getPrefix()))
+        );
     }
 
     public function testStoredConfigDecryptEncryptComponent()
@@ -260,9 +273,11 @@ class EncryptionTest extends KernelTestCase
         $indexActionValue['components']['0']['flags'] = ['encrypt'];
 
         $handler = new TestHandler();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        /** @var ComponentWrapper $ecWrapper */
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        /** @var ObjectEncryptor $encryptor */
+        $jobExecutor = $this->getJobExecutor($encryptor, $ecWrapper, $ecpWrapper, $handler, $indexActionValue);
+        $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -291,9 +306,11 @@ class EncryptionTest extends KernelTestCase
         $indexActionValue['components']['0']['flags'] = ['encrypt'];
 
         $handler = new TestHandler();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        /** @var ComponentWrapper $ecWrapper */
+        /** @var ComponentProjectWrapper $ecpWrapper */
+        /** @var ObjectEncryptor $encryptor */
+        $jobExecutor = $this->getJobExecutor($encryptor, $ecWrapper, $ecpWrapper, $handler, $indexActionValue);
+        $job = new Job($encryptor, $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 

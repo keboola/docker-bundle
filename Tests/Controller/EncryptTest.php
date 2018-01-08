@@ -2,8 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Controller;
 
-use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -44,9 +43,8 @@ class EncryptTest extends WebTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals("value1", $response["key1"]);
-        $this->assertStringStartsWith("KBC::Encrypted==", $response["#key2"]);
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
+        $this->assertEquals("KBC::Encrypted==", substr($response["#key2"], 0, 16));
+        $encryptor = self::$container->get("syrup.object_encryptor");
         $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
@@ -86,10 +84,11 @@ class EncryptTest extends WebTestCase
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertEquals("KBC::ComponentEncrypted==", substr($response["#key2"], 0, 25));
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
+        $cryptoWrapper = self::$container->get("syrup.encryption.component_wrapper");
+        $cryptoWrapper->setComponentId('docker-config-encrypt-verify');
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($cryptoWrapper);
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
 
@@ -111,12 +110,13 @@ class EncryptTest extends WebTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals("value1", $response["key1"]);
-        $this->assertStringStartsWith("KBC::ComponentProjectEncrypted==", $response["#key2"]);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setProjectId('123');
-        $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
+        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($response["#key2"], 0, 32));
+        $cryptoWrapper = self::$container->get("syrup.encryption.component_project_wrapper");
+        $cryptoWrapper->setComponentId('docker-config-encrypt-verify');
+        $cryptoWrapper->setProjectId('123');
+        $encryptor = new ObjectEncryptor();
+        $encryptor->pushWrapper($cryptoWrapper);
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
 
@@ -139,9 +139,8 @@ class EncryptTest extends WebTestCase
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
         $this->assertEquals("value1", $response["key1"]);
         $this->assertEquals("KBC::Encrypted==", substr($response["#key2"], 0, 16));
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
-        $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value2", $encryptor->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
 
@@ -158,10 +157,9 @@ class EncryptTest extends WebTestCase
         );
         $response = $client->getResponse()->getContent();
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
-        $this->assertStringStartsWith("KBC::Encrypted==", $response);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
-        $this->assertEquals("value", $encryptorFactory->getEncryptor()->decrypt($response));
+        $this->assertEquals("KBC::Encrypted==", substr($response, 0, 16));
+        $encryptor = self::$container->get("syrup.object_encryptor");
+        $this->assertEquals("value", $encryptor->decrypt($response));
     }
 
     public function testEncryptInvalidHeader()
