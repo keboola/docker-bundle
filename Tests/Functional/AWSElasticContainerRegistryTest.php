@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -25,6 +25,8 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
      */
     public function testMissingCredentials()
     {
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -39,7 +41,8 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
@@ -50,7 +53,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
     public function testInvalidCredentials()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID . "_invalid");
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
@@ -84,7 +87,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
@@ -118,7 +121,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
     public function testGetAwsAccountId()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -142,7 +145,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
     public function testLogger()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);

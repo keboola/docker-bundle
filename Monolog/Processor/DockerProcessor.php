@@ -9,6 +9,8 @@ namespace Keboola\DockerBundle\Monolog\Processor;
  */
 class DockerProcessor
 {
+    private $componentName;
+
     /**
      * @param  array $record
      * @return array

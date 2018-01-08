@@ -59,5 +59,9 @@ RUN cp /buildcode/sudoers /etc/ \
 
 RUN cp /buildcode/sshd_config /etc/ssh/
 RUN echo "root:root" | chpasswd 
+# because of sync actions
+RUN usermod -a -G root www-data
+RUN chsh -s /bin/bash www-data
+RUN echo "www-data ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 CMD ["/buildcode/start.sh"]

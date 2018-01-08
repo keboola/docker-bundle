@@ -6,8 +6,8 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -37,7 +37,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -82,7 +82,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -125,7 +125,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $process = new Process("sudo docker images quay.io/keboola/docker-custom-php:1.1.0 | grep docker-custom-php | wc -l");
         $process->run();
@@ -178,7 +178,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -228,7 +228,7 @@ class ImageBuilderTest extends KernelTestCase
         $process->run();
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -273,7 +273,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreatePrivateRepoMissingPassword()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -316,7 +316,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreatePrivateRepoMissingCredentials()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -361,7 +361,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -427,7 +427,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testInvalidRepo()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -465,7 +465,7 @@ class ImageBuilderTest extends KernelTestCase
     public function testCreateInvalidUrl()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -528,7 +528,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -569,7 +569,7 @@ class ImageBuilderTest extends KernelTestCase
         $oldCount = intval(trim($process->getOutput()));
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [

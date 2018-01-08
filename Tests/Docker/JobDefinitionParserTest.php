@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
-use Keboola\Syrup\Exception\UserException;
 
 class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
 {

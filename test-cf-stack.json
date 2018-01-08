@@ -1,129 +1,202 @@
 {
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Stack for testing Docker Runner",
-  "Parameters": {
-    "KeboolaStack": {
-      "Type": "String",
-      "Description": "All resources will be tagged by this value."
-    }
-  },
-  "Resources": {
-    "DockerRunnerRepository": {
-      "Type": "AWS::ECR::Repository",
-      "Properties": {
-        "RepositoryName": "docker-testing",
-        "RepositoryPolicyText": {
-          "Version": "2008-10-17",
-          "Statement": [
-            {
-              "Effect": "Allow",
-              "Principal": {
-                  "AWS": {
-                    "Fn::GetAtt": [
-                      "DockerRunnerUser",
-                      "Arn"
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Stack for testing Docker Runner",
+    "Parameters": {
+        "KeboolaStack": {
+            "Type": "String",
+            "Description": "All resources will be tagged by this value."
+        }
+    },
+    "Resources": {
+        "DockerRunnerRepository": {
+            "Type": "AWS::ECR::Repository",
+            "Properties": {
+                "RepositoryName": "docker-testing",
+                "RepositoryPolicyText": {
+                    "Version": "2008-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                    "AWS": {
+                                        "Fn::GetAtt": [
+                                            "DockerRunnerUser",
+                                            "Arn"
+                                        ]
+                                    }
+                            },
+                            "Action": [
+                                    "ecr:PutImage",
+                                    "ecr:InitiateLayerUpload",
+                                    "ecr:UploadLayerPart",
+                                    "ecr:CompleteLayerUpload",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage",
+                                    "ecr:BatchCheckLayerAvailability"
+                            ]
+                        }
                     ]
-                  }
-              },
-              "Action": [
-                  "ecr:PutImage",
-                  "ecr:InitiateLayerUpload",
-                  "ecr:UploadLayerPart",
-                  "ecr:CompleteLayerUpload",
-                  "ecr:GetDownloadUrlForLayer",
-                  "ecr:BatchGetImage",
-                  "ecr:BatchCheckLayerAvailability"
-              ]
-            }
-          ]
-        }
-      },
-      "DependsOn": [
-        "DockerRunnerUser"
-      ]
-    },
-    "DockerRunnerUser": {
-      "Type": "AWS::IAM::User",
-      "DeletionPolicy": "Delete",
-      "Properties": {
-        "Path": "/",
-        "Policies": [
-          {
-            "PolicyName": "Owner",
-            "PolicyDocument": {
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "ecr:GetAuthorizationToken"
-                  ],
-                  "Resource": "*"
-                },
-                {
-                  "Effect": "Allow",
-                  "Action": [
-                    "ecr:GetDownloadUrlForLayer",
-                    "ecr:BatchGetImage",
-                    "ecr:BatchCheckLayerAvailability"
-                  ],
-                  "Resource": [
-                    "*"
-                  ]
                 }
-          		]
-            }
-          }
-        ]
-      }
-    },
-    "AccessKey": {
-      "Type": "AWS::IAM::AccessKey",
-      "DeletionPolicy": "Delete",
-      "Properties": {
-          "UserName": {
-              "Ref": "DockerRunnerUser"
-          }
-      },
-      "DependsOn": [
-        "DockerRunnerUser"
-      ]
-    }
-  },
-  "Outputs": {
-    "RepositoryUrl": {
-        "Value": {
-            "Fn::Join": [
-              "",
-              [
-                {
-                  "Ref": "AWS::AccountId"
-                },
-                ".dkr.ecr.",
-                {
-                  "Ref": "AWS::Region"
-                },
-                ".amazonaws.com/",
-                {
-                  "Ref": "DockerRunnerRepository"      
-                }
+            },
+            "DependsOn": [
+                "DockerRunnerUser"
             ]
-          ]
+        },
+        "DockerRunnerUser": {
+            "Type": "AWS::IAM::User",
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": "Owner",
+                        "PolicyDocument": {
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecr:GetAuthorizationToken"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ecr:GetDownloadUrlForLayer",
+                                        "ecr:BatchGetImage",
+                                        "ecr:BatchCheckLayerAvailability"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                        "Sid": "UseKMSKeys",
+                                        "Action": [
+                                                "kms:Encrypt",
+                                                "kms:Decrypt",
+                                                "kms:ReEncrypt*",
+                                                "kms:GenerateDataKey*",
+                                                "kms:DescribeKey"
+                                        ],
+                                        "Resource": [
+                                                {
+                                                        "Fn::GetAtt": ["DockerRunnerKMSKey", "Arn"]
+                                                }
+                                        ],
+                                        "Effect": "Allow"
+                                }                
+                            ]
+                        }
+                    }
+                ]
+            },
+            "DependsOn": [
+                "DockerRunnerKMSKey"
+            ]
+        },
+        "AccessKey": {
+            "Type": "AWS::IAM::AccessKey",
+            "DeletionPolicy": "Delete",
+            "Properties": {
+                    "UserName": {
+                            "Ref": "DockerRunnerUser"
+                    }
+            },
+            "DependsOn": [
+                "DockerRunnerUser"
+            ]
+        },
+        "DockerRunnerKMSKey": {
+            "Type": "AWS::KMS::Key",
+            "Properties": {
+                "Description" : "Docker Runner Test Key",
+                "KeyPolicy": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "Enable IAM User Permissions",
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Join": [
+                                        "", 
+                                        [
+                                            "arn:aws:iam::", 
+                                            {
+                                                "Ref": "AWS::AccountId"
+                                            }, 
+                                            ":root"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "Action": "kms:*",
+                            "Resource": "*"
+                        }
+                    ]
+                }
+            }
+        },
+        "DockerRunnerKMSKeyAlias": {
+            "Type": "AWS::KMS::Alias",
+            "Properties": {
+                "AliasName": {
+                    "Fn::Join": [
+                        "", 
+                        [
+                            "alias/", 
+                            {
+                                "Ref": "KeboolaStack"
+                            },
+                            "-docker-runner"
+                        ]
+                    ]
+                },
+                "TargetKeyId" : {
+                    "Ref": "DockerRunnerKMSKey"
+                }
+            },
+            "DependsOn": [
+                "DockerRunnerKMSKey"
+            ]
         }
     },
-    "Region": {
-        "Value": {
-            "Ref": "AWS::Region"
-        }
-    },
-    "AccessKeyId": {
-        "Value": {
-            "Ref": "AccessKey"
-        }
-    },
-    "AccessKeySecret": {
-        "Value": {
-            "Fn::GetAtt": ["AccessKey", "SecretAccessKey"]
+    "Outputs": {
+        "RepositoryUrl": {
+                "Value": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "AWS::AccountId"
+                                },
+                                ".dkr.ecr.",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                ".amazonaws.com/",
+                                {
+                                    "Ref": "DockerRunnerRepository"
+                                }
+                        ]
+                    ]
+                }
+        },
+        "Region": {
+                "Value": {
+                        "Ref": "AWS::Region"
+                }
+        },
+        "AccessKeyId": {
+                "Value": {
+                        "Ref": "AccessKey"
+                }
+        },
+        "AccessKeySecret": {
+                "Value": {
+                        "Fn::GetAtt": ["AccessKey", "SecretAccessKey"]
+                }
         }
     }
-  }
 }

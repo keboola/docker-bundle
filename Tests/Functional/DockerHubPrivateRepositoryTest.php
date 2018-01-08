@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\Syrup\Service\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -33,7 +33,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
@@ -44,7 +44,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
     public function testInvalidCredentials()
     {
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -78,7 +78,7 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -97,7 +97,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
         ]);
         $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-
         $this->assertEquals("keboolaprivatetest/docker-demo-docker:latest", $image->getFullImageId());
 
         $process = new Process("sudo docker images | grep keboolaprivatetest/docker-demo-docker | wc -l");

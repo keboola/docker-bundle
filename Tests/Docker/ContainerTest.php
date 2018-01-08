@@ -6,7 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Tests\Docker\Mock\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -16,6 +16,22 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
+    public function setUp()
+    {
+        $this->encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $this->encryptorFactory->setComponentId('docker-dummy-component');
+    }
+
     public function testRun()
     {
         $imageConfiguration = new Component([
@@ -26,13 +42,12 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
                 ]
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $fs = new Filesystem();
         $dataDir = $temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'data';
@@ -110,13 +125,12 @@ EOF;
                 ]
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
         $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
         $container = new Container(
             'docker-container-test',
@@ -159,13 +173,12 @@ EOF;
                 ]
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $container = new Container(
             'docker-container-test',
@@ -192,13 +205,12 @@ EOF;
                 ]
             ]
         ]);
-        $encryptor = new ObjectEncryptor();
         $log = new Logger("null");
         $log->pushHandler(new NullHandler());
         $containerLog = new ContainerLogger("null");
         $containerLog->pushHandler(new NullHandler());
 
-        $image = ImageFactory::getImage($encryptor, $log, $imageConfiguration, new Temp(), true);
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
         $temp = new Temp();
         $container = new Container(
             'docker-container-test',

@@ -8,7 +8,87 @@ Docker Runner is a Keboola service, that runs Docker containers as workers in Ke
 
 Encrypts a string or a JSON
 
-## Encryption [/encrypt?componentId={componentId}&projectId={projectId}]
+## Encryption [/encrypt-new?componentId={componentId}&projectId={projectId}&configId={configId}]
+
+Used for encrypting string values or JSON data. Deprecates all other encryption methods.
+
++ Parameters
+    + componentId(required, string) ... Keboola Connection Component Id
+    + projectId(optional, string) ... Keboola Connection Project Id
+    + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
+
+If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
+`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
+### Encrypt data [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Body
+
+            MyStringToBeEncrypted
+
++ Response 200 (text/plain)
+
+        KBC::ProjectSecure::ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Body
+
+            {
+                "config": 1,
+                "#test": "MyValueToBeEncrypted"
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::ProjectSecure::ENCODEDSTRING=="
+            }
+
+
+## Encryption Migration [/migrate?componentId={componentId}&projectId={projectId}&configId={configId}]
+
+Used to migrate legacy ciphers (KBC::XXXEncrypted==) to new format (KBC::XXXSecure::).
+
++ Parameters
+    + componentId(required, string) ... Keboola Connection Component Id
+    + projectId(optional, string) ... Keboola Connection Project Id
+    + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
+
+If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
+`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
+### Convert Ciphers [POST]
+
++ Request Encrypt plain text (text/plain)
+    + Body
+
+            KBC::Encrypted==ENCODEDSTRING==
+
++ Response 200 (text/plain)
+
+        KBC::ProjectSecure::ENCODEDSTRING==
+
++ Request Encrypt JSON structure (application/json)
+    + Body
+
+            {
+                "config": 1,
+                "#test": "KBC::Encrypted==ENCODEDSTRING=="
+            }
+
++ Response 202 (application/json)
+
+            {
+                "config": 1,
+                "#test": "KBC::ProjectSecure::ENCODEDSTRING=="
+            }
+
+
+## Legacy Encryption [/encrypt?componentId={componentId}&projectId={projectId}]
 
 Used for encrypting string values or JSON data. Deprecates all other encryption methods.
 
@@ -201,7 +281,6 @@ Wrapper for a native Storage API call, that encrypts (image configuration encryp
                 "config": 1,
                 "#test": "KBC::ComponentProjectEncrypted==ENCODEDSTRING=="
             }
-
 
 
 # Group Run

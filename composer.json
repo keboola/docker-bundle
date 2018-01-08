@@ -3,9 +3,20 @@
     "type": "symfony-bundle",
     "description": "Component for running Docker images in KBC",
     "keywords": [],
-    "authors": [],
+    "authors": [
+        {
+            "name": "Keboola",
+            "email": "devel@keboola.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/keboola/syrup"
+        }
+    ],
     "require": {
-        "keboola/syrup": "^7.0",
+        "keboola/syrup": "^8.0",
         "keboola/php-utils": "^2.0",
         "symfony/symfony": "^2.8",
         "symfony/console": "^2.8",
