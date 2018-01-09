@@ -19,7 +19,6 @@ use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -33,9 +32,9 @@ use Keboola\Temp\Temp;
 class Runner
 {
     /**
-     * @var ObjectEncryptor
+     * @var ObjectEncryptorFactory
      */
-    private $encryptor;
+    private $encryptorFactory;
 
     /**
      * @var Client
@@ -100,7 +99,7 @@ class Runner
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
-        $this->encryptor = $encryptorFactory->getEncryptor();
+        $this->encryptorFactory = $encryptorFactory;
         $this->storageClient = $storageApi->getClient();
         $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
             'url' => $oauthApiUrl
@@ -227,13 +226,13 @@ class Runner
         $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
 
-        $authorization = new Authorization($this->oauthClient, $this->encryptor, $component->getId(), $sandboxed);
+        $authorization = new Authorization($this->oauthClient, $this->encryptorFactory->getEncryptor(), $component->getId(), $sandboxed);
 
         if ($sandboxed) {
             // do not decrypt image parameters on sandboxed calls
             $imageParameters = $component->getImageParameters();
         } else {
-            $imageParameters = $this->encryptor->decrypt($component->getImageParameters());
+            $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         }
         $configFile = new ConfigFile(
             $dataDirectory->getDataDir(),
@@ -266,7 +265,7 @@ class Runner
         }
         $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
-            $this->encryptor,
+            $this->encryptorFactory->getEncryptor(),
             $this->loggersService->getLog(),
             $this->storageClient,
             $component,
