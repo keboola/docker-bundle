@@ -7,9 +7,9 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
@@ -21,7 +21,6 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class LoggerTest extends KernelTestCase
 {
-
     private function getImageConfiguration()
     {
         return [
@@ -92,7 +91,8 @@ class LoggerTest extends KernelTestCase
         /** @var LoggersService $logService */
         $logService = self::$kernel->getContainer()->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
-        $encryptor = new ObjectEncryptor();
+        /** @var ObjectEncryptor $encryptor */
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $log = $logService->getLog();
         $containerLog = $logService->getContainerLog();
         $log->pushHandler($handler);
@@ -117,7 +117,7 @@ class LoggerTest extends KernelTestCase
         $serviceContainer = self::$kernel->getContainer();
         /** @var LoggersService $logService */
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         /** @var LoggersService $logService */
         $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
@@ -627,7 +627,7 @@ print "second message to stdout\n";'
         $serviceContainer = $kernel->getContainer();
 
         /** @var ObjectEncryptor $encryptor */
-        $encryptor = $serviceContainer->get('syrup.object_encryptor');
+        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         /** @var LoggersService $logService */
         $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');

@@ -2,15 +2,14 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
-use Aws\Credentials\Credentials;
 use Aws\Ecr\EcrClient;
 use Aws\Ecr\Exception\EcrException;
 use Aws\Exception\CredentialsException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;

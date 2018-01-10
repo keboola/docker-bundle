@@ -7,14 +7,13 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\Syrup\Encryption\BaseWrapper;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
@@ -65,8 +64,12 @@ class UsageFileTest extends KernelTestCase
             ->method('getContainerLog')
             ->will($this->returnValue($containerLogger));
 
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
 
         /** @var $jobMapper JobMapper */
         $jobMapper = self::$kernel->getContainer()
@@ -75,7 +78,7 @@ class UsageFileTest extends KernelTestCase
         /** @var LoggersService $loggersServiceStub */
         /** @var StorageApiService $storageServiceStub */
         $runner = new Runner(
-            $encryptor,
+            $encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapper, // using job mapper from container here
@@ -126,7 +129,7 @@ CMD
             ],
         ];
 
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $storageServiceStub);
+        $jobFactory = new JobFactory('docker-bundle', $encryptorFactory, $storageServiceStub);
 
         $job = $jobFactory->create('run', [
             'configData' => [],
@@ -178,8 +181,12 @@ CMD
             ->method('getContainerLog')
             ->will($this->returnValue($containerLogger));
 
-        $encryptor = new ObjectEncryptor();
-        $encryptor->pushWrapper(new BaseWrapper(md5(uniqid())));
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
 
         /** @var $jobMapper JobMapper */
         $jobMapper = self::$kernel->getContainer()
@@ -188,7 +195,7 @@ CMD
         /** @var LoggersService $loggersServiceStub */
         /** @var StorageApiService $storageServiceStub */
         $runner = new Runner(
-            $encryptor,
+            $encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapper, // using job mapper from container here
@@ -249,7 +256,7 @@ CMD
             ],
         ];
 
-        $jobFactory = new JobFactory('docker-bundle', $encryptor, $storageServiceStub);
+        $jobFactory = new JobFactory('docker-bundle', $encryptorFactory, $storageServiceStub);
 
         $job = $jobFactory->create('run', [
             'configData' => [],

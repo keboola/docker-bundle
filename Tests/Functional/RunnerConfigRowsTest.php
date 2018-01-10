@@ -2,14 +2,12 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -18,9 +16,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\Syrup\Encryption\BaseWrapper;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\HandlerInterface;
 use Monolog\Handler\NullHandler;
@@ -148,27 +144,25 @@ class RunnerConfigRowsTest extends KernelTestCase
             ->method('getTokenData')
             ->will($this->returnValue($tokenInfo))
         ;
-
         /** @var JobMapper $jobMapperStub */
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
             ->getMock()
         ;
 
-        $encryptor = new ObjectEncryptor();
-        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('keboola.r-transformation');
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('keboola.r-transformation');
-        $ecpWrapper->setProjectId($tokenInfo['owner']['id']);
-        $encryptor->pushWrapper($ecWrapper);
-        $encryptor->pushWrapper($ecpWrapper);
-        $encryptor->pushWrapper(new BaseWrapper(hash('sha256', uniqid())));
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
-            $encryptor,
+            $encryptorFactory,
             $storageServiceStub,
             $loggersService,
             $jobMapperStub,

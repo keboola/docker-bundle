@@ -3,20 +3,18 @@
 namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Encryption\ComponentProjectWrapper;
-use Keboola\DockerBundle\Encryption\ComponentWrapper;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\Job;
-use Keboola\Syrup\Service\ObjectEncryptor;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
@@ -36,7 +34,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
      */
     private $temp;
 
-    private function getJobExecutor(&$encryptor, $handler = null)
+    private function getJobExecutor(&$encryptorFactory, $handler = null)
     {
         $storageApiClient = new Client(
             [
@@ -86,20 +84,20 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             ->getMock()
         ;
 
-        $encryptor = new ObjectEncryptor();
-        $ecWrapper = new ComponentWrapper(hash('sha256', uniqid()));
-        $ecWrapper->setComponentId('keboola.r-transformation');
-        $ecpWrapper = new ComponentProjectWrapper(hash('sha256', uniqid()));
-        $ecpWrapper->setComponentId('keboola.r-transformation');
-        $ecpWrapper->setProjectId($tokenData["owner"]["id"]);
-        $encryptor->pushWrapper($ecWrapper);
-        $encryptor->pushWrapper($ecpWrapper);
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
         $runner = new Runner(
-            $encryptor,
+            $encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
@@ -113,10 +111,8 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),
             $runner,
-            $encryptor,
-            $componentsService,
-            $ecWrapper,
-            $ecpWrapper
+            $encryptorFactory,
+            $componentsService
         );
         $jobExecutor->setStorageApi($this->client);
 
@@ -221,8 +217,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
-        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
-        $job = new Job($encryptor, $data);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -259,8 +256,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $handler = new TestHandler();
         $data = $this->getJobParameters();
         $data['params']['tag'] = '1.1.1';
-        $jobExecutor = $this->getJobExecutor($encryptor, $handler);
-        $job = new Job($encryptor, $data);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -298,8 +296,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
         $data = $this->getJobParameters();
         $data['params']['mode'] = 'sandbox';
-        $jobExecutor = $this->getJobExecutor($encryptor);
-        $job = new Job($encryptor, $data);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -335,8 +334,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
         $data = $this->getJobParameters();
         $data['params']['mode'] = 'input';
-        $jobExecutor = $this->getJobExecutor($encryptor);
-        $job = new Job($encryptor, $data);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -371,8 +371,10 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
         $data = $this->getJobParameters();
         $data['params']['mode'] = 'dry-run';
-        $jobExecutor = $this->getJobExecutor($encryptor);
-        $job = new Job($encryptor, $data);
+
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
@@ -438,8 +440,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                 "}",
             ],
         ];
-        $jobExecutor = $this->getJobExecutor($encryptor);
-        $job = new Job($encryptor, $data);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
