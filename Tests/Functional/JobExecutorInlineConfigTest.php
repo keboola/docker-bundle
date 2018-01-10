@@ -8,6 +8,8 @@ use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\OAuthV2Api\Credentials;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Exception;
@@ -34,7 +36,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
      */
     private $temp;
 
-    private function getJobExecutor(&$encryptorFactory, $handler = null)
+    private function getRunner(&$encryptorFactory, $handler = null)
     {
         $storageApiClient = new Client(
             [
@@ -43,7 +45,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                 'userAgent' => 'docker-bundle',
             ]
         );
-
         $tokenData = $storageApiClient->verifyToken();
 
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
@@ -84,15 +85,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             ->getMock()
         ;
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.r-transformation');
-        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
-
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
@@ -107,6 +99,20 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT
         );
         $componentsService = new ComponentsService($storageServiceStub);
+        return [$runner, $componentsService, $loggersServiceStub, $tokenData];
+    }
+
+    private function getJobExecutor(&$encryptorFactory, $handler = null)
+    {
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        list($runner, $componentsService, $loggersServiceStub, $tokenData) = $this->getRunner($encryptorFactory, $handler);
+        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
 
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),
@@ -160,11 +166,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         return $data;
     }
 
-    /**
-     *
-     */
     public function setUp()
     {
+        parent::setUp();
         $this->client = new Client(
             [
                 'url' => STORAGE_API_URL,
@@ -238,6 +242,67 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $this->assertArrayHasKey('age', $data[0]);
         $this->assertArrayHasKey('kindness', $data[0]);
         $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
+    }
+
+    public function testRunOAuth()
+    {
+        $handler = new TestHandler();
+        $data = $this->getJobParameters();
+        $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
+        $data['params']['configData']['storage'] = [];
+        $data['params']['configData']['parameters']['script'] = [
+            'configFile <- "/data/config.json"',
+            'data <- readChar(configFile, file.info(configFile)$size)',
+            'print(data)'
+        ];
+        $encryptorFactory = new ObjectEncryptorFactory(
+            static::$kernel->getContainer()->getParameter('kms_key_id'),
+            static::$kernel->getContainer()->getParameter('kms_key_region'),
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        list($runner, $componentsService, $loggersServiceStub, $tokenData) = $this->getRunner($encryptorFactory);
+        /** @var LoggersService $loggersServiceStub */
+        $loggersServiceStub->getContainerLog()->pushHandler($handler);
+        $credentials = [
+            '#first' => 'superDummySecret',
+            'third' => 'fourth',
+            'fifth' => [
+                '#sixth' => 'anotherTopSecret'
+            ]
+        ];
+        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
+        $credentialsEncrypted = $encryptorFactory->getEncryptor()->encrypt($credentials, ComponentProjectWrapper::class);
+
+        $oauthStub = self::getMockBuilder(Credentials::class)
+            ->setMethods(['getDetail'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
+        // inject mock OAuth client inside Runner
+        $prop = new \ReflectionProperty($runner, 'oauthClient');
+        $prop->setAccessible(true);
+        $prop->setValue($runner, $oauthStub);
+
+        $jobExecutor = new Executor(
+            $loggersServiceStub->getLog(),
+            $runner,
+            $encryptorFactory,
+            $componentsService
+        );
+        $jobExecutor->setStorageApi($this->client);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $data = '';
+        foreach ($handler->getRecords() as $record) {
+            $data .= $record['message'];
+        }
+        $this->assertContains('superDummySecret', $data);
+        $this->assertContains('anotherTopSecret', $data);
     }
 
     public function testRunTag()
