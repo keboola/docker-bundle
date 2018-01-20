@@ -159,7 +159,8 @@ class EncryptionTest extends KernelTestCase
             $loggersServiceStub->getLog(),
             $runner,
             $encryptorFactory,
-            $componentsServiceStub
+            $componentsServiceStub,
+            self::$kernel->getContainer()->getParameter('storage_api.url')
         );
 
         // mock client to return image data

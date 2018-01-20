@@ -389,14 +389,13 @@ class ApiController extends BaseApiController
     /**
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\UserException
      * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function migrateConfigAction(Request $request)
     {
         $componentId = $request->get("componentId");
         $projectId = $request->get("projectId");
-        $stackId = $this->container->getParameter("stack_id");
+        $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
         if (!(new ControllerHelper)->hasComponentEncryptFlag($this->storageApi, $componentId)) {
             throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
         }

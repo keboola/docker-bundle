@@ -27,7 +27,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
         if ($diff) {
             throw new UserException("Unknown parameter: '" . implode(',', $diff) . "'.");
         }
-        $stackId = $this->container->getParameter("stack_id");
+        $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
         if (!$componentId) {
             throw new UserException("Component Id is required.");
         }

@@ -11,6 +11,7 @@ services:
           - "@docker_bundle.runner"
           - "@docker_bundle.object_encryptor_factory"
           - "@syrup.components"
+          - "%storage_api.url%"
 
     syrup.job_factory:
         class: Keboola\DockerBundle\Job\Metadata\JobFactory

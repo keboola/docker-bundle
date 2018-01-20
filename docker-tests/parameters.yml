@@ -3,7 +3,6 @@ parameters:
     encryption_key: 123456789012345678901234567890ab
     kms_key_id: alias/docker-testing
     kms_key_region: us-east-1
-    stack_id: %kms_key_region%
     components:
         docker:
             bundle: Keboola\DockerBundle\KeboolaDockerBundle
