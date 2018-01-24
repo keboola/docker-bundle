@@ -103,13 +103,13 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub2 */
         /** @var Credentials $oauthClientStub3 */
 
-        $config = ['oauth_api' => ['id' => 'whatever'], 'version' => '3'];
+        $config = ['oauth_api' => ['id' => 'whatever', 'version' => '3']];
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         self::assertEquals(
             $credentials3,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
-        $config = ['oauth_api' => ['id' => 'whatever'], 'version' => '2'];
+        $config = ['oauth_api' => ['id' => 'whatever', 'version' => '2']];
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         self::assertEquals(
             $credentials2,
