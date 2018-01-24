@@ -30,13 +30,20 @@ class Authorization
      */
     private $componentId;
 
-    public function __construct(Credentials $client, ObjectEncryptor $encryptor, $componentId, $sandboxed)
+    /**
+     * @var Credentials
+     */
+    private $oauthClientV3;
+
+    public function __construct(Credentials $client, Credentials $clientV3, ObjectEncryptor $encryptor, $componentId, $sandboxed)
     {
         $this->oauthClient = $client;
         $this->componentId = $componentId;
         $this->sandboxed = $sandboxed;
         $this->encryptor = $encryptor;
         $this->oauthClient->enableReturnArrays(true);
+        $this->oauthClientV3 = $clientV3;
+        $this->oauthClientV3->enableReturnArrays(true);
     }
 
     public function getAuthorization($configData)
@@ -45,10 +52,15 @@ class Authorization
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
         }
+        if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
+            $client = $this->oauthClientV3;
+        } else {
+            $client = $this->oauthClient;
+        }
         if (isset($configData['oauth_api']['id'])) {
             // read authorization from API
             try {
-                $credentials = $this->oauthClient->getDetail(
+                $credentials = $client->getDetail(
                     $this->componentId,
                     $configData['oauth_api']['id']
                 );

@@ -48,6 +48,11 @@ class Runner
     private $oauthClient;
 
     /**
+     * @var Credentials
+     */
+    private $oauthClient3;
+
+    /**
      * @var LoggersService
      */
     private $loggersService;
@@ -105,12 +110,28 @@ class Runner
         $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
             'url' => $oauthApiUrl
         ]);
-        $this->oauthClient->enableReturnArrays(true);
+        $this->oauthClient3 = new Credentials($this->storageClient->getTokenString(), [
+            'url' => $this->getOauthUrl()
+        ]);
         $this->loggersService = $loggersService;
         $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+    }
+
+    /**
+     * @return string
+     */
+    private function getOauthUrl()
+    {
+        $services = $this->storageClient->indexAction()['services'];
+        foreach ($services as $service) {
+            if ($service['id'] == 'oauth') {
+                return $service['url'];
+            }
+        }
+        throw new ApplicationException('The oauth service not found.');
     }
 
     /**
@@ -227,7 +248,7 @@ class Runner
         $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
 
-        $authorization = new Authorization($this->oauthClient, $this->encryptor, $component->getId(), $sandboxed);
+        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptor, $component->getId(), $sandboxed);
 
         if ($sandboxed) {
             // do not decrypt image parameters on sandboxed calls
