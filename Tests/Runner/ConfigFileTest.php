@@ -128,7 +128,7 @@ SAMPLE;
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
