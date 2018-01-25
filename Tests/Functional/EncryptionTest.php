@@ -228,11 +228,7 @@ class EncryptionTest extends KernelTestCase
         // fake image data
         $indexActionValue = $this->getComponentDefinition();
         $indexActionValue['components']['0']['flags'] = [];
-        $indexActionValue['services'] = [[
-            'id' => 'oauth',
-            'url' => 'https://syrup.keboola.com/oauth-v2/'
-        ]];
-        
+
         $handler = new TestHandler();
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
