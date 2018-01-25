@@ -206,6 +206,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
+                    'version' => 2
                 ],
             ],
             'image_parameters' => [
@@ -271,6 +272,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
                         'appKey' => '123456',
                         '#appSecret' => 'KBC::Encrypted==',
                     ],
+                    'version' => 2
                 ],
             ],
             'image_parameters' => [
@@ -468,6 +470,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
+                    'version' => 2
                 ],
             ],
             'image_parameters' => [
@@ -529,6 +532,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
+                    'version' => 2
                 ],
             ],
             'image_parameters' => [
