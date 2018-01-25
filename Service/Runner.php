@@ -110,7 +110,7 @@ class Runner
             'url' => $oauthApiUrl
         ]);
         $this->oauthClient3 = new Credentials($this->storageClient->getTokenString(), [
-            'url' => $this->getOauthUrl()
+            'url' => $this->getOauthUrlV3()
         ]);
         $this->loggersService = $loggersService;
         $this->jobMapper = $jobMapper;
@@ -122,7 +122,7 @@ class Runner
     /**
      * @return string
      */
-    private function getOauthUrl()
+    private function getOauthUrlV3()
     {
         $services = $this->storageClient->indexAction()['services'];
         foreach ($services as $service) {

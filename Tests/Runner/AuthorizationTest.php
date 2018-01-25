@@ -68,7 +68,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $credentials2 = [
-            'id' => 'test-credentials-45',
+            'id' => 'test-credential-1',
             '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
             'oauthVersion' => '2.0',
             '#appSecret' => '654321',
@@ -82,17 +82,11 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $credentials3 = [
-            'id' => 'test-credentials-45',
-            'authorizedFor' => '',
-            'creator' => [
-                'id' => '3800',
-                'description' => 'ondrej.hlavacek@keboola.com'
-            ],
+            'id' => 'test-credentials-2',
             'created' => '2016-02-09 09:47:16',
-            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
-            'oauthVersion' => '2.0',
+            '#data' => '{"access_token":"xyz"}',
             'appKey' => '123456',
-            '#appSecret' => '654321',
+            '#appSecret' => 'abcdef',
         ];
         $oauthResponse3 = $encryptorFactory->getEncryptor()->encrypt($credentials3);
         $oauthClientStub3->expects($this->once())
@@ -102,7 +96,6 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
 
         /** @var Credentials $oauthClientStub2 */
         /** @var Credentials $oauthClientStub3 */
-
         $config = ['oauth_api' => ['id' => 'whatever', 'version' => '3']];
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         self::assertEquals(
