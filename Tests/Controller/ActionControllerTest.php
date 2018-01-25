@@ -160,6 +160,12 @@ class ActionControllerTest extends WebTestCase
                     'flags' => ['encrypt'],
                     'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
                 ]
+            ],
+            'services' => [
+                [
+                    'id' => 'oauth',
+                    'url' => 'https://syrup.keboola.com/oauth-v2/'
+                ]
             ]
         ];
 
