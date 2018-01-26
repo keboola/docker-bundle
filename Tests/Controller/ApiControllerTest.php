@@ -648,7 +648,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals('error', $response['status']);
         $this->assertStringStartsWith(
-            'Invalid cipher text for key c Invalid cipher text for key #d Value KBC::ComponentEncrypted==',
+            'Invalid cipher text for key #d Value KBC::ComponentEncrypted==',
             json_decode($client->getResponse()->getContent(), true)['message']
         );
     }
