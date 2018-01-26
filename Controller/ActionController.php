@@ -67,8 +67,12 @@ class ActionController extends BaseApiController
 
         $configData = isset($requestJsonData["configData"]) ? $requestJsonData["configData"] : [];
         if (in_array("encrypt", $component["flags"])) {
-            $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
-            $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
+            try {
+                $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
+                $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
+            } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
+                throw new UserException($e->getMessage(), $e);
+            }
         }
 
         if (!$this->storageApi->getRunId()) {

@@ -339,7 +339,6 @@ class ActionControllerTest extends WebTestCase
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException
      * @expectedExceptionMessage Action 'run' not allowed
      */
-
     public function testActionRun()
     {
         $request = $this->prepareRequest('run');
@@ -506,6 +505,27 @@ class ActionControllerTest extends WebTestCase
         $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $encryptedPassword = $encryptor->encrypt('mismatch');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
+
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $ctrl->processAction($request);
+    }
+
+    /**
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     * @expectedExceptionMessage Invalid cipher text for key #password
+     */
+    public function testActionDecryptError()
+    {
+        $container = self::$container;
+        $request = $this->prepareRequest(
+            'decrypt',
+            ["#password" => "KBC::ComponentEncrypted==g2sGNtFXGNTIS6thisiswrongQ4zspYMcA=="]
+        );
 
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
