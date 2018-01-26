@@ -275,7 +275,6 @@ class EncryptionTest extends KernelTestCase
         $this->assertEquals("value4", $config["parameters"]["#key4"]);
     }
 
-
     public function testStoredConfigRowDecryptEncryptComponent()
     {
         $data = [
