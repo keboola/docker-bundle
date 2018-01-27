@@ -167,6 +167,10 @@ class Container
             $this->checkOOM($this->inspectContainer($this->id));
             if (!$process->isSuccessful()) {
                 $this->handleContainerFailure($process, $startTime);
+            } else {
+                if ($process->getErrorOutput()) {
+                    $this->containerLogger->error($process->getErrorOutput());
+                }
             }
         } finally {
             try {
@@ -195,9 +199,7 @@ class Container
             if (mb_strlen($buffer) > 64000) {
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
-            if ($type === Process::ERR) {
-                $this->containerLogger->error($buffer);
-            } else {
+            if ($type === Process::OUT) {
                 $this->containerLogger->info($buffer);
             }
         });
@@ -316,9 +318,15 @@ class Container
                 "id" => $this->getId(),
                 "image" => $this->getImage()->getFullImageId()
             ];
+            if ($process->getErrorOutput()) {
+                $this->containerLogger->error($process->getErrorOutput());
+            }
             throw new UserException($message, null, $data);
         } else {
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
+                if ($process->getErrorOutput()) {
+                    $this->containerLogger->error($process->getErrorOutput());
+                }
                 throw new UserException(
                     "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
