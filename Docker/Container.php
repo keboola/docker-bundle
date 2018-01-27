@@ -195,9 +195,7 @@ class Container
             if (mb_strlen($buffer) > 64000) {
                 $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
             }
-            if ($type === Process::ERR) {
-                $this->containerLogger->error($buffer);
-            } else {
+            if ($type === Process::OUT) {
                 $this->containerLogger->info($buffer);
             }
         });
@@ -316,6 +314,7 @@ class Container
                 "id" => $this->getId(),
                 "image" => $this->getImage()->getFullImageId()
             ];
+            $this->containerLogger->error($errorOutput);
             throw new UserException($message, null, $data);
         } else {
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
