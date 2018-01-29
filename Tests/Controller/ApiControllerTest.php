@@ -518,7 +518,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
@@ -545,7 +545,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
@@ -572,7 +572,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
@@ -599,7 +599,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setProjectId('123');
@@ -627,7 +627,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('a-different-component');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
@@ -657,7 +657,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);

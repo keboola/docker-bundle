@@ -129,7 +129,8 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             $loggersServiceStub->getLog(),
             $runner,
             $encryptorFactory,
-            $componentsServiceStub
+            $componentsServiceStub,
+            self::$kernel->getContainer()->getParameter('storage_api.url')
         );
         $jobExecutor->setStorageApi($this->client);
 

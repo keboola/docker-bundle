@@ -55,17 +55,21 @@ class Executor extends BaseExecutor
      * @param Runner $runner
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param ComponentsService $components
+     * @param $storageApiUrl
+     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function __construct(
         Logger $logger,
         Runner $runner,
         ObjectEncryptorFactory $encryptorFactory,
-        ComponentsService $components
+        ComponentsService $components,
+        $storageApiUrl
     ) {
         $this->encryptorFactory = $encryptorFactory;
         $this->components = $components->getComponents();
         $this->logger = $logger;
         $this->runner = $runner;
+        $this->encryptorFactory->setStackId(parse_url($storageApiUrl, PHP_URL_HOST));
     }
 
     /**
