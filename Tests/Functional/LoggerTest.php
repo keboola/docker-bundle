@@ -175,8 +175,7 @@ echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
 sleep(5);
 error_log("second message to stderr\n");
-print "second message to stdout\n";
-exit(0);'
+print "second message to stdout\n";'
         );
         $container = $this->getContainerDummyLogger(
             $this->getImageConfiguration(),
@@ -199,12 +198,13 @@ exit(0);'
         }
 
         $records = $containerHandler->getRecords();
-        $this->assertEquals(3, count($records));
+        $this->assertEquals(4, count($records));
         $this->assertTrue($containerHandler->hasErrorRecords());
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
         $this->assertTrue($containerHandler->hasInfo("second message to stdout"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr\nsecond message to stderr"));
+        $this->assertTrue($containerHandler->hasError("first message to stderr"));
+        $this->assertTrue($containerHandler->hasError("second message to stderr"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
@@ -596,7 +596,7 @@ print "second message to stdout\n";'
         $events = $sapiService->getClient()->listEvents(
             ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
         );
-        $this->assertCount(3, $events);
+        $this->assertCount(4, $events);
         $error = [];
         $info = [];
         foreach ($events as $event) {
@@ -607,9 +607,10 @@ print "second message to stdout\n";'
                 $info[] = $event['message'];
             }
         }
-        $this->assertCount(1, $error);
+        $this->assertCount(2, $error);
         sort($error);
-        $this->assertEquals("first message to stderr\nsecond message to stderr", $error[0]);
+        $this->assertEquals("first message to stderr", $error[0]);
+        $this->assertEquals("second message to stderr", $error[1]);
         sort($info);
         $this->assertCount(2, $info);
         $this->assertEquals("first message to stdout", $info[0]);
