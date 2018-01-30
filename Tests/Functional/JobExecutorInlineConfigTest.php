@@ -290,7 +290,8 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             $loggersServiceStub->getLog(),
             $runner,
             $encryptorFactory,
-            $componentsService
+            $componentsService,
+            STORAGE_API_URL
         );
         $jobExecutor->setStorageApi($this->client);
         /** @var ObjectEncryptorFactory $encryptorFactory */
