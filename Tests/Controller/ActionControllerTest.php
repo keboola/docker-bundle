@@ -4,6 +4,8 @@ namespace Keboola\DockerBundle\Tests\Controller;
 
 use Keboola\DockerBundle\Controller\ActionController;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -442,11 +444,32 @@ class ActionControllerTest extends WebTestCase
     {
         $container = self::$container;
 
-        /**
-         * @var $encryptor ObjectEncryptor
-         */
+        /** @var $encryptor ObjectEncryptor */
         $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $encryptedPassword = $encryptor->encrypt('password');
+        $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
+
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer($container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"password":"password"}', $response->getContent());
+    }
+
+    public function testDecryptNewSuccess()
+    {
+        $container = self::$container;
+
+        /** @var $encryptorFactory ObjectEncryptorFactory */
+        $encryptorFactory = clone $container->get('docker_bundle.object_encryptor_factory');
+        $encryptorFactory->setProjectId('123');
+        $encryptorFactory->setComponentId('dca-custom-science-python');
+        $encryptorFactory->setStackId(parse_url($container->getParameter('storage_api.url'), PHP_URL_HOST));
+        $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('password', ComponentWrapper::class);
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
