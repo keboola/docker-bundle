@@ -23,6 +23,8 @@ class ActionControllerTest extends WebTestCase
     public function setUp()
     {
         parent::setUp();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
         //start the symfony kernel
         $kernel = static::createKernel();
@@ -35,6 +37,8 @@ class ActionControllerTest extends WebTestCase
     public function tearDown()
     {
         parent::tearDown();
+        putenv('AWS_ACCESS_KEY_ID=');
+        putenv('AWS_SECRET_ACCESS_KEY=');
         (new Process("sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"))->run();
     }
 
