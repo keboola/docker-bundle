@@ -322,7 +322,12 @@ class Container
                 "id" => $this->getId(),
                 "image" => $this->getImage()->getFullImageId()
             ];
-            // syrup will log the process error output as part of the exception body
+            // syrup will log the process error output as part of the exception body trimmed, so log the entire (if possible) error as a separate event
+            $buffer = $process->getErrorOutput();
+            if (mb_strlen($buffer) > 64000) {
+                $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
+            }
+            $this->containerLogger->error($buffer);
             throw new UserException($message, null, $data);
         } else {
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
@@ -333,7 +338,12 @@ class Container
                     $data
                 );
             } else {
-                // syrup will make sure that the actual exception message will be hidden to end-user
+                // syrup will log the process error output as part of the exception body trimmed, so log the entire (if possible) error as a separate event
+                $buffer = $process->getErrorOutput();
+                if (mb_strlen($buffer) > 64000) {
+                    $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
+                }
+                $this->containerLogger->error($buffer);
                 throw new ApplicationException(
                     "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
