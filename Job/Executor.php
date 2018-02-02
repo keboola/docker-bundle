@@ -106,6 +106,14 @@ class Executor extends BaseExecutor
         }
         $job->setEncryptor($this->encryptorFactory->getEncryptor());
         $params = $job->getParams();
+        if (isset($params['row']) && is_scalar($params['row'])) {
+            $rowId = ($params['row']);
+        } else {
+            if (isset($params['row'])) {
+                throw new UserException("Unsupported row value (" . var_export($params['row']) . "), scalar is required.");
+            }
+            $rowId = null;
+        }
 
         $jobDefinitionParser = new JobDefinitionParser();
 
@@ -170,7 +178,7 @@ class Executor extends BaseExecutor
             'run',
             $params['mode'],
             $job->getId(),
-            isset($params['row']) ? $params['row'] : null
+            $rowId
         );
         return [
             "message" => "Component processing finished.",
