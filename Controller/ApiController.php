@@ -300,6 +300,7 @@ class ApiController extends BaseApiController
      */
     public function encryptConfigAction(Request $request)
     {
+        $this->logger->warn("Using deprecated encryptConfig call.");
         /** @var StorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
@@ -341,6 +342,7 @@ class ApiController extends BaseApiController
      */
     public function saveConfigAction(Request $request)
     {
+        $this->logger->warn("Using deprecated saveConfig call.");
         /** @var StorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
