@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Service;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
@@ -117,9 +118,10 @@ class Runner
      * @param $containerId
      * @param RunCommandOptions $runCommandOptions
      * @param DataDirectory $dataDirectory
+     * @param OutputFilter $outputFilter
      * @return Container
      */
-    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory)
+    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory, OutputFilter $outputFilter)
     {
         return new Container(
             $containerId,
@@ -130,7 +132,8 @@ class Runner
             $this->commandToGetHostIp,
             $this->minLogPort,
             $this->maxLogPort,
-            $runCommandOptions
+            $runCommandOptions,
+            $outputFilter
         );
     }
 
@@ -461,7 +464,8 @@ class Runner
                     ],
                     $environment->getEnvironmentVariables()
                 ),
-                $dataDirectory
+                $dataDirectory,
+                new OutputFilter([$this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters()), $image->getConfigData()])
             );
             try {
                 $process = $container->run();

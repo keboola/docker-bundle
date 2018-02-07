@@ -435,7 +435,7 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
+        $this->assertEquals('*****', $config['image_parameters']['#encrypted']);
     }
 
     public function testImageParametersEnvironment()
@@ -1613,5 +1613,72 @@ class RunnerTest extends KernelTestCase
         );
 
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+    }
+
+    public function testAuthorizationDecrypt()
+    {
+        $configurationData = [
+            'parameters' => [
+                '#one' => 'bar',
+                'two' => 'anotherBar'
+            ],
+            'authorization' => [
+                'oauth_api' => [
+                    'credentials' => [
+                        '#three' => 'foo',
+                        'four' => 'anotherFoo'
+                    ]
+                ]
+            ]
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptorFactory);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'cat /data/config.json',
+                    ],
+                ],
+                'configuration_format' => 'json'
+            ],
+        ];
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $config = json_decode($ret[0]['message'], true);
+        // verify that the token is not passed by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
+        $this->assertEquals('*****', $config['parameters']['#one']);
+        $this->assertEquals('anotherBar', $config['parameters']['two']);
+        $this->assertEquals('*****', $config['authorization']['oauth_api']['credentials']['#three']);
+        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['#four']);
     }
 }

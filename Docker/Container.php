@@ -68,6 +68,11 @@ class Container
     private $maxLogPort;
 
     /**
+     * @var OutputFilter
+     */
+    private $outputFilter;
+
+    /**
      * @return string
      */
     public function getId()
@@ -93,6 +98,7 @@ class Container
      * @param int $minLogPort
      * @param $maxLogPort
      * @param RunCommandOptions $runCommandOptions
+     * @param OutputFilter $outputFilter
      */
     public function __construct(
         $containerId,
@@ -103,7 +109,8 @@ class Container
         $commandToGetHostIp,
         $minLogPort,
         $maxLogPort,
-        RunCommandOptions $runCommandOptions
+        RunCommandOptions $runCommandOptions,
+        OutputFilter $outputFilter
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -114,6 +121,7 @@ class Container
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
         $this->runCommandOptions = $runCommandOptions;
+        $this->outputFilter = $outputFilter;
     }
 
     /**
@@ -151,6 +159,7 @@ class Container
     public function run()
     {
         $process = new Process($this->getRunCommand($this->id));
+        $process->setOutputFilter($this->outputFilter);
         $process->setTimeout(null);
 
         // create container
@@ -258,6 +267,11 @@ class Container
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
                     $this->logger->notice("Invalid container host " . $event['host'], $event);
                 } else {
+                    array_walk_recursive($event, function (&$value) {
+                        if (is_scalar($value)) {
+                            $value = $this->outputFilter->filter($value);
+                        }
+                    });
                     $this->containerLogger->addRawRecord(
                         $event['level'],
                         $event['timestamp'],

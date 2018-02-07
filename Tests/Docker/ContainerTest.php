@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\OutputFilter;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
@@ -144,7 +145,8 @@ EOF;
             new RunCommandOptions([
                 'com.keboola.runner.jobId=12345678',
                 'com.keboola.runner.runId=10.20.30',
-            ], $envs)
+            ], $envs),
+            new OutputFilter([])
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
@@ -189,7 +191,8 @@ EOF;
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([])
         );
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
@@ -221,7 +224,8 @@ EOF;
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([])
         );
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
