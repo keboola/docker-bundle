@@ -64,7 +64,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([])
         );
 
         $callback = function () {

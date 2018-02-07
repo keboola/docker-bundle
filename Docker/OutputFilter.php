@@ -31,7 +31,8 @@ class OutputFilter
      * @param string $text
      * @return string
      */
-    public function filter($text) {
+    public function filter($text)
+    {
         foreach ($this->filterValues as $filterValue) {
             $text = str_replace($filterValue, self::REPLACEMENT, $text);
         }
