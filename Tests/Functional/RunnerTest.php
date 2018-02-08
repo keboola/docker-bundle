@@ -218,7 +218,7 @@ class RunnerTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT
         );
 
-        $method = new \ReflectionMethod($runner, 'getOauthUrl');
+        $method = new \ReflectionMethod($runner, 'getOauthUrlV3');
         $method->setAccessible(true);
         $response = $method->invoke($runner);
         self::assertEquals($response, 'https://someurl');
