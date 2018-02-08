@@ -118,7 +118,8 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             $loggersServiceStub->getLog(),
             $runner,
             $encryptorFactory,
-            $componentsService
+            $componentsService,
+            self::$kernel->getContainer()->getParameter('storage_api.url')
         );
         $jobExecutor->setStorageApi($this->client);
 
@@ -244,6 +245,31 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $this->assertFalse($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
+    /**
+     * @expectedExceptionMessage Unsupported row value
+     * @expectedException \Keboola\Syrup\Exception\UserException
+     */
+    public function testRunInvalidRowId()
+    {
+        $handler = new TestHandler();
+        $data = $data = [
+            'params' => [
+                'component' => 'docker-encrypt-verify',
+                'mode' => 'run',
+                'configData' => [
+                    'storage' => [],
+                    'parameters' => [],
+                ],
+                'row' => [1, 2, 3]
+            ],
+        ];
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+    }
+
     public function testRunOAuth()
     {
         $handler = new TestHandler();
@@ -289,7 +315,8 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             $loggersServiceStub->getLog(),
             $runner,
             $encryptorFactory,
-            $componentsService
+            $componentsService,
+            STORAGE_API_URL
         );
         $jobExecutor->setStorageApi($this->client);
         /** @var ObjectEncryptorFactory $encryptorFactory */

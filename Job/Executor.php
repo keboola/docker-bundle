@@ -55,17 +55,21 @@ class Executor extends BaseExecutor
      * @param Runner $runner
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param ComponentsService $components
+     * @param $storageApiUrl
+     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function __construct(
         Logger $logger,
         Runner $runner,
         ObjectEncryptorFactory $encryptorFactory,
-        ComponentsService $components
+        ComponentsService $components,
+        $storageApiUrl
     ) {
         $this->encryptorFactory = $encryptorFactory;
         $this->components = $components->getComponents();
         $this->logger = $logger;
         $this->runner = $runner;
+        $this->encryptorFactory->setStackId(parse_url($storageApiUrl, PHP_URL_HOST));
     }
 
     /**
@@ -102,6 +106,14 @@ class Executor extends BaseExecutor
         }
         $job->setEncryptor($this->encryptorFactory->getEncryptor());
         $params = $job->getParams();
+        if (isset($params['row']) && is_scalar($params['row'])) {
+            $rowId = ($params['row']);
+        } else {
+            if (isset($params['row'])) {
+                throw new UserException("Unsupported row value (" . var_export($params['row']) . "), scalar is required.");
+            }
+            $rowId = null;
+        }
 
         $jobDefinitionParser = new JobDefinitionParser();
 
@@ -166,7 +178,7 @@ class Executor extends BaseExecutor
             'run',
             $params['mode'],
             $job->getId(),
-            isset($params['row']) ? $params['row'] : null
+            $rowId
         );
         return [
             "message" => "Component processing finished.",

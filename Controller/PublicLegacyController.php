@@ -68,6 +68,7 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
      */
     public function componentEncryptAction(Request $request)
     {
+        $this->logger->warn("Using deprecated componentEncrypt call.");
         $component = $request->get("component");
 
         /** @var StorageApiService $storage */

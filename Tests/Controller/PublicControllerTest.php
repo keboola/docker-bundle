@@ -46,9 +46,28 @@ class PublicControllerTest extends WebTestCase
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
+    }
+
+    public function testEncryptInvalidJson()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            '{
+                "key1": wtf
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertEquals("error", $response["status"]);
+        $this->assertEquals("Bad JSON format of request body", $response["message"]);
     }
 
     public function testEncryptEmptyValues()
@@ -89,7 +108,7 @@ class PublicControllerTest extends WebTestCase
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setProjectId('123');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
@@ -117,7 +136,7 @@ class PublicControllerTest extends WebTestCase
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setProjectId('123');
         $encryptorFactory->setConfigurationId('123456789');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
@@ -163,7 +182,7 @@ class PublicControllerTest extends WebTestCase
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
         $this->assertEquals("value2", $encryptorFactory->getEncryptor()->decrypt($response["#key2"]));
         $this->assertCount(2, $response);
     }
@@ -185,7 +204,7 @@ class PublicControllerTest extends WebTestCase
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encryptorFactory->setStackId(self::$container->getParameter("stack_id"));
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
         $this->assertEquals("value", $encryptorFactory->getEncryptor()->decrypt($response));
     }
 

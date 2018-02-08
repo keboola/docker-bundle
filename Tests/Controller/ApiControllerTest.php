@@ -5,10 +5,13 @@ namespace Keboola\DockerBundle\Tests\Controller;
 use Keboola\DockerBundle\Controller\ApiController;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
+use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Job\Metadata\JobInterface;
 use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -312,6 +315,108 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('waiting', $response['status']);
     }
 
+    public function testBodyEncrypt()
+    {
+        $jobMapperMock = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+
+        $jobMapperMock->expects($this->once())
+            ->method('create')
+            ->with($this->callback(function (JobInterface $job) {
+                $this->assertArrayHasKey('#foo', $job->getData()['params']['configData']);
+                $this->assertStringStartsWith('KBC::Encrypted==', $job->getData()['params']['configData']['#foo']);
+                $this->assertEquals('bar', $job->getParams()['configData']['#foo']);
+                return "1234"; // not used
+            }))
+            ->willReturn('12345');
+        self::$container->set('syrup.elasticsearch.current_component_job_mapper', $jobMapperMock);
+
+        $request = Request::create(
+            "/docker/docker-config-encrypt-verify/run",
+            'POST',
+            $parameters = [
+                "component" => "docker-config-encrypt-verify",
+                "action" => 'run'
+            ],
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "configData": {
+                    "#foo": "bar"
+                }
+            }'
+        );
+        self::$container->get('request_stack')->push($request);
+
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->runAction($request);
+
+        $this->assertEquals(202, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('status', $data);
+        $this->assertEquals('waiting', $data['status']);
+        $this->assertStringStartsWith('http', $data['url']);
+        $this->assertEquals('12345', $data['id']);
+    }
+
+    public function testBodyEncrypted()
+    {
+        $jobMapperMock = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
+        $jobMapperMock->expects($this->atLeastOnce())
+            ->method('create')
+            ->with($this->callback(function (JobInterface $job) {
+                $this->assertArrayHasKey('#foo', $job->getData()['params']['configData']);
+                $this->assertStringStartsWith('KBC::ComponentSecure::', $job->getData()['params']['configData']['#foo']);
+                $this->assertEquals('bar', $job->getParams()['configData']['#foo']);
+                return '1234'; // not used
+            }))
+            ->willReturn('12345');
+        self::$container->set('syrup.elasticsearch.current_component_job_mapper', $jobMapperMock);
+        /** @var $encryptorFactory ObjectEncryptorFactory */
+        $encryptorFactory = clone self::$container->get('docker_bundle.object_encryptor_factory');
+        $encryptorFactory->setComponentId('docker-config-encrypt-verify');
+        $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('bar', ComponentWrapper::class);
+
+        $request = Request::create(
+            "/docker/docker-config-encrypt-verify/run",
+            'POST',
+            $parameters = [
+                "component" => "docker-config-encrypt-verify",
+                "action" => 'run'
+            ],
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "configData": {
+                    "#foo": "' . $encrypted . '"
+                }
+            }'
+        );
+        self::$container->get('request_stack')->push($request);
+
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->runAction($request);
+
+        $this->assertEquals(202, $response->getStatusCode());
+        $data = json_decode($response->getContent(), true);
+        $this->assertArrayHasKey('status', $data);
+        $this->assertEquals('waiting', $data['status']);
+        $this->assertStringStartsWith('http', $data['url']);
+        $this->assertEquals('12345', $data['id']);
+    }
+
     public function testEncryptProject()
     {
         $content = '
@@ -518,7 +623,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
@@ -545,7 +650,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', BaseWrapper::class);
@@ -572,10 +677,10 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', LegacyComponentWrapper::class);
 
         $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
         $client = $this->createClient();
@@ -599,7 +704,7 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setProjectId('123');
@@ -627,10 +732,10 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('a-different-component');
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', LegacyComponentWrapper::class);
 
         $data = ['a' => 'b', 'c' => ['#d' => $encrypted]];
         $client = $this->createClient();
@@ -648,7 +753,7 @@ class ApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals('error', $response['status']);
         $this->assertStringStartsWith(
-            'Invalid cipher text for key c Invalid cipher text for key #d Value KBC::ComponentEncrypted==',
+            'Invalid cipher text for key #d Value KBC::ComponentEncrypted==',
             json_decode($client->getResponse()->getContent(), true)['message']
         );
     }
@@ -657,10 +762,10 @@ class ApiControllerTest extends WebTestCase
     {
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = self::$container->get('docker_bundle.object_encryptor_factory');
-        $stackId = self::$container->getParameter('stack_id');
+        $stackId = parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST);
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret', LegacyComponentWrapper::class);
 
         $data = $encrypted;
         $client = $this->createClient();
