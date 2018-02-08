@@ -282,7 +282,7 @@ class RunnerTest extends KernelTestCase
             ->getMock();
         $clientMock->expects($this->any())
             ->method('indexAction')
-            ->will($this->returnValue(['components' => $components]));
+            ->will($this->returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
         $this->client = $clientMock;
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
