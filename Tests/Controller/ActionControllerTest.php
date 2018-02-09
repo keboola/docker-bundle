@@ -161,7 +161,7 @@ class ActionControllerTest extends WebTestCase
                         'default_bucket' => $defaultBucket,
                         'memory' => '8192m',
                         'configuration_format' => 'json',
-                        'synchronous_actions' => ['test', 'run', 'timeout', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
+                        'synchronous_actions' => ['test', 'run', 'timeout', 'emptyjsonarray', 'emptyjsonobject', 'invalidjson', 'noresponse', 'usererror', 'apperror', 'decrypt'],
                     ],
                     'flags' => ['encrypt'],
                     'uri' => 'https://syrup.keboola.com/docker/dca-custom-science-python',
@@ -295,7 +295,7 @@ class ActionControllerTest extends WebTestCase
                 ,
                 "runtime": {
                     "repository": "https://github.com/keboola/docker-actions-test",
-                    "version": "0.0.6"            
+                    "version": "0.0.8"            
                 }
             }
         }';
@@ -340,6 +340,35 @@ class ActionControllerTest extends WebTestCase
         $this->assertEquals('{"test":"test"}', $response->getContent());
     }
 
+    public function testActionEmptyResponse1()
+    {
+        $request = $this->prepareRequest('emptyjsonobject');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{}', $response->getContent());
+    }
+
+    public function testActionEmptyResponse2()
+    {
+        $request = $this->prepareRequest('emptyjsonarray');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('[]', $response->getContent());
+    }
 
     /**
      * @expectedException \Symfony\Component\HttpKernel\Exception\HttpException

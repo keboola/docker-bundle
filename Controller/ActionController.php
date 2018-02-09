@@ -95,8 +95,8 @@ class ActionController extends BaseApiController
         }
 
         $jsonData = json_decode($message);
-        if (!$jsonData) {
-            throw new UserException("Decoding JSON response from component failed", null, ['message' => $message]);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new UserException("Decoding JSON response from component failed: " . json_last_error_msg(), null, ['message' => $message]);
         }
         return $this->createJsonResponse($jsonData);
     }
