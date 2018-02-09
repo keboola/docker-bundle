@@ -170,7 +170,7 @@ class ActionControllerTest extends WebTestCase
             'services' => [
                 [
                     'id' => 'oauth',
-                    'url' => 'https://syrup.keboola.com/oauth-v2/'
+                    'url' => 'https://dummy.keboola.com/oauth-v3/'
                 ]
             ]
         ];
