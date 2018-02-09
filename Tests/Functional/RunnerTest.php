@@ -170,6 +170,60 @@ class RunnerTest extends KernelTestCase
         return $result;
     }
 
+    public function testGetOauthUrl()
+    {
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('indexAction')
+            ->will($this->returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+
+        $storageServiceStub = self::getMockBuilder(StorageApiService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->any())
+            ->method('getClient')
+            ->will($this->returnValue($clientMock));
+
+        $loggersServiceStub = self::getMockBuilder(LoggersService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        /** @var JobMapper $jobMapperStub */
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        /** @var StorageApiService $storageServiceStub */
+        /** @var LoggersService $loggersServiceStub */
+        $runner = new Runner(
+            $encryptorFactory,
+            $storageServiceStub,
+            $loggersServiceStub,
+            $jobMapperStub,
+            "dummy",
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
+
+        $method = new \ReflectionMethod($runner, 'getOauthUrlV3');
+        $method->setAccessible(true);
+        $response = $method->invoke($runner);
+        self::assertEquals($response, 'https://someurl');
+    }
+
     public function testRunnerPipeline()
     {
         $components = [
@@ -228,7 +282,7 @@ class RunnerTest extends KernelTestCase
             ->getMock();
         $clientMock->expects($this->any())
             ->method('indexAction')
-            ->will($this->returnValue(['components' => $components]));
+            ->will($this->returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
         $this->client = $clientMock;
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
