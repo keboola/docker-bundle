@@ -49,8 +49,8 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         $this->assertEquals(
-            $credentials,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            ['oauth_api' => ['credentials' => $credentials]],
+            $auth->getAuthorization($config)
         );
     }
 
@@ -99,15 +99,18 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         $config = ['oauth_api' => ['id' => 'whatever', 'version' => '3']];
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         self::assertEquals(
-            $credentials3,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            ['oauth_api' => ['credentials' => $credentials3]],
+            $auth->getAuthorization($config)
         );
         $config = ['oauth_api' => ['id' => 'whatever', 'version' => '2']];
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
+        $result = $auth->getAuthorization($config);
         self::assertEquals(
-            $credentials2,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            ['oauth_api' => ['credentials' => $credentials2]],
+            $result
         );
+        var_dump($result);
+
     }
 
     public function testOauthDecryptSandboxed()
@@ -324,8 +327,8 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         $this->assertEquals(
-            $credentials,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            ['oauth_api' => ['credentials' => $credentials]],
+            $auth->getAuthorization($config)
         );
     }
 
