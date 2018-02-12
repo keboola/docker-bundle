@@ -109,8 +109,6 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
             ['oauth_api' => ['credentials' => $credentials2]],
             $result
         );
-        var_dump($result);
-
     }
 
     public function testOauthDecryptSandboxed()
