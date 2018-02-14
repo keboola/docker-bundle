@@ -156,9 +156,16 @@ class Executor extends BaseExecutor
                 // Read config from storage
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-
                     if (in_array("encrypt", $component["flags"])) {
-                        $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+                        $decryptedConfiguration = $configuration;
+                        $encryptor = $this->encryptorFactory->getEncryptor();
+                        $decryptedConfiguration['configuration'] = $encryptor->decrypt($decryptedConfiguration['configuration']);
+                        if (isset($decryptedConfiguration['rows'])) {
+                            foreach ($decryptedConfiguration['rows'] as $index => $row) {
+                                $decryptedConfiguration['rows'][$index]['configuration'] = $encryptor->decrypt($row['configuration']);
+                            }
+                        }
+                        $jobDefinitionParser->parseConfig(new Component($component), $decryptedConfiguration);
                     } else {
                         $jobDefinitionParser->parseConfig(new Component($component), $configuration);
                     }

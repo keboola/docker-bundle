@@ -96,6 +96,7 @@ class EncryptionTest extends KernelTestCase
         $configData = [
             "id" => "1",
             "version" => "1",
+            "#weirdAttribute" => "value",
             "configuration" => [
                 "parameters" => [
                     "key1" => "value1",
@@ -111,6 +112,7 @@ class EncryptionTest extends KernelTestCase
         $configDataRows = [
             "id" => "1",
             "version" => "1",
+            "#weirdAttribute" => "value",
             "configuration" => [
                 "parameters" => [
                     "configKey1" => "value1",
@@ -124,6 +126,7 @@ class EncryptionTest extends KernelTestCase
                     "id" => "row-1",
                     "version" => 1,
                     "isDisabled" => false,
+                    "#weirdAttribute" => "value",
                     "configuration" => [
                         "parameters" => [
                             "rowKey1" => "value1",
