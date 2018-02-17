@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\OutputFilter;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
@@ -38,6 +39,15 @@ class LoggerTest extends KernelTestCase
                         "commands" => [],
                         "entry_point" => "php /data/test.php"
                     ],
+                ],
+                "image_parameters" => [
+                    "#secure" => "secure",
+                    "not-secure" => [
+                        "this" => "public",
+                        "#andthis" => "isAlsoSecure",
+                        "#a" => "nested",
+                        "#b" => "Structured",
+                    ]
                 ]
             ]
         ];
@@ -108,7 +118,8 @@ class LoggerTest extends KernelTestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([$this->getImageConfiguration()])
         );
     }
 
@@ -145,7 +156,8 @@ class LoggerTest extends KernelTestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([$this->getImageConfiguration()])
         );
     }
 
@@ -174,8 +186,8 @@ class LoggerTest extends KernelTestCase
 echo "first message to stdout\n";
 file_put_contents("php://stderr", "first message to stderr\n");
 sleep(5);
-error_log("second message to stderr\n");
-print "second message to stdout\n";
+error_log("second message to stderr isAlsoSecure\n");
+print "second message to stdout\nWhat is public is not secure";
 exit(0);'
         );
         $container = $this->getContainerDummyLogger(
@@ -188,8 +200,8 @@ exit(0);'
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr", $err);
+        $this->assertEquals("first message to stdout\nsecond message to stdout\nWhat is public is not *****", $out);
+        $this->assertEquals("first message to stderr\nsecond message to stderr *****", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
@@ -203,8 +215,8 @@ exit(0);'
         $this->assertTrue($containerHandler->hasErrorRecords());
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
-        $this->assertTrue($containerHandler->hasInfo("second message to stdout"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr\nsecond message to stderr"));
+        $this->assertTrue($containerHandler->hasInfo("second message to stdout\nWhat is public is not *****"));
+        $this->assertTrue($containerHandler->hasError("first message to stderr\nsecond message to stderr *****"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
@@ -239,7 +251,7 @@ exit(0);'
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasAlert("***** message"));
         $this->assertTrue($containerHandler->hasWarning("A warning message."));
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasError("Error message."));
@@ -272,7 +284,7 @@ exit(0);'
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasAlert("***** message"));
         $this->assertTrue($containerHandler->hasWarning("A warning message."));
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasError("Error message."));
@@ -305,7 +317,7 @@ exit(0);'
         $this->assertTrue($containerHandler->hasDebug("A debug message."));
         $this->assertTrue($containerHandler->hasAlert("An alert message"));
         $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("Structured message"));
+        $this->assertTrue($containerHandler->hasAlert("***** message"));
         $this->assertTrue($containerHandler->hasWarning("A warning message."));
         $this->assertTrue($containerHandler->hasInfoRecords());
         $this->assertTrue($containerHandler->hasError("Error message."));
@@ -533,17 +545,17 @@ exit(0);'
         $this->assertEquals('Client finished', $info[2]);
         sort($error);
         $this->assertCount(4, $error);
-        $this->assertEquals('An alert message', $error[0]);
-        $this->assertEquals('Error message.', $error[1]);
-        $this->assertEquals('Exception example', $error[2]);
-        $this->assertEquals('Structured message', $error[3]);
+        $this->assertEquals('***** message', $error[0]);
+        $this->assertEquals('An alert message', $error[1]);
+        $this->assertEquals('Error message.', $error[2]);
+        $this->assertEquals('Exception example', $error[3]);
         $this->assertNotEmpty($exception);
-        $this->assertContains('file', $exception['results']);
+        $this->assertArrayHasKey('file', $exception['results']);
         $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
-        $this->assertContains('full_message', $exception['results']);
+        $this->assertArrayHasKey('full_message', $exception['results']);
         $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
         $this->assertArrayHasKey('several', $structure['results']['_structure']['with']);
-        $this->assertEquals('nested', $structure['results']['_structure']['with']['several']);
+        $this->assertEquals('*****', $structure['results']['_structure']['with']['several']);
     }
 
     public function testGelfVerbosityNone()

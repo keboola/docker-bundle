@@ -42,6 +42,13 @@ services:
           - "@syrup.storage_api"
           - "@docker_bundle.loggers"
           - "@syrup.elasticsearch.current_component_job_mapper"
+          - "@docker_bundle.authorization"
+
+    docker_bundle.authorization:
+        class: Keboola\DockerBundle\Service\AuthorizationService
+        arguments:
+          - "@docker_bundle.object_encryptor_factory"
+          - "@syrup.storage_api"
           - "%oauth_api.url%"
 
     docker_bundle.object_encryptor_factory:

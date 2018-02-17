@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -36,7 +37,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
      */
     private $temp;
 
-    private function getRunner(&$encryptorFactory, $handler = null)
+    private function getRunner(&$encryptorFactory, $handler = null, $auth = null)
     {
         $storageApiClient = new Client(
             [
@@ -88,12 +89,15 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
+        if (!$auth) {
+            $auth = new AuthorizationService($encryptorFactory, $storageServiceStub, "dummy");
+        }
         $runner = new Runner(
             $encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
-            "dummy",
+            $auth,
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
@@ -287,7 +291,15 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
-        list($runner, $componentsService, $loggersServiceStub, $tokenData) = $this->getRunner($encryptorFactory);
+        $storageApiClient = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+                'userAgent' => 'docker-bundle',
+            ]
+        );
+        $tokenData = $storageApiClient->verifyToken();
+
         /** @var LoggersService $loggersServiceStub */
         $loggersServiceStub->getContainerLog()->pushHandler($handler);
         $credentials = [
@@ -300,16 +312,13 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
         $credentialsEncrypted = $encryptorFactory->getEncryptor()->encrypt($credentials, ComponentProjectWrapper::class);
-
-        $oauthStub = self::getMockBuilder(Credentials::class)
-            ->setMethods(['getDetail'])
+        $oauthStub = self::getMockBuilder(AuthorizationService::class)
+            ->setMethods(['getAuthorization'])
             ->disableOriginalConstructor()
             ->getMock();
-        $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
-        // inject mock OAuth client inside Runner
-        $prop = new \ReflectionProperty($runner, 'oauthClient');
-        $prop->setAccessible(true);
-        $prop->setValue($runner, $oauthStub);
+        $oauthStub->method('getAuthorization')->willReturn($credentialsEncrypted);
+
+        list($runner, $componentsService, $loggersServiceStub) = $this->getRunner($encryptorFactory, null, $oauthStub);
 
         $jobExecutor = new Executor(
             $loggersServiceStub->getLog(),

@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\OutputFilter;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
@@ -44,7 +45,8 @@ class NetworkTest extends KernelTestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], [])
+            new RunCommandOptions([], []),
+            new OutputFilter([])
         );
         return $container;
     }

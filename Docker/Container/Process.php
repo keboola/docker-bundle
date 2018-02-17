@@ -8,14 +8,21 @@
 
 namespace Keboola\DockerBundle\Docker\Container;
 
+use Keboola\DockerBundle\Docker\OutputFilter;
+
 class Process extends \Symfony\Component\Process\Process
 {
+    /**
+     * @var OutputFilter
+     */
+    private $outputFilter;
+
     /**
      * @return string
      */
     public function getOutput()
     {
-        return trim(\Keboola\Utils\sanitizeUtf8(parent::getOutput()));
+        return $this->filter(trim(\Keboola\Utils\sanitizeUtf8(parent::getOutput())));
     }
 
     /**
@@ -23,7 +30,7 @@ class Process extends \Symfony\Component\Process\Process
      */
     public function getErrorOutput()
     {
-        return trim(\Keboola\Utils\sanitizeUtf8(parent::getErrorOutput()));
+        return $this->filter(trim(\Keboola\Utils\sanitizeUtf8(parent::getErrorOutput())));
     }
 
     /**
@@ -34,9 +41,23 @@ class Process extends \Symfony\Component\Process\Process
     {
         $myCallback = function ($type, $buffer) use ($callback) {
             if ($callback) {
-                $callback($type, trim(\Keboola\Utils\sanitizeUtf8($buffer)));
+                $callback($type, $this->filter(trim(\Keboola\Utils\sanitizeUtf8($buffer))));
             }
         };
         return parent::run($myCallback);
+    }
+
+    public function setOutputFilter(OutputFilter $outputFilter)
+    {
+        $this->outputFilter = $outputFilter;
+    }
+
+    private function filter($value)
+    {
+        if ($this->outputFilter) {
+            return $this->outputFilter->filter($value);
+        } else {
+            return $value;
+        }
     }
 }

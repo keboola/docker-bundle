@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -100,7 +101,7 @@ class JobExecutorStoredConfigTest extends KernelTestCase
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
-            "dummy",
+            new AuthorizationService($encryptorFactory, $storageServiceStub, "dummy"),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
