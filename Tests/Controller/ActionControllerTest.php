@@ -485,7 +485,7 @@ class ActionControllerTest extends WebTestCase
 
         /** @var $encryptor ObjectEncryptor */
         $encryptor = $container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        $encryptedPassword = $encryptor->encrypt('password');
+        $encryptedPassword = $encryptor->encrypt('secret');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
@@ -496,7 +496,7 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('{"password":"password"}', $response->getContent());
+        $this->assertEquals('{"password":"*****"}', $response->getContent());
     }
 
     public function testDecryptNewSuccess()
@@ -508,7 +508,7 @@ class ActionControllerTest extends WebTestCase
         $encryptorFactory->setProjectId('123');
         $encryptorFactory->setComponentId('dca-custom-science-python');
         $encryptorFactory->setStackId(parse_url($container->getParameter('storage_api.url'), PHP_URL_HOST));
-        $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('password', ComponentWrapper::class);
+        $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('secret', ComponentWrapper::class);
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
@@ -519,7 +519,7 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('{"password":"password"}', $response->getContent());
+        $this->assertEquals('{"password":"*****"}', $response->getContent());
     }
 
     public function testUnencryptedSuccess()
@@ -535,7 +535,7 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('{"password":"password"}', $response->getContent());
+        $this->assertEquals('{"*****":"******"}', $response->getContent());
     }
 
     /**

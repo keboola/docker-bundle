@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
@@ -86,7 +87,7 @@ class EncryptionTest extends KernelTestCase
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
-            "dummy",
+            new AuthorizationService($encryptorFactory, $storageServiceStub, "dummy"),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
@@ -271,9 +272,9 @@ class EncryptionTest extends KernelTestCase
         $this->assertEquals(1, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#key2"]);
-        $this->assertEquals("value3", $config["parameters"]["#key3"]);
-        $this->assertEquals("value4", $config["parameters"]["#key4"]);
+        $this->assertEquals("*****", $config["parameters"]["#key2"]);
+        $this->assertEquals("*****", $config["parameters"]["#key3"]);
+        $this->assertEquals("*****", $config["parameters"]["#key4"]);
     }
 
     public function testStoredConfigRowDecryptEncryptComponent()
@@ -301,11 +302,11 @@ class EncryptionTest extends KernelTestCase
         $this->assertEquals(1, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
         $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#configKey2"]);
-        $this->assertEquals("value3", $config["parameters"]["#configKey3"]);
-        $this->assertEquals("value4", $config["parameters"]["#configKey4"]);
-        $this->assertEquals("value2", $config["parameters"]["#rowKey2"]);
-        $this->assertEquals("value3", $config["parameters"]["#rowKey3"]);
-        $this->assertEquals("value4", $config["parameters"]["#rowKey4"]);
+        $this->assertEquals("*****", $config["parameters"]["#configKey2"]);
+        $this->assertEquals("*****", $config["parameters"]["#configKey3"]);
+        $this->assertEquals("*****", $config["parameters"]["#configKey4"]);
+        $this->assertEquals("*****", $config["parameters"]["#rowKey2"]);
+        $this->assertEquals("*****", $config["parameters"]["#rowKey3"]);
+        $this->assertEquals("*****", $config["parameters"]["#rowKey4"]);
     }
 }

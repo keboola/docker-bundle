@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -166,7 +167,7 @@ class RunnerConfigRowsTest extends KernelTestCase
             $storageServiceStub,
             $loggersService,
             $jobMapperStub,
-            "dummy",
+            new AuthorizationService($encryptorFactory, $storageServiceStub, "dummy"),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT

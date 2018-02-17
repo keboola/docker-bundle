@@ -1,73 +1,95 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Runner;
+namespace Keboola\DockerBundle\Service;
 
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\RequestException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
-class Authorization
+class AuthorizationService
 {
     /**
-     * @var Credentials
+     * @var ObjectEncryptorFactory
      */
-    private $oauthClient;
+    private $encryptorFactory;
 
     /**
-     * @var bool
+     * @var Client
      */
-    private $sandboxed;
-
-    /**
-     * @var ObjectEncryptor
-     */
-    private $encryptor;
+    private $storageClient;
 
     /**
      * @var string
      */
-    private $componentId;
+    private $legacyOauthUrl;
 
     /**
-     * @var Credentials
+     * AuthorizationService constructor.
+     * @param ObjectEncryptorFactory $encryptorFactory
+     * @param StorageApiService $storageApi
+     * @param $legacyOauthUrl
      */
-    private $oauthClientV3;
-
-    public function __construct(Credentials $client, Credentials $clientV3, ObjectEncryptor $encryptor, $componentId, $sandboxed)
-    {
-        $this->oauthClient = $client;
-        $this->componentId = $componentId;
-        $this->sandboxed = $sandboxed;
-        $this->encryptor = $encryptor;
-        $this->oauthClient->enableReturnArrays(true);
-        $this->oauthClientV3 = $clientV3;
-        $this->oauthClientV3->enableReturnArrays(true);
+    public function __construct(ObjectEncryptorFactory $encryptorFactory, StorageApiService $storageApi, $legacyOauthUrl) {
+        $this->encryptorFactory = $encryptorFactory;
+        $this->storageClient = $storageApi->getClient();
+        $this->legacyOauthUrl = $legacyOauthUrl;
     }
 
-    public function getAuthorization($configData)
+    /**
+     * @return string
+     */
+    private function getOauthUrlV3()
+    {
+        $services = $this->storageClient->indexAction()['services'];
+        foreach ($services as $service) {
+            if ($service['id'] == 'oauth') {
+                return $service['url'];
+            }
+        }
+        throw new ApplicationException('The oauth service not found.');
+    }
+
+    /**
+     * @param array $configData
+     * @return Credentials
+     */
+    private function getClient($configData)
+    {
+        if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
+            $client = new Credentials($this->storageClient->getTokenString(), [
+                'url' => $this->getOauthUrlV3()
+            ]);
+        } else {
+            $client = new Credentials($this->storageClient->getTokenString(), [
+                'url' => $this->legacyOauthUrl
+            ]);
+        }
+        $client->enableReturnArrays(true);
+        return $client;
+    }
+
+    public function getAuthorization($configData, $componentId, $sandboxed)
     {
         $data = [];
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
         }
-        if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
-            $client = $this->oauthClientV3;
-        } else {
-            $client = $this->oauthClient;
-        }
+        $client = $this->getClient($configData);
         if (isset($configData['oauth_api']['id'])) {
             // read authorization from API
             try {
                 $credentials = $client->getDetail(
-                    $this->componentId,
+                    $componentId,
                     $configData['oauth_api']['id']
                 );
-                if ($this->sandboxed) {
+                if ($sandboxed) {
                     $decrypted = $credentials;
                 } else {
-                    $decrypted = $this->encryptor->decrypt($credentials);
+                    $decrypted = $this->encryptorFactory->getEncryptor()->decrypt($credentials);
                 }
                 $data['oauth_api']['credentials'] = $decrypted;
             } catch (RequestException $e) {
@@ -80,4 +102,6 @@ class Authorization
         }
         return $data;
     }
+
+
 }

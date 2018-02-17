@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
@@ -19,7 +18,6 @@ use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
-use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -43,19 +41,14 @@ class Runner
     private $storageClient;
 
     /**
-     * @var Credentials
-     */
-    private $oauthClient;
-
-    /**
-     * @var Credentials
-     */
-    private $oauthClient3;
-
-    /**
      * @var LoggersService
      */
     private $loggersService;
+
+    /**
+     * @var AuthorizationService
+     */
+    private $authorizationService;
 
     /**
      * @var string
@@ -82,13 +75,14 @@ class Runner
      */
     private $maxLogPort;
 
+
     /**
      * Runner constructor.
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param JobMapper $jobMapper
-     * @param string $oauthApiUrl
+     * @param AuthorizationService $authorizationService
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param int $maxLogPort
@@ -98,7 +92,7 @@ class Runner
         StorageApiService $storageApi,
         LoggersService $loggersService,
         JobMapper $jobMapper,
-        $oauthApiUrl,
+        AuthorizationService $authorizationService,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
         $minLogPort = 12202,
         $maxLogPort = 13202
@@ -107,31 +101,12 @@ class Runner
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
         $this->storageClient = $storageApi->getClient();
-        $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
-            'url' => $oauthApiUrl
-        ]);
-        $this->oauthClient3 = new Credentials($this->storageClient->getTokenString(), [
-            'url' => $this->getOauthUrlV3()
-        ]);
         $this->loggersService = $loggersService;
+        $this->authorizationService = $authorizationService;
         $this->jobMapper = $jobMapper;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
-    }
-
-    /**
-     * @return string
-     */
-    private function getOauthUrlV3()
-    {
-        $services = $this->storageClient->indexAction()['services'];
-        foreach ($services as $service) {
-            if ($service['id'] == 'oauth') {
-                return $service['url'];
-            }
-        }
-        throw new ApplicationException('The oauth service not found.');
     }
 
     /**
@@ -250,8 +225,6 @@ class Runner
         $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
 
-        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId(), $sandboxed);
-
         if ($sandboxed) {
             // do not decrypt image parameters on sandboxed calls
             $imageParameters = $component->getImageParameters();
@@ -261,9 +234,10 @@ class Runner
         $configFile = new ConfigFile(
             $dataDirectory->getDataDir(),
             $imageParameters,
-            $authorization,
+            $this->authorizationService,
             $action,
-            $component->getConfigurationFormat()
+            $component,
+            $sandboxed
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {

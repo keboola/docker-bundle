@@ -6,6 +6,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -148,7 +149,7 @@ class RunnerTest extends KernelTestCase
             $storageServiceStub,
             $loggersServiceStub,
             $jobMapperStub,
-            "dummy",
+            new AuthorizationService($encryptorFactory, $storageServiceStub, "dummy"),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
@@ -168,60 +169,6 @@ class RunnerTest extends KernelTestCase
             $result[$item['provider']][$item['key']] = $item['value'];
         }
         return $result;
-    }
-
-    public function testGetOauthUrl()
-    {
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
-            ->setMethods(['indexAction'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->will($this->returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
-
-        $storageServiceStub = self::getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($clientMock));
-
-        $loggersServiceStub = self::getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var JobMapper $jobMapperStub */
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapperStub,
-            "dummy",
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-
-        $method = new \ReflectionMethod($runner, 'getOauthUrlV3');
-        $method->setAccessible(true);
-        $response = $method->invoke($runner);
-        self::assertEquals($response, 'https://someurl');
     }
 
     public function testRunnerPipeline()
@@ -1733,6 +1680,6 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('*****', $config['parameters']['#one']);
         $this->assertEquals('anotherBar', $config['parameters']['two']);
         $this->assertEquals('*****', $config['authorization']['oauth_api']['credentials']['#three']);
-        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['#four']);
+        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
     }
 }

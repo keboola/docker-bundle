@@ -2,7 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
+use Keboola\DockerBundle\Service\AuthorizationService;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
@@ -24,27 +26,40 @@ class ConfigFile
     private $imageParameters;
 
     /**
-     * @var Authorization
+     * @var AuthorizationService
      */
-    private $authorization;
+    private $authorizationService;
 
     /**
      * @var string
      */
     private $action;
 
+    /**
+     * @var string
+     */
+    private $componentId;
+
+    /**
+     * @var bool
+     */
+    private $sandboxed;
+
     public function __construct(
         $dataDirectory,
         array $imageParameters,
-        Authorization $authorization,
+        AuthorizationService $authorization,
         $action,
-        $format
+        Component $component,
+        $sandboxed
     ) {
         $this->dataDirectory = $dataDirectory;
-        $this->format = $format;
+        $this->format = $component->getConfigurationFormat();
+        $this->componentId = $component->getId();
         $this->imageParameters = $imageParameters;
-        $this->authorization = $authorization;
+        $this->authorizationService = $authorization;
         $this->action = $action;
+        $this->sandboxed = $sandboxed;
     }
 
     public function createConfigFile($configData)
@@ -57,7 +72,11 @@ class ConfigFile
 
             $configData['image_parameters'] = $this->imageParameters;
             if (!empty($configData['authorization'])) {
-                $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
+                $configData['authorization'] = $this->authorizationService->getAuthorization(
+                    $configData['authorization'],
+                    $this->componentId,
+                    $this->sandboxed
+                );
             } else {
                 unset($configData['authorization']);
             }
