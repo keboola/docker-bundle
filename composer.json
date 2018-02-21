@@ -9,12 +9,6 @@
             "email": "devel@keboola.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/keboola/syrup"
-        }
-    ],
     "require": {
         "keboola/syrup": "^8.0",
         "keboola/php-utils": "^2.0",
