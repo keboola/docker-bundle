@@ -12,7 +12,7 @@ use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
-class DataLoaderMetadataTestTest extends \PHPUnit_Framework_TestCase
+class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Client
