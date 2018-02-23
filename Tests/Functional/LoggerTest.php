@@ -109,6 +109,8 @@ class LoggerTest extends KernelTestCase
         $containerLog->pushHandler($containerHandler);
         $image = ImageFactory::getImage($encryptor, $log, new Component($imageConfiguration), new Temp(), true);
         $image->prepare([]);
+        $outputFilter = new OutputFilter();
+        $outputFilter->collectValues([$this->getImageConfiguration()]);
         return new Container(
             'docker-test-logger',
             $image,
@@ -119,7 +121,7 @@ class LoggerTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([$this->getImageConfiguration()])
+            $outputFilter
         );
     }
 
@@ -147,6 +149,8 @@ class LoggerTest extends KernelTestCase
         );
         $image->prepare([]);
         $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
+        $outputFilter = new OutputFilter();
+        $outputFilter->collectValues([$this->getImageConfiguration()]);
         return new Container(
             'docker-test-logger',
             $image,
@@ -157,7 +161,7 @@ class LoggerTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([$this->getImageConfiguration()])
+            $outputFilter
         );
     }
 

@@ -12,17 +12,26 @@ class OutputFilter
     private $filterValues = [];
 
     /**
-     * OutputFilter constructor.
+     * Add a single sensitive value
+     * @param string $value
+     */
+    public function addValue($value)
+    {
+        $this->filterValues[] = $value;
+        // this is reversible, so hide it too
+        $this->filterValues[] = base64_encode($value);
+    }
+
+    /**
+     * Collect sensitive values
      * @param array $data Array of arrays containing sensitive values, values with keys marked with '#' are
      * considered sensitive.
      */
-    public function __construct(array $data)
+    public function collectValues(array $data)
     {
         array_walk_recursive($data, function ($value, $key) {
             if ((substr($key, 0, 1) == '#') && (is_scalar($value))) {
-                $this->filterValues[] = $value;
-                // this is reversible, so hide it too
-                $this->filterValues[] = base64_encode($value);
+                $this->addValue($value);
             }
         });
     }

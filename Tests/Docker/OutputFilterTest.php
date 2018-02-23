@@ -9,7 +9,8 @@ class OutputFilterTest extends TestCase
 {
     public function testFilter()
     {
-        $filter = new OutputFilter(
+        $filter = new OutputFilter();
+        $filter->collectValues(
             [['a' => 'b'], ['c' => ['#d' => 'e'], 'f' => ['g' => '#h', '#i' => 'foo']], '#j' => 'bar']
         );
         self::assertEquals('abcdfghijk', $filter->filter('abcdfghijk'));

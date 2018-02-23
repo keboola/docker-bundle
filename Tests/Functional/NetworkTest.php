@@ -46,7 +46,7 @@ class NetworkTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([])
+            new OutputFilter()
         );
         return $container;
     }

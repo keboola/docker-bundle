@@ -64,7 +64,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], $envs),
-            new OutputFilter([])
+            new OutputFilter()
         );
         return $container;
     }
@@ -198,7 +198,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([])
+            new OutputFilter()
         );
 
         // set benchmark time
@@ -218,7 +218,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([])
+            new OutputFilter()
         );
         $testStartTime = time();
         try {
@@ -259,7 +259,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter([])
+            new OutputFilter()
         );
         $container->run();
     }
