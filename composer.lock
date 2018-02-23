@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.52.13",
+            "version": "3.52.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "6d2f46b55a9620e41e2fc71eb9993d43ebb352c7"
+                "reference": "4b24dc72095c50f2256cef9c66b7c4db31ead5d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/6d2f46b55a9620e41e2fc71eb9993d43ebb352c7",
-                "reference": "6d2f46b55a9620e41e2fc71eb9993d43ebb352c7",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4b24dc72095c50f2256cef9c66b7c4db31ead5d7",
+                "reference": "4b24dc72095c50f2256cef9c66b7c4db31ead5d7",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-02-20T20:46:59+00:00"
+            "time": "2018-02-22T18:10:24+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1887,17 +1887,17 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "3.0.2",
+            "version": "3.0.3",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "53f561907aeddd42c153400d46257f4032f6f27e"
+                "reference": "29252f973ae3d6826f7dd2cdef974a9f1502aabd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/53f561907aeddd42c153400d46257f4032f6f27e",
-                "reference": "53f561907aeddd42c153400d46257f4032f6f27e",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/29252f973ae3d6826f7dd2cdef974a9f1502aabd",
+                "reference": "29252f973ae3d6826f7dd2cdef974a9f1502aabd",
                 "shasum": ""
             },
             "require": {
@@ -1933,7 +1933,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2018-02-21T00:09:27+00:00"
+            "time": "2018-02-23T09:47:58+00:00"
         },
         {
             "name": "keboola/php-encryption",
