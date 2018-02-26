@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
@@ -68,7 +69,7 @@ class Container
     private $maxLogPort;
 
     /**
-     * @var OutputFilter
+     * @var OutputFilterInterface
      */
     private $outputFilter;
 
@@ -98,7 +99,7 @@ class Container
      * @param int $minLogPort
      * @param $maxLogPort
      * @param RunCommandOptions $runCommandOptions
-     * @param OutputFilter $outputFilter
+     * @param OutputFilterInterface $outputFilter
      */
     public function __construct(
         $containerId,
@@ -110,7 +111,7 @@ class Container
         $minLogPort,
         $maxLogPort,
         RunCommandOptions $runCommandOptions,
-        OutputFilter $outputFilter
+        OutputFilterInterface $outputFilter
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;

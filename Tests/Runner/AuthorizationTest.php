@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\OAuthV2Api\Credentials;
@@ -188,7 +189,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config);
+        $configFile->createConfigFile($config, new OutputFilter());
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [
@@ -254,7 +255,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', true);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config);
+        $configFile->createConfigFile($config, new OutputFilter());
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [
@@ -452,7 +453,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', false);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config);
+        $configFile->createConfigFile($config, new OutputFilter());
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [
@@ -514,7 +515,7 @@ class AuthorizationTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo', true);
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config);
+        $configFile->createConfigFile($config, new OutputFilter());
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [

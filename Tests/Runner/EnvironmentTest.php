@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
@@ -38,7 +39,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
-        $envs = $environment->getEnvironmentVariables();
+        $envs = $environment->getEnvironmentVariables(new OutputFilter());
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -68,7 +69,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
-        $envs = $environment->getEnvironmentVariables();
+        $envs = $environment->getEnvironmentVariables(new OutputFilter());
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -99,7 +100,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             ],
         ]);
         $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
-        $envs = $environment->getEnvironmentVariables();
+        $envs = $environment->getEnvironmentVariables(new OutputFilter());
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -134,7 +135,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'KBC_CONFIGID' => 'barFoo',
         ];
         $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
-        $envs = $environment->getEnvironmentVariables();
+        $envs = $environment->getEnvironmentVariables(new OutputFilter());
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
@@ -169,7 +170,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'KBC_CONFIGID' => 'barFoo',
         ];
         $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
-        $envs = $environment->getEnvironmentVariables();
+        $envs = $environment->getEnvironmentVariables(new OutputFilter());
         $this->assertArrayHasKey('KBC_PROJECTID', $envs);
         $this->assertArrayHasKey('KBC_CONFIGID', $envs);
         $this->assertArrayHasKey('KBC_STACKID', $envs);
@@ -210,7 +211,7 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
         ];
         $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
         try {
-            $environment->getEnvironmentVariables();
+            $environment->getEnvironmentVariables(new OutputFilter());
         } catch (UserException $e) {
             $this->assertContains('Only scalar value is allowed as value', $e->getMessage());
         }

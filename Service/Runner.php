@@ -5,7 +5,9 @@ namespace Keboola\DockerBundle\Service;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
@@ -139,10 +141,10 @@ class Runner
      * @param $containerId
      * @param RunCommandOptions $runCommandOptions
      * @param DataDirectory $dataDirectory
-     * @param OutputFilter $outputFilter
+     * @param OutputFilterInterface $outputFilter
      * @return Container
      */
-    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory, OutputFilter $outputFilter)
+    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory, OutputFilterInterface $outputFilter)
     {
         return new Container(
             $containerId,
@@ -202,8 +204,6 @@ class Runner
         $this->loggersService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
         $this->loggersService->setComponentId($component->getId());
 
-        $configData = $jobDefinition->getConfiguration();
-
         $temp = new Temp("docker");
         $temp->initRunFolder();
         $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
@@ -224,29 +224,6 @@ class Runner
             $jobId
         );
 
-        if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
-            $dataLoader = new DataLoader(
-                $this->storageClient,
-                $this->loggersService->getLog(),
-                $dataDirectory->getDataDir(),
-                $configData['storage'],
-                $component,
-                $jobDefinition->getConfigId(),
-                $jobDefinition->getRowId()
-            );
-        } else {
-            $dataLoader = new NullDataLoader(
-                $this->storageClient,
-                $this->loggersService->getLog(),
-                $dataDirectory->getDataDir(),
-                $configData['storage'],
-                $component,
-                $jobDefinition->getConfigId(),
-                $jobDefinition->getRowId()
-            );
-        }
-        $dataLoader->setFeatures($this->features);
-
         $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
 
@@ -258,6 +235,7 @@ class Runner
         } else {
             $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         }
+
         $configFile = new ConfigFile(
             $dataDirectory->getDataDir(),
             $imageParameters,
@@ -276,6 +254,7 @@ class Runner
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
+            $outputFilter = new OutputFilter();
         } else {
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
@@ -286,6 +265,7 @@ class Runner
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
+            $outputFilter = new NullFilter();
         }
         $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
@@ -298,12 +278,12 @@ class Runner
 
         switch ($mode) {
             case 'run':
-                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
+                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
                 break;
             case 'sandbox':
             case 'input':
             case 'dry-run':
-                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile);
+                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
                 break;
             default:
                 throw new ApplicationException("Invalid run mode " . $mode);
@@ -370,16 +350,17 @@ class Runner
      * @param StateFile $stateFile
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
+     * @param OutputFilterInterface $outputFilter
      * @return Output
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
 
         // finalize
         $dataLoader->storeOutput();
@@ -401,9 +382,10 @@ class Runner
      * @param StateFile $stateFile
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
+     * @param OutputFilterInterface $outputFilter
      * @return Output
      */
-    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile)
+    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
     {
         // initialize
         $dataDirectory->createDataDir();
@@ -411,9 +393,9 @@ class Runner
         $dataLoader->loadInputData();
 
         if ($mode == 'dry-run') {
-            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile);
+            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
         } else {
-            $configFile->createConfigFile($configData);
+            $configFile->createConfigFile($configData, $outputFilter);
             $output = new Output();
         }
 
@@ -433,9 +415,11 @@ class Runner
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
      * @param StateFile $stateFile
+     * @param OutputFilterInterface $outputFilter
      * @return Output
+     * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -460,7 +444,7 @@ class Runner
                 'id' => $image->getFullImageId(),
                 'digests' => $image->getImageDigests()
             ];
-            $configFile->createConfigFile($image->getConfigData());
+            $configFile->createConfigFile($image->getConfigData(), $outputFilter);
 
             $containerIdParts[] = $jobId;
             $containerIdParts[] = $this->storageClient->getRunId() ?: 'norunid';
@@ -483,10 +467,10 @@ class Runner
                         'com.keboola.docker-runner.rowId=' . $rowId,
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts)
                     ],
-                    $environment->getEnvironmentVariables()
+                    $environment->getEnvironmentVariables($outputFilter)
                 ),
                 $dataDirectory,
-                new OutputFilter([$this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters()), $image->getConfigData()])
+                $outputFilter
             );
             try {
                 $process = $container->run();

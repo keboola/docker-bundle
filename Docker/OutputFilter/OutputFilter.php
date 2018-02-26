@@ -1,8 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker;
+namespace Keboola\DockerBundle\Docker\OutputFilter;
 
-class OutputFilter
+class OutputFilter implements OutputFilterInterface
 {
     const REPLACEMENT = '*****';
 
@@ -12,8 +12,7 @@ class OutputFilter
     private $filterValues = [];
 
     /**
-     * Add a single sensitive value
-     * @param string $value
+     * @inheritdoc
      */
     public function addValue($value)
     {
@@ -23,9 +22,7 @@ class OutputFilter
     }
 
     /**
-     * Collect sensitive values
-     * @param array $data Array of arrays containing sensitive values, values with keys marked with '#' are
-     * considered sensitive.
+     * @inheritdoc
      */
     public function collectValues(array $data)
     {
@@ -37,8 +34,7 @@ class OutputFilter
     }
 
     /**
-     * @param string $text
-     * @return string
+     * @inheritdoc
      */
     public function filter($text)
     {

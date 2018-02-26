@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
@@ -47,7 +49,7 @@ class ConfigFile
         $this->action = $action;
     }
 
-    public function createConfigFile($configData)
+    public function createConfigFile($configData, OutputFilterInterface $outputFilter)
     {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
@@ -69,6 +71,7 @@ class ConfigFile
             $configData['action'] = $this->action;
 
             $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'config' . $adapter->getFileExtension();
+            $outputFilter->collectValues($configData);
             $adapter->setConfig($configData);
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {

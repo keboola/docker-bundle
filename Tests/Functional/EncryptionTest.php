@@ -34,6 +34,8 @@ class EncryptionTest extends KernelTestCase
             'token' => STORAGE_API_TOKEN,
         ]);
         self::bootKernel();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
     private function getJobExecutor(&$encryptorFactory, $handler, $indexActionValue)
@@ -92,16 +94,24 @@ class EncryptionTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT
         );
 
-        // mock components
+        // mock configurations
         $configData = [
             "id" => "1",
             "version" => "1",
             "configuration" => [
                 "parameters" => [
-                    "key1" => "value1",
-                    "#key2" => $encryptorFactory->getEncryptor()->encrypt("value2"),
-                    "#key3" => $encryptorFactory->getEncryptor()->encrypt("value3", ComponentWrapper::class),
-                    "#key4" => $encryptorFactory->getEncryptor()->encrypt("value4", ComponentProjectWrapper::class),
+                    'script' => [
+                        'from pathlib import Path',
+                        'import sys',
+                        'import base64',
+                        // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                        'contents = Path("/data/config.json").read_text()[::-1]',
+                        'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                    ],
+                    "key1" => "first",
+                    "#key2" => $encryptorFactory->getEncryptor()->encrypt("second"),
+                    "#key3" => $encryptorFactory->getEncryptor()->encrypt("third", ComponentWrapper::class),
+                    "#key4" => $encryptorFactory->getEncryptor()->encrypt("fourth", ComponentProjectWrapper::class),
                 ]
             ],
             "rows" => [],
@@ -113,10 +123,18 @@ class EncryptionTest extends KernelTestCase
             "version" => "1",
             "configuration" => [
                 "parameters" => [
-                    "configKey1" => "value1",
-                    "#configKey2" => $encryptorFactory->getEncryptor()->encrypt("value2"),
-                    "#configKey3" => $encryptorFactory->getEncryptor()->encrypt("value3", ComponentWrapper::class),
-                    "#configKey4" => $encryptorFactory->getEncryptor()->encrypt("value4", ComponentProjectWrapper::class),
+                    'script' => [
+                        'from pathlib import Path',
+                        'import sys',
+                        'import base64',
+                        // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                        'contents = Path("/data/config.json").read_text()[::-1]',
+                        'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                    ],
+                    "configKey1" => "first",
+                    "#configKey2" => $encryptorFactory->getEncryptor()->encrypt("second"),
+                    "#configKey3" => $encryptorFactory->getEncryptor()->encrypt("third", ComponentWrapper::class),
+                    "#configKey4" => $encryptorFactory->getEncryptor()->encrypt("fourth", ComponentProjectWrapper::class),
                 ]
             ],
             "rows" => [
@@ -185,27 +203,13 @@ class EncryptionTest extends KernelTestCase
                 0 => [
                     'id' => 'docker-dummy-component',
                     'type' => 'other',
-                    'name' => 'Docker Config Dump',
+                    'name' => 'Fake transformations',
                     'description' => 'Testing Docker',
-                    'longDescription' => null,
-                    'hasUI' => false,
-                    'hasRun' => true,
-                    'ico32' => '',
-                    'ico64' => '',
                     'data' => [
                         "definition" => [
-                            "type" => "builder",
-                            "uri" => "keboola/docker-demo-app",
+                            "type" => "aws-ecr",
+                            "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
                             "tag" => "latest",
-                            "build_options" => [
-                                "parent_type" => "quayio",
-                                "repository" => [
-                                    "uri" => "https://github.com/keboola/docker-demo-app.git",
-                                    "type" => "git"
-                                ],
-                                "commands" => [],
-                                "entry_point" => "cat /data/config.json",
-                            ],
                         ],
                         "configuration_format" => "json",
                     ],
@@ -237,10 +241,14 @@ class EncryptionTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $config = json_decode(strrev(base64_decode($output)), true);
+        $this->assertStringStartsWith("first", $config["parameters"]["key1"]);
         $this->assertStringStartsWith("KBC::Encrypted==", $config["parameters"]["#key2"]);
         $this->assertStringStartsWith("KBC::ComponentEncrypted==", $config["parameters"]["#key3"]);
         $this->assertStringStartsWith("KBC::ComponentProjectEncrypted==", $config["parameters"]["#key4"]);
@@ -252,8 +260,8 @@ class EncryptionTest extends KernelTestCase
             'params' => [
                 'component' => 'docker-dummy-component',
                 'mode' => 'run',
-                'config' => 'config'
-            ]
+                'config' => 'config',
+            ],
         ];
 
         // fake image data
@@ -267,13 +275,17 @@ class EncryptionTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#key2"]);
-        $this->assertEquals("value3", $config["parameters"]["#key3"]);
-        $this->assertEquals("value4", $config["parameters"]["#key4"]);
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $config = json_decode(strrev(base64_decode($output)), true);
+        $this->assertEquals("first", $config["parameters"]["key1"]);
+        $this->assertEquals("second", $config["parameters"]["#key2"]);
+        $this->assertEquals("third", $config["parameters"]["#key3"]);
+        $this->assertEquals("fourth", $config["parameters"]["#key4"]);
     }
 
     public function testStoredConfigRowDecryptEncryptComponent()
@@ -297,13 +309,18 @@ class EncryptionTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
-        $this->assertEquals("value2", $config["parameters"]["#configKey2"]);
-        $this->assertEquals("value3", $config["parameters"]["#configKey3"]);
-        $this->assertEquals("value4", $config["parameters"]["#configKey4"]);
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $config = json_decode(strrev(base64_decode($output)), true);
+        $this->assertEquals("first", $config["parameters"]["configKey1"]);
+        $this->assertEquals("second", $config["parameters"]["#configKey2"]);
+        $this->assertEquals("third", $config["parameters"]["#configKey3"]);
+        $this->assertEquals("fourth", $config["parameters"]["#configKey4"]);
+        $this->assertEquals("value1", $config["parameters"]["rowKey1"]);
         $this->assertEquals("value2", $config["parameters"]["#rowKey2"]);
         $this->assertEquals("value3", $config["parameters"]["#rowKey3"]);
         $this->assertEquals("value4", $config["parameters"]["#rowKey4"]);

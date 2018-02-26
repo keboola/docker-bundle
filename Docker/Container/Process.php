@@ -8,12 +8,12 @@
 
 namespace Keboola\DockerBundle\Docker\Container;
 
-use Keboola\DockerBundle\Docker\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 
 class Process extends \Symfony\Component\Process\Process
 {
     /**
-     * @var OutputFilter
+     * @var OutputFilterInterface
      */
     private $outputFilter;
 
@@ -47,7 +47,7 @@ class Process extends \Symfony\Component\Process\Process
         return parent::run($myCallback);
     }
 
-    public function setOutputFilter(OutputFilter $outputFilter)
+    public function setOutputFilter(OutputFilterInterface $outputFilter)
     {
         $this->outputFilter = $outputFilter;
     }

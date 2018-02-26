@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\Syrup\Exception\UserException;
 
 class Environment
@@ -58,7 +60,7 @@ class Environment
         $this->stackId = parse_url($url, PHP_URL_HOST);
     }
 
-    public function getEnvironmentVariables()
+    public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
     {
         if ($this->component->injectEnvironment()) {
             $configParameters = $this->configParameters;
@@ -77,6 +79,7 @@ class Environment
         ]);
         if ($this->component->forwardToken()) {
             $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
+            $outputFilter->addValue($this->tokenInfo["token"]);
             $envs["KBC_URL"] = $this->url;
         }
         if ($this->component->forwardTokenDetails()) {

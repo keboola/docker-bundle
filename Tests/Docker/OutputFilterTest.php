@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Docker;
 
-use Keboola\DockerBundle\Docker\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use PHPUnit\Framework\TestCase;
 
 class OutputFilterTest extends TestCase

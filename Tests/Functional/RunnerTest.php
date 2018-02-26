@@ -1733,6 +1733,6 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('*****', $config['parameters']['#one']);
         $this->assertEquals('anotherBar', $config['parameters']['two']);
         $this->assertEquals('*****', $config['authorization']['oauth_api']['credentials']['#three']);
-        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['#four']);
+        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
     }
 }
