@@ -10,7 +10,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -439,7 +439,7 @@ exit(0);'
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
 
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $sapiService = self::$kernel->getContainer()->get('docker_bundle.storage_api');
         $temp = new Temp('docker');
         $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
@@ -492,7 +492,7 @@ exit(0);'
             Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
         ];
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $sapiService = self::$kernel->getContainer()->get('docker_bundle.storage_api');
         $temp = new Temp('docker');
         $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
@@ -562,7 +562,7 @@ exit(0);'
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
         ];
         $temp = new Temp('docker');
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $sapiService = self::$kernel->getContainer()->get('docker_bundle.storage_api');
         $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
         $container->run();
 
@@ -588,7 +588,7 @@ sleep(2);
 error_log("second message to stderr\n");
 print "second message to stdout\n";'
         );
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $sapiService = self::$kernel->getContainer()->get('docker_bundle.storage_api');
         $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
         $container->run();
 
@@ -631,7 +631,7 @@ print "second message to stdout\n";'
         $logService = $serviceContainer->get('docker_bundle.loggers');
         $logService->setComponentId('dummy-testing');
         /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
+        $sapiService = $serviceContainer->get('docker_bundle.storage_api');
         $sapiService->setClient(new Client([
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,

@@ -6,7 +6,6 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -26,7 +25,6 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
             return parent::encryptAction($request);
         }
 
-        /** @var StorageApiService $storage */
         if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $componentId)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
@@ -71,7 +69,6 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
         $this->logger->warn("Using deprecated componentEncrypt call.");
         $component = $request->get("component");
 
-        /** @var StorageApiService $storage */
         if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
