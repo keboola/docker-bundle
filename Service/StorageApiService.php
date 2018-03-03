@@ -11,7 +11,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
      */
     public static function getStepPollDelayFunction()
     {
-        return function($tries) {
+        return function ($tries) {
             switch ($tries) {
                 case ($tries < 15):
                     return 1;
