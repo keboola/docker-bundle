@@ -10,14 +10,14 @@
         }
     ],
     "require": {
-        "keboola/syrup": "^8.0",
+        "keboola/syrup": "^9.0",
         "keboola/php-utils": "^2.0",
         "symfony/symfony": "^2.8",
         "symfony/console": "^2.8",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^1.0",
-        "keboola/input-mapping": "^3.3",
-        "keboola/output-mapping": "^3.0",
+        "keboola/input-mapping": "^4.0",
+        "keboola/output-mapping": "^4.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {
