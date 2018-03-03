@@ -7,7 +7,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -49,7 +49,7 @@ class ActionControllerTest extends WebTestCase
         if ($encrypt) {
             $flags = ["encrypt"];
         }
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -218,7 +218,7 @@ class ActionControllerTest extends WebTestCase
         );
 
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDummy(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDummy(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -250,7 +250,7 @@ class ActionControllerTest extends WebTestCase
 
 
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDummy(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDummy(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -282,7 +282,7 @@ class ActionControllerTest extends WebTestCase
 
 
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDummy(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDummy(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -320,7 +320,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('test');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -335,7 +335,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('test');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -350,7 +350,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('emptyjsonobject');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -365,7 +365,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('emptyjsonarray');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(true));
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython(true));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -384,7 +384,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('run');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -402,7 +402,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('timeout');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -419,7 +419,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('usererror');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -436,7 +436,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('apperror');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -453,7 +453,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('invalidjson');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -470,7 +470,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('noresponse');
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -488,7 +488,7 @@ class ActionControllerTest extends WebTestCase
         $encryptedPassword = $encryptor->encrypt('password');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -511,7 +511,7 @@ class ActionControllerTest extends WebTestCase
         $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('password', ComponentWrapper::class);
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -527,7 +527,7 @@ class ActionControllerTest extends WebTestCase
         $container = self::$container;
 
         $request = $this->prepareRequest('decrypt', ["#password" => 'password']);
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -546,7 +546,7 @@ class ActionControllerTest extends WebTestCase
     {
         $request = $this->prepareRequest('decrypt', ["#password" => "nesmysl"]);
         $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -568,7 +568,7 @@ class ActionControllerTest extends WebTestCase
         $encryptedPassword = $encryptor->encrypt('mismatch');
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
@@ -589,7 +589,7 @@ class ActionControllerTest extends WebTestCase
             ["#password" => "KBC::ComponentEncrypted==g2sGNtFXGNTIS6thisiswrongQ4zspYMcA=="]
         );
 
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->set("docker_bundle.storage_api", $this->getStorageServiceStubDcaPython());
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
