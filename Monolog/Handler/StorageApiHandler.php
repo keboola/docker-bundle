@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Monolog\Handler;
 
 use Keboola\StorageApi\Event;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Logger;
 
 /**

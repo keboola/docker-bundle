@@ -93,7 +93,7 @@ class Runner
      */
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
-        StorageApiService $storageApi,
+        \Keboola\Syrup\Service\StorageApi\StorageApiService $storageApi,
         LoggersService $loggersService,
         JobMapper $jobMapper,
         $oauthApiUrl,

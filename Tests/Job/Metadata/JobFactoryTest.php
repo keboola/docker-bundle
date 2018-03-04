@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Tests\Job\Metadata;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
 class JobFactoryTest extends \PHPUnit_Framework_TestCase
 {
