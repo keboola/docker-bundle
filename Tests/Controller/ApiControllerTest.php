@@ -443,7 +443,7 @@ class ApiControllerTest extends WebTestCase
         self::$container->get('request_stack')->push($request);
         $ctrl = new ApiController();
         $container = self::$container;
-        $container->set("docker_bundle.storage_api", $this->getStorageServiceStub(true));
+        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
         $response = $ctrl->encryptConfigAction($request);
@@ -573,7 +573,7 @@ class ApiControllerTest extends WebTestCase
             }))
             ->will($this->returnValue(json_decode($responseJson, true)));
 
-        $container->set("docker_bundle.storage_api", $storageServiceStub);
+        $container->set("syrup.storage_api", $storageServiceStub);
 
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
@@ -859,7 +859,7 @@ class ApiControllerTest extends WebTestCase
             }))
             ->will($this->returnValue(json_decode($responseJson, true)));
 
-        $container->set("docker_bundle.storage_api", $storageServiceStub);
+        $container->set("syrup.storage_api", $storageServiceStub);
 
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
@@ -939,7 +939,7 @@ class ApiControllerTest extends WebTestCase
                 return false;
             }));
 
-        $container->set("docker_bundle.storage_api", $storageServiceStub);
+        $container->set("syrup.storage_api", $storageServiceStub);
 
         $ctrl->setContainer($container);
         $ctrl->preExecute($request);
