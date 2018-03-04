@@ -12,7 +12,7 @@ use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;

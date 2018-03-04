@@ -15,7 +15,7 @@ class ComponentsService
     /**
      * @param StorageApiService $service
      */
-    public function __construct(StorageApiService $service)
+    public function __construct(\Keboola\Syrup\Service\StorageApi\StorageApiService $service)
     {
         $this->components = new Components($service->getClient());
     }

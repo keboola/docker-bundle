@@ -12,7 +12,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;

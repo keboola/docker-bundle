@@ -14,7 +14,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
