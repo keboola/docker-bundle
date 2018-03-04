@@ -43,7 +43,7 @@ class ApiController extends BaseApiController
     private function validateComponent(Request $request)
     {
         /** @var StorageApiService $storage */
-        $storage = $this->container->get("docker_bundle.storage_api");
+        $storage = $this->container->get("syrup.storage_api");
 
         // Get params from request
         $params = $this->getPostJson($request);
@@ -92,7 +92,7 @@ class ApiController extends BaseApiController
     private function createJobFromParams($params)
     {
         /** @var StorageApiService $storage */
-        $storage = $this->container->get("docker_bundle.storage_api");
+        $storage = $this->container->get("syrup.storage_api");
 
         // check params against ES mapping
         $this->checkMappingParams($params);
@@ -302,7 +302,7 @@ class ApiController extends BaseApiController
     {
         $this->logger->warn("Using deprecated encryptConfig call.");
         /** @var StorageApiService $storage */
-        $storage = $this->container->get("docker_bundle.storage_api");
+        $storage = $this->container->get("syrup.storage_api");
 
         $component = $request->get("component");
         if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
@@ -344,7 +344,7 @@ class ApiController extends BaseApiController
     {
         $this->logger->warn("Using deprecated saveConfig call.");
         /** @var StorageApiService $storage */
-        $storage = $this->container->get("docker_bundle.storage_api");
+        $storage = $this->container->get("syrup.storage_api");
 
         $components = new Components($this->storageApi);
         $options = new Configuration();

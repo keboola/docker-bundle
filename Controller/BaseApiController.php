@@ -11,7 +11,7 @@ class BaseApiController extends ApiController
      */
     protected function initStorageApi()
     {
-        $this->storageApi = $this->container->get('docker_bundle.storage_api')->getClient();
+        $this->storageApi = $this->container->get('syrup.storage_api')->getClient();
     }
 
     /**

@@ -6,6 +6,9 @@ use Keboola\StorageApi\Client;
 
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
+
+    private $fasterPollingChecked = false;
+
     /**
      * @return \Closure
      */
@@ -29,22 +32,25 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
     public function getClient()
     {
         $client = parent::getClient();
-        $projectFeatures = $client->verifyToken()["owner"]["features"];
+        if (!$this->fasterPollingChecked) {
+            $this->fasterPollingChecked = true;
+            $projectFeatures = $client->verifyToken()["owner"]["features"];
 
-        if (in_array("docker-runner-faster-polling", $projectFeatures)) {
-            $clientWithFasterPolling = new Client(
-                [
-                    'token' => $client->token,
-                    'url' => $client->getApiUrl(),
-                    'userAgent' => $client->getUserAgent(),
-                    'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction()
-                ]
-            );
-            if ($client->getRunId()) {
-                $clientWithFasterPolling->setRunId($client->getRunId());
+            if (in_array("docker-runner-faster-polling", $projectFeatures)) {
+                $clientWithFasterPolling = new Client(
+                    [
+                        'token' => $client->token,
+                        'url' => $client->getApiUrl(),
+                        'userAgent' => $client->getUserAgent(),
+                        'backoffMaxTries' => $client->getBackoffMaxTries(),
+                        'jobPollRetryDelay' => self::getStepPollDelayFunction()
+                    ]
+                );
+                if ($client->getRunId()) {
+                    $clientWithFasterPolling->setRunId($client->getRunId());
+                }
+                $this->setClient($clientWithFasterPolling);
             }
-            $this->setClient($clientWithFasterPolling);
         }
         return $this->client;
     }
