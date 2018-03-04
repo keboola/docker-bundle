@@ -45,7 +45,7 @@ class ApiControllerTest extends WebTestCase
         if ($encrypt) {
             $flags = ["encrypt"];
         }
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -805,7 +805,7 @@ class ApiControllerTest extends WebTestCase
         $container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -889,7 +889,7 @@ class ApiControllerTest extends WebTestCase
         $container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
