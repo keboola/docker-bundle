@@ -49,7 +49,7 @@ class ActionControllerTest extends WebTestCase
         if ($encrypt) {
             $flags = ["encrypt"];
         }
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")

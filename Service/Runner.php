@@ -26,6 +26,7 @@ use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Keboola\Temp\Temp;
 
 class Runner
@@ -93,7 +94,7 @@ class Runner
      */
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
-        \Keboola\Syrup\Service\StorageApi\StorageApiService $storageApi,
+        StorageApiService $storageApi,
         LoggersService $loggersService,
         JobMapper $jobMapper,
         $oauthApiUrl,
