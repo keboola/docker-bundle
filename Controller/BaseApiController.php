@@ -7,6 +7,14 @@ use Keboola\Syrup\Controller\ApiController;
 class BaseApiController extends ApiController
 {
     /**
+     * Override with the local service
+     */
+    protected function initStorageApi()
+    {
+        $this->storageApi = $this->container->get('docker_bundle.storage_api')->getClient();
+    }
+
+    /**
      *
      * hide component param from response
      *
