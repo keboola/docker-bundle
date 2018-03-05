@@ -52,8 +52,9 @@ class ConfigFile
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
         try {
-            // remove runtime parameters which is not supposed to be passed into the container
+            // remove runtime parameters and processors which are not supposed to be passed into the container
             unset($configData['runtime']);
+            unset($configData['processors']);
 
             $configData['image_parameters'] = $this->imageParameters;
             if (!empty($configData['authorization'])) {
