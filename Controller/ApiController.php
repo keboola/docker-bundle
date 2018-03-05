@@ -12,7 +12,7 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\Syrup\Service\StorageApi\StorageApiService as OriginalStorageApiService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
@@ -42,7 +42,7 @@ class ApiController extends BaseApiController
 
     private function validateComponent(Request $request)
     {
-        /** @var StorageApiService $storage */
+        /** @var OriginalStorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
         // Get params from request
@@ -91,7 +91,7 @@ class ApiController extends BaseApiController
      */
     private function createJobFromParams($params)
     {
-        /** @var StorageApiService $storage */
+        /** @var OriginalStorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
         // check params against ES mapping
@@ -301,7 +301,7 @@ class ApiController extends BaseApiController
     public function encryptConfigAction(Request $request)
     {
         $this->logger->warn("Using deprecated encryptConfig call.");
-        /** @var StorageApiService $storage */
+        /** @var OriginalStorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
         $component = $request->get("component");
@@ -343,7 +343,7 @@ class ApiController extends BaseApiController
     public function saveConfigAction(Request $request)
     {
         $this->logger->warn("Using deprecated saveConfig call.");
-        /** @var StorageApiService $storage */
+        /** @var OriginalStorageApiService $storage */
         $storage = $this->container->get("syrup.storage_api");
 
         $components = new Components($this->storageApi);
