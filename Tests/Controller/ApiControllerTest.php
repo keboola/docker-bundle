@@ -12,7 +12,7 @@ use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,7 +45,7 @@ class ApiControllerTest extends WebTestCase
         if ($encrypt) {
             $flags = ["encrypt"];
         }
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -805,7 +805,7 @@ class ApiControllerTest extends WebTestCase
         $container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
@@ -889,7 +889,7 @@ class ApiControllerTest extends WebTestCase
         $container->get('request_stack')->push($request);
         $ctrl = new ApiController();
 
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\Syrup\\Service\\StorageApi\\StorageApiService")
+        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
