@@ -2,8 +2,8 @@
 
 namespace Keboola\DockerBundle\Monolog\Handler;
 
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\StorageApi\Event;
-use Keboola\Syrup\Service\StorageApi\StorageApiService as OriginalStorageApiService;
 use Monolog\Logger;
 
 /**
@@ -40,9 +40,9 @@ class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
     /**
      * StorageApiHandler constructor.
      * @param int $appName
-     * @param OriginalStorageApiService $storageApiService
+     * @param StorageApiService $storageApiService
      */
-    public function __construct($appName, OriginalStorageApiService $storageApiService)
+    public function __construct($appName, StorageApiService $storageApiService)
     {
         parent::__construct($appName, $storageApiService);
         $this->verbosity[Logger::DEBUG] = self::VERBOSITY_NONE;
