@@ -6,7 +6,6 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\StorageApi\Components;
-use Keboola\Syrup\Service\StorageApi\StorageApiService as OriginalStorageApiService;
 
 class ComponentsService
 {
@@ -14,9 +13,9 @@ class ComponentsService
     protected $components;
 
     /**
-     * @param OriginalStorageApiService $service
+     * @param StorageApiService $service
      */
-    public function __construct(OriginalStorageApiService $service)
+    public function __construct(StorageApiService $service)
     {
         $this->components = new Components($service->getClient());
     }
