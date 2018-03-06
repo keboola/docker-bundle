@@ -31,7 +31,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             throw new UserException("Component Id is required.");
         }
 
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $componentId)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $componentId)) {
             throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
         }
 

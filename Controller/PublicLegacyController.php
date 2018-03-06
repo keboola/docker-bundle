@@ -25,7 +25,7 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
             return parent::encryptAction($request);
         }
 
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $componentId)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $componentId)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
@@ -69,7 +69,7 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
         $this->logger->warn("Using deprecated componentEncrypt call.");
         $component = $request->get("component");
 
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $component)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
