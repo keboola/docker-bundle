@@ -19,7 +19,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
