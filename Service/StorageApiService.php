@@ -7,7 +7,7 @@ use Keboola\StorageApi\Client;
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
 
-    private $fasterPollingChecked = false;
+    private $fasterPollingClient = null;
 
     /**
      * @return \Closure
@@ -32,26 +32,26 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
     public function getClient()
     {
         $client = parent::getClient();
-        if (!$this->fasterPollingChecked) {
-            $this->fasterPollingChecked = true;
-            $projectFeatures = $client->verifyToken()["owner"]["features"];
-
-            if (in_array("docker-runner-faster-polling", $projectFeatures)) {
-                $clientWithFasterPolling = new Client(
-                    [
-                        'token' => $client->token,
-                        'url' => $client->getApiUrl(),
-                        'userAgent' => $client->getUserAgent(),
-                        'backoffMaxTries' => $client->getBackoffMaxTries(),
-                        'jobPollRetryDelay' => self::getStepPollDelayFunction()
-                    ]
-                );
-                if ($client->getRunId()) {
-                    $clientWithFasterPolling->setRunId($client->getRunId());
-                }
-                $this->setClient($clientWithFasterPolling);
+        if (!$this->fasterPollingClient) {
+            $clientWithFasterPolling = new Client(
+                [
+                    'token' => $client->token,
+                    'url' => $client->getApiUrl(),
+                    'userAgent' => $client->getUserAgent(),
+                    'backoffMaxTries' => $client->getBackoffMaxTries(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction()
+                ]
+            );
+            if ($client->getRunId()) {
+                $clientWithFasterPolling->setRunId($client->getRunId());
             }
+            $this->setFasterPollingClient($clientWithFasterPolling);
         }
-        return $this->client;
+        return $this->fasterPollingClient;
+    }
+
+    public function setFasterPollingClient(Client $client)
+    {
+        $this->fasterPollingClient = $this->verifyClient($client);
     }
 }
