@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ac94bf74a53d0b7714f29c910e540999",
+    "content-hash": "94e1031f0ad8a040ce5234f4245b9650",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.52.16",
+            "version": "3.52.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "d0c292e94d53bb131b4ec5d751d76363722d8afc"
+                "reference": "51efd3a7cda92f245ccf39fea03227e0eb473c93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d0c292e94d53bb131b4ec5d751d76363722d8afc",
-                "reference": "d0c292e94d53bb131b4ec5d751d76363722d8afc",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/51efd3a7cda92f245ccf39fea03227e0eb473c93",
+                "reference": "51efd3a7cda92f245ccf39fea03227e0eb473c93",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-02-23T18:27:59+00:00"
+            "time": "2018-03-20T21:15:39+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1749,22 +1749,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "3.4.0",
+            "version": "4.0.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "683214e65c65e60285909da60880e63be4fc4eed"
+                "reference": "79f8927d375fac6b8b2b24dd0c9dd1d1701485c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/683214e65c65e60285909da60880e63be4fc4eed",
-                "reference": "683214e65c65e60285909da60880e63be4fc4eed",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/79f8927d375fac6b8b2b24dd0c9dd1d1701485c3",
+                "reference": "79f8927d375fac6b8b2b24dd0c9dd1d1701485c3",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^7.0",
+                "keboola/storage-api-client": "^10.0",
                 "symfony/config": "^2.8",
                 "symfony/finder": "^2.8",
                 "symfony/serializer": "^2.8",
@@ -1793,20 +1793,20 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2018-01-30T16:32:04+00:00"
+            "time": "2018-03-02T11:59:57+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
-            "version": "2.2.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/oauth-v2-php-client.git",
-                "reference": "04fb8a0d887cf6d0e4531912e28f5e21999e4387"
+                "reference": "521a292b2a096337764697d72cc88c098b462502"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/04fb8a0d887cf6d0e4531912e28f5e21999e4387",
-                "reference": "04fb8a0d887cf6d0e4531912e28f5e21999e4387",
+                "url": "https://api.github.com/repos/keboola/oauth-v2-php-client/zipball/521a292b2a096337764697d72cc88c098b462502",
+                "reference": "521a292b2a096337764697d72cc88c098b462502",
                 "shasum": ""
             },
             "require": {
@@ -1832,7 +1832,7 @@
                 }
             ],
             "description": "Keboola OAuth v2 API Client",
-            "time": "2017-10-23T10:25:19+00:00"
+            "time": "2018-01-30T13:46:31+00:00"
         },
         {
             "name": "keboola/object-encryptor",
@@ -1887,23 +1887,23 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "3.0.3",
+            "version": "4.0.0",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "29252f973ae3d6826f7dd2cdef974a9f1502aabd"
+                "reference": "6df4857bef3d7794f08934078e680b6022fc604b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/29252f973ae3d6826f7dd2cdef974a9f1502aabd",
-                "reference": "29252f973ae3d6826f7dd2cdef974a9f1502aabd",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/6df4857bef3d7794f08934078e680b6022fc604b",
+                "reference": "6df4857bef3d7794f08934078e680b6022fc604b",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "^3.0",
-                "keboola/storage-api-client": "^7.0",
+                "keboola/input-mapping": "^4.0",
+                "keboola/storage-api-client": "^10.0",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8",
                 "symfony/finder": "^2.8",
@@ -1933,7 +1933,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2018-02-23T09:47:58+00:00"
+            "time": "2018-03-03T18:03:34+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2102,16 +2102,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "7.3.0",
+            "version": "10.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "d7c1e501ec67d619c3be2ae361f3d879077208e4"
+                "reference": "3dc6c7a44d2178cbfef6cd248f379cbcb481c278"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/d7c1e501ec67d619c3be2ae361f3d879077208e4",
-                "reference": "d7c1e501ec67d619c3be2ae361f3d879077208e4",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/3dc6c7a44d2178cbfef6cd248f379cbcb481c278",
+                "reference": "3dc6c7a44d2178cbfef6cd248f379cbcb481c278",
                 "shasum": ""
             },
             "require": {
@@ -2133,7 +2133,10 @@
             "autoload": {
                 "psr-0": {
                     "Keboola\\StorageApi": "src/"
-                }
+                },
+                "files": [
+                    "src/Keboola/StorageApi/createSimpleJobPollDelay.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -2141,20 +2144,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2017-11-30T12:12:32+00:00"
+            "time": "2018-02-26T21:28:30+00:00"
         },
         {
             "name": "keboola/syrup",
-            "version": "8.0.0",
+            "version": "9.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "91c2de1d7ce4926ff21be5396cfabd5981953ce0"
+                "reference": "4e842a2738592c4db6d815f4b35728fa3f6b53fc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/91c2de1d7ce4926ff21be5396cfabd5981953ce0",
-                "reference": "91c2de1d7ce4926ff21be5396cfabd5981953ce0",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/4e842a2738592c4db6d815f4b35728fa3f6b53fc",
+                "reference": "4e842a2738592c4db6d815f4b35728fa3f6b53fc",
                 "shasum": ""
             },
             "require": {
@@ -2168,7 +2171,7 @@
                 "keboola/object-encryptor": "^0.1",
                 "keboola/php-temp": "^1.0",
                 "keboola/php-utils": "~2.0",
-                "keboola/storage-api-client": "^7.0",
+                "keboola/storage-api-client": "^10.0",
                 "php": "~5.6|^7.0",
                 "sensio/distribution-bundle": "~4.0.4",
                 "sensio/framework-extra-bundle": "~3.0",
@@ -2194,11 +2197,7 @@
                     "": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "": "tests/"
-                }
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -2213,11 +2212,7 @@
                 }
             ],
             "description": "Syrup",
-            "support": {
-                "source": "https://github.com/keboola/syrup/tree/8.0.0",
-                "issues": "https://github.com/keboola/syrup/issues"
-            },
-            "time": "2018-01-08T09:25:30+00:00"
+            "time": "2018-03-02T08:33:40+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -2778,22 +2773,22 @@
         },
         {
             "name": "react/datagram",
-            "version": "v1.3.0",
+            "version": "v1.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/datagram.git",
-                "reference": "80fd8d8620e3d25d0074592555d998994ea84faf"
+                "reference": "70babf56420bd07c4b4a8a6d8f9050d16e51e73d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/datagram/zipball/80fd8d8620e3d25d0074592555d998994ea84faf",
-                "reference": "80fd8d8620e3d25d0074592555d998994ea84faf",
+                "url": "https://api.github.com/repos/reactphp/datagram/zipball/70babf56420bd07c4b4a8a6d8f9050d16e51e73d",
+                "reference": "70babf56420bd07c4b4a8a6d8f9050d16e51e73d",
                 "shasum": ""
             },
             "require": {
                 "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
                 "php": ">=5.3",
-                "react/dns": "^0.4.11",
+                "react/dns": "^0.4.13",
                 "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3",
                 "react/promise": "~2.1|~1.2"
             },
@@ -2829,20 +2824,20 @@
                 "server",
                 "udp"
             ],
-            "time": "2017-09-25T12:16:09+00:00"
+            "time": "2018-02-28T09:34:17+00:00"
         },
         {
             "name": "react/dns",
-            "version": "v0.4.12",
+            "version": "v0.4.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/dns.git",
-                "reference": "c74a0af0c7254e73600fd8c5c95f6bf23c5998f4"
+                "reference": "7d1e08c300fd7de600810883386ee5e2a64898f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/dns/zipball/c74a0af0c7254e73600fd8c5c95f6bf23c5998f4",
-                "reference": "c74a0af0c7254e73600fd8c5c95f6bf23c5998f4",
+                "url": "https://api.github.com/repos/reactphp/dns/zipball/7d1e08c300fd7de600810883386ee5e2a64898f4",
+                "reference": "7d1e08c300fd7de600810883386ee5e2a64898f4",
                 "shasum": ""
             },
             "require": {
@@ -2851,7 +2846,6 @@
                 "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3.5",
                 "react/promise": "^2.1 || ^1.2.1",
                 "react/promise-timer": "^1.2",
-                "react/socket": "^1.0 || ^0.8 || ^0.7 || ^0.6 || ^0.5 || ^0.4.4",
                 "react/stream": "^1.0 || ^0.7 || ^0.6 || ^0.5 || ^0.4.5"
             },
             "require-dev": {
@@ -2875,7 +2869,7 @@
                 "dns-resolver",
                 "reactphp"
             ],
-            "time": "2018-01-14T10:04:36+00:00"
+            "time": "2018-02-27T12:51:22+00:00"
         },
         {
             "name": "react/event-loop",
@@ -3020,22 +3014,22 @@
         },
         {
             "name": "react/socket",
-            "version": "v0.8.9",
+            "version": "v0.8.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/socket.git",
-                "reference": "9db38c58cbb1343bbe6523d1b930a40d0e110839"
+                "reference": "d3957313c92b539537fccc80170c05a27ec25796"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/socket/zipball/9db38c58cbb1343bbe6523d1b930a40d0e110839",
-                "reference": "9db38c58cbb1343bbe6523d1b930a40d0e110839",
+                "url": "https://api.github.com/repos/reactphp/socket/zipball/d3957313c92b539537fccc80170c05a27ec25796",
+                "reference": "d3957313c92b539537fccc80170c05a27ec25796",
                 "shasum": ""
             },
             "require": {
                 "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
                 "php": ">=5.3.0",
-                "react/dns": "^0.4.11",
+                "react/dns": "^0.4.13",
                 "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3.5",
                 "react/promise": "^2.1 || ^1.2",
                 "react/promise-timer": "~1.0",
@@ -3063,7 +3057,7 @@
                 "reactphp",
                 "stream"
             ],
-            "time": "2018-01-18T11:29:21+00:00"
+            "time": "2018-02-28T09:32:38+00:00"
         },
         {
             "name": "react/stream",
@@ -4142,16 +4136,16 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v2.8.34",
+            "version": "v2.8.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "0455b5d26c5814062d7e9ea1ac99174ca13ad80e"
+                "reference": "4fdb16d12e1fa746da67d3250a3f3668538e813d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/0455b5d26c5814062d7e9ea1ac99174ca13ad80e",
-                "reference": "0455b5d26c5814062d7e9ea1ac99174ca13ad80e",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/4fdb16d12e1fa746da67d3250a3f3668538e813d",
+                "reference": "4fdb16d12e1fa746da67d3250a3f3668538e813d",
                 "shasum": ""
             },
             "require": {
@@ -4277,20 +4271,20 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2018-01-29T10:48:31+00:00"
+            "time": "2018-03-05T19:06:36+00:00"
         },
         {
             "name": "twig/twig",
-            "version": "v1.35.0",
+            "version": "v1.35.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/twigphp/Twig.git",
-                "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f"
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/twigphp/Twig/zipball/daa657073e55b0a78cce8fdd22682fddecc6385f",
-                "reference": "daa657073e55b0a78cce8fdd22682fddecc6385f",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
+                "reference": "b48680b6eb7d16b5025b9bfc4108d86f6b8af86f",
                 "shasum": ""
             },
             "require": {
@@ -4298,8 +4292,8 @@
             },
             "require-dev": {
                 "psr/container": "^1.0",
-                "symfony/debug": "~2.7",
-                "symfony/phpunit-bridge": "~3.3@dev"
+                "symfony/debug": "^2.7",
+                "symfony/phpunit-bridge": "^3.3"
             },
             "type": "library",
             "extra": {
@@ -4342,7 +4336,7 @@
             "keywords": [
                 "templating"
             ],
-            "time": "2017-09-27T18:06:46+00:00"
+            "time": "2018-03-20T04:25:58+00:00"
         },
         {
             "name": "vkartaviy/retry",

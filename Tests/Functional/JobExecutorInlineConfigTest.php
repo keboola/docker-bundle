@@ -337,10 +337,10 @@ class JobExecutorInlineConfigTest extends KernelTestCase
             'authorization' => [
                 'oauth_api' => [
                     'credentials' => [
-                        '#first' => '*****',
+                        '#first' => '[hidden]',
                         'third' => 'fourth',
                         'fifth' => [
-                            '#sixth' => '*****',
+                            '#sixth' => '[hidden]',
                         ],
                     ],
                     'version' => 2,

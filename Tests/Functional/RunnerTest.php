@@ -489,7 +489,7 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals('*****', $config['image_parameters']['#encrypted']);
+        $this->assertEquals('[hidden]', $config['image_parameters']['#encrypted']);
     }
 
     public function testImageParametersEnvironment()
@@ -1730,9 +1730,60 @@ class RunnerTest extends KernelTestCase
         $config = json_decode($ret[0]['message'], true);
         // verify that the token is not passed by default
         $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
-        $this->assertEquals('*****', $config['parameters']['#one']);
+        $this->assertEquals('[hidden]', $config['parameters']['#one']);
         $this->assertEquals('anotherBar', $config['parameters']['two']);
-        $this->assertEquals('*****', $config['authorization']['oauth_api']['credentials']['#three']);
+        $this->assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
         $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
+    }
+
+    public function testTokenObfuscate()
+    {
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    "import os",
+                    "print(os.environ['KBC_TOKEN'])",
+                ],
+            ],
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptorFactory);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Token test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
+                ],
+                'forward_token' => true,
+            ],
+        ];
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $output = '';
+        foreach ($ret as $message) {
+            $output .= $message['message'];
+        }
+        $this->assertNotContains(STORAGE_API_TOKEN, $output);
+        $this->assertContains('[hidden]', $output);
     }
 }
