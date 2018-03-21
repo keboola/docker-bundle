@@ -433,7 +433,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                     'version' => 2,
                 ],
             ],
-            'processors' => ['before' => [], 'after' => []],
             'image_parameters' => [],
             'action' => 'run',
         ];
