@@ -11,7 +11,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;

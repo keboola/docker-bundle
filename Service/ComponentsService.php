@@ -6,7 +6,6 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\StorageApi\Components;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 
 class ComponentsService
 {

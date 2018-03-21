@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
@@ -12,7 +13,6 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;

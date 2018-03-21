@@ -7,7 +7,6 @@ use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ConfigurationWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -32,8 +31,7 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             throw new UserException("Component Id is required.");
         }
 
-        /** @var StorageApiService $storage */
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $componentId)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $componentId)) {
             throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
         }
 

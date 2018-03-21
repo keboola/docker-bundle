@@ -13,14 +13,14 @@ Encrypts a string or a JSON
 Used for encrypting string values or JSON data. Deprecates all other encryption methods. Note that this API call has different base URL. It 
 is the one of [docker-runner service](https://developers.keboola.com/overview/api/#regions-and-endpoints) -- e.g. `https://docker-runner.keboola.com`.
 
+If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
+`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
 + Parameters
     + componentId(required, string) ... Keboola Connection Component Id
     + projectId(optional, string) ... Keboola Connection Project Id
     + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
-
-If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
-`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
-value can be decrypted only in an environment matching the parameters.
 
 ### Encrypt data [POST]
 
@@ -53,14 +53,14 @@ value can be decrypted only in an environment matching the parameters.
 
 Used to migrate legacy ciphers (KBC::XXXEncrypted==) to new format (KBC::XXXSecure::).
 
+If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
+`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
 + Parameters
     + componentId(required, string) ... Keboola Connection Component Id
     + projectId(optional, string) ... Keboola Connection Project Id
     + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
-
-If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
-`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
-value can be decrypted only in an environment matching the parameters.
 
 ### Convert Ciphers [POST]
 
@@ -93,12 +93,12 @@ value can be decrypted only in an environment matching the parameters.
 
 Used for encrypting string values or JSON data. Deprecates all other encryption methods.
 
+If any of the `componentId` or `projectId` is specified, a suitable encryptor is selected, so that the encrypted
+value can be decrypted only in an environment matching the parameters.
+
 + Parameters
     + componentId(optional, string) ... Keboola Connection Component Id
     + projectId(optional, string) ... Keboola Connection Project Id
-
-If any of the `componentId` or `projectId` is specified, a suitable encryptor is selected, so that the encrypted
-value can be decrypted only in an environment matching the parameters.
 
 ### Encrypt data [POST]
 

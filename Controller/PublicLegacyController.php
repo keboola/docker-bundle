@@ -6,7 +6,6 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Service\StorageApi\StorageApiService;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -26,8 +25,7 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
             return parent::encryptAction($request);
         }
 
-        /** @var StorageApiService $storage */
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $componentId)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $componentId)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
@@ -71,8 +69,7 @@ class PublicLegacyController extends \Keboola\Syrup\Controller\PublicController
         $this->logger->warn("Using deprecated componentEncrypt call.");
         $component = $request->get("component");
 
-        /** @var StorageApiService $storage */
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy']), $component)) {
+        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $component)) {
             return $this->createJsonResponse([
                 'status'    => 'error',
                 'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
