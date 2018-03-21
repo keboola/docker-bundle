@@ -269,9 +269,7 @@ class Container
                     $this->logger->notice("Invalid container host " . $event['host'], $event);
                 } else {
                     array_walk_recursive($event, function (&$value) {
-                        if (is_scalar($value)) {
-                            $value = $this->outputFilter->filter($value);
-                        }
+                        $value = $this->outputFilter->filter($value);
                     });
                     $this->containerLogger->addRawRecord(
                         $event['level'],

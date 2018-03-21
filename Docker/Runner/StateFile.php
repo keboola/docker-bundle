@@ -3,6 +3,8 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -46,6 +48,11 @@ class StateFile
      */
     private $format;
 
+    /**
+     * @var OutputFilterInterface
+     */
+    private $outputFilter;
+
     public function __construct(
         $dataDirectory,
         Client $storageClient,
@@ -53,7 +60,8 @@ class StateFile
         $format,
         $componentId,
         $configurationId,
-        $configurationRowId = null
+        $configurationRowId = null,
+        OutputFilterInterface $outputFilter
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->storageClient = $storageClient;
@@ -62,6 +70,8 @@ class StateFile
         $this->configurationRowId = $configurationRowId;
         $this->state = $state;
         $this->format = $format;
+        $this->outputFilter = $outputFilter;
+        $this->outputFilter->collectValues($state);
     }
 
     public function createStateFile()
@@ -91,6 +101,7 @@ class StateFile
         } else {
             $currentState = [];
         }
+        $this->outputFilter->collectValues($currentState);
         if (serialize($currentState) != serialize($previousState)) {
             $components = new Components($this->storageClient);
             $configuration = new Configuration();

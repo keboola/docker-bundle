@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Docker\OutputFilter;
 
 class OutputFilter implements OutputFilterInterface
 {
-    const REPLACEMENT = '*****';
+    const REPLACEMENT = '[hidden]';
 
     /**
      * @var array

@@ -207,15 +207,6 @@ class Runner
         $temp = new Temp("docker");
         $temp->initRunFolder();
         $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
-        $stateFile = new StateFile(
-            $dataDirectory->getDataDir(),
-            $this->storageClient,
-            $jobDefinition->getState(),
-            $component->getConfigurationFormat(),
-            $component->getId(),
-            $jobDefinition->getConfigId(),
-            $jobDefinition->getRowId()
-        );
 
         $usageFile = new UsageFile(
             $dataDirectory->getDataDir(),
@@ -267,6 +258,18 @@ class Runner
             );
             $outputFilter = new NullFilter();
         }
+
+        $stateFile = new StateFile(
+            $dataDirectory->getDataDir(),
+            $this->storageClient,
+            $jobDefinition->getState(),
+            $component->getConfigurationFormat(),
+            $component->getId(),
+            $jobDefinition->getConfigId(),
+            $jobDefinition->getRowId(),
+            $outputFilter
+        );
+
         $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),

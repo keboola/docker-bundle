@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\StorageApi\Client;
 use Keboola\Temp\Temp;
@@ -52,7 +53,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateStateFile()
     {
         $state = ['lastUpdate' => 'today'];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -67,7 +68,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateEmptyStateFile()
     {
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -87,7 +88,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
 
@@ -107,7 +108,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
@@ -128,7 +129,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
@@ -150,7 +151,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
         $state = [];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
@@ -172,7 +173,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', 'row-id');
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', 'row-id', new NullFilter());
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));
