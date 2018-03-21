@@ -60,8 +60,8 @@ class StateFile
         $format,
         $componentId,
         $configurationId,
-        $configurationRowId = null,
-        OutputFilterInterface $outputFilter
+        OutputFilterInterface $outputFilter,
+        $configurationRowId = null
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->storageClient = $storageClient;

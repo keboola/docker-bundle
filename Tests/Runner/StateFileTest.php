@@ -173,7 +173,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', 'row-id', new NullFilter());
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter(), 'row-id');
         $state = ["state" => "fooBar"];
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
         file_put_contents($fileName, json_encode($state));

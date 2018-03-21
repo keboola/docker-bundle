@@ -265,8 +265,8 @@ class Runner
             $component->getConfigurationFormat(),
             $component->getId(),
             $jobDefinition->getConfigId(),
-            $jobDefinition->getRowId(),
-            $outputFilter
+            $outputFilter,
+            $jobDefinition->getRowId()
         );
 
         $dataLoader->setFeatures($this->features);

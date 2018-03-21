@@ -8,6 +8,7 @@
 
 namespace Keboola\DockerBundle\Docker\Container;
 
+use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 
 class Process extends \Symfony\Component\Process\Process
@@ -16,6 +17,12 @@ class Process extends \Symfony\Component\Process\Process
      * @var OutputFilterInterface
      */
     private $outputFilter;
+
+    public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60, array $options = array())
+    {
+        parent::__construct($commandline, $cwd, $env, $input, $timeout, $options);
+        $this->outputFilter = new NullFilter();
+    }
 
     /**
      * @return string
@@ -54,10 +61,6 @@ class Process extends \Symfony\Component\Process\Process
 
     private function filter($value)
     {
-        if ($this->outputFilter) {
-            return $this->outputFilter->filter($value);
-        } else {
-            return $value;
-        }
+        return $this->outputFilter->filter($value);
     }
 }
