@@ -101,7 +101,7 @@ class StateFile
         } else {
             $currentState = [];
         }
-        $this->outputFilter->collectValues($currentState);
+        $this->outputFilter->collectValues((array)$currentState);
         if (serialize($currentState) != serialize($previousState)) {
             $components = new Components($this->storageClient);
             $configuration = new Configuration();
