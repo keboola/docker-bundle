@@ -591,7 +591,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(6100, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(6000, $files[0]['sizeBytes']);
     }
 
     public function testIncrementalTags()
