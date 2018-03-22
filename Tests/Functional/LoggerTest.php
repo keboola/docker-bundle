@@ -549,10 +549,10 @@ exit(0);'
         $this->assertEquals('Client finished', $info[2]);
         sort($error);
         $this->assertCount(4, $error);
-        $this->assertEquals('[hidden] message', $error[0]);
-        $this->assertEquals('An alert message', $error[1]);
-        $this->assertEquals('Error message.', $error[2]);
-        $this->assertEquals('Exception example', $error[3]);
+        $this->assertEquals('An alert message', $error[0]);
+        $this->assertEquals('Error message.', $error[1]);
+        $this->assertEquals('Exception example', $error[2]);
+        $this->assertEquals('[hidden] message', $error[3]);
         $this->assertNotEmpty($exception);
         $this->assertArrayHasKey('file', $exception['results']);
         $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
