@@ -550,8 +550,16 @@ class RunnerTest extends KernelTestCase
     {
         $configurationData = [
             'parameters' => [
-                'foo' => 'bar'
-            ]
+                'foo' => 'bar',
+                'script' => [
+                    'from pathlib import Path',
+                    'import sys',
+                    'import base64',
+                    // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                    'contents = Path("/data/config.json").read_text()[::-1]',
+                    'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                ]
+            ],
         ];
         $handler = new TestHandler();
         $runner = $this->getRunner($handler, $encryptorFactory);
@@ -565,20 +573,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'cat /data/config.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
                 'image_parameters' => [
                     'foo' => 'bar',
                     'baz' => [
@@ -601,10 +599,13 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
 
-        $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $config = json_decode(strrev(base64_decode($output)), true);
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
