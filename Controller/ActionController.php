@@ -79,8 +79,8 @@ class ActionController extends BaseApiController
             $this->storageApi->setRunId($this->storageApi->generateRunId());
         }
 
-        // Limit processing to 30 seconds
-        $component['data']['process_timeout'] = 30;
+        // Limit processing to 45 seconds
+        $component['data']['process_timeout'] = 45;
 
         /** @var Runner $runner */
         $runner = $this->container->get('docker_bundle.runner');

@@ -396,7 +396,7 @@ class ActionControllerTest extends WebTestCase
 
     /**
      * @expectedException \Keboola\Syrup\Exception\UserException
-     * @expectedExceptionMessageRegExp /exceeded the timeout of 30 seconds/
+     * @expectedExceptionMessageRegExp /exceeded the timeout of 45 seconds/
      */
     public function testTimeout()
     {
