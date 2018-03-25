@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\OAuthV2Api\Credentials;
@@ -35,7 +36,10 @@ class ConfigFileTest extends \PHPUnit_Framework_TestCase
         /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
-        $config->createConfigFile(['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]]);
+        $config->createConfigFile(
+            ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
+            new OutputFilter()
+        );
         $data = file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json');
         $sampleData = <<<SAMPLE
 {
@@ -67,7 +71,7 @@ SAMPLE;
 
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         try {
-            $config->createConfigFile(['key1' => 'value1']);
+            $config->createConfigFile(['key1' => 'value1'], new OutputFilter());
             $this->fail("Invalid config file must fail.");
         } catch (UserException $e) {
             $this->assertContains('Error in configuration: Unrecognized option', $e->getMessage());
@@ -106,7 +110,7 @@ SAMPLE;
         /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
-        $config->createConfigFile($configData);
+        $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         $this->assertEquals('id', $config['parameters']['primary_key_column']);
@@ -130,7 +134,7 @@ SAMPLE;
         /** @var Credentials $oauthClientStub */
         $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
-        $config->createConfigFile($configData);
+        $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         $this->assertArrayNotHasKey('storage', $config);

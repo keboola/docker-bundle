@@ -270,16 +270,18 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $jobExecutor->execute($job);
     }
 
-    public function testRunOAuth()
+    public function testRunOAuthSecured()
     {
         $handler = new TestHandler();
         $data = $this->getJobParameters();
+        $data['params']['component'] = 'keboola.python-transformation';
         $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
         $data['params']['configData']['storage'] = [];
         $data['params']['configData']['parameters']['script'] = [
-            'configFile <- "/data/config.json"',
-            'data <- readChar(configFile, file.info(configFile)$size)',
-            'print(data)'
+            'from pathlib import Path',
+            'import sys',
+            'contents = Path("/data/config.json").read_text()',
+            'print(contents, file=sys.stderr)',
         ];
         $encryptorFactory = new ObjectEncryptorFactory(
             static::$kernel->getContainer()->getParameter('kms_key_id'),
@@ -297,7 +299,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
                 '#sixth' => 'anotherTopSecret'
             ]
         ];
-        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setComponentId('keboola.python-transformation');
         $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
         $credentialsEncrypted = $encryptorFactory->getEncryptor()->encrypt($credentials, ComponentProjectWrapper::class);
 
@@ -324,12 +326,117 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $data = '';
+        $output = '';
         foreach ($handler->getRecords() as $record) {
-            $data .= $record['message'];
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
         }
-        $this->assertContains('superDummySecret', $data);
-        $this->assertContains('anotherTopSecret', $data);
+        $expectedConfig = [
+            'parameters' => $data['params']['configData']['parameters'],
+            'authorization' => [
+                'oauth_api' => [
+                    'credentials' => [
+                        '#first' => '[hidden]',
+                        'third' => 'fourth',
+                        'fifth' => [
+                            '#sixth' => '[hidden]',
+                        ],
+                    ],
+                    'version' => 2,
+                ],
+            ],
+            'image_parameters' => [],
+            'action' => 'run',
+        ];
+        $expectedConfigRaw = $expectedConfig;
+        $expectedConfigRaw['authorization']['oauth_api']['credentials']['#first'] = 'topSecret';
+        $expectedConfigRaw['authorization']['oauth_api']['credentials']['fifth']['#sixth'] = 'topSecret';
+        $this->assertEquals($expectedConfig, json_decode($output, true));
+    }
+
+    public function testRunOAuthObfuscated()
+    {
+        $handler = new TestHandler();
+        $data = $this->getJobParameters();
+        $data['params']['component'] = 'keboola.python-transformation';
+        $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
+        $data['params']['configData']['storage'] = [];
+        $data['params']['configData']['parameters']['script'] = [
+            'from pathlib import Path',
+            'import sys',
+            'import base64',
+            // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+            'contents = Path("/data/config.json").read_text()[::-1]',
+            'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+        ];
+        $encryptorFactory = new ObjectEncryptorFactory(
+            static::$kernel->getContainer()->getParameter('kms_key_id'),
+            static::$kernel->getContainer()->getParameter('kms_key_region'),
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        list($runner, $componentsService, $loggersServiceStub, $tokenData) = $this->getRunner($encryptorFactory);
+        /** @var LoggersService $loggersServiceStub */
+        $loggersServiceStub->getContainerLog()->pushHandler($handler);
+        $credentials = [
+            '#first' => 'superDummySecret',
+            'third' => 'fourth',
+            'fifth' => [
+                '#sixth' => 'anotherTopSecret'
+            ]
+        ];
+        $encryptorFactory->setComponentId('keboola.python-transformation');
+        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
+        $credentialsEncrypted = $encryptorFactory->getEncryptor()->encrypt($credentials, ComponentProjectWrapper::class);
+
+        $oauthStub = self::getMockBuilder(Credentials::class)
+            ->setMethods(['getDetail'])
+            ->disableOriginalConstructor()
+            ->getMock();
+        $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
+        // inject mock OAuth client inside Runner
+        $prop = new \ReflectionProperty($runner, 'oauthClient');
+        $prop->setAccessible(true);
+        $prop->setValue($runner, $oauthStub);
+
+        $jobExecutor = new Executor(
+            $loggersServiceStub->getLog(),
+            $runner,
+            $encryptorFactory,
+            $componentsService,
+            STORAGE_API_URL
+        );
+        $jobExecutor->setStorageApi($this->client);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $expectedConfig = [
+            'parameters' => $data['params']['configData']['parameters'],
+            'authorization' => [
+                'oauth_api' => [
+                    'credentials' => [
+                        '#first' => 'superDummySecret',
+                        'third' => 'fourth',
+                        'fifth' => [
+                            '#sixth' => 'anotherTopSecret',
+                        ],
+                    ],
+                    'version' => 2,
+                ],
+            ],
+            'image_parameters' => [],
+            'action' => 'run',
+        ];
+        $this->assertEquals($expectedConfig, json_decode(strrev(base64_decode($output)), true));
     }
 
     public function testRunTag()
@@ -484,7 +591,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(6100, $files[0]['sizeBytes']);
+        $this->assertGreaterThan(6000, $files[0]['sizeBytes']);
     }
 
     public function testIncrementalTags()

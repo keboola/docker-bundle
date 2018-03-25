@@ -489,7 +489,7 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals('someString', $config['image_parameters']['#encrypted']);
+        $this->assertEquals('[hidden]', $config['image_parameters']['#encrypted']);
     }
 
     public function testImageParametersEnvironment()
@@ -550,8 +550,16 @@ class RunnerTest extends KernelTestCase
     {
         $configurationData = [
             'parameters' => [
-                'foo' => 'bar'
-            ]
+                'foo' => 'bar',
+                'script' => [
+                    'from pathlib import Path',
+                    'import sys',
+                    'import base64',
+                    // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                    'contents = Path("/data/config.json").read_text()[::-1]',
+                    'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                ]
+            ],
         ];
         $handler = new TestHandler();
         $runner = $this->getRunner($handler, $encryptorFactory);
@@ -565,20 +573,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'cat /data/config.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
                 'image_parameters' => [
                     'foo' => 'bar',
                     'baz' => [
@@ -601,10 +599,13 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
 
-        $ret = $handler->getRecords();
-        $this->assertEquals(1, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $config = json_decode(strrev(base64_decode($output)), true);
         $this->assertEquals('bar', $config['parameters']['foo']);
         $this->assertEquals('bar', $config['image_parameters']['foo']);
         $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
@@ -1667,5 +1668,123 @@ class RunnerTest extends KernelTestCase
         );
 
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+    }
+
+    public function testAuthorizationDecrypt()
+    {
+        $configurationData = [
+            'parameters' => [
+                '#one' => 'bar',
+                'two' => 'anotherBar'
+            ],
+            'authorization' => [
+                'oauth_api' => [
+                    'credentials' => [
+                        '#three' => 'foo',
+                        'four' => 'anotherFoo'
+                    ]
+                ]
+            ]
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptorFactory);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Pipe test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'cat /data/config.json',
+                    ],
+                ],
+                'configuration_format' => 'json'
+            ],
+        ];
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $config = json_decode($ret[0]['message'], true);
+        // verify that the token is not passed by default
+        $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
+        $this->assertEquals('[hidden]', $config['parameters']['#one']);
+        $this->assertEquals('anotherBar', $config['parameters']['two']);
+        $this->assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
+        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
+    }
+
+    public function testTokenObfuscate()
+    {
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    "import os",
+                    "print(os.environ['KBC_TOKEN'])",
+                ],
+            ],
+        ];
+        $handler = new TestHandler();
+        $runner = $this->getRunner($handler, $encryptorFactory);
+        $componentData = [
+            'id' => 'docker-dummy-component',
+            'type' => 'other',
+            'name' => 'Docker Token test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
+                ],
+                'forward_token' => true,
+            ],
+        ];
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $ret = $handler->getRecords();
+        $this->assertGreaterThan(0, count($ret));
+        $this->assertLessThan(3, count($ret));
+        $this->assertArrayHasKey('message', $ret[0]);
+        $output = '';
+        foreach ($ret as $message) {
+            $output .= $message['message'];
+        }
+        $this->assertNotContains(STORAGE_API_TOKEN, $output);
+        $this->assertContains('[hidden]', $output);
     }
 }

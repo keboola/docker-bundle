@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
@@ -68,6 +69,11 @@ class Container
     private $maxLogPort;
 
     /**
+     * @var OutputFilterInterface
+     */
+    private $outputFilter;
+
+    /**
      * @return string
      */
     public function getId()
@@ -93,6 +99,7 @@ class Container
      * @param int $minLogPort
      * @param $maxLogPort
      * @param RunCommandOptions $runCommandOptions
+     * @param OutputFilterInterface $outputFilter
      */
     public function __construct(
         $containerId,
@@ -103,7 +110,8 @@ class Container
         $commandToGetHostIp,
         $minLogPort,
         $maxLogPort,
-        RunCommandOptions $runCommandOptions
+        RunCommandOptions $runCommandOptions,
+        OutputFilterInterface $outputFilter
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -114,6 +122,7 @@ class Container
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
         $this->runCommandOptions = $runCommandOptions;
+        $this->outputFilter = $outputFilter;
     }
 
     /**
@@ -151,6 +160,7 @@ class Container
     public function run()
     {
         $process = new Process($this->getRunCommand($this->id));
+        $process->setOutputFilter($this->outputFilter);
         $process->setTimeout(null);
 
         // create container
@@ -258,6 +268,9 @@ class Container
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
                     $this->logger->notice("Invalid container host " . $event['host'], $event);
                 } else {
+                    array_walk_recursive($event, function (&$value) {
+                        $value = $this->outputFilter->filter($value);
+                    });
                     $this->containerLogger->addRawRecord(
                         $event['level'],
                         $event['timestamp'],

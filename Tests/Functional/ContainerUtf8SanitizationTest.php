@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\UserException;
@@ -56,7 +57,8 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], $envs)
+            new RunCommandOptions([], $envs),
+            new OutputFilter()
         );
         return $container;
     }
