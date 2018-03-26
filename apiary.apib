@@ -119,7 +119,7 @@ value can be decrypted only in an environment matching the parameters.
                 "#test": "MyValueToBeEncrypted"
             }
 
-+ Response 202 (application/json)
++ Response 200 (application/json)
 
             {
                 "config": 1,
@@ -447,95 +447,29 @@ Create an execution job on a specified component while using a specific image ta
             "status": "waiting"
         }
 
-# Group Sandbox
+# Group Debug
 
-Sandbox call are handy when developing or troubleshooting Docker images.
-They can dump the `data` folder for you before running the image, before uploading the results back to Storage or event without even having the image configured.
+Debug API call is handy when developing or troubleshooting components.
 
-## Sandbox [/sandbox]
+## Debug Component [/{componentId}/debug]
 
-This job will prepare the `data` folder including serialized configuration file in the given format.
-Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
-This call is useful when developing new Docker component to obtain a sample of the development environment.
+This job will prepare the `data` folder including the serialized configuration files. Then it will compress
+the `data` folder and upload it to your project's Files in Storage. This way you will get a snapshot of what
+the `data` folder looked like before the component started. After the component finishes, another snapshot is made.
 
-Sandbox only supports custom configuration as the image is not specified and the configuration is not fixed, everything you put in the configuration will be copied to the configuration file inside the `data`folder. The configuration must correspond to the [Configuration Schema](https://github.com/keboola/docker-bundle/blob/master/Resources/schemas/configuration.json)
+If processors are used, a snapshot of the data folder is created before each processor.
 
-Note: only 50 first rows of each table will be exported.
+If configuration rows are used, a snapshot is created for each configuration row.
 
-### Create a Sandbox job [POST]
+This API call does not upload any tables or files to Storage. I.e. when the component finishes, its output is 
+discarded and the output mapping to storage is **not done**. This makes this API call generally very safe to call, because
+it cannot break the KBC project in any way. However keep in mind, that if the component has any outside sideeffects, these
+will get executed. This applies typically to writers which will write the data into the external system even with this debug API call.
 
-+ Request Custom configuration (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
-    + Body
-
-            {
-                "configData": {
-                    "storage": {
-                        "input": {
-                            "files": [
-                                {
-                                    "query": "name: testfile.png"
-                                }
-                            ],
-                            "tables": [
-                                {
-                                    "source": "in.c-redshift.table1",
-                                    "destination": "table1.csv"
-                                },
-                                {
-                                    "source": "in.c-redshift.some-table",
-                                    "destination": "table2.csv"
-                                }
-                            ]
-                        },
-                        "output": {
-                            "files": [
-                                {
-                                    "source": "file.csv",
-                                    "tags": [
-                                        "processed-file",
-                                        "csv"
-                                    ]
-                                }
-                            ],
-                            "tables": [
-                                {
-                                    "source": "sliced.csv",
-                                    "destination": "out.c-main.data"
-                                }
-                            ]
-                        }
-                    },
-                    "parameters": {
-                        "foo": "bar",
-                        "script": null
-                    }
-                }
-            }
-
-+ Response 202 (application/json)
-
-        {
-            "id": "67121676",
-            "url": "https://syrup.keboola.com/queue/job/67121676",
-            "status": "waiting"
-        }
-
-
-## Input data [/{image}/input]
-
-This job will prepare the `data` folder including serialized configuration file in format set in the image configuration.
-Then it will compress the `data` folder and upload it to your project's File Uploads in Storage.
-**The image itself will not be downloaded nor executed.**
-
-
-This API call is useful for verifying that a given input mapping and image configuration are working correctly and as a simple dumping tool for troubleshooting Docker apps.
+Note that the snapshot archive will contain all files in the `data` folder including any temporary files produced be the component.
 
 + Parameters
-    + image (string) ... KBC component Id
+    + componentId (string) ... KBC component Id
 
 ### Create an Input job [POST]
 
@@ -610,94 +544,6 @@ This API call is useful for verifying that a given input mapping and image confi
             "url": "https://syrup.keboola.com/queue/job/67121676",
             "status": "waiting"
         }
-
-
-## Dry Run [/{image}/dry-run]
-
-This job will prepare the `data` folder including serialized configuration file in format set in the image configuration.
-Then it will execute the Docker image and compress the `data` folder including the results and upload it to your project's File Uploads in Storage.
-
-This API call is useful for verifying that the given image is producing the correct output without altering the real data in your KBC project.
-
-Note that the archive will contain all files in the `data` folder including any temporary files produced be the Docker image.
-
-+ Parameters
-    + image (string) ... KBC component Id
-
-### Create a Dry Run job [POST]
-
-+ Request Stored configuration (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
-    + Body
-
-            {
-                "config": "next-order-1",
-                "row": "my-row"
-            }
-
-+ Request Custom configuration (application/json)
-    + Headers
-
-            X-StorageApi-Token: 123456
-
-    + Body
-
-            {
-                "configData": {
-                    "storage": {
-                        "input": {
-                            "files": [
-                                {
-                                    "query": "name: testfile.png"
-                                }
-                            ],
-                            "tables": [
-                                {
-                                    "source": "in.c-redshift.table1",
-                                    "destination": "table1.csv"
-                                },
-                                {
-                                    "source": "in.c-redshift.some-table",
-                                    "destination": "table2.csv"
-                                }
-                            ]
-                        },
-                        "output": {
-                            "files": [
-                                {
-                                    "source": "file.csv",
-                                    "tags": [
-                                        "processed-file",
-                                        "csv"
-                                    ]
-                                }
-                            ],
-                            "tables": [
-                                {
-                                    "source": "sliced.csv",
-                                    "destination": "out.c-main.data"
-                                }
-                            ]
-                        }
-                    },
-                    "parameters": {
-                        "foo": "bar",
-                        "script": null
-                    }
-                }
-            }
-
-+ Response 202 (application/json)
-
-        {
-            "id": "67121676",
-            "url": "https://syrup.keboola.com/queue/job/67121676",
-            "status": "waiting"
-        }
-
 
 # Group Actions
 

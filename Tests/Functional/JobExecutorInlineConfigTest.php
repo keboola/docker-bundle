@@ -23,7 +23,6 @@ use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Filesystem\Filesystem;
 
 class JobExecutorInlineConfigTest extends KernelTestCase
 {
@@ -184,7 +183,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
 
         // remove uploaded files
         $options = new ListFilesOptions();
-        $options->setTags(["docker-bundle-test", "sandbox", "input", "dry-run"]);
+        $options->setTags(["docker-bundle-test", "debug"]);
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
             $this->client->deleteFile($file["id"]);
@@ -478,50 +477,9 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
-    public function testSandbox()
-    {
-        // Create table
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 1000; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
-            $fs = new Filesystem();
-            unset($csv);
-            $fs->remove($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-        }
-
-        $data = $this->getJobParameters();
-        $data['params']['mode'] = 'sandbox';
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
-        $job->setId(123456);
-        $jobExecutor->execute($job);
-
-        try {
-            $this->client->getTableDataPreview('out.c-docker-test.transposed');
-            $this->fail("Table should not exist.");
-        } catch (Exception $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
-        $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['sandbox']);
-        $files = $this->client->listFiles($listOptions);
-        $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(500, $files[0]['sizeBytes']);
-        $this->assertLessThan(4000, $files[0]['sizeBytes']);
-    }
-
     public function testInput()
     {
-        // Create table
+        // Create table sandbox
         if (!$this->client->tableExists("in.c-docker-test.source")) {
             $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
             $csv->writeRow(['name', 'oldValue', 'newValue']);
@@ -532,7 +490,7 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         }
 
         $data = $this->getJobParameters();
-        $data['params']['mode'] = 'input';
+        $data['params']['mode'] = 'debug';
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $jobExecutor = $this->getJobExecutor($encryptorFactory);
         $job = new Job($encryptorFactory->getEncryptor(), $data);
@@ -554,44 +512,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $this->assertEquals(1, count($files));
         $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
         $this->assertGreaterThan(3800, $files[0]['sizeBytes']);
-    }
-
-    public function testDryRun()
-    {
-        // Create table
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 1000; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
-        }
-
-        $data = $this->getJobParameters();
-        $data['params']['mode'] = 'dry-run';
-
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
-        $job->setId(123456);
-        $jobExecutor->execute($job);
-
-        try {
-            $this->client->getTableDataPreview('out.c-docker-test.transposed');
-            $this->fail("Table should not exist.");
-        } catch (Exception $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
-        $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['dry-run']);
-        $files = $this->client->listFiles($listOptions);
-        $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(6000, $files[0]['sizeBytes']);
     }
 
     public function testIncrementalTags()

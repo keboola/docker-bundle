@@ -278,18 +278,7 @@ class Runner
             $configData
         );
 
-        switch ($mode) {
-            case 'run':
-                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
-                break;
-            case 'sandbox':
-            case 'input':
-            case 'dry-run':
-                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
-                break;
-            default:
-                throw new ApplicationException("Invalid run mode " . $mode);
-        }
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $mode);
         return $output;
     }
 
@@ -315,8 +304,8 @@ class Runner
             }
         }
 
-        if (count($jobDefinitions) > 1 && $mode != 'run') {
-            throw new UserException('Only 1 row allowed for sandbox calls.');
+        if (($mode != 'run') && ($mode != 'debug')) {
+            throw new UserException("Invalid run mode: $mode");
         }
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
@@ -353,57 +342,28 @@ class Runner
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
      * @param OutputFilterInterface $outputFilter
+     * @param string $mode
      * @return Output
+     * @throws ClientException
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $mode)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode);
 
-        // finalize
-        $dataLoader->storeOutput();
-
-        $dataDirectory->dropDataDir();
-        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
-        return $output;
-    }
-
-    /**
-     * @param $jobId
-     * @param $configData
-     * @param $mode
-     * @param $configId
-     * @param Component $component
-     * @param UsageFile $usageFile
-     * @param DataLoaderInterface $dataLoader
-     * @param DataDirectory $dataDirectory
-     * @param StateFile $stateFile
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param OutputFilterInterface $outputFilter
-     * @return Output
-     */
-    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
-    {
-        // initialize
-        $dataDirectory->createDataDir();
-        $stateFile->createStateFile();
-        $dataLoader->loadInputData();
-
-        if ($mode == 'dry-run') {
-            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
+        if ($mode == 'debug') {
+            $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-last']);
         } else {
-            $configFile->createConfigFile($configData, $outputFilter);
-            $output = new Output();
+            $dataLoader->storeOutput();
         }
 
-        $dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
         // finalize
         $dataDirectory->dropDataDir();
+        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
 
@@ -418,10 +378,12 @@ class Runner
      * @param ConfigFile $configFile
      * @param StateFile $stateFile
      * @param OutputFilterInterface $outputFilter
+     * @param DataLoaderInterface $dataLoader
+     * @param string $mode
      * @return Output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $mode)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -474,6 +436,9 @@ class Runner
                 $dataDirectory,
                 $outputFilter
             );
+            if ($mode == 'debug') {
+                $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-before-' . $image->getImageId()]);
+            }
             try {
                 $process = $container->run();
                 if ($image->isMain()) {

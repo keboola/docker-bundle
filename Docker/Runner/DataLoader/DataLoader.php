@@ -5,14 +5,15 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader\Reader;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -64,6 +65,11 @@ class DataLoader implements DataLoaderInterface
     private $configRowId;
 
     /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
+    /**
      * DataLoader constructor.
      *
      * @param Client $storageClient
@@ -71,6 +77,7 @@ class DataLoader implements DataLoaderInterface
      * @param string $dataDirectory
      * @param array $storageConfig
      * @param Component $component
+     * @param ObjectEncryptorFactory $encryptorFactory
      * @param string|null $configId
      * @param string|null $configRowId
      */
@@ -80,6 +87,7 @@ class DataLoader implements DataLoaderInterface
         $dataDirectory,
         array $storageConfig,
         Component $component,
+        ObjectEncryptorFactory $encryptorFactory,
         $configId = null,
         $configRowId = null
     ) {
@@ -88,6 +96,7 @@ class DataLoader implements DataLoaderInterface
         $this->dataDirectory = $dataDirectory;
         $this->storageConfig = $storageConfig;
         $this->component = $component;
+        $this->encryptorFactory = $encryptorFactory;
         $this->configId = $configId;
         $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
@@ -180,53 +189,44 @@ class DataLoader implements DataLoaderInterface
     }
 
     /**
-     * Archive data directory and save it to Storage, do not actually run the container.
+     * Archive data directory and save it to Storage
      * @param array $tags Arbitrary storage tags
+     * @throws ClientException
      */
     public function storeDataArchive(array $tags)
     {
         $zip = new \ZipArchive();
         $zipFileName = 'data.zip';
-        $zipDir = $this->dataDirectory . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'zip';
-        $fs = new Filesystem();
-        $fs->mkdir($zipDir);
-        $zip->open($zipDir. DIRECTORY_SEPARATOR . $zipFileName, \ZipArchive::CREATE);
+        $zip->open($this->dataDirectory . DIRECTORY_SEPARATOR . $zipFileName, \ZipArchive::CREATE);
         $finder = new Finder();
         /** @var SplFileInfo $item */
         foreach ($finder->in($this->dataDirectory) as $item) {
-            if ($item->getPathname() == $zipDir) {
-                continue;
-            }
             if ($item->isDir()) {
                 if (!$zip->addEmptyDir($item->getRelativePathname())) {
                     throw new ApplicationException("Failed to add directory: ".$item->getFilename());
                 }
             } else {
-                if (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
-                    throw new ApplicationException("Failed to add file: ".$item->getFilename());
+                if ($item->$item->getRelativePathname() == $zipFileName) {
+                    continue;
+                }
+                if (($item->$item->getRelativePathname() == 'config.json') || ($item->getRelativePathname() == 'state.json')) {
+                    $configData = \GuzzleHttp\json_decode(file_get_contents($item->getPathname()));
+                    $configData = $this->encryptorFactory->getEncryptor()->encrypt($configData);
+                    if (!$zip->addFromString($item->getPathname(), $configData)) {
+                        throw new ApplicationException("Failed to add file: " . $item->getFilename());
+                    }
+                } elseif (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
+                    throw new ApplicationException("Failed to add file: " . $item->getFilename());
                 }
             }
         }
         $zip->close();
-
-        $writer = new Writer($this->storageClient, $this->logger);
-        $writer->setFormat($this->component->getConfigurationFormat());
-        // zip archive must be created in special directory, because uploadFiles is recursive
-        $writer->uploadFiles(
-            $zipDir,
-            ["mapping" =>
-                [
-                    [
-                        'source' => $zipFileName,
-                        'tags' => $tags,
-                        'is_permanent' => false,
-                        'is_encrypted' => true,
-                        'is_public' => false,
-                        'notify' => false
-                    ]
-                ]
-            ]
-        );
+        $uploadOptions = new FileUploadOptions();
+        $uploadOptions->setTags($tags);
+        $uploadOptions->setIsPermanent(false);
+        $uploadOptions->setIsPublic(false);
+        $uploadOptions->setNotify(false);
+        $this->storageClient->uploadFile($zipFileName, $uploadOptions);
     }
 
     /**

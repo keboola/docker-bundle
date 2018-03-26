@@ -3,12 +3,13 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
 
 class NullDataLoader implements DataLoaderInterface
 {
-    public function __construct(Client $storageClient, LoggerInterface $logger, $dataDirectory, array $storageConfig, Component $component, $configId = null, $configRowId = null)
+    public function __construct(Client $storageClient, LoggerInterface $logger, $dataDirectory, array $storageConfig, Component $component, ObjectEncryptorFactory $encryptorFactory, $configId = null, $configRowId = null)
     {
     }
 

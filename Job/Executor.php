@@ -1,4 +1,5 @@
 <?php
+
 namespace Keboola\DockerBundle\Job;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -117,57 +118,38 @@ class Executor extends BaseExecutor
 
         $jobDefinitionParser = new JobDefinitionParser();
 
-        if ($params['mode'] == 'sandbox') {
-            if (empty($params["configData"]) || !is_array($params["configData"])) {
-                throw new UserException("Configuration must be specified in 'configData'.");
-            }
-            $configData = $params["configData"];
+        $component = $this->getComponent($params["component"]);
+        if (!empty($params['tag'])) {
+            $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
+            $component['data']['definition']['tag'] = $params['tag'];
+        }
 
-            // Add 50 rows limit for each table
-            if (isset($configData['storage']['input']['tables']) &&
-                is_array($configData['storage']['input']['tables'])
-            ) {
-                foreach ($configData['storage']['input']['tables'] as $index => $table) {
-                    $table['limit'] = 50;
-                    $configData['storage']['input']['tables'][$index] = $table;
-                }
+        if (!$this->storageApi->getRunId()) {
+            $this->storageApi->setRunId($this->storageApi->generateRunId());
+        }
+
+        // Manual config from request
+        if (isset($params["configData"]) && is_array($params["configData"])) {
+            $configId = null;
+            if (isset($params["config"])) {
+                $configId = $params["config"];
             }
-            $component = ['data' => ['definition' => ['type' => 'dockerhub', 'uri' => 'sandbox-dummy-wont-download']]];
-            $jobDefinitionParser->parseConfigData(new Component($component), $configData);
+            $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
         } else {
-            $component = $this->getComponent($params["component"]);
-            if (!empty($params['tag'])) {
-                $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
-                $component['data']['definition']['tag'] = $params['tag'];
-            }
+            // Read config from storage
+            try {
+                $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
 
-            if (!$this->storageApi->getRunId()) {
-                $this->storageApi->setRunId($this->storageApi->generateRunId());
-            }
-
-            // Manual config from request
-            if (isset($params["configData"]) && is_array($params["configData"])) {
-                $configId = null;
-                if (isset($params["config"])) {
-                    $configId = $params["config"];
+                if (in_array("encrypt", $component["flags"])) {
+                    $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+                } else {
+                    $jobDefinitionParser->parseConfig(new Component($component), $configuration);
                 }
-                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
-            } else {
-                // Read config from storage
-                try {
-                    $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-
-                    if (in_array("encrypt", $component["flags"])) {
-                        $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
-                    } else {
-                        $jobDefinitionParser->parseConfig(new Component($component), $configuration);
-                    }
-                } catch (ClientException $e) {
-                    throw new UserException(
-                        "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
-                        $e
-                    );
-                }
+            } catch (ClientException $e) {
+                throw new UserException(
+                    "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
+                    $e
+                );
             }
         }
 
