@@ -477,43 +477,6 @@ class JobExecutorInlineConfigTest extends KernelTestCase
         $this->assertTrue($handler->hasWarning('Overriding component tag with: \'1.1.1\''));
     }
 
-    public function testInput()
-    {
-        // Create table sandbox
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 1000; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
-        }
-
-        $data = $this->getJobParameters();
-        $data['params']['mode'] = 'debug';
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
-        $job->setId(123456);
-        $jobExecutor->execute($job);
-
-        try {
-            $this->client->getTableDataPreview('out.c-docker-test.transposed');
-            $this->fail("Table should not exist.");
-        } catch (Exception $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
-        $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['input']);
-        $files = $this->client->listFiles($listOptions);
-        $this->assertEquals(1, count($files));
-        $this->assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        $this->assertGreaterThan(3800, $files[0]['sizeBytes']);
-    }
-
     public function testIncrementalTags()
     {
         // Create file

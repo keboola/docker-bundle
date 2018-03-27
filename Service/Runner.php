@@ -241,6 +241,7 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
+                $this->encryptorFactory,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
@@ -252,6 +253,7 @@ class Runner
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
+                $this->encryptorFactory,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );

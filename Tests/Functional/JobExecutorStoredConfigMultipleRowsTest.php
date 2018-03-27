@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Service\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\Job;
@@ -252,7 +253,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         // remove uploaded files
         $options = new ListFilesOptions();
-        $options->setTags(["docker-bundle-test", "sandbox", "input", "dry-run"]);
+        $options->setTags(["docker-bundle-test", "debug"]);
         $files = $this->client->listFiles($options);
         foreach ($files as $file) {
             $this->client->deleteFile($file["id"]);
@@ -366,4 +367,5 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $this->assertFalse($this->client->tableExists('out.c-docker-test.transposed-2'));
     }
+
 }

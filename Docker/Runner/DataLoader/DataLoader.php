@@ -14,6 +14,7 @@ use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -196,23 +197,24 @@ class DataLoader implements DataLoaderInterface
     public function storeDataArchive(array $tags)
     {
         $zip = new \ZipArchive();
-        $zipFileName = 'data.zip';
-        $zip->open($this->dataDirectory . DIRECTORY_SEPARATOR . $zipFileName, \ZipArchive::CREATE);
+        $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'data.zip';
+        $zip->open($zipFileName, \ZipArchive::CREATE);
         $finder = new Finder();
         /** @var SplFileInfo $item */
         foreach ($finder->in($this->dataDirectory) as $item) {
             if ($item->isDir()) {
                 if (!$zip->addEmptyDir($item->getRelativePathname())) {
-                    throw new ApplicationException("Failed to add directory: ".$item->getFilename());
+                    throw new ApplicationException("Failed to add directory: " . $item->getFilename());
                 }
             } else {
-                if ($item->$item->getRelativePathname() == $zipFileName) {
+                if ($item->getPathname() == $zipFileName) {
                     continue;
                 }
-                if (($item->$item->getRelativePathname() == 'config.json') || ($item->getRelativePathname() == 'state.json')) {
+                if (($item->getRelativePathname() == 'config.json') || ($item->getRelativePathname() == 'state.json')) {
                     $configData = \GuzzleHttp\json_decode(file_get_contents($item->getPathname()));
                     $configData = $this->encryptorFactory->getEncryptor()->encrypt($configData);
-                    if (!$zip->addFromString($item->getPathname(), $configData)) {
+                    $configData = \GuzzleHttp\json_encode($configData, JSON_PRETTY_PRINT);
+                    if (!$zip->addFromString($item->getRelativePathname(), $configData)) {
                         throw new ApplicationException("Failed to add file: " . $item->getFilename());
                     }
                 } elseif (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
@@ -227,6 +229,8 @@ class DataLoader implements DataLoaderInterface
         $uploadOptions->setIsPublic(false);
         $uploadOptions->setNotify(false);
         $this->storageClient->uploadFile($zipFileName, $uploadOptions);
+        $fs = new Filesystem();
+        $fs->remove($zipFileName);
     }
 
     /**
