@@ -439,7 +439,7 @@ class Runner
                 $outputFilter
             );
             if ($mode == 'debug') {
-                $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-before-' . $image->getImageId()]);
+                $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-' . $priority, 'img-' . $image->getImageId()]);
             }
             try {
                 $process = $container->run();
