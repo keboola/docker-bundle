@@ -199,25 +199,6 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
     }
 
-    public function testInvalidComponentDryRun()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/invalid-component/dry-run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('error', $response['status']);
-        $this->assertArrayHasKey('message', $response);
-        $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
-    }
-
     public function testInvalidBody1()
     {
         $client = $this->createClient();
