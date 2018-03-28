@@ -432,7 +432,7 @@ class Runner
         $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
-                $this->loggersService->getLog()->info("Running processor " . $image->getFullImageId());
+                $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
             }
             $environment = new Environment(
                 $configId,
