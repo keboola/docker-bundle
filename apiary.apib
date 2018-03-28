@@ -6,48 +6,7 @@ Docker Runner is a Keboola service, that runs Docker containers as workers in Ke
 
 # Group Encrypt
 
-Encrypts a string or a JSON
-
-## Encryption [/encrypt-new?componentId={componentId}&projectId={projectId}&configId={configId}]
-
-Used for encrypting string values or JSON data. Deprecates all other encryption methods. Note that this API call has different base URL. It 
-is the one of [docker-runner service](https://developers.keboola.com/overview/api/#regions-and-endpoints) -- e.g. `https://docker-runner.keboola.com`.
-
-If any of the `projectId` or `configId` is specified, a suitable encryptor is selected (`KBC::ComponentSecure::`,
-`KBC::ProjectSecure::` or `KBC::ConfigSecure::`), so that the encrypted
-value can be decrypted only in an environment matching the parameters.
-
-+ Parameters
-    + componentId(required, string) ... Keboola Connection Component Id
-    + projectId(optional, string) ... Keboola Connection Project Id
-    + configId(optional, string) ... Keboola Connection Configuration Id (when used, `projectId` must also be specified)
-
-### Encrypt data [POST]
-
-+ Request Encrypt plain text (text/plain)
-    + Body
-
-            MyStringToBeEncrypted
-
-+ Response 200 (text/plain)
-
-        KBC::ProjectSecure::ENCODEDSTRING==
-
-+ Request Encrypt JSON structure (application/json)
-    + Body
-
-            {
-                "config": 1,
-                "#test": "MyValueToBeEncrypted"
-            }
-
-+ Response 202 (application/json)
-
-            {
-                "config": 1,
-                "#test": "KBC::ProjectSecure::ENCODEDSTRING=="
-            }
-
+Encryption docs moved to [new location](https://keboolaencryption.docs.apiary.io/#).
 
 ## Encryption Migration [/migrate?componentId={componentId}&projectId={projectId}&configId={configId}]
 
