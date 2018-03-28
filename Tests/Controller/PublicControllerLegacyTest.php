@@ -140,7 +140,7 @@ class PublicControllerLegacyTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/keboola.r-transformation/encrypt',
+            '/docker/docker-demo/encrypt',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
