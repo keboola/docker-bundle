@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
@@ -97,6 +98,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -149,6 +151,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever",
             "whateverRow"
         );
@@ -252,6 +255,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -334,6 +338,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -417,6 +422,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
