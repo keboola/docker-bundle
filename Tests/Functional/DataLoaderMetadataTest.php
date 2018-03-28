@@ -98,7 +98,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -151,7 +151,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever",
             "whateverRow"
         );
@@ -255,7 +255,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -338,7 +338,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -422,7 +422,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();

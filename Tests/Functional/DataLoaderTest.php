@@ -100,7 +100,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -125,7 +125,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                 $data->getDataDir(),
                 [],
                 $this->getDefaultBucketComponent(),
-                new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+                new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
             );
             $this->fail("ConfigId is required for defaultBucket=true component data setting");
         } catch (UserException $e) {
@@ -171,7 +171,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getNoDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
         );
         try {
             $dataLoader->storeOutput();
@@ -215,7 +215,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getS3StagingComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
         );
         $dataLoader->loadInputData();
 
