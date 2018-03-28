@@ -39,28 +39,6 @@ class ApiController extends BaseApiController
         }
     }
 
-
-    private function validateComponent(Request $request)
-    {
-        /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-
-        // Get params from request
-        $params = $this->getPostJson($request);
-        $component = $request->get("component");
-        $this->checkComponent($component);
-
-        if ((new ControllerHelper())->hasComponentEncryptFlag($storage->getClient(), $params["component"])) {
-            return $this->createJsonResponse([
-                'status'    => 'error',
-                'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
-            ], 400);
-        }
-
-        $this->validateParams($params);
-        return $params;
-    }
-
     /**
      * Make sure that a given KBC component is valid.
      *
@@ -172,13 +150,13 @@ class ApiController extends BaseApiController
      */
     public function debugAction(Request $request)
     {
-        $ret = $this->validateComponent($request);
-        if (is_a($ret, JsonResponse::class)) {
-            return $ret;
-        } else {
-            $ret['mode'] = 'debug';
-            return $this->createJobFromParams($ret);
-        }
+        // Get params from request
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $ret['mode'] = 'debug';
+        return $this->createJobFromParams($params);
     }
 
     /**

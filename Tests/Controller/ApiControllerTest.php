@@ -422,50 +422,6 @@ class ApiControllerTest extends WebTestCase
         $this->assertCount(2, $result);
     }
 
-    public function testInputDisabledByEncrypt()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/docker-config-encrypt-verify/input',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
-            '{
-                "config": "dummy"
-             }'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertEquals("error", $response["status"]);
-        $this->assertEquals(
-            "This API call is not supported for components that use the 'encrypt' flag.",
-            $response["message"]
-        );
-    }
-
-    public function testDryRunDisabledByEncrypt()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/docker-config-encrypt-verify/dry-run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
-            '{
-                "config": "dummy"
-             }'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertEquals("error", $response["status"]);
-        $this->assertEquals(
-            "This API call is not supported for components that use the 'encrypt' flag.",
-            $response["message"]
-        );
-    }
-
     public function testSaveEncryptedConfig()
     {
         $server = [

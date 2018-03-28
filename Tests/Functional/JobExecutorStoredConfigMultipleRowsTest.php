@@ -367,5 +367,4 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
 
         $this->assertFalse($this->client->tableExists('out.c-docker-test.transposed-2'));
     }
-
 }
