@@ -163,63 +163,20 @@ class ApiController extends BaseApiController
         ], 202);
     }
 
-
     /**
-     *  Sandbox - generate configuration and environment and
-     *  store it in KBC Storage.
+     *  Debug - create a snapshot of data folder before and after every container, do not perform output mapping.
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
-    public function sandboxAction(Request $request)
-    {
-        // Get params from request
-        $params = $this->getPostJson($request);
-        $this->validateParams($params);
-        $params['mode'] = 'sandbox';
-
-        # TODO deprecated, remove later
-        $params["format"] = $request->get("format", "yaml");
-        if (!in_array($params["format"], ["yaml", "json"])) {
-            throw new UserException("Invalid configuration format '{$params["format"]}'.");
-        }
-
-        return $this->createJobFromParams($params);
-    }
-
-
-    /**
-     *  Prepare - generate configuration and environment for an existing docker image and
-     *  store it in KBC Storage.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function inputAction(Request $request)
+    public function debugAction(Request $request)
     {
         $ret = $this->validateComponent($request);
         if (is_a($ret, JsonResponse::class)) {
             return $ret;
         } else {
-            $ret['mode'] = 'input';
-            return $this->createJobFromParams($ret);
-        }
-    }
-
-
-    /**
-     * Run docker component with the provided configuration.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function dryRunAction(Request $request)
-    {
-        $ret = $this->validateComponent($request);
-        if (is_a($ret, JsonResponse::class)) {
-            return $ret;
-        } else {
-            $ret['mode'] = 'dry-run';
+            $ret['mode'] = 'debug';
             return $this->createJobFromParams($ret);
         }
     }

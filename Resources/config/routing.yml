@@ -14,14 +14,9 @@ keboola_docker_migrate_config:
       _controller: KeboolaDockerBundle:Api:migrateConfig
     methods:  [POST]
 
-keboola_docker_sandbox:
-    path:     /sandbox
-    defaults: { _controller: KeboolaDockerBundle:Api:sandbox }
-    methods:  [POST]
-
-keboola_docker_component_input:
-    path:     /{component}/input
-    defaults: { _controller: KeboolaDockerBundle:Api:input }
+keboola_docker_component_debug:
+    path:     /{component}/debug
+    defaults: { _controller: KeboolaDockerBundle:Api:debug }
     methods:  [POST]
 
 keboola_docker_component_run:
@@ -38,11 +33,6 @@ keboola_docker_component_tag_run:
 keboola_docker_disabled_run:
     path:     /run
     defaults: { _controller: KeboolaDockerBundle:Api:disabled }
-    methods:  [POST]
-
-keboola_docker_component_dry_run:
-    path:     /{component}/dry-run
-    defaults: { _controller: KeboolaDockerBundle:Api:dryRun }
     methods:  [POST]
 
 keboola_docker_component_encrypt:

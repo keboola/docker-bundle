@@ -144,12 +144,12 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
-    public function testSandbox()
+    public function testDebug()
     {
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/sandbox',
+            '/docker/keboola.r-transformation/debug',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
@@ -161,47 +161,12 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
-
-    public function testInput()
+    public function testInvalidComponentDebug()
     {
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/keboola.r-transformation/input',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('waiting', $response['status']);
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
-    }
-
-    public function testDryRun()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/keboola.r-transformation/dry-run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('waiting', $response['status']);
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
-    }
-
-    public function testInvalidComponentInput()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/invalid-component/input',
+            '/docker/invalid-component/debug',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
