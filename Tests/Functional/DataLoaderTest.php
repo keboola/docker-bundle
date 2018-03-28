@@ -6,6 +6,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -99,6 +100,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -122,7 +124,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                 new NullLogger(),
                 $data->getDataDir(),
                 [],
-                $this->getDefaultBucketComponent()
+                $this->getDefaultBucketComponent(),
+                new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
             );
             $this->fail("ConfigId is required for defaultBucket=true component data setting");
         } catch (UserException $e) {
@@ -162,7 +165,14 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
-        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getNoDefaultBucketComponent());
+        $dataLoader = new DataLoader(
+            $this->client,
+            new NullLogger(),
+            $data->getDataDir(),
+            $config,
+            $this->getNoDefaultBucketComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+        );
         try {
             $dataLoader->storeOutput();
             $this->fail("Invalid configuration must raise UserException.");
@@ -199,7 +209,14 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         );
         $this->client->createTable('in.c-docker-test', 'test', new CsvFile($filePath));
 
-        $dataLoader = new DataLoader($this->client, new NullLogger(), $data->getDataDir(), $config, $this->getS3StagingComponent());
+        $dataLoader = new DataLoader(
+            $this->client,
+            new NullLogger(),
+            $data->getDataDir(),
+            $config,
+            $this->getS3StagingComponent(),
+            new ObjectEncryptorFactory('alias/dummy-key','us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+        );
         $dataLoader->loadInputData();
 
         $manifest = json_decode(
