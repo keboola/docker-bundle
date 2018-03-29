@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "e5f89ebb08d79ab8a386714931421e1e",
-    "content-hash": "94e1031f0ad8a040ce5234f4245b9650",
+    "hash": "b55b2d0ce52d4125bb067e7c288d5313",
+    "content-hash": "daf941bbb283d2ee9462f98f5080db51",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2149,16 +2149,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "9.1.0",
+            "version": "9.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "97e2f42ad018440af56ad810196b69abadec6dd7"
+                "reference": "1ae8d01b5275c5bd7da89b5bc180fcb5426f3638"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/97e2f42ad018440af56ad810196b69abadec6dd7",
-                "reference": "97e2f42ad018440af56ad810196b69abadec6dd7",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/1ae8d01b5275c5bd7da89b5bc180fcb5426f3638",
+                "reference": "1ae8d01b5275c5bd7da89b5bc180fcb5426f3638",
                 "shasum": ""
             },
             "require": {
@@ -2213,7 +2213,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2018-03-29 09:47:21"
+            "time": "2018-03-29 13:22:55"
         },
         {
             "name": "kriswallsmith/assetic",
