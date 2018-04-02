@@ -214,18 +214,9 @@ class Runner
             $jobId
         );
 
-        $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
-
-        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId(), $sandboxed);
-
-        if ($sandboxed) {
-            // do not decrypt image parameters on sandboxed calls
-            $imageParameters = $component->getImageParameters();
-        } else {
-            $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
-        }
-
+        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
+        $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         $configFile = new ConfigFile(
             $dataDirectory->getDataDir(),
             $imageParameters,

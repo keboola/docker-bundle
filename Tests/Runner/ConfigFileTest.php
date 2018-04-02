@@ -34,7 +34,7 @@ class ConfigFileTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         $config->createConfigFile(
             ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
@@ -67,7 +67,7 @@ SAMPLE;
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
 
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
         try {
@@ -108,7 +108,7 @@ SAMPLE;
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -132,7 +132,7 @@ SAMPLE;
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component', false);
+        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);

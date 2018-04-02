@@ -155,7 +155,7 @@ class ApiController extends BaseApiController
         $component = $request->get("component");
         $this->checkComponent($component);
         $this->validateParams($params);
-        $ret['mode'] = 'debug';
+        $params['mode'] = 'debug';
         return $this->createJobFromParams($params);
     }
 
