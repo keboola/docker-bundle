@@ -86,6 +86,22 @@ class PublicControllerTest extends WebTestCase
         $this->assertEquals(200, $client->getResponse()->getStatusCode());
     }
 
+    public function testEncryptEmptyArray()
+    {
+        $json = '[]';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals($json, $client->getResponse()->getContent());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+    }
+
     public function testEncryptProject()
     {
         $client = $this->createClient();

@@ -42,7 +42,7 @@ class PublicControllerLegacyTest extends WebTestCase
         $this->assertEquals($json, $client->getResponse()->getContent());
     }
 
-    public function testEncryptEmptyRequest()
+    public function testEncryptEmptyArray()
     {
         $json = '[]';
         $client = $this->createClient();
