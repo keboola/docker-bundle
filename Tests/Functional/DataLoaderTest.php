@@ -4,9 +4,9 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -100,7 +100,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid())),
+            new OutputFilter(),
             "whatever"
         );
         $dataLoader->storeOutput();
@@ -125,7 +125,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
                 $data->getDataDir(),
                 [],
                 $this->getDefaultBucketComponent(),
-                new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+                new OutputFilter()
             );
             $this->fail("ConfigId is required for defaultBucket=true component data setting");
         } catch (UserException $e) {
@@ -171,7 +171,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getNoDefaultBucketComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+            new OutputFilter()
         );
         try {
             $dataLoader->storeOutput();
@@ -215,7 +215,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $data->getDataDir(),
             $config,
             $this->getS3StagingComponent(),
-            new ObjectEncryptorFactory('alias/dummy-key', 'us-east-1', hash('sha256', uniqid()), hash('sha256', uniqid()))
+            new OutputFilter()
         );
         $dataLoader->loadInputData();
 

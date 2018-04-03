@@ -3,9 +3,9 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader\Reader;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
@@ -66,9 +66,9 @@ class DataLoader implements DataLoaderInterface
     private $configRowId;
 
     /**
-     * @var ObjectEncryptorFactory
+     * @var OutputFilterInterface
      */
-    private $encryptorFactory;
+    private $outputFilter;
 
     /**
      * DataLoader constructor.
@@ -78,7 +78,7 @@ class DataLoader implements DataLoaderInterface
      * @param string $dataDirectory
      * @param array $storageConfig
      * @param Component $component
-     * @param ObjectEncryptorFactory $encryptorFactory
+     * @param OutputFilterInterface $outputFilter
      * @param string|null $configId
      * @param string|null $configRowId
      */
@@ -88,7 +88,7 @@ class DataLoader implements DataLoaderInterface
         $dataDirectory,
         array $storageConfig,
         Component $component,
-        ObjectEncryptorFactory $encryptorFactory,
+        OutputFilterInterface $outputFilter,
         $configId = null,
         $configRowId = null
     ) {
@@ -97,7 +97,7 @@ class DataLoader implements DataLoaderInterface
         $this->dataDirectory = $dataDirectory;
         $this->storageConfig = $storageConfig;
         $this->component = $component;
-        $this->encryptorFactory = $encryptorFactory;
+        $this->outputFilter = $outputFilter;
         $this->configId = $configId;
         $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
@@ -211,9 +211,8 @@ class DataLoader implements DataLoaderInterface
                     continue;
                 }
                 if (($item->getRelativePathname() == 'config.json') || ($item->getRelativePathname() == 'state.json')) {
-                    $configData = \GuzzleHttp\json_decode(file_get_contents($item->getPathname()));
-                    $configData = $this->encryptorFactory->getEncryptor()->encrypt($configData);
-                    $configData = \GuzzleHttp\json_encode($configData, JSON_PRETTY_PRINT);
+                    $configData = file_get_contents($item->getPathname());
+                    $configData = $this->outputFilter->filter($configData);
                     if (!$zip->addFromString($item->getRelativePathname(), $configData)) {
                         throw new ApplicationException("Failed to add file: " . $item->getFilename());
                     }

@@ -226,29 +226,29 @@ class Runner
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
+            $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $this->encryptorFactory,
+                $outputFilter,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
-            $outputFilter = new OutputFilter();
         } else {
+            $outputFilter = new NullFilter();
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
-                $this->encryptorFactory,
+                $outputFilter,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
-            $outputFilter = new NullFilter();
         }
 
         $stateFile = new StateFile(
