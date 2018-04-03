@@ -42,6 +42,21 @@ class PublicControllerLegacyTest extends WebTestCase
         $this->assertEquals($json, $client->getResponse()->getContent());
     }
 
+    public function testEncryptEmptyArray()
+    {
+        $json = '[]';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/docker-config-encrypt-verify/encrypt',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertEquals($json, $client->getResponse()->getContent());
+    }
 
     public function testEncrypt()
     {
