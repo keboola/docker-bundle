@@ -76,7 +76,7 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 'tag' => 'latest',
             ],
             'cpu_shares' => 1024,
-            'memory' => '64m',
+            'memory' => '256m',
             'configuration_format' => 'json',
             'process_timeout' => 3600,
             'forward_token' => false,

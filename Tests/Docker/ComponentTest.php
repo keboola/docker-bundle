@@ -63,7 +63,7 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
         ];
 
         $component = new Component($configuration);
-        $this->assertEquals("64m", $component->getMemory());
+        $this->assertEquals("256m", $component->getMemory());
         $this->assertEquals(1024, $component->getCpuShares());
         $this->assertEquals(3600, $component->getProcessTimeout());
         $this->assertEquals('standard', $component->getLoggerType());

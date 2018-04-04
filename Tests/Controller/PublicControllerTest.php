@@ -67,12 +67,28 @@ class PublicControllerTest extends WebTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals("error", $response["status"]);
-        $this->assertEquals("Bad JSON format of request body", $response["message"]);
+        $this->assertContains("Bad JSON format of request body", $response["message"]);
     }
 
     public function testEncryptEmptyValues()
     {
         $json = '{"#nested":{"emptyObject":{},"emptyArray":[]},"nested":{"emptyObject":{},"emptyArray":[]},"emptyObject":{},"emptyArray":[],"emptyScalar":null}';
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            $json
+        );
+        $this->assertEquals($json, $client->getResponse()->getContent());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+    }
+
+    public function testEncryptEmptyArray()
+    {
+        $json = '[]';
         $client = $this->createClient();
         $client->request(
             'POST',
