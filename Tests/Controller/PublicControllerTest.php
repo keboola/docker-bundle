@@ -67,7 +67,7 @@ class PublicControllerTest extends WebTestCase
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals("error", $response["status"]);
-        $this->assertEquals("Bad JSON format of request body: Syntax error", $response["message"]);
+        $this->assertContains("Bad JSON format of request body", $response["message"]);
     }
 
     public function testEncryptEmptyValues()
