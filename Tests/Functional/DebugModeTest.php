@@ -17,6 +17,7 @@ use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Handler\HandlerInterface;
@@ -149,7 +150,7 @@ class DebugModeTest extends KernelTestCase
         ;
         $componentsStub->expects(self::any())
             ->method("getConfiguration")
-            ->with("keboola.python-transformation", "my-config")
+            ->with("keboola.ex-aws-s3", "my-config")
             ->will(self::returnValue($configuration))
         ;
 
@@ -334,6 +335,111 @@ class DebugModeTest extends KernelTestCase
         );
     }
 
+    public function testDebugModeFailure()
+    {
+        if (!$this->client->tableExists("in.c-docker-test.source")) {
+            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+            $csv->writeRow(['name', 'oldValue', 'newValue']);
+            for ($i = 0; $i < 4; $i++) {
+                $csv->writeRow([$i, $i * 100, '1000']);
+            }
+            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        }
+
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $encryptorFactory->setComponentId('keboola.python-transformation');
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, []);
+        $data = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'debug',
+                'configData' => [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-docker-test.source',
+                                    'destination' => 'source.csv',
+                                ],
+                            ],
+                        ],
+                        'output' => [
+                            'tables' => [
+                                [
+                                    'source' => 'destination.csv',
+                                    'destination' => 'out.c-docker-test.modified',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'plain' => 'not-secret',
+                        'script' => [
+                            'import sys',
+                            'print("Intentional error", file=sys.stderr)',
+                            'exit(1)',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job->setId(123456);
+        try {
+            $jobExecutor->execute($job);
+            self::fail("Must throw exception");
+        } catch (UserException $e) {
+            self::assertContains('Intentional error', $e->getMessage());
+        }
+
+        // check that output mapping was not done
+        try {
+            $this->client->getTableDataPreview('out.c-docker-test.modified');
+            $this->fail("Table should not exist.");
+        } catch (Exception $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+
+        $listOptions = new ListFilesOptions();
+        $listOptions->setTags(['debug']);
+        $files = $this->client->listFiles($listOptions);
+        self::assertEquals(1, count($files));
+        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
+        self::assertContains('stage-0', $files[0]['tags']);
+        self::assertGreaterThan(1000, $files[0]['sizeBytes']);
+
+        $fileName = $this->downloadFile($files[0]['id']);
+        $zipArchive = new \ZipArchive();
+        $zipArchive->open($fileName);
+        $config = $zipArchive->getFromName('config.json');
+        $config = \GuzzleHttp\json_decode($config, true);
+        self::assertEquals('not-secret', $config['parameters']['plain']);
+        self::assertArrayHasKey('script', $config['parameters']);
+        $tableData = $zipArchive->getFromName('in/tables/source.csv');
+        $lines = explode("\n", trim($tableData));
+        sort($lines);
+        self::assertEquals(
+            [
+                "\"0\",\"0\",\"1000\"",
+                "\"1\",\"100\",\"1000\"",
+                "\"2\",\"200\",\"1000\"",
+                "\"3\",\"300\",\"1000\"",
+                "\"name\",\"oldValue\",\"newValue\"",
+            ],
+            $lines
+        );
+        $zipArchive->close();
+        unlink($fileName);
+    }
+
     public function testDebugModeConfiguration()
     {
         if (!$this->client->tableExists("in.c-docker-test.source")) {
@@ -450,8 +556,8 @@ class DebugModeTest extends KernelTestCase
         $config = $zipArchive->getFromName('config.json');
         $config = \GuzzleHttp\json_decode($config, true);
         self::assertNotEquals('secret', $config['parameters']['#encrypted']);
-        self::assertStringStartsWith('KBC::Encrypted', $config['parameters']['#encrypted']);
-        self::assertEquals('not-secret', $config['parameters']['plain']);
+        self::assertEquals('[hidden]', $config['parameters']['#encrypted']);
+        self::assertEquals('not-[hidden]', $config['parameters']['plain']);
     }
 
     public function testConfigurationRows()
