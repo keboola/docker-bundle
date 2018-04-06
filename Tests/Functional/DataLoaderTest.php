@@ -224,7 +224,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             $this->getNoDefaultBucketComponent(),
             new OutputFilter()
         );
-        $dataLoader->storeDataArchive(['data-loader-test']);
+        $dataLoader->storeDataArchive('data', ['data-loader-test']);
         $files = $this->client->listFiles((new ListFilesOptions())->setTags(['data-loader-test']));
         self::assertCount(1, $files);
 

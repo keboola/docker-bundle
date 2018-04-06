@@ -15,7 +15,7 @@ interface DataLoaderInterface
 
     public function storeOutput();
 
-    public function storeDataArchive(array $tags);
+    public function storeDataArchive($fileName, array $tags);
 
     public function setFeatures($features);
 }

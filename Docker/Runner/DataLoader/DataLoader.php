@@ -191,13 +191,13 @@ class DataLoader implements DataLoaderInterface
 
     /**
      * Archive data directory and save it to Storage
-     * @param array $tags Arbitrary storage tags
-     * @throws ClientException
+     * @param $fileName
+     * @param array $tags
      */
-    public function storeDataArchive(array $tags)
+    public function storeDataArchive($fileName, array $tags)
     {
         $zip = new \ZipArchive();
-        $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'data.zip';
+        $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . $fileName . '.zip';
         $zip->open($zipFileName, \ZipArchive::CREATE);
         $finder = new Finder();
         /** @var SplFileInfo $item */

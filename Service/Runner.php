@@ -349,7 +349,7 @@ class Runner
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode);
 
         if ($mode == 'debug') {
-            $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-last']);
+            $dataLoader->storeDataArchive('stage_last', ['debug', $component->getId(), $rowId, $jobId]);
         } else {
             $dataLoader->storeOutput();
         }
@@ -430,7 +430,7 @@ class Runner
                 $outputFilter
             );
             if ($mode == 'debug') {
-                $dataLoader->storeDataArchive(['debug', $component->getId(), $rowId, 'stage-' . $priority, 'img-' . $image->getImageId()]);
+                $dataLoader->storeDataArchive('stage_' . $priority, ['debug', $component->getId(), $rowId, $jobId, $image->getImageId()]);
             }
             try {
                 $process = $container->run();

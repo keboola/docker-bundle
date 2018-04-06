@@ -150,7 +150,7 @@ class DebugModeTest extends KernelTestCase
         ;
         $componentsStub->expects(self::any())
             ->method("getConfiguration")
-            ->with("keboola.ex-aws-s3", "my-config")
+            ->with("keboola.python-transformation", "my-config")
             ->will(self::returnValue($configuration))
         ;
 
@@ -282,12 +282,17 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(2, count($files));
-        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        self::assertContains('stage-last', $files[0]['tags']);
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertContains('keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[1]['name']));
-        self::assertContains('stage-0', $files[1]['tags']);
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
+        self::assertContains('keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1000, $files[1]['sizeBytes']);
 
         $fileName = $this->downloadFile($files[1]['id']);
@@ -412,32 +417,12 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(1, count($files));
-        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        self::assertContains('stage-0', $files[0]['tags']);
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[0]['name']));
+        self::assertContains('keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
-
-        $fileName = $this->downloadFile($files[0]['id']);
-        $zipArchive = new \ZipArchive();
-        $zipArchive->open($fileName);
-        $config = $zipArchive->getFromName('config.json');
-        $config = \GuzzleHttp\json_decode($config, true);
-        self::assertEquals('not-secret', $config['parameters']['plain']);
-        self::assertArrayHasKey('script', $config['parameters']);
-        $tableData = $zipArchive->getFromName('in/tables/source.csv');
-        $lines = explode("\n", trim($tableData));
-        sort($lines);
-        self::assertEquals(
-            [
-                "\"0\",\"0\",\"1000\"",
-                "\"1\",\"100\",\"1000\"",
-                "\"2\",\"200\",\"1000\"",
-                "\"3\",\"300\",\"1000\"",
-                "\"name\",\"oldValue\",\"newValue\"",
-            ],
-            $lines
-        );
-        $zipArchive->close();
-        unlink($fileName);
     }
 
     public function testDebugModeConfiguration()
@@ -540,17 +525,13 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(2, count($files));
-        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
-        self::assertEquals(0, strcasecmp('data.zip', $files[1]['name']));
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
         self::assertGreaterThan(2000, $files[0]['sizeBytes']);
         self::assertGreaterThan(2000, $files[1]['sizeBytes']);
 
         // check that the archive does not contain the decrypted value
-        $listOptions = new ListFilesOptions();
-        $listOptions->setTags(['stage-0']);
-        $files = $this->client->listFiles($listOptions);
-        self::assertEquals(1, count($files));
-        $zipFileName = $this->downloadFile($files[0]["id"]);
+        $zipFileName = $this->downloadFile($files[1]["id"]);
         $zipArchive = new \ZipArchive();
         $zipArchive->open($zipFileName);
         $config = $zipArchive->getFromName('config.json');
@@ -604,24 +585,34 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(4, count($files));
-        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
         self::assertContains('row2', $files[0]['tags']);
-        self::assertContains('stage-last', $files[0]['tags']);
+        self::assertContains('keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1500, $files[0]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[1]['name']));
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
         self::assertContains('row2', $files[1]['tags']);
-        self::assertContains('stage-0', $files[1]['tags']);
+        self::assertContains('keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1500, $files[1]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[2]['name']));
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[2]['name']));
         self::assertContains('row1', $files[2]['tags']);
-        self::assertContains('stage-last', $files[2]['tags']);
+        self::assertContains('keboola.python-transformation', $files[2]['tags']);
+        self::assertContains('123456', $files[2]['tags']);
+        self::assertContains('debug', $files[2]['tags']);
         self::assertGreaterThan(1500, $files[2]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[3]['name']));
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[3]['name']));
         self::assertContains('row1', $files[3]['tags']);
-        self::assertContains('stage-0', $files[3]['tags']);
+        self::assertContains('keboola.python-transformation', $files[3]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[3]['tags']);
+        self::assertContains('123456', $files[3]['tags']);
+        self::assertContains('debug', $files[3]['tags']);
         self::assertGreaterThan(1500, $files[3]['sizeBytes']);
     }
 
@@ -763,34 +754,50 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(6, count($files));
-        self::assertEquals(0, strcasecmp('data.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
         self::assertContains('row2', $files[0]['tags']);
-        self::assertContains('stage-last', $files[0]['tags']);
+        self::assertContains('keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[1]['name']));
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
         self::assertContains('row2', $files[1]['tags']);
-        self::assertContains('stage-0', $files[1]['tags']);
+        self::assertContains('keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
+        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1000, $files[1]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[2]['name']));
+        self::assertEquals(0, strcasecmp('stage_last.zip', $files[2]['name']));
         self::assertContains('row1', $files[2]['tags']);
-        self::assertContains('stage-last', $files[2]['tags']);
+        self::assertContains('keboola.python-transformation', $files[2]['tags']);
+        self::assertContains('123456', $files[2]['tags']);
+        self::assertContains('debug', $files[2]['tags']);
         self::assertGreaterThan(1000, $files[2]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[3]['name']));
+        self::assertEquals(0, strcasecmp('stage_2.zip', $files[3]['name']));
         self::assertContains('row1', $files[3]['tags']);
-        self::assertContains('stage-2', $files[3]['tags']);
+        self::assertContains('keboola.python-transformation', $files[3]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-add-row-number-column', $files[3]['tags']);
+        self::assertContains('123456', $files[3]['tags']);
+        self::assertContains('debug', $files[3]['tags']);
         self::assertGreaterThan(1000, $files[3]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[3]['name']));
+        self::assertEquals(0, strcasecmp('stage_1.zip', $files[4]['name']));
         self::assertContains('row1', $files[4]['tags']);
-        self::assertContains('stage-1', $files[4]['tags']);
+        self::assertContains('keboola.python-transformation', $files[4]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-create-manifest', $files[4]['tags']);
+        self::assertContains('123456', $files[4]['tags']);
+        self::assertContains('debug', $files[4]['tags']);
         self::assertGreaterThan(1000, $files[4]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('data.zip', $files[3]['name']));
+        self::assertEquals(0, strcasecmp('stage_0.zip', $files[5]['name']));
         self::assertContains('row1', $files[5]['tags']);
-        self::assertContains('stage-0', $files[5]['tags']);
+        self::assertContains('keboola.python-transformation', $files[5]['tags']);
+        self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[5]['tags']);
+        self::assertContains('123456', $files[5]['tags']);
+        self::assertContains('debug', $files[5]['tags']);
         self::assertGreaterThan(1000, $files[5]['sizeBytes']);
     }
 }
