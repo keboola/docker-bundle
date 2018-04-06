@@ -213,7 +213,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $data->createDataDir();
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $data->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $dataLoader = new DataLoader(
@@ -244,8 +244,9 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             (string) file_get_contents($temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) === (string) $data;
             self::assertTrue($isSame, $zipArchive->getNameIndex($i) . ' data: ' . $data);
         }
+        sort($items);
         self::assertEquals(
-            ['out/', 'out/files/', 'out/tables/', 'out/tables/sliced.csv', 'in/', 'in/user/', 'in/files/', 'in/tables/'],
+            ['in/', 'in/files/', 'in/tables/', 'in/tables/sliced.csv', 'in/user/', 'out/', 'out/files/', 'out/tables/'],
             $items
         );
     }
