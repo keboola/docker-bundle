@@ -2,16 +2,20 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Options\GetFileOptions;
+use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class DataLoaderTest extends \PHPUnit_Framework_TestCase
 {
@@ -76,6 +80,10 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
+        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['data-loader-test']));
+        foreach ($files as $file) {
+            $this->client->deleteFile($file['id']);
+        }
     }
 
     public function testExecutorDefaultBucket()
@@ -180,6 +188,68 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testStoreArchive()
+    {
+        $config = [
+            "input" => [
+                "tables" => [
+                    [
+                        "source" => "in.c-docker-test.test"
+                    ],
+                ],
+            ],
+            "output" => [
+                "tables" => [
+                    [
+                        "source" => "sliced.csv",
+                        "destination" => "in.c-docker-test.out",
+                    ],
+                ],
+            ],
+        ];
+
+        $temp = new Temp();
+        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createDataDir();
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $data->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $dataLoader = new DataLoader(
+            $this->client,
+            new NullLogger(),
+            $data->getDataDir(),
+            $config,
+            $this->getNoDefaultBucketComponent(),
+            new OutputFilter()
+        );
+        $dataLoader->storeDataArchive(['data-loader-test']);
+        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['data-loader-test']));
+        self::assertCount(1, $files);
+
+        $temp2 = new Temp();
+        $temp2->initRunFolder();
+        $target = $temp2->getTmpFolder() . '/tmp-download.zip';
+        $this->downloadFile($files[0]['id'], $target);
+
+        $zipArchive = new \ZipArchive();
+        $zipArchive->open($target);
+        self::assertEquals(8, $zipArchive->numFiles);
+        $items = [];
+        for ($i = 0; $i < $zipArchive->numFiles; $i++) {
+            $items[] = $zipArchive->getNameIndex($i);
+            $data = $zipArchive->getFromIndex($i);
+            $isSame = is_dir($temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) ||
+            (string) file_get_contents($temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) === (string) $data;
+            self::assertTrue($isSame, $zipArchive->getNameIndex($i) . ' data: ' . $data);
+        }
+        self::assertEquals(
+            ['out/', 'out/files/', 'out/tables/', 'out/tables/sliced.csv', 'in/', 'in/user/', 'in/files/', 'in/tables/'],
+            $items
+        );
+    }
+
     public function testLoadInputDataS3()
     {
         if ($this->client->bucketExists('in.c-docker-test')) {
@@ -242,5 +312,29 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         if ($manifest["s3"]["isSliced"]) {
             $this->assertContains("manifest", $manifest["s3"]["key"]);
         }
+    }
+
+    private function downloadFile($fileId, $targetFile)
+    {
+        $fileInfo = $this->client->getFile($fileId, (new GetFileOptions())->setFederationToken(true));
+        // Initialize S3Client with credentials from Storage API
+        $s3Client = new S3Client([
+            'version' => '2006-03-01',
+            'region' => $fileInfo['region'],
+            'retries' => $this->client->getAwsRetries(),
+            'credentials' => [
+                'key' => $fileInfo["credentials"]["AccessKeyId"],
+                'secret' => $fileInfo["credentials"]["SecretAccessKey"],
+                'token' => $fileInfo["credentials"]["SessionToken"],
+            ],
+            'http' => [
+                'decode_content' => false,
+            ],
+        ]);
+        $s3Client->getObject(array(
+            'Bucket' => $fileInfo["s3Path"]["bucket"],
+            'Key' => $fileInfo["s3Path"]["key"],
+            'SaveAs' => $targetFile,
+        ));
     }
 }

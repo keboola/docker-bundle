@@ -9,15 +9,14 @@
     "token": {
         "id": "27978",
         "description": "someToken",
-        "token": "KBC::Encrypted==7ycQ=="
+        "token": "KBC::Encrypted==XsImmHVR/jt7dlF3lZ+ManwpqRFxrYpPFtmBc2BGTr4gR1I4pteWi7dG4GgkupZT+RG4yl8iQwJA74pWvkME5NpVINAs6FcBk8baL4Uar4C3Q3vwsDOQsZlntF8zoTTxyu7hgHLgGksdMQvQn6O1zw=="
     },
     "component": "docker",
     "command": "run",
     "params": {
-        "config": "text-splitter-test-63",
-        "component": "dca-custom-science-python",
-        "mode": "run",
-        "tag": "1.0.0"
+        "config": "362929946",
+        "component": "keboola.ex-currency",
+        "mode": "debug"
     },
     "status": "success",
     "createdTime": "2017-06-16T14:18:20+02:00",
