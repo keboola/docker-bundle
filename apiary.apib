@@ -414,18 +414,28 @@ Debug API call is handy when developing or troubleshooting components.
 
 This job will prepare the `data` folder including the serialized configuration files. Then it will compress
 the `data` folder and upload it to your project's Files in Storage. This way you will get a snapshot of what
-the `data` folder looked like before the component started. After the component finishes, another snapshot is made.
+the `data` folder looked like before the component started. If processors are used, a snapshot of the data folder
+is created before each processor. After the entire component finishes, another snapshot is made.
 
-If processors are used, a snapshot of the data folder is created before each processor.
+For example, if you run component `a` with processor `b` and `c` in the `after` section, you will receive:
 
-If configuration rows are used, a snapshot is created for each configuration row.
+- `stage-0` file with contents of the data directory before component `a` was run
+- `stage-1` file with contents of the data directory before processor `b` was run
+- `stage-2` file with contents of the data directory before processor `c` was run
+- `stage-last` file with contents of the data directory before output mapping was about to be performed.
+
+If configuration rows are used, then the above is repeated for each configuration row.
 
 This API call does not upload any tables or files to Storage. I.e. when the component finishes, its output is 
-discarded and the output mapping to storage is **not done**. This makes this API call generally very safe to call, because
-it cannot break the KBC project in any way. However keep in mind, that if the component has any outside sideeffects, these
+discarded and the output mapping to storage is **not performed**. This makes this API call generally very safe to call, because
+it cannot break the KBC project in any way. However keep in mind, that if the component has any outside side effects, these
 will get executed. This applies typically to writers which will write the data into the external system even with this debug API call.
 
 Note that the snapshot archive will contain all files in the `data` folder including any temporary files produced be the component.
+The snapshot will not contain the output `state.json` file. This is because the snapshot is made before a component is run
+where the out state of the previous component is not available any more. Also note that all encrypted values are removed
+from the configuration file and there is no way to retrieve them. It is also advisable to run this command with limited input
+mapping so that you don't end up with gigabyte size archives.
 
 + Parameters
     + componentId (string) ... KBC component Id
