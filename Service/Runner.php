@@ -33,6 +33,10 @@ use Keboola\Temp\Temp;
 
 class Runner
 {
+    const MODE_DEBUG = 'debug';
+
+    const MODE_RUN = 'run';
+
     /**
      * @var ObjectEncryptorFactory
      */
@@ -297,7 +301,7 @@ class Runner
             }
         }
 
-        if (($mode != 'run') && ($mode != 'debug')) {
+        if (($mode !== self::MODE_RUN) && ($mode !== self::MODE_DEBUG)) {
             throw new UserException("Invalid run mode: $mode");
         }
         $outputs = [];
@@ -348,8 +352,8 @@ class Runner
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode);
 
-        if ($mode == 'debug') {
-            $dataLoader->storeDataArchive('stage_last', ['debug', $component->getId(), $rowId, $jobId]);
+        if ($mode === self::MODE_DEBUG) {
+            $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
         } else {
             $dataLoader->storeOutput();
         }
@@ -429,14 +433,14 @@ class Runner
                 $dataDirectory,
                 $outputFilter
             );
-            if ($mode == 'debug') {
-                $dataLoader->storeDataArchive('stage_' . $priority, ['debug', $component->getId(), $rowId, $jobId, $image->getImageId()]);
+            if ($mode === self::MODE_DEBUG) {
+                $dataLoader->storeDataArchive('stage_' . $priority, [self::MODE_DEBUG, $image->getSourceComponent()->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId, $image->getImageId()]);
             }
             try {
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    if ($this->shouldStoreState($component->getId(), $configId)) {
+                    if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
                         $stateFile->storeStateFile();
                     }
                 }

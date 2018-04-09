@@ -9,7 +9,7 @@
     "token": {
         "id": "27978",
         "description": "someToken",
-        "token": "KBC::Encrypted==XsImmHVR/jt7dlF3lZ+ManwpqRFxrYpPFtmBc2BGTr4gR1I4pteWi7dG4GgkupZT+RG4yl8iQwJA74pWvkME5NpVINAs6FcBk8baL4Uar4C3Q3vwsDOQsZlntF8zoTTxyu7hgHLgGksdMQvQn6O1zw=="
+        "token": "KBC::Encrypted==7ycQ=="
     },
     "component": "docker",
     "command": "run",

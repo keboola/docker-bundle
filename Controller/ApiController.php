@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -155,7 +156,7 @@ class ApiController extends BaseApiController
         $component = $request->get("component");
         $this->checkComponent($component);
         $this->validateParams($params);
-        $params['mode'] = 'debug';
+        $params['mode'] = Runner::MODE_DEBUG;
         return $this->createJobFromParams($params);
     }
 

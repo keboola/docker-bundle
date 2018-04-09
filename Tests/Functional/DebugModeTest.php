@@ -282,7 +282,7 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(2, count($files));
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
         self::assertContains('123456', $files[0]['tags']);
         self::assertContains('debug', $files[0]['tags']);
@@ -525,7 +525,7 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(2, count($files));
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
         self::assertGreaterThan(2000, $files[0]['sizeBytes']);
         self::assertGreaterThan(2000, $files[1]['sizeBytes']);
@@ -585,7 +585,7 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(4, count($files));
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('row2', $files[0]['tags']);
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
         self::assertContains('123456', $files[0]['tags']);
@@ -600,7 +600,7 @@ class DebugModeTest extends KernelTestCase
         self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1500, $files[1]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[2]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[2]['name']));
         self::assertContains('row1', $files[2]['tags']);
         self::assertContains('keboola.python-transformation', $files[2]['tags']);
         self::assertContains('123456', $files[2]['tags']);
@@ -754,7 +754,7 @@ class DebugModeTest extends KernelTestCase
         $listOptions->setTags(['debug']);
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(6, count($files));
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[0]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('row2', $files[0]['tags']);
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
         self::assertContains('123456', $files[0]['tags']);
@@ -769,7 +769,7 @@ class DebugModeTest extends KernelTestCase
         self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1000, $files[1]['sizeBytes']);
 
-        self::assertEquals(0, strcasecmp('stage_last.zip', $files[2]['name']));
+        self::assertEquals(0, strcasecmp('stage_output.zip', $files[2]['name']));
         self::assertContains('row1', $files[2]['tags']);
         self::assertContains('keboola.python-transformation', $files[2]['tags']);
         self::assertContains('123456', $files[2]['tags']);
