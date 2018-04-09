@@ -284,14 +284,14 @@ class DebugModeTest extends KernelTestCase
         self::assertEquals(2, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
-        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('JobId:123456', $files[0]['tags']);
         self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
         self::assertContains('keboola.python-transformation', $files[1]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
-        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('JobId:123456', $files[1]['tags']);
         self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1000, $files[1]['sizeBytes']);
 
@@ -420,7 +420,7 @@ class DebugModeTest extends KernelTestCase
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[0]['name']));
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[0]['tags']);
-        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('JobId:123456', $files[0]['tags']);
         self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
     }
@@ -586,32 +586,32 @@ class DebugModeTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(4, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
-        self::assertContains('row2', $files[0]['tags']);
+        self::assertContains('RowId:row2', $files[0]['tags']);
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
-        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('JobId:123456', $files[0]['tags']);
         self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1500, $files[0]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
-        self::assertContains('row2', $files[1]['tags']);
+        self::assertContains('RowId:row2', $files[1]['tags']);
         self::assertContains('keboola.python-transformation', $files[1]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
-        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('JobId:123456', $files[1]['tags']);
         self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1500, $files[1]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[2]['name']));
-        self::assertContains('row1', $files[2]['tags']);
+        self::assertContains('RowId:row1', $files[2]['tags']);
         self::assertContains('keboola.python-transformation', $files[2]['tags']);
-        self::assertContains('123456', $files[2]['tags']);
+        self::assertContains('JobId:123456', $files[2]['tags']);
         self::assertContains('debug', $files[2]['tags']);
         self::assertGreaterThan(1500, $files[2]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[3]['name']));
-        self::assertContains('row1', $files[3]['tags']);
+        self::assertContains('RowId:row1', $files[3]['tags']);
         self::assertContains('keboola.python-transformation', $files[3]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[3]['tags']);
-        self::assertContains('123456', $files[3]['tags']);
+        self::assertContains('JobId:123456', $files[3]['tags']);
         self::assertContains('debug', $files[3]['tags']);
         self::assertGreaterThan(1500, $files[3]['sizeBytes']);
     }
@@ -755,48 +755,48 @@ class DebugModeTest extends KernelTestCase
         $files = $this->client->listFiles($listOptions);
         self::assertEquals(6, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
-        self::assertContains('row2', $files[0]['tags']);
+        self::assertContains('RowId:row2', $files[0]['tags']);
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
-        self::assertContains('123456', $files[0]['tags']);
+        self::assertContains('JobId:123456', $files[0]['tags']);
         self::assertContains('debug', $files[0]['tags']);
         self::assertGreaterThan(1000, $files[0]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
-        self::assertContains('row2', $files[1]['tags']);
+        self::assertContains('RowId:row2', $files[1]['tags']);
         self::assertContains('keboola.python-transformation', $files[1]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[1]['tags']);
-        self::assertContains('123456', $files[1]['tags']);
+        self::assertContains('JobId:123456', $files[1]['tags']);
         self::assertContains('debug', $files[1]['tags']);
         self::assertGreaterThan(1000, $files[1]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[2]['name']));
-        self::assertContains('row1', $files[2]['tags']);
+        self::assertContains('RowId:row1', $files[2]['tags']);
         self::assertContains('keboola.python-transformation', $files[2]['tags']);
-        self::assertContains('123456', $files[2]['tags']);
+        self::assertContains('JobId:123456', $files[2]['tags']);
         self::assertContains('debug', $files[2]['tags']);
         self::assertGreaterThan(1000, $files[2]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_2.zip', $files[3]['name']));
-        self::assertContains('row1', $files[3]['tags']);
-        self::assertContains('keboola.python-transformation', $files[3]['tags']);
+        self::assertContains('RowId:row1', $files[3]['tags']);
+        self::assertContains('keboola.processor-add-row-number-column', $files[3]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-add-row-number-column', $files[3]['tags']);
-        self::assertContains('123456', $files[3]['tags']);
+        self::assertContains('JobId:123456', $files[3]['tags']);
         self::assertContains('debug', $files[3]['tags']);
         self::assertGreaterThan(1000, $files[3]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_1.zip', $files[4]['name']));
-        self::assertContains('row1', $files[4]['tags']);
-        self::assertContains('keboola.python-transformation', $files[4]['tags']);
+        self::assertContains('RowId:row1', $files[4]['tags']);
+        self::assertContains('keboola.processor-create-manifest', $files[4]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-create-manifest', $files[4]['tags']);
-        self::assertContains('123456', $files[4]['tags']);
+        self::assertContains('JobId:123456', $files[4]['tags']);
         self::assertContains('debug', $files[4]['tags']);
         self::assertGreaterThan(1000, $files[4]['sizeBytes']);
 
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[5]['name']));
-        self::assertContains('row1', $files[5]['tags']);
+        self::assertContains('RowId:row1', $files[5]['tags']);
         self::assertContains('keboola.python-transformation', $files[5]['tags']);
         self::assertContains('147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation', $files[5]['tags']);
-        self::assertContains('123456', $files[5]['tags']);
+        self::assertContains('JobId:123456', $files[5]['tags']);
         self::assertContains('debug', $files[5]['tags']);
         self::assertGreaterThan(1000, $files[5]['sizeBytes']);
     }
