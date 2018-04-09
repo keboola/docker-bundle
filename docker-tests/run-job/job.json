@@ -14,10 +14,9 @@
     "component": "docker",
     "command": "run",
     "params": {
-        "config": "text-splitter-test-63",
-        "component": "dca-custom-science-python",
-        "mode": "run",
-        "tag": "1.0.0"
+        "config": "362929946",
+        "component": "keboola.ex-currency",
+        "mode": "debug"
     },
     "status": "success",
     "createdTime": "2017-06-16T14:18:20+02:00",

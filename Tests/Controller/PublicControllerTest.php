@@ -251,7 +251,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=keboola.r-transformation',
+            '/docker/encrypt-new?componentId=docker-demo',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],

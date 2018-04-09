@@ -33,6 +33,10 @@ use Keboola\Temp\Temp;
 
 class Runner
 {
+    const MODE_DEBUG = 'debug';
+
+    const MODE_RUN = 'run';
+
     /**
      * @var ObjectEncryptorFactory
      */
@@ -214,18 +218,9 @@ class Runner
             $jobId
         );
 
-        $sandboxed = $mode != 'run';
         $configData = $jobDefinition->getConfiguration();
-
-        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId(), $sandboxed);
-
-        if ($sandboxed) {
-            // do not decrypt image parameters on sandboxed calls
-            $imageParameters = $component->getImageParameters();
-        } else {
-            $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
-        }
-
+        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
+        $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         $configFile = new ConfigFile(
             $dataDirectory->getDataDir(),
             $imageParameters,
@@ -235,27 +230,29 @@ class Runner
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
+            $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
+                $outputFilter,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
-            $outputFilter = new OutputFilter();
         } else {
+            $outputFilter = new NullFilter();
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
                 $dataDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
+                $outputFilter,
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getRowId()
             );
-            $outputFilter = new NullFilter();
         }
 
         $stateFile = new StateFile(
@@ -278,18 +275,7 @@ class Runner
             $configData
         );
 
-        switch ($mode) {
-            case 'run':
-                $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
-                break;
-            case 'sandbox':
-            case 'input':
-            case 'dry-run':
-                $output = $this->sandboxComponent($jobId, $configData, $mode, $jobDefinition->getConfigId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter);
-                break;
-            default:
-                throw new ApplicationException("Invalid run mode " . $mode);
-        }
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $mode);
         return $output;
     }
 
@@ -315,8 +301,8 @@ class Runner
             }
         }
 
-        if (count($jobDefinitions) > 1 && $mode != 'run') {
-            throw new UserException('Only 1 row allowed for sandbox calls.');
+        if (($mode !== self::MODE_RUN) && ($mode !== self::MODE_DEBUG)) {
+            throw new UserException("Invalid run mode: $mode");
         }
         $outputs = [];
         foreach ($jobDefinitions as $jobDefinition) {
@@ -353,57 +339,28 @@ class Runner
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
      * @param OutputFilterInterface $outputFilter
+     * @param string $mode
      * @return Output
+     * @throws ClientException
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $mode)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode);
 
-        // finalize
-        $dataLoader->storeOutput();
-
-        $dataDirectory->dropDataDir();
-        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
-        return $output;
-    }
-
-    /**
-     * @param $jobId
-     * @param $configData
-     * @param $mode
-     * @param $configId
-     * @param Component $component
-     * @param UsageFile $usageFile
-     * @param DataLoaderInterface $dataLoader
-     * @param DataDirectory $dataDirectory
-     * @param StateFile $stateFile
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param OutputFilterInterface $outputFilter
-     * @return Output
-     */
-    public function sandboxComponent($jobId, $configData, $mode, $configId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter)
-    {
-        // initialize
-        $dataDirectory->createDataDir();
-        $stateFile->createStateFile();
-        $dataLoader->loadInputData();
-
-        if ($mode == 'dry-run') {
-            $output = $this->runImages($jobId, $configId, 'NA', $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter);
+        if ($mode === self::MODE_DEBUG) {
+            $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
         } else {
-            $configFile->createConfigFile($configData, $outputFilter);
-            $output = new Output();
+            $dataLoader->storeOutput();
         }
 
-        $dataLoader->storeDataArchive([$mode, 'docker', $component->getId()]);
         // finalize
         $dataDirectory->dropDataDir();
+        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
 
@@ -418,10 +375,12 @@ class Runner
      * @param ConfigFile $configFile
      * @param StateFile $stateFile
      * @param OutputFilterInterface $outputFilter
+     * @param DataLoaderInterface $dataLoader
+     * @param string $mode
      * @return Output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $mode)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -474,11 +433,14 @@ class Runner
                 $dataDirectory,
                 $outputFilter
             );
+            if ($mode === self::MODE_DEBUG) {
+                $dataLoader->storeDataArchive('stage_' . $priority, [self::MODE_DEBUG, $image->getSourceComponent()->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId, $image->getImageId()]);
+            }
             try {
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    if ($this->shouldStoreState($component->getId(), $configId)) {
+                    if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
                         $stateFile->storeStateFile();
                     }
                 }

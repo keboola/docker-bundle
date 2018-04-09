@@ -144,12 +144,12 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
-    public function testSandbox()
+    public function testDebug()
     {
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/sandbox',
+            '/docker/keboola.r-transformation/debug',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
@@ -161,47 +161,12 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
-
-    public function testInput()
+    public function testInvalidComponentDebug()
     {
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/keboola.r-transformation/input',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('waiting', $response['status']);
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
-    }
-
-    public function testDryRun()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/keboola.r-transformation/dry-run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('waiting', $response['status']);
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
-    }
-
-    public function testInvalidComponentInput()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/invalid-component/input',
+            '/docker/invalid-component/debug',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
@@ -221,25 +186,6 @@ class ApiControllerTest extends WebTestCase
         $client->request(
             'POST',
             '/docker/invalid-component/run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "dummy"}'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertArrayHasKey('status', $response);
-        $this->assertEquals('error', $response['status']);
-        $this->assertArrayHasKey('message', $response);
-        $this->assertEquals('Component \'invalid-component\' not found.', $response['message']);
-    }
-
-    public function testInvalidComponentDryRun()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/invalid-component/dry-run',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
@@ -455,50 +401,6 @@ class ApiControllerTest extends WebTestCase
         $encryptor = self::$container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
         $this->assertCount(2, $result);
-    }
-
-    public function testInputDisabledByEncrypt()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/docker-config-encrypt-verify/input',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
-            '{
-                "config": "dummy"
-             }'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertEquals("error", $response["status"]);
-        $this->assertEquals(
-            "This API call is not supported for components that use the 'encrypt' flag.",
-            $response["message"]
-        );
-    }
-
-    public function testDryRunDisabledByEncrypt()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/docker-config-encrypt-verify/dry-run',
-            [],
-            [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN, 'CONTENT_TYPE' => 'application/json'],
-            '{
-                "config": "dummy"
-             }'
-        );
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertEquals("error", $response["status"]);
-        $this->assertEquals(
-            "This API call is not supported for components that use the 'encrypt' flag.",
-            $response["message"]
-        );
     }
 
     public function testSaveEncryptedConfig()

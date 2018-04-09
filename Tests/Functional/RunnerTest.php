@@ -545,73 +545,7 @@ class RunnerTest extends KernelTestCase
         $this->assertArrayHasKey('message', $ret[0]);
         $this->assertContains('KBC_PARAMETER_FOO=bar', $ret[0]['message']);
     }
-
-    public function testImageParametersNoDecrypt()
-    {
-        $configurationData = [
-            'parameters' => [
-                'foo' => 'bar',
-                'script' => [
-                    'from pathlib import Path',
-                    'import sys',
-                    'import base64',
-                    // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
-                    'contents = Path("/data/config.json").read_text()[::-1]',
-                    'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
-                ]
-            ],
-        ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('someString');
-
-        $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-                'image_parameters' => [
-                    'foo' => 'bar',
-                    'baz' => [
-                        'lily' => 'pond'
-                    ],
-                    '#encrypted' => $encrypted
-                ]
-            ],
-        ];
-
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                uniqid('test-'),
-                $configurationData,
-                []
-            ),
-            'run',
-            'dry-run',
-            '1234567'
-        );
-
-        $output = '';
-        foreach ($handler->getRecords() as $record) {
-            if ($record['level'] == 400) {
-                $output = $record['message'];
-            }
-        }
-        $config = json_decode(strrev(base64_decode($output)), true);
-        $this->assertEquals('bar', $config['parameters']['foo']);
-        $this->assertEquals('bar', $config['image_parameters']['foo']);
-        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals($encrypted, $config['image_parameters']['#encrypted']);
-    }
-
+    
     public function testClearState()
     {
         $state = ['key' => 'value'];

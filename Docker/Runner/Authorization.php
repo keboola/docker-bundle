@@ -16,11 +16,6 @@ class Authorization
     private $oauthClient;
 
     /**
-     * @var bool
-     */
-    private $sandboxed;
-
-    /**
      * @var ObjectEncryptor
      */
     private $encryptor;
@@ -35,11 +30,10 @@ class Authorization
      */
     private $oauthClientV3;
 
-    public function __construct(Credentials $client, Credentials $clientV3, ObjectEncryptor $encryptor, $componentId, $sandboxed)
+    public function __construct(Credentials $client, Credentials $clientV3, ObjectEncryptor $encryptor, $componentId)
     {
         $this->oauthClient = $client;
         $this->componentId = $componentId;
-        $this->sandboxed = $sandboxed;
         $this->encryptor = $encryptor;
         $this->oauthClient->enableReturnArrays(true);
         $this->oauthClientV3 = $clientV3;
@@ -64,11 +58,7 @@ class Authorization
                     $this->componentId,
                     $configData['oauth_api']['id']
                 );
-                if ($this->sandboxed) {
-                    $decrypted = $credentials;
-                } else {
-                    $decrypted = $this->encryptor->decrypt($credentials);
-                }
+                $decrypted = $this->encryptor->decrypt($credentials);
                 $data['oauth_api']['credentials'] = $decrypted;
             } catch (RequestException $e) {
                 if (($e->getCode() >= 400) && ($e->getCode() < 500)) {

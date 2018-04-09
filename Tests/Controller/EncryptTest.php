@@ -191,7 +191,7 @@ class EncryptTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt?componentId=keboola.r-transformation',
+            '/docker/encrypt?componentId=docker-demo',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],

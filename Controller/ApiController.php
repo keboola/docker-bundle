@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -37,28 +38,6 @@ class ApiController extends BaseApiController
         if (isset($body["config"]) && isset($body["configData"])) {
             $this->logger->info("Both config and configData specified, 'config' ignored.");
         }
-    }
-
-
-    private function validateComponent(Request $request)
-    {
-        /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-
-        // Get params from request
-        $params = $this->getPostJson($request);
-        $component = $request->get("component");
-        $this->checkComponent($component);
-
-        if ((new ControllerHelper())->hasComponentEncryptFlag($storage->getClient(), $params["component"])) {
-            return $this->createJsonResponse([
-                'status'    => 'error',
-                'message'    => 'This API call is not supported for components that use the \'encrypt\' flag.',
-            ], 400);
-        }
-
-        $this->validateParams($params);
-        return $params;
     }
 
     /**
@@ -163,65 +142,22 @@ class ApiController extends BaseApiController
         ], 202);
     }
 
-
     /**
-     *  Sandbox - generate configuration and environment and
-     *  store it in KBC Storage.
+     *  Debug - create a snapshot of data folder before and after every container, do not perform output mapping.
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
      */
-    public function sandboxAction(Request $request)
+    public function debugAction(Request $request)
     {
         // Get params from request
         $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
         $this->validateParams($params);
-        $params['mode'] = 'sandbox';
-
-        # TODO deprecated, remove later
-        $params["format"] = $request->get("format", "yaml");
-        if (!in_array($params["format"], ["yaml", "json"])) {
-            throw new UserException("Invalid configuration format '{$params["format"]}'.");
-        }
-
+        $params['mode'] = Runner::MODE_DEBUG;
         return $this->createJobFromParams($params);
-    }
-
-
-    /**
-     *  Prepare - generate configuration and environment for an existing docker image and
-     *  store it in KBC Storage.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function inputAction(Request $request)
-    {
-        $ret = $this->validateComponent($request);
-        if (is_a($ret, JsonResponse::class)) {
-            return $ret;
-        } else {
-            $ret['mode'] = 'input';
-            return $this->createJobFromParams($ret);
-        }
-    }
-
-
-    /**
-     * Run docker component with the provided configuration.
-     *
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function dryRunAction(Request $request)
-    {
-        $ret = $this->validateComponent($request);
-        if (is_a($ret, JsonResponse::class)) {
-            return $ret;
-        } else {
-            $ret['mode'] = 'dry-run';
-            return $this->createJobFromParams($ret);
-        }
     }
 
     /**
