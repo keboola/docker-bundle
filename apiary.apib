@@ -412,19 +412,21 @@ Debug API call is handy when developing or troubleshooting components.
 
 ## Debug Component [/{componentId}/debug]
 
-This job will prepare the `data` folder including the serialized configuration files. Then it will compress
-the `data` folder and upload it to your project's Files in Storage. This way you will get a snapshot of what
+This API call accepts the same body attributes as the [Run call](#reference/run/create-a-job/run-job). But it
+will creates a job that prepares the `data` folder including the serialized configuration files. Then it compresses
+the `data` folder and uploads it to your project's Files in Storage. This way you will get a snapshot of what
 the `data` folder looked like before the component started. If processors are used, a snapshot of the data folder
 is created before each processor. After the entire component finishes, another snapshot is made.
 
 For example, if you run component `a` with processor `b` and `c` in the `after` section, you will receive:
 
-- `stage_0` file with contents of the data directory before component `a` was run
-- `stage_1` file with contents of the data directory before processor `b` was run
-- `stage_2` file with contents of the data directory before processor `c` was run
-- `stage_output` file with contents of the data directory before output mapping was about to be performed.
+- `stage_0` file with contents of the data folder before component `a` was run
+- `stage_1` file with contents of the data folder before processor `b` was run
+- `stage_2` file with contents of the data folder before processor `c` was run
+- `stage_output` file with contents of the data folder before output mapping was about to be performed (after `c` finished).
 
-If configuration rows are used, then the above is repeated for each configuration row.
+If configuration rows are used, then the above is repeated for each configuration row. If the job finishes with
+and error, only the stages before the error are uploaded.
 
 This API call does not upload any tables or files to Storage. I.e. when the component finishes, its output is 
 discarded and the output mapping to storage is **not performed**. This makes this API call generally very safe to call, because
@@ -440,7 +442,7 @@ mapping so that you don't end up with gigabyte size archives.
 + Parameters
     + componentId (string) ... KBC component Id
 
-### Create an Input job [POST]
+### Create a debug job [POST]
 
 + Request Stored configuration (application/json)
     + Headers
