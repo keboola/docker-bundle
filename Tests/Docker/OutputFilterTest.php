@@ -29,9 +29,24 @@ class OutputFilterTest extends TestCase
             "a\n\rbcd" . OutputFilter::REPLACEMENT . 'ghijk',
             $filter->filter("a\n\rbcdfooghijk")
         );
+    }
+
+    public function testFunctions()
+    {
+        $secret = 'sec\\ret/"sec\'ret';
+        $filter = new OutputFilter();
+        $filter->collectValues([['#encrypted' => $secret]]);
         self::assertEquals(
-            'abcd' . OutputFilter::REPLACEMENT . 'ghijk',
-            $filter->filter('abcd' . base64_encode('e') . 'ghijk')
+            'this is ' . OutputFilter::REPLACEMENT . ' which is secret',
+            $filter->filter('this is ' . $secret . ' which is secret')
+        );
+        self::assertEquals(
+            'this is ' . OutputFilter::REPLACEMENT . ' which is secret',
+            $filter->filter('this is ' . base64_encode($secret) . ' which is secret')
+        );
+        self::assertEquals(
+            'this is ' . OutputFilter::REPLACEMENT . ' which is secret',
+            $filter->filter('this is ' . json_encode($secret) . ' which is secret')
         );
     }
 }

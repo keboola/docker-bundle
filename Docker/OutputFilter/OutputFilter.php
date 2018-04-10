@@ -19,6 +19,7 @@ class OutputFilter implements OutputFilterInterface
         $this->filterValues[] = $value;
         // this is reversible, so hide it too
         $this->filterValues[] = base64_encode($value);
+        $this->filterValues[] = json_encode($value);
     }
 
     /**
