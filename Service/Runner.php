@@ -275,7 +275,7 @@ class Runner
             $configData
         );
 
-        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $mode);
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode);
         return $output;
     }
 
@@ -285,7 +285,7 @@ class Runner
      * @param $mode
      * @param $jobId
      * @param string|null $rowId
-     * @return array
+     * @return Output[]
      */
     public function run(array $jobDefinitions, $action, $mode, $jobId, $rowId = null)
     {
@@ -339,18 +339,19 @@ class Runner
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
      * @param OutputFilterInterface $outputFilter
+     * @param string $configVersion
      * @param string $mode
      * @return Output
      * @throws ClientException
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $mode)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
     {
         // initialize
         $dataDirectory->createDataDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
@@ -377,10 +378,11 @@ class Runner
      * @param OutputFilterInterface $outputFilter
      * @param DataLoaderInterface $dataLoader
      * @param string $mode
+     * @param string $configVersion
      * @return Output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $mode)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -455,7 +457,7 @@ class Runner
                 $dataDirectory->moveOutputToInput();
             }
         }
-        return new Output($imageDigests, $outputMessage);
+        return new Output($imageDigests, $outputMessage, $configVersion);
     }
 
     /**
