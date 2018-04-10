@@ -412,8 +412,8 @@ Debug API call is handy when developing or troubleshooting components.
 
 ## Debug Component [/{componentId}/debug]
 
-This API call accepts the same body attributes as the [Run call](#reference/run/create-a-job/run-job). But it
-will creates a job that prepares the `data` folder including the serialized configuration files. Then it compresses
+This API call accepts the same body attributes as the [Run call](#reference/run/create-a-job/run-job). It
+creates a job that prepares the `data` folder including the serialized configuration files. Then it compresses
 the `data` folder and uploads it to your project's Files in Storage. This way you will get a snapshot of what
 the `data` folder looked like before the component started. If processors are used, a snapshot of the data folder
 is created before each processor. After the entire component finishes, another snapshot is made.
