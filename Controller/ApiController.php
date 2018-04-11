@@ -73,8 +73,8 @@ class ApiController extends BaseApiController
         $this->checkMappingParams($params);
 
         try {
-            if (isset($params["configData"]) {
-                // Encrypt configData 
+            if (isset($params["configData"])) {
+                // Encrypt configData
                 /** @var ObjectEncryptorFactory $encryptorFactory */
                 $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
                 $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
@@ -270,13 +270,15 @@ class ApiController extends BaseApiController
         $options->setConfigurationId($request->get("configId"));
 
         if ($request->get("configuration")) {
-            $configuration = json_decode($request->get("configuration"));
             /** @var ObjectEncryptorFactory $encryptorFactory */
             $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
             $encryptorFactory->setComponentId($request->get("component"));
             $tokenInfo = $this->storageApi->verifyToken();
             $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-            $configuration = $encryptorFactory->getEncryptor()->encrypt($configuration, ComponentProjectWrapper::class);
+            $configuration = $encryptorFactory->getEncryptor()->encrypt(
+                json_decode($request->get("configuration")),
+                ComponentProjectWrapper::class
+            );
             $options->setConfiguration($configuration);
         }
 
