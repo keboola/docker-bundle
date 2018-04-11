@@ -433,28 +433,6 @@ class ApiControllerTest extends WebTestCase
         $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
             ->will($this->returnValue($storageClientStub));
-
-        // mock client to return image data
-        $indexActionValue = [
-            'components' => [[
-                'id' => 'docker-dummy-test',
-                'type' => 'other',
-                'name' => 'Docker Config Dump',
-                'data' => [
-                    'definition' =>
-                        [
-                            'type' => 'dockerhub',
-                            'uri' => 'keboola/docker-dummy-test',
-                        ],
-                ],
-                'flags' => ['encrypt'],
-                'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-            ]]
-        ];
-
-        $storageClientStub->expects($this->atLeastOnce())
-            ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->once())
             ->method("verifyToken")
             ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
@@ -716,40 +694,11 @@ class ApiControllerTest extends WebTestCase
         $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
             ->will($this->returnValue($storageClientStub));
-
-        // mock client to return image data
-        $indexActionValue = array(
-            'components' =>
-                array(
-                    0 =>
-                        array(
-                            'id' => 'docker-dummy-test',
-                            'type' => 'other',
-                            'name' => 'Docker Config Dump',
-                            'description' => 'Testing Docker',
-                            'longDescription' => null,
-                            'hasUI' => false,
-                            'hasRun' => true,
-                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
-                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array(
-                                'definition' =>
-                                    array(
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/docker-dummy-test',
-                                    ),
-                            ),
-                            'flags' => array(),
-                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-                        )
-                )
-        );
-
         $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"test"}}},"state":{}}';
 
         $storageClientStub->expects($this->atLeastOnce())
-            ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
+            ->method("verifyToken")
+            ->will($this->returnValue(["id" => "123", "owner" => ["id" => "456"]]));
         $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
@@ -800,38 +749,9 @@ class ApiControllerTest extends WebTestCase
         $storageServiceStub->expects($this->atLeastOnce())
             ->method("getClient")
             ->will($this->returnValue($storageClientStub));
-
-        // mock client to return image data
-        $indexActionValue = array(
-            'components' =>
-                array(
-                    0 =>
-                        array(
-                            'id' => 'docker-dummy-test',
-                            'type' => 'other',
-                            'name' => 'Docker Config Dump',
-                            'description' => 'Testing Docker',
-                            'longDescription' => null,
-                            'hasUI' => false,
-                            'hasRun' => true,
-                            'ico32' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-32-1.png',
-                            'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/docker-demo-64-1.png',
-                            'data' => array(
-                                'definition' =>
-                                    array(
-                                        'type' => 'dockerhub',
-                                        'uri' => 'keboola/docker-dummy-test',
-                                    ),
-                            ),
-                            'flags' => array(),
-                            'uri' => 'https://syrup.keboola.com/docker/docker-dummy-test',
-                        )
-                )
-        );
-
         $storageClientStub->expects($this->atLeastOnce())
-            ->method("indexAction")
-            ->will($this->returnValue($indexActionValue));
+            ->method("verifyToken")
+            ->will($this->returnValue(["id" => "123", "owner" => ["id" => "456"]]));
         $storageClientStub->expects($this->once())
             ->method("apiPut")
             ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
