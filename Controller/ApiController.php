@@ -72,15 +72,17 @@ class ApiController extends BaseApiController
         // check params against ES mapping
         $this->checkMappingParams($params);
 
-        // Encrypt configData for encrypt flagged components
         try {
-            /** @var ObjectEncryptorFactory $encryptorFactory */
-            $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-            $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
-            $encryptorFactory->setComponentId($params["component"]);
-            $tokenInfo = $this->storageApi->verifyToken();
-            $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-            $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
+            if (isset($params["configData"]) {
+                // Encrypt configData 
+                /** @var ObjectEncryptorFactory $encryptorFactory */
+                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+                $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
+                $encryptorFactory->setComponentId($params["component"]);
+                $tokenInfo = $this->storageApi->verifyToken();
+                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+                $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
+            }
 
             // Create new job
             /** @var JobFactory $jobFactory */

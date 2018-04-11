@@ -106,8 +106,8 @@ class ApiControllerTest extends WebTestCase
         );
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('status', $response);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals('waiting', $response['status']);
-        $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
     public function testRunConfigRow()
