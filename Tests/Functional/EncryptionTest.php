@@ -220,40 +220,6 @@ class EncryptionTest extends KernelTestCase
         return $indexActionValue;
     }
 
-    public function testStoredConfigDecryptNonEncryptComponent()
-    {
-        $data = [
-            'params' => [
-                'component' => 'docker-dummy-component',
-                'mode' => 'run',
-                'config' => 'config'
-            ]
-        ];
-
-        // fake image data
-        $indexActionValue = $this->getComponentDefinition();
-        $indexActionValue['components']['0']['flags'] = [];
-
-        $handler = new TestHandler();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
-        $job->setId(123456);
-        $jobExecutor->execute($job);
-
-        $output = '';
-        foreach ($handler->getRecords() as $record) {
-            if ($record['level'] == 400) {
-                $output = $record['message'];
-            }
-        }
-        $config = json_decode(strrev(base64_decode($output)), true);
-        $this->assertStringStartsWith("first", $config["parameters"]["key1"]);
-        $this->assertStringStartsWith("KBC::Encrypted==", $config["parameters"]["#key2"]);
-        $this->assertStringStartsWith("KBC::ComponentEncrypted==", $config["parameters"]["#key3"]);
-        $this->assertStringStartsWith("KBC::ComponentProjectEncrypted==", $config["parameters"]["#key4"]);
-    }
-
     public function testStoredConfigDecryptEncryptComponent()
     {
         $data = [

@@ -14,7 +14,6 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Job\Metadata\JobFactory;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -70,17 +69,12 @@ class ApiController extends BaseApiController
      */
     private function createJobFromParams($params)
     {
-        /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-
         // check params against ES mapping
         $this->checkMappingParams($params);
 
-        // Encrypt configData for encrypt flagged components
         try {
-            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $params["component"])
-                && isset($params["configData"])
-            ) {
+            if (isset($params["configData"])) {
+                // Encrypt configData
                 /** @var ObjectEncryptorFactory $encryptorFactory */
                 $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
                 $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
@@ -237,16 +231,6 @@ class ApiController extends BaseApiController
     public function encryptConfigAction(Request $request)
     {
         $this->logger->warn("Using deprecated encryptConfig call.");
-        /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-
-        $component = $request->get("component");
-        if (!(new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $component)) {
-            return $this->createJsonResponse([
-                'status'    => 'error',
-                'message'    => 'This API call is only supported for components that use the \'encrypt\' flag.',
-            ], 400);
-        }
 
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
@@ -280,23 +264,21 @@ class ApiController extends BaseApiController
     {
         $this->logger->warn("Using deprecated saveConfig call.");
         /** @var StorageApiService $storage */
-        $storage = $this->container->get("syrup.storage_api");
-
         $components = new Components($this->storageApi);
         $options = new Configuration();
         $options->setComponentId($request->get("component"));
         $options->setConfigurationId($request->get("configId"));
 
         if ($request->get("configuration")) {
-            $configuration = json_decode($request->get("configuration"));
-            if ((new ControllerHelper)->hasComponentEncryptFlag($storage->getClient(), $request->get("component"))) {
-                /** @var ObjectEncryptorFactory $encryptorFactory */
-                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-                $encryptorFactory->setComponentId($request->get("component"));
-                $tokenInfo = $this->storageApi->verifyToken();
-                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-                $configuration = $encryptorFactory->getEncryptor()->encrypt($configuration, ComponentProjectWrapper::class);
-            }
+            /** @var ObjectEncryptorFactory $encryptorFactory */
+            $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+            $encryptorFactory->setComponentId($request->get("component"));
+            $tokenInfo = $this->storageApi->verifyToken();
+            $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+            $configuration = $encryptorFactory->getEncryptor()->encrypt(
+                json_decode($request->get("configuration")),
+                ComponentProjectWrapper::class
+            );
             $options->setConfiguration($configuration);
         }
 
@@ -335,9 +317,6 @@ class ApiController extends BaseApiController
         $componentId = $request->get("componentId");
         $projectId = $request->get("projectId");
         $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
-        if (!(new ControllerHelper)->hasComponentEncryptFlag($this->storageApi, $componentId)) {
-            throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
-        }
         if (!$componentId || !$stackId) {
             throw new UserException("Stack id and component id must be entered.");
         }

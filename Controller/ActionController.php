@@ -66,13 +66,11 @@ class ActionController extends BaseApiController
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
         $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
         $configData = isset($requestJsonData["configData"]) ? $requestJsonData["configData"] : [];
-        if (in_array("encrypt", $component["flags"])) {
-            try {
-                $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
-                $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
-            } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
-                throw new UserException($e->getMessage(), $e);
-            }
+        try {
+            $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
+            $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
+        } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
+            throw new UserException($e->getMessage(), $e);
         }
 
         if (!$this->storageApi->getRunId()) {

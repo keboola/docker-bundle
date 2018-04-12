@@ -139,12 +139,7 @@ class Executor extends BaseExecutor
             // Read config from storage
             try {
                 $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-
-                if (in_array("encrypt", $component["flags"])) {
-                    $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
-                } else {
-                    $jobDefinitionParser->parseConfig(new Component($component), $configuration);
-                }
+                $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
             } catch (ClientException $e) {
                 throw new UserException(
                     "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
