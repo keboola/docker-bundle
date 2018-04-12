@@ -31,10 +31,6 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
             throw new UserException("Component Id is required.");
         }
 
-        if (!(new ControllerHelper)->hasComponentEncryptFlag(new Client(['token' => 'dummy', 'url' => $this->container->getParameter('storage_api.url')]), $componentId)) {
-            throw new UserException("This API call is only supported for components that use the 'encrypt' flag.");
-        }
-
         /** @var ObjectEncryptorFactory $encryptorFactory */
         $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
         $encryptorFactory->setComponentId($componentId);

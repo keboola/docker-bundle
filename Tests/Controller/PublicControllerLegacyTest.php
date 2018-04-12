@@ -150,30 +150,6 @@ class PublicControllerLegacyTest extends WebTestCase
         $this->assertEquals('Incorrect Content-Type.', $response['message']);
     }
 
-    public function testEncryptOnAComponentThatDoesNotHaveEncryptFlag()
-    {
-        $client = $this->createClient();
-        $client->request(
-            'POST',
-            '/docker/docker-demo/encrypt',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            '{
-                "key1": "value1",
-                "#key2": "value2"
-            }'
-        );
-
-        $response = json_decode($client->getResponse()->getContent(), true);
-        $this->assertEquals(400, $client->getResponse()->getStatusCode());
-        $this->assertEquals("error", $response["status"]);
-        $this->assertEquals(
-            "This API call is only supported for components that use the 'encrypt' flag.",
-            $response["message"]
-        );
-    }
-
     public function testEncryptWithoutComponent()
     {
         $client = $this->createClient();
