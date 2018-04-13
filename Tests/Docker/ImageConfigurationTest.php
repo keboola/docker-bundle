@@ -25,7 +25,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "verbosity" => [200 => "verbose"],
                 "no_application_errors" => true,
             ],
-            "inject_environment" => true,
         ];
         $expectedConfiguration = [
             "definition" => [
@@ -54,7 +53,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             "staging_storage" => [
                 "input" => "local"
             ],
-            "inject_environment" => true,
         ];
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
         $this->assertEquals($expectedConfiguration, $processedConfiguration);
@@ -87,7 +85,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
             'staging_storage' => [
                 'input' => 'local'
             ],
-            'inject_environment' => false,
             'image_parameters' => [],
             'network' => 'bridge',
             'logging' => [
@@ -248,7 +245,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "gelf_server_type" => "tcp",
                 "no_application_errors" => false,
             ],
-            "inject_environment" => false,
             "image_parameters" => [],
             "network" => "bridge",
         ];

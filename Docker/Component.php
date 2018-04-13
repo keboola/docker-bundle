@@ -88,14 +88,6 @@ class Component
         return $this->data['default_bucket_stage'] . ".c-" . $this->getSanitizedComponentId() . "-" . $configId;
     }
 
-    /**
-     * @return bool
-     */
-    public function injectEnvironment()
-    {
-        return !empty($this->data['inject_environment']);
-    }
-
     public function forwardToken()
     {
         return $this->data['forward_token'];

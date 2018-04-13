@@ -235,7 +235,6 @@ class RunnerTest extends KernelTestCase
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file",
                       "tag" => "0.3.0",
                     ],
-                    "inject_environment" => true,
                 ],
             ],
 
@@ -247,7 +246,6 @@ class RunnerTest extends KernelTestCase
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv",
                       "tag" => "2.0.3",
                     ],
-                    "inject_environment" => true,
                 ],
             ],
             [
@@ -258,8 +256,7 @@ class RunnerTest extends KernelTestCase
                         "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files",
                         "tag" => "1.1.0",
                     ],
-                    "inject_environment" => true,
-                ]
+                ],
             ],
             [
                 "id" => "keboola.processor-decompress",
@@ -268,8 +265,8 @@ class RunnerTest extends KernelTestCase
                         "type" => "aws-ecr",
                         "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress",
                         "tag" => "0.1.0",
-                    ]
-                ]
+                    ],
+                ],
             ],
         ];
 
@@ -492,60 +489,6 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('[hidden]', $config['image_parameters']['#encrypted']);
     }
 
-    public function testImageParametersEnvironment()
-    {
-        $configurationData = [
-            'parameters' => [
-                'foo' => 'bar'
-            ]
-        ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler);
-        $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        // also attempt to pass the token to verify that it does not work
-                        'entry_point' => 'echo KBC_PARAMETER_FOO=$KBC_PARAMETER_FOO',
-                    ],
-                ],
-                'configuration_format' => 'json',
-                'inject_environment' => true,
-            ],
-        ];
-
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                uniqid('test-'),
-                $configurationData,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
-
-        $ret = $handler->getRecords();
-        $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $this->assertContains('KBC_PARAMETER_FOO=bar', $ret[0]['message']);
-    }
-    
     public function testClearState()
     {
         $state = ['key' => 'value'];
