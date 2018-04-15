@@ -161,7 +161,8 @@ class Executor extends BaseExecutor
             "message" => "Component processing finished.",
             "images" => array_map(function (Output $output) {
                 return $output->getImages();
-            }, $outputs)
+            }, $outputs),
+            "configVersion" => $outputs[0]->getConfigVersion(),
         ];
     }
 

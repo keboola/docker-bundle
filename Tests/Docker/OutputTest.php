@@ -12,7 +12,7 @@ class OutputTest extends \PHPUnit_Framework_TestCase
             ['id' => 'apples', 'digests' => ['foo', 'baz']],
             ['id' => 'oranges', 'digests' => ['bar']]
         ];
-        $output = new Output($images, 'bazBar');
+        $output = new Output($images, 'bazBar', '123');
         self::assertEquals('bazBar', $output->getProcessOutput());
         self::assertEquals(
             [
@@ -21,5 +21,6 @@ class OutputTest extends \PHPUnit_Framework_TestCase
             ],
             $output->getImages()
         );
+        self::assertEquals('123', $output->getConfigVersion());
     }
 }

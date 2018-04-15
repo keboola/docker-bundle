@@ -15,15 +15,22 @@ class Output
     private $output;
 
     /**
+     * @var string
+     */
+    private $configVersion;
+
+    /**
      * Output constructor.
      *
      * @param array $images
-     * @param string|null $output
+     * @param string $output
+     * @param $configVersion
      */
-    public function __construct(array $images = [], $output = null)
+    public function __construct(array $images, $output, $configVersion)
     {
         $this->images = $images;
         $this->output = $output;
+        $this->configVersion = $configVersion;
     }
 
     /**
@@ -40,5 +47,13 @@ class Output
     public function getProcessOutput()
     {
         return $this->output;
+    }
+
+    /**
+     * @return string
+     */
+    public function getConfigVersion()
+    {
+        return $this->configVersion;
     }
 }

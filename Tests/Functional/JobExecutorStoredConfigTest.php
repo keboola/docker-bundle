@@ -248,7 +248,11 @@ class JobExecutorStoredConfigTest extends KernelTestCase
         $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
         $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
-        $jobExecutor->execute($job);
+        $ret = $jobExecutor->execute($job);
+        $this->assertArrayHasKey('message', $ret);
+        $this->assertArrayHasKey('images', $ret);
+        $this->assertArrayHasKey('configVersion', $ret);
+        $this->assertEquals('1', $ret['configVersion']);
 
         $csvData = $this->client->getTableDataPreview(
             'out.c-docker-test.transposed',

@@ -279,8 +279,11 @@ class JobExecutorInlineConfigWithConfigIdTest extends KernelTestCase
         $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler);
         $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
-        $jobExecutor->execute($job);
-
+        $ret = $jobExecutor->execute($job);
+        $this->assertArrayHasKey('message', $ret);
+        $this->assertArrayHasKey('images', $ret);
+        $this->assertArrayHasKey('configVersion', $ret);
+        $this->assertEquals(null, $ret['configVersion']);
         $this->assertTrue($this->client->tableExists('out.c-keboola-r-transformation-docker-test.transpose'));
     }
 }

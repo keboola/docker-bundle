@@ -60,7 +60,7 @@ class RunnerTest extends KernelTestCase
      */
     protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
     {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, null, $state);
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
         return [$jobDefinition];
     }
 
@@ -421,6 +421,7 @@ class RunnerTest extends KernelTestCase
         $this->assertArrayHasKey('title', $data[0]);
         $this->assertArrayHasKey('text', $data[0]);
         $this->assertArrayHasKey('tags', $data[0]);
+        $this->assertEquals('v123', $outputs[0]->getConfigVersion());
     }
 
     public function testImageParametersDecrypt()
