@@ -698,20 +698,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -719,7 +709,15 @@ class RunnerTest extends KernelTestCase
             $this->prepareJobDefinitions(
                 $componentData,
                 'test-configuration',
-                [],
+                [
+                    'parameters' => [
+                        'script' => [
+                            'import json',
+                            'with open("/data/out/state.json", "w") as state_file:',
+                            '   json.dump({"baz": "fooBar"}, state_file)'
+                        ],
+                    ],
+                ],
                 []
             ),
             'run',
