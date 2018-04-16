@@ -62,21 +62,15 @@ class Environment
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
     {
-        if ($this->component->injectEnvironment()) {
-            $configParameters = $this->configParameters;
-        } else {
-            $configParameters = [];
-        }
-        $envs = $this->getConfigurationVariables($configParameters);
         // set environment variables
-        $envs = array_merge($envs, [
+        $envs = [
             "KBC_RUNID" => $this->runId,
             "KBC_PROJECTID" => $this->tokenInfo["owner"]["id"],
             "KBC_DATADIR" => '/data/',
             "KBC_CONFIGID" => $this->configId,
             "KBC_COMPONENTID" => $this->component->getId(),
             "KBC_STACKID" => $this->stackId
-        ]);
+        ];
         if ($this->component->forwardToken()) {
             $envs["KBC_TOKEN"] = $this->tokenInfo["token"];
             $outputFilter->addValue($this->tokenInfo["token"]);
@@ -88,23 +82,5 @@ class Environment
             $envs["KBC_TOKENDESC"] = $this->tokenInfo["description"];
         }
         return $envs;
-    }
-
-    private function getConfigurationVariables($configurationVariables)
-    {
-        $envs = [];
-        foreach ($configurationVariables as $name => $value) {
-            if (is_scalar($value)) {
-                $envs['KBC_PARAMETER_' . $this->sanitizeName($name)] = $value;
-            } else {
-                throw new UserException("Only scalar value is allowed as value for $name.");
-            }
-        }
-        return $envs;
-    }
-
-    private function sanitizeName($name)
-    {
-        return strtoupper(preg_replace('@[^a-z]@', '_', strtolower($name)));
     }
 }
