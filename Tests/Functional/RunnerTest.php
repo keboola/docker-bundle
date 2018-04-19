@@ -750,7 +750,7 @@ class RunnerTest extends KernelTestCase
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configuration->setState(['foo' => 'bar']);
         $configData = [
             'parameters' => [
                 'script' => [
@@ -806,7 +806,6 @@ class RunnerTest extends KernelTestCase
         $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
         $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
         $component->deleteConfiguration('docker-demo', 'test-configuration');
-        $this->fail("not finished");
     }
 
     public function testExecutorStoreStateWithProcessorError()
@@ -825,7 +824,7 @@ class RunnerTest extends KernelTestCase
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configuration->setState(['foo' => 'bar']);
         $configData = [
             'parameters' => [
                 'script' => [
@@ -863,23 +862,27 @@ class RunnerTest extends KernelTestCase
             ],
         ];
 
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'test-configuration',
-                $configData,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'test-configuration',
+                    $configData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567'
+            );
+            self::fail("Must fail with user error");
+        } catch (UserException $e) {
+            self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
+        }
 
         $component = new Components($this->client);
         $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
-        $this->assertEquals([], $configuration['state']);
+        $this->assertEquals(['foo' => 'bar'], $configuration['state'], "State must not be changed");
         $component->deleteConfiguration('docker-demo', 'test-configuration');
-        $this->fail("not finished");
     }
 
     public function testExecutorProcessorNoState()
@@ -912,22 +915,35 @@ class RunnerTest extends KernelTestCase
                             'tag' => 'latest',
                         ],
                     ],
-                ]
-            ]
+                ],
+            ],
+            'services' => [
+                [
+                    'id' => 'oauth', 'url' => 'https://someurl'
+                ],
+            ],
         ];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('indexAction')
+            ->will($this->returnValue($index));
+
         $tokenInfo = $this->client->verifyToken();
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $storageServiceStub->expects($this->any())
             ->method('getClient')
-            ->will($this->returnValue($this->client));
+            ->will($this->returnValue($clientMock));
         $storageServiceStub->expects($this->any())
             ->method('getTokenData')
             ->will($this->returnValue($tokenInfo));
-        $storageServiceStub->expects($this->any())
-            ->method('indexAction')
-            ->will($this->returnValue($index));
         $log = new Logger('null');
         $handler = new TestHandler();
         $log->pushHandler($handler);
@@ -1000,8 +1016,14 @@ class RunnerTest extends KernelTestCase
                         ],
                         'parameters' => [
                             'script' => [
-                                'with open("/data/in/state.json", "w") as state_file:',
-                                '   print(state_file.read())',
+                                'import json',
+                                'from shutil import copyfile',
+                                'try:',
+                                '   copyfile("/data/in/state.json", "/data/out/files/state.json")',
+                                '   with open("/data/out/files/state.json.manifest", "w") as state_file_manifest:',
+                                '       json.dump({"tags": ["test-state", "docker-bundle-test"]}, state_file_manifest)',
+                                'except:',
+                                '   pass',
                             ],
                         ],
                     ],
@@ -1023,13 +1045,11 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
 
-        $component = new Components($this->client);
-        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
-        $this->assertCount(3, $handler->getRecords());
-        $this->assertEquals([], $handler->getRecords());
-        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        $options = new ListFilesOptions();
+        $options->setTags(['test-state']);
+        $files = $this->client->listFiles($options);
+        self::assertCount(0, $files, "No state must've been passed to the processor");
         $component->deleteConfiguration('docker-demo', 'test-configuration');
-        $this->fail("not finished");
     }
 
     public function testExecutorNoStoreState()

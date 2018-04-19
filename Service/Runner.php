@@ -390,6 +390,7 @@ class Runner
 
         $counter = 0;
         $imageDigests = [];
+        $state = [];
         $outputMessage = '';
         foreach ($images as $priority => $image) {
             if (!$image->isMain()) {
@@ -442,9 +443,7 @@ class Runner
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-                        $stateFile->storeStateFile();
-                    }
+                    $state = $stateFile->pickState();
                 }
             } finally {
                 $dataDirectory->normalizePermissions();
@@ -456,6 +455,9 @@ class Runner
             if ($counter < count($images)) {
                 $dataDirectory->moveOutputToInput();
             }
+        }
+        if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
+            $stateFile->storeState($state);
         }
         return new Output($imageDigests, $outputMessage, $configVersion);
     }

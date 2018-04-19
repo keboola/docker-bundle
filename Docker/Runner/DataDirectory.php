@@ -9,6 +9,7 @@ use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 
 class DataDirectory
 {
@@ -33,9 +34,6 @@ class DataDirectory
         $this->logger = $logger;
     }
 
-    /**
-     *
-     */
     public function createDataDir()
     {
         $fs = new Filesystem();
@@ -104,6 +102,10 @@ class DataDirectory
         $finder->files()->in($structure);
         $fs->remove($finder);
         $fs->remove($structure);
+
+        // delete state file
+        $fs->remove($this->workingDir . "/data/out/state.json");
+        $fs->remove($this->workingDir . "/data/out/state.yml");
 
         // rename
         $fs->rename(
