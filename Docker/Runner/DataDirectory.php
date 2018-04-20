@@ -9,7 +9,6 @@ use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
-use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 
 class DataDirectory
 {
