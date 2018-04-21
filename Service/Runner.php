@@ -443,7 +443,7 @@ class Runner
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    $state = $stateFile->pickState();
+                    $state = $stateFile->loadStateFromFile();
                 }
             } finally {
                 $dataDirectory->normalizePermissions();

@@ -192,7 +192,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
-        $this->assertEquals($data, $stateFile->pickState());
+        $this->assertEquals($data, $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
@@ -203,14 +203,14 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
-        $this->assertEquals(new \stdClass(), $stateFile->pickState());
+        $this->assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
     public function testPickStateNoState()
     {
         $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
-        $this->assertEquals([], $stateFile->pickState());
+        $this->assertEquals([], $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 }

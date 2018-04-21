@@ -109,7 +109,7 @@ class StateFile
         }
     }
 
-    public function pickState()
+    public function loadStateFromFile()
     {
         $stateAdapter = new Adapter($this->format);
         $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state'
