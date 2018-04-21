@@ -946,9 +946,9 @@ class RunnerTest extends KernelTestCase
             ->will($this->returnValue($tokenInfo));
         $log = new Logger('null');
         $handler = new TestHandler();
-        $log->pushHandler($handler);
+        $log->pushHandler(new NullHandler());
         $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler(new NullHandler());
+        $containerLogger->pushHandler($handler);
         $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -1016,14 +1016,8 @@ class RunnerTest extends KernelTestCase
                         ],
                         'parameters' => [
                             'script' => [
-                                'import json',
-                                'from shutil import copyfile',
-                                'try:',
-                                '   copyfile("/data/in/state.json", "/data/out/files/state.json")',
-                                '   with open("/data/out/files/state.json.manifest", "w") as state_file_manifest:',
-                                '       json.dump({"tags": ["test-state", "docker-bundle-test"]}, state_file_manifest)',
-                                'except:',
-                                '   pass',
+                                'from os import listdir',
+                                'print([f for f in listdir("/data/in/")])',
                             ],
                         ],
                     ],
@@ -1045,11 +1039,13 @@ class RunnerTest extends KernelTestCase
             '1234567'
         );
 
-        $options = new ListFilesOptions();
-        $options->setTags(['test-state']);
-        $files = $this->client->listFiles($options);
-        self::assertCount(0, $files, "No state must've been passed to the processor");
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
+        $records = $handler->getRecords();
+        self::assertGreaterThan(0, count($records));
+        $output = '';
+        foreach ($records as $record) {
+            $output .= $record['message'];
+        }
+        self::assertNotContains('state', $output, "No state must've been passed to the processor");
     }
 
     public function testExecutorNoStoreState()
