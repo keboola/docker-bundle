@@ -116,11 +116,11 @@ class StateFile
             . $stateAdapter->getFileExtension();
         $fs = new Filesystem();
         if ($fs->exists($fileName)) {
-            $currentState = $stateAdapter->readFromFile($fileName);
+            $state = $stateAdapter->readFromFile($fileName);
         } else {
-            $currentState = [];
+            $state = [];
         }
         $fs->remove($fileName);
-        return $currentState;
+        return $state;
     }
 }
