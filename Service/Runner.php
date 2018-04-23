@@ -348,7 +348,6 @@ class Runner
     {
         // initialize
         $dataDirectory->createDataDir();
-        $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
@@ -390,10 +389,12 @@ class Runner
 
         $counter = 0;
         $imageDigests = [];
-        $state = [];
+        $newState = [];
         $outputMessage = '';
         foreach ($images as $priority => $image) {
-            if (!$image->isMain()) {
+            if ($image->isMain()) {
+                $stateFile->createStateFile();
+            } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
             }
             $environment = new Environment(
@@ -443,7 +444,7 @@ class Runner
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    $state = $stateFile->loadStateFromFile();
+                    $newState = $stateFile->loadStateFromFile();
                 }
             } finally {
                 $dataDirectory->normalizePermissions();
@@ -457,7 +458,7 @@ class Runner
             }
         }
         if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->storeState($state);
+            $stateFile->storeState($newState);
         }
         return new Output($imageDigests, $outputMessage, $configVersion);
     }

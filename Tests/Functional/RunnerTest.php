@@ -885,7 +885,7 @@ class RunnerTest extends KernelTestCase
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 
-    public function testExecutorProcessorNoState()
+    private function getRunnerWithTransformationProcessor($configData)
     {
         $componentData = [
             'id' => 'docker-demo',
@@ -1000,12 +1000,19 @@ class RunnerTest extends KernelTestCase
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         $configuration->setState(json_encode(['foo' => 'bar']));
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        return [$runner, $componentData, $handler];
+    }
+
+    public function testExecutorAfterProcessorNoState()
+    {
         $configData = [
             'parameters' => [
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)',
+                    '   json.dump({"bar": "Kochba"}, state_file)',
                 ],
             ],
             'processors' => [
@@ -1024,8 +1031,7 @@ class RunnerTest extends KernelTestCase
                 ],
             ],
         ];
-        $configuration->setConfiguration($configData);
-        $component->addConfiguration($configuration);
+        list($runner, $componentData, $handler) = $this->getRunnerWithTransformationProcessor($configData);
 
         $runner->run(
             $this->prepareJobDefinitions(
@@ -1046,6 +1052,61 @@ class RunnerTest extends KernelTestCase
             $output .= $record['message'];
         }
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
+    }
+
+    public function testExecutorBeforeProcessorNoState()
+    {
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bar": "Kochba"}, state_file)',
+                ],
+            ],
+            'processors' => [
+                'before' => [
+                    [
+                        'definition' => [
+                            'component'=> 'keboola.processor-dumpy',
+                        ],
+                        'parameters' => [
+                            'script' => [
+                                'from os import listdir',
+                                'print([f for f in listdir("/data/in/")])',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        list($runner, $componentData, $handler) = $this->getRunnerWithTransformationProcessor($configData);
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $records = $handler->getRecords();
+        self::assertGreaterThan(0, count($records));
+        $output = '';
+        foreach ($records as $record) {
+            $output .= $record['message'];
+        }
+        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
     }
 
     public function testExecutorNoStoreState()
