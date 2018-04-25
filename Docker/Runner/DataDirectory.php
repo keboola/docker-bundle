@@ -94,6 +94,7 @@ class DataDirectory
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
         $fs->remove($finder);
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'data');
+        $finder = new Finder();
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
         $fs->remove($finder);
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
@@ -126,6 +127,7 @@ class DataDirectory
         $fs->mkdir($this->workingDir);
 
         $structure = [
+            $this->workingDir . "/tmp",
             $this->workingDir . "/data/out",
             $this->workingDir . "/data/out/tables",
             $this->workingDir . "/data/out/files",
