@@ -155,6 +155,7 @@ class Runner
             $this->loggersService->getLog(),
             $this->loggersService->getContainerLog(),
             $dataDirectory->getDataDir(),
+            $dataDirectory->getTmpDir(),
             $this->commandToGetHostIp,
             $this->minLogPort,
             $this->maxLogPort,
