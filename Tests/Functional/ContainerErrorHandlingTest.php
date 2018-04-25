@@ -40,7 +40,7 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         $dataDir = $temp->getTmpFolder();
 
         $fs = new Filesystem();
-        $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'test.php', $contents);
+        $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'test.php', $contents);
 
         return $dataDir;
     }
