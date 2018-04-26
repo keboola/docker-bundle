@@ -84,7 +84,7 @@ class DataDirectory
 
     public function getTmpDir()
     {
-        return $this->workingDir . "/data";
+        return $this->workingDir . "/tmp";
     }
 
     public function dropDataDir()
