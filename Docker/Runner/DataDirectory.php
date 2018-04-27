@@ -42,6 +42,7 @@ class DataDirectory
         $fs->mkdir($this->workingDir);
 
         $structure = [
+            $this->workingDir . "/tmp",
             $this->workingDir . "/data",
             $this->workingDir . "/data/in",
             $this->workingDir . "/data/in/tables",
@@ -59,7 +60,7 @@ class DataDirectory
     {
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         return "sudo docker run --rm --volume=" .
-            $this->workingDir . DIRECTORY_SEPARATOR . "data:/data alpine sh -c 'chown {$uid} /data -R && "
+            $this->workingDir . ":/data alpine sh -c 'chown {$uid} /data -R && "
                 . "chmod -R u+wrX /data'";
     }
 
@@ -81,6 +82,11 @@ class DataDirectory
         return $this->workingDir . "/data";
     }
 
+    public function getTmpDir()
+    {
+        return $this->workingDir . "/tmp";
+    }
+
     public function dropDataDir()
     {
         $fs = new Filesystem();
@@ -88,6 +94,10 @@ class DataDirectory
         $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
         $fs->remove($finder);
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'data');
+        $finder = new Finder();
+        $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
+        $fs->remove($finder);
+        $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
     }
 
     public function moveOutputToInput()
@@ -99,6 +109,7 @@ class DataDirectory
             $this->workingDir . "/data/in/files",
             $this->workingDir . "/data/in/user",
             $this->workingDir . "/data/in",
+            $this->workingDir . "/tmp",
         ];
         $finder = new Finder();
         $finder->files()->in($structure);
@@ -116,6 +127,7 @@ class DataDirectory
         $fs->mkdir($this->workingDir);
 
         $structure = [
+            $this->workingDir . "/tmp",
             $this->workingDir . "/data/out",
             $this->workingDir . "/data/out/tables",
             $this->workingDir . "/data/out/files",

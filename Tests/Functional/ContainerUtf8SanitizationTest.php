@@ -24,7 +24,7 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
         $dataDir = $temp->getTmpFolder();
 
         $fs = new Filesystem();
-        $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'test.php', $contents);
+        $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'test.php', $contents);
 
         return $dataDir;
     }
@@ -53,7 +53,8 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
             $image,
             $log,
             $containerLog,
-            $dataDir,
+            $dataDir . '/data',
+            $dataDir . '/tmp',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
