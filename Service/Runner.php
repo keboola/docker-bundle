@@ -12,7 +12,7 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
-use Keboola\DockerBundle\Docker\Runner\DataDirectory;
+use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
@@ -143,19 +143,19 @@ class Runner
      * @param Image $image
      * @param $containerId
      * @param RunCommandOptions $runCommandOptions
-     * @param DataDirectory $dataDirectory
+     * @param WorkingDirectory $workingDirectory
      * @param OutputFilterInterface $outputFilter
      * @return Container
      */
-    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, DataDirectory $dataDirectory, OutputFilterInterface $outputFilter)
+    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, WorkingDirectory $workingDirectory, OutputFilterInterface $outputFilter)
     {
         return new Container(
             $containerId,
             $image,
             $this->loggersService->getLog(),
             $this->loggersService->getContainerLog(),
-            $dataDirectory->getDataDir(),
-            $dataDirectory->getTmpDir(),
+            $workingDirectory->getDataDir(),
+            $workingDirectory->getTmpDir(),
             $this->commandToGetHostIp,
             $this->minLogPort,
             $this->maxLogPort,
@@ -210,10 +210,10 @@ class Runner
 
         $temp = new Temp("docker");
         $temp->initRunFolder();
-        $dataDirectory = new DataDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
+        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
 
         $usageFile = new UsageFile(
-            $dataDirectory->getDataDir(),
+            $workingDirectory->getDataDir(),
             $component->getConfigurationFormat(),
             $this->jobMapper,
             $jobId
@@ -223,7 +223,7 @@ class Runner
         $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
         $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         $configFile = new ConfigFile(
-            $dataDirectory->getDataDir(),
+            $workingDirectory->getDataDir(),
             $imageParameters,
             $authorization,
             $action,
@@ -235,7 +235,7 @@ class Runner
             $dataLoader = new DataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
-                $dataDirectory->getDataDir(),
+                $workingDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
                 $outputFilter,
@@ -247,7 +247,7 @@ class Runner
             $dataLoader = new NullDataLoader(
                 $this->storageClient,
                 $this->loggersService->getLog(),
-                $dataDirectory->getDataDir(),
+                $workingDirectory->getDataDir(),
                 $configData['storage'],
                 $component,
                 $outputFilter,
@@ -257,7 +257,7 @@ class Runner
         }
 
         $stateFile = new StateFile(
-            $dataDirectory->getDataDir(),
+            $workingDirectory->getDataDir(),
             $this->storageClient,
             $jobDefinition->getState(),
             $component->getConfigurationFormat(),
@@ -276,7 +276,7 @@ class Runner
             $configData
         );
 
-        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $dataDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode);
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode);
         return $output;
     }
 
@@ -335,7 +335,7 @@ class Runner
      * @param Component $component
      * @param UsageFile $usageFile
      * @param DataLoaderInterface $dataLoader
-     * @param DataDirectory $dataDirectory
+     * @param WorkingDirectory $workingDirectory
      * @param StateFile $stateFile
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
@@ -345,14 +345,14 @@ class Runner
      * @return Output
      * @throws ClientException
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, DataDirectory $dataDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
+    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
     {
         // initialize
-        $dataDirectory->createDataDir();
+        $workingDirectory->createWorkingDir();
         $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
-        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $dataDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
+        $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
@@ -361,7 +361,7 @@ class Runner
         }
 
         // finalize
-        $dataDirectory->dropDataDir();
+        $workingDirectory->dropWorkingDir();
         $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
@@ -372,7 +372,7 @@ class Runner
      * @param $rowId
      * @param Component $component
      * @param UsageFile $usageFile
-     * @param DataDirectory $dataDirectory
+     * @param WorkingDirectory $workingDirectory
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
      * @param StateFile $stateFile
@@ -383,7 +383,7 @@ class Runner
      * @return Output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataDirectory $dataDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -433,7 +433,7 @@ class Runner
                     ],
                     $environment->getEnvironmentVariables($outputFilter)
                 ),
-                $dataDirectory,
+                $workingDirectory,
                 $outputFilter
             );
             if ($mode === self::MODE_DEBUG) {
@@ -448,14 +448,14 @@ class Runner
                     }
                 }
             } finally {
-                $dataDirectory->normalizePermissions();
+                $workingDirectory->normalizePermissions();
                 if ($image->isMain()) {
                     $usageFile->storeUsage();
                 }
             }
             $counter++;
             if ($counter < count($images)) {
-                $dataDirectory->moveOutputToInput();
+                $workingDirectory->moveOutputToInput();
             }
         }
         return new Output($imageDigests, $outputMessage, $configVersion);

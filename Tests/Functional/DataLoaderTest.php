@@ -6,7 +6,7 @@ use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\DataDirectory;
+use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\GetFileOptions;
@@ -93,8 +93,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         }
 
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createWorkingDir();
 
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -124,8 +124,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
     {
         try {
             $temp = new Temp();
-            $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-            $data->createDataDir();
+            $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+            $data->createWorkingDir();
 
             new DataLoader(
                 $this->client,
@@ -165,8 +165,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createWorkingDir();
         $fs = new Filesystem();
         $fs->dumpFile(
             $data->getDataDir() . '/out/tables/sliced.csv',
@@ -209,8 +209,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createWorkingDir();
         $fs = new Filesystem();
         $fs->dumpFile(
             $data->getDataDir() . '/in/tables/sliced.csv',
@@ -269,8 +269,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         ];
 
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $data->createWorkingDir();
 
         $fs = new Filesystem();
         $filePath = $data->getDataDir() . '/in/tables/test.csv';

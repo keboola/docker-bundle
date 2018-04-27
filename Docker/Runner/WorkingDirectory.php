@@ -10,7 +10,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
-class DataDirectory
+class WorkingDirectory
 {
     /**
      * @var string
@@ -36,7 +36,7 @@ class DataDirectory
     /**
      *
      */
-    public function createDataDir()
+    public function createWorkingDir()
     {
         $fs = new Filesystem();
         $fs->mkdir($this->workingDir);
@@ -87,7 +87,7 @@ class DataDirectory
         return $this->workingDir . "/tmp";
     }
 
-    public function dropDataDir()
+    public function dropWorkingDir()
     {
         $fs = new Filesystem();
         $finder = new Finder();
