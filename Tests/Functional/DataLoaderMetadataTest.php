@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\DataDirectory;
+use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -83,19 +83,19 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
     {
         $metadataApi = new Metadata($this->client);
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $workingDir = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $workingDir->createWorkingDir();
 
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $workingDir->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
             new OutputFilter(),
@@ -136,19 +136,19 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
     {
         $metadataApi = new Metadata($this->client);
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $workingDir = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $workingDir->createWorkingDir();
 
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $workingDir->getDataDir(),
             [],
             $this->getDefaultBucketComponent(),
             new OutputFilter(),
@@ -191,11 +191,11 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
     public function testExecutorConfigMetadata()
     {
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $workingDir = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $workingDir->createWorkingDir();
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
@@ -252,7 +252,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $workingDir->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
             new OutputFilter(),
@@ -287,12 +287,12 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
     public function testExecutorManifestMetadata()
     {
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $workingDir = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $workingDir->createWorkingDir();
 
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $manifest = '
@@ -329,13 +329,13 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
                 }
             }        
         ';
-        $fs->dumpFile($data->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
+        $fs->dumpFile($workingDir->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
 
         $config = [];
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $workingDir->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
             new OutputFilter(),
@@ -370,16 +370,16 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
     public function testExecutorManifestMetadataCombined()
     {
         $temp = new Temp();
-        $data = new DataDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createDataDir();
+        $workingDir = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
+        $workingDir->createWorkingDir();
 
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv.manifest',
+            $workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
             '{"metadata":[{"key":"table.key.one","value":"table value one"},'.
             '{"key":"table.key.two","value":"table value two"}],"column_metadata":{"id":['.
             '{"key":"column.key.one","value":"column value one id"},'.
@@ -419,7 +419,7 @@ class DataLoaderMetadataTest extends \PHPUnit_Framework_TestCase
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $workingDir->getDataDir(),
             $config,
             $this->getDefaultBucketComponent(),
             new OutputFilter(),
