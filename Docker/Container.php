@@ -34,6 +34,11 @@ class Container
     protected $dataDir;
 
     /**
+     * @var string
+     */
+    protected $tmpDir;
+
+    /**
      * @var Logger
      */
     private $logger;
@@ -95,6 +100,7 @@ class Container
      * @param Logger $logger
      * @param ContainerLogger $containerLogger
      * @param string $dataDirectory
+     * @param string $tmpDirectory
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param $maxLogPort
@@ -107,6 +113,7 @@ class Container
         Logger $logger,
         ContainerLogger $containerLogger,
         $dataDirectory,
+        $tmpDirectory,
         $commandToGetHostIp,
         $minLogPort,
         $maxLogPort,
@@ -117,20 +124,13 @@ class Container
         $this->containerLogger = $containerLogger;
         $this->image = $image;
         $this->dataDir = $dataDirectory;
+        $this->tmpDir = $tmpDirectory;
         $this->id = $containerId;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
         $this->runCommandOptions = $runCommandOptions;
         $this->outputFilter = $outputFilter;
-    }
-
-    /**
-     * @return string
-     */
-    public function getDataDir()
-    {
-        return $this->dataDir;
     }
 
     /**
@@ -374,7 +374,6 @@ class Container
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $envs = "";
-        $dataDir = $this->dataDir;
         foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
             $envs .= " --env \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
         }
@@ -385,11 +384,13 @@ class Container
             $labels .= ' --label ' . escapeshellarg($label);
         }
 
-        $command .= " --volume " . escapeshellarg($dataDir . ":/data")
+        $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
+            . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
             . " --memory " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
             . " --memory-swap " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
             . " --cpu-shares " . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
             . " --net " . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
+            . " --cpus 2"
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)

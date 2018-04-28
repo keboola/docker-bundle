@@ -235,7 +235,6 @@ class RunnerTest extends KernelTestCase
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file",
                       "tag" => "0.3.0",
                     ],
-                    "inject_environment" => true,
                 ],
             ],
 
@@ -245,9 +244,8 @@ class RunnerTest extends KernelTestCase
                     "definition" => [
                       "type" => "aws-ecr",
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv",
-                      "tag" => "2.0.3",
+                      "tag" => "3.0.0",
                     ],
-                    "inject_environment" => true,
                 ],
             ],
             [
@@ -256,10 +254,9 @@ class RunnerTest extends KernelTestCase
                     "definition" => [
                         "type" => "aws-ecr",
                         "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files",
-                        "tag" => "1.1.0",
+                        "tag" => "v2.2.1",
                     ],
-                    "inject_environment" => true,
-                ]
+                ],
             ],
             [
                 "id" => "keboola.processor-decompress",
@@ -267,9 +264,9 @@ class RunnerTest extends KernelTestCase
                     "definition" => [
                         "type" => "aws-ecr",
                         "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress",
-                        "tag" => "0.1.0",
-                    ]
-                ]
+                        "tag" => "v4.1.0",
+                    ],
+                ],
             ],
         ];
 
@@ -294,9 +291,11 @@ class RunnerTest extends KernelTestCase
         $configurationData = [
             'storage' => [
                 'input' => [
-                    'files' => [[
-                        'tags' => ['texty.csv.gz']
-                    ]]
+                    'files' => [
+                        [
+                            'tags' => ['texty.csv.gz'],
+                        ],
+                    ],
                 ],
                 'output' => [
                     'tables' => [
@@ -304,15 +303,15 @@ class RunnerTest extends KernelTestCase
                             'source' => 'texty.csv',
                             'destination' => 'out.c-docker-pipeline.texty'
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ],
             'parameters' => [
                 'script' => [
-                    'data <- read.csv(file = "/data/in/tables/texty.csv", stringsAsFactors = FALSE, encoding = "UTF-8");',
+                    'data <- read.csv(file = "/data/in/tables/texty.csv.gz/texty.csv", stringsAsFactors = FALSE, encoding = "UTF-8");',
                     'data$rev <- unlist(lapply(data[["text"]], function(x) { paste(rev(strsplit(x, NULL)[[1]]), collapse=\'\') }))',
                     'write.csv(data, file = "/data/out/tables/texty.csv", row.names = FALSE)',
-                ]
+                ],
             ],
             'processors' => [
                 'before' => [
@@ -320,7 +319,7 @@ class RunnerTest extends KernelTestCase
                         'definition' => [
                             'component' => 'keboola.processor-last-file',
                         ],
-                        'parameters' => ['tag' => 'texty.csv.gz']
+                        'parameters' => ['tag' => 'texty.csv.gz'],
                     ],
                     [
                         'definition' => [
@@ -331,13 +330,13 @@ class RunnerTest extends KernelTestCase
                         'definition' => [
                             'component' => 'keboola.processor-move-files',
                         ],
-                        'parameters' => ['direction' => 'tables']
+                        'parameters' => ['direction' => 'tables'],
                     ],
                     [
                         'definition' => [
                             'component' => 'keboola.processor-iconv',
                         ],
-                        'parameters' => ['source_encoding' => 'CP1250']
+                        'parameters' => ['source_encoding' => 'CP1250'],
                     ],
                 ],
             ],
@@ -352,7 +351,7 @@ class RunnerTest extends KernelTestCase
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation',
-                    'tag' => '1.1.1',
+                    'tag' => '1.2.8',
                 ],
             ],
         ];
@@ -378,27 +377,27 @@ class RunnerTest extends KernelTestCase
                     ],
                 ],
                 1 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress:0.1.0',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress:v4.1.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress@sha256:fb54c9d22b8b3de5a8a528b7d594ecad9d413a23f5601186111fdddc503b0349'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress@sha256:30a1a7119d51b5bb42d6c088fd3d98fed8ff7025fdca65618328face13bda91f'
                     ],
                 ],
                 2 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files:1.1.0',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files:v2.2.1',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files@sha256:0d0a5275dbf68b1d54abc4a8dd081559e5662d515447613e5d6c9c0177e36d38'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files@sha256:991ba73bb0fa8622c791eadc23b845aa74578fa136e328ea19b1305a530edded'
                     ],
                 ],
                 3 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:2.0.3',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:3.0.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:30ed1d74f9aa41ac0f47d30c3ae43829f4f39f14c14d309ed2081643a4258d3b'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:2059a7ec45ea71915283790ccaef00b6f3dbcd2f4628f261ac7e4a8ff02f6939'
                     ],
                 ],
                 4 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation:1.1.1',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation:1.2.8',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation@sha256:a332fdf1b764b329230dd420f54d642d042b8552f6b499cf26cd49ee504904d6'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation@sha256:e339e69841712bc8ef87f04020e244cbf237f206e6d6d2c1621c20e515b8562d'
                     ],
                 ]
             ],
@@ -493,60 +492,6 @@ class RunnerTest extends KernelTestCase
         $this->assertEquals('[hidden]', $config['image_parameters']['#encrypted']);
     }
 
-    public function testImageParametersEnvironment()
-    {
-        $configurationData = [
-            'parameters' => [
-                'foo' => 'bar'
-            ]
-        ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler);
-        $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        // also attempt to pass the token to verify that it does not work
-                        'entry_point' => 'echo KBC_PARAMETER_FOO=$KBC_PARAMETER_FOO',
-                    ],
-                ],
-                'configuration_format' => 'json',
-                'inject_environment' => true,
-            ],
-        ];
-
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                uniqid('test-'),
-                $configurationData,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
-
-        $ret = $handler->getRecords();
-        $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $this->assertContains('KBC_PARAMETER_FOO=bar', $ret[0]['message']);
-    }
-    
     public function testClearState()
     {
         $state = ['key' => 'value'];

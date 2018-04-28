@@ -60,7 +60,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             $image,
             $log,
             $containerLog,
-            $dataDir,
+            $dataDir . '/data',
+            $dataDir . '/tmp',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
@@ -139,6 +140,7 @@ EOF;
             $image,
             $log,
             $containerLog,
+            '/data',
             '/tmp',
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
@@ -151,11 +153,13 @@ EOF;
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
-            . " --volume '/tmp:/data'"
+            . " --volume '/data:/data'"
+            . " --volume '/tmp:/tmp'"
             . " --memory '256m'"
             . " --memory-swap '256m'"
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
+            . " --cpus 2"
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
@@ -189,6 +193,7 @@ EOF;
             $log,
             $containerLog,
             $temp->getTmpFolder(),
+            $temp->getTmpFolder(),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
@@ -221,6 +226,7 @@ EOF;
             $image,
             $log,
             $containerLog,
+            $temp->getTmpFolder(),
             $temp->getTmpFolder(),
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
