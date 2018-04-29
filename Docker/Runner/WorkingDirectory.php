@@ -72,7 +72,7 @@ class WorkingDirectory
         $proxy->call(function () use (&$process) {
             $command = $this->getNormalizeCommand();
             $process = new Process($command);
-            $process->setTimeout(60);
+            $process->setTimeout(120);
             $process->run();
         });
     }
