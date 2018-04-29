@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Psr\Log\LoggerInterface;
-use Retry\BackOff\ExponentialBackOffPolicy;
+use Retry\BackOff\FixedBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
@@ -67,7 +67,7 @@ class WorkingDirectory
     public function normalizePermissions()
     {
         $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $backOffPolicy = new FixedBackOffPolicy(300000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         $proxy->call(function () use (&$process) {
             $command = $this->getNormalizeCommand();
