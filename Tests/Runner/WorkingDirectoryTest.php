@@ -18,7 +18,8 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        $workingDir->method('getNormalizeCommand')
+        $workingDir->expects($this->exactly(2))
+            ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
                 'sleep 70 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
                 '/data:/data alpine sh -c \'chown 0 /data -R\'',
@@ -28,6 +29,7 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
 
         /** @var WorkingDirectory $workingDir */
         $workingDir->createWorkingDir();
+        $workingDir->normalizePermissions();
         $workingDir->dropWorkingDir();
     }
 
