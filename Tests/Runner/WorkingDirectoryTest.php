@@ -20,7 +20,7 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
         $workingDir->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
-                'sleep 70 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
+                'sleep 130 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
                 '/data:/data alpine sh -c \'chown 0 /data -R\'',
                 'sudo docker run --rm --volume=' . $temp->getTmpFolder() .
                 '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
