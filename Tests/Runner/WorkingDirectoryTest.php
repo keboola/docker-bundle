@@ -4,8 +4,11 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\Temp\Temp;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpKernel\Tests\EventListener\TestLogger;
 use Symfony\Component\Process\Process;
 
 class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
@@ -13,8 +16,11 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
     public function testWorkingDirectoryTimeout()
     {
         $temp = new Temp();
+        $logger = new Logger('test');
+        $handler = new TestHandler();
+        $logger->pushHandler($handler);
         $workingDir = $this->getMockBuilder(WorkingDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), new NullLogger()])
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
@@ -31,6 +37,9 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $workingDir->createWorkingDir();
         $workingDir->normalizePermissions();
         $workingDir->dropWorkingDir();
+        self::assertCount(2, $handler->getRecords());
+        self::assertContains($handler->getRecords()[0]['message'], 'Normalizing workdir permissions');
+        self::assertContains($handler->getRecords()[1]['message'], 'Normalizing workdir permissions');
     }
 
     public function testWorkingDirectoryMove()

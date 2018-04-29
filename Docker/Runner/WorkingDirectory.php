@@ -70,6 +70,7 @@ class WorkingDirectory
         $backOffPolicy = new UniformRandomBackOffPolicy(60000, 180000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         $proxy->call(function () use (&$process) {
+            $this->logger->notice("Normalizing workdir permissions");
             $command = $this->getNormalizeCommand();
             $process = new Process($command);
             $process->setTimeout(120);
