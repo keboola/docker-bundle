@@ -38,8 +38,8 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $workingDir->normalizePermissions();
         $workingDir->dropWorkingDir();
         self::assertCount(2, $handler->getRecords());
-        self::assertContains($handler->getRecords()[0]['message'], 'Normalizing workdir permissions');
-        self::assertContains($handler->getRecords()[1]['message'], 'Normalizing workdir permissions');
+        self::assertContains($handler->getRecords()[0]['message'], 'Normalizing working directory permissions');
+        self::assertContains($handler->getRecords()[1]['message'], 'Normalizing working directory permissions');
     }
 
     public function testWorkingDirectoryMove()
