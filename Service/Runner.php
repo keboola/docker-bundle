@@ -154,6 +154,7 @@ class Runner
      * @param RunCommandOptions $runCommandOptions
      * @param WorkingDirectory $workingDirectory
      * @param OutputFilterInterface $outputFilter
+     * @param Limits $limits
      * @return Container
      */
     private function createContainerFromImage(

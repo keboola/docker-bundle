@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\UserException;
@@ -59,7 +60,8 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], $envs),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, [], [], [], [])
         );
         return $container;
     }

@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
@@ -47,7 +48,8 @@ class NetworkTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, [], [], [], [])
         );
         return $container;
     }

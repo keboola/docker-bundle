@@ -112,6 +112,7 @@ class Container
      * @param $maxLogPort
      * @param RunCommandOptions $runCommandOptions
      * @param OutputFilterInterface $outputFilter
+     * @param Limits $limits
      */
     public function __construct(
         $containerId,
