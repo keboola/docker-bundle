@@ -10,11 +10,11 @@ use Psr\Log\NullLogger;
 
 class LimitsTest extends \PHPUnit_Framework_TestCase
 {
-    public function testLimits()
+    public function testLimitsInstance()
     {
         $limits = new Limits(
             new NullLogger(),
-            ['cpu_count' => 2],
+            ['cpu_count' => 1],
             ['components.jobsParallelism' => ['name' => 'components.jobsParallelism', 'value' > 10]],
             ['foo', 'bar'],
             ['bar', 'kochba']
@@ -29,6 +29,73 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
         $image->method('getSourceComponent')
             ->will(self::returnValue($componentMock));
         /** @var Image $image */
+        self::assertEquals(1, $limits->getCpuLimit($image));
+    }
+
+    public function testLimitsDefault()
+    {
+        $limits = new Limits(
+            new NullLogger(),
+            ['cpu_count' => 14],
+            [],
+            [],
+            []
+        );
+        $componentMock = self::getMockBuilder(Component::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getSourceComponent'])
+            ->getMock();
+        $image->method('getSourceComponent')
+            ->will(self::returnValue($componentMock));
+        /** @var Image $image */
         self::assertEquals(2, $limits->getCpuLimit($image));
     }
+
+    public function testLimitsProject()
+    {
+        $limits = new Limits(
+            new NullLogger(),
+            ['cpu_count' => 14],
+            ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
+            [],
+            []
+        );
+        $componentMock = self::getMockBuilder(Component::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getSourceComponent'])
+            ->getMock();
+        $image->method('getSourceComponent')
+            ->will(self::returnValue($componentMock));
+        /** @var Image $image */
+        self::assertEquals(10, $limits->getCpuLimit($image));
+    }
+
+    public function testLimitsProjectInstance()
+    {
+        $limits = new Limits(
+            new NullLogger(),
+            ['cpu_count' => 2],
+            ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' > 10]],
+            [],
+            []
+        );
+        $componentMock = self::getMockBuilder(Component::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getSourceComponent'])
+            ->getMock();
+        $image->method('getSourceComponent')
+            ->will(self::returnValue($componentMock));
+        /** @var Image $image */
+        self::assertEquals(2, $limits->getCpuLimit($image));
+    }
+
 }

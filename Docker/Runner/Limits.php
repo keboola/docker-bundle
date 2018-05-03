@@ -8,6 +8,10 @@ use Psr\Log\LoggerInterface;
 
 class Limits
 {
+    CONST MAX_CPU_LIMIT = 96;
+
+    CONST DEFAULT_CPU_LIMIT = 2;
+
     /**
      * @var array
      */
@@ -77,7 +81,7 @@ class Limits
 
     public function getCpuLimit(Image $image)
     {
-        return $this->getInstanceCpuLimit();
+        return min($this->getInstanceCpuLimit(), $this->getProjectCpuLimit());
     }
 
     private function getInstanceCpuLimit()
@@ -86,11 +90,25 @@ class Limits
             filter_var(
                 $this->instanceLimits['cpu_count'],
                 FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 1, 'max_range' => 128]]
+                ['options' => ['min_range' => 1, 'max_range' => self::MAX_CPU_LIMIT]]
             )
         ) {
             return $this->instanceLimits['cpu_count'];
         }
         throw new ApplicationException("cpu_count is not set correctly in parameters.yml");
+    }
+
+    private function getProjectCpuLimit()
+    {
+        if (isset($this->projectLimits['runner.cpuParallelism']['value']) &&
+            filter_var(
+                $this->projectLimits['runner.cpuParallelism']['value'],
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1, 'max_range' => self::MAX_CPU_LIMIT]]
+            )
+        ) {
+            return $this->projectLimits['runner.cpuParallelism']['value'];
+        }
+        return self::DEFAULT_CPU_LIMIT;
     }
 }
