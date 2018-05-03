@@ -81,7 +81,10 @@ class Limits
 
     public function getCpuLimit(Image $image)
     {
-        return min($this->getInstanceCpuLimit(), $this->getProjectCpuLimit());
+        $instance = $this->getInstanceCpuLimit();
+        $project = $this->getProjectCpuLimit();
+        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $project);
+        return min($instance, $project);
     }
 
     private function getInstanceCpuLimit()
