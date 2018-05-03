@@ -102,5 +102,4 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
         /** @var Image $image */
         self::assertEquals(2, $limits->getCpuLimit($image));
     }
-
 }

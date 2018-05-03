@@ -8,9 +8,9 @@ use Psr\Log\LoggerInterface;
 
 class Limits
 {
-    CONST MAX_CPU_LIMIT = 96;
+    const MAX_CPU_LIMIT = 96;
 
-    CONST DEFAULT_CPU_LIMIT = 2;
+    const DEFAULT_CPU_LIMIT = 2;
 
     /**
      * @var array
@@ -98,7 +98,7 @@ class Limits
         ) {
             return $this->instanceLimits['cpu_count'];
         }
-        throw new ApplicationException("cpu_count is not set correctly in parameters.yml");
+        throw new ApplicationException("cpu_count is set incorrectly in parameters.yml");
     }
 
     private function getProjectCpuLimit()
