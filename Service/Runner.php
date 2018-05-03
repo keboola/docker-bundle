@@ -12,6 +12,7 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
@@ -88,12 +89,18 @@ class Runner
     private $maxLogPort;
 
     /**
+     * @var array
+     */
+    private $instanceLimits;
+
+    /**
      * Runner constructor.
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
      * @param JobMapper $jobMapper
      * @param string $oauthApiUrl
+     * @param array $instanceLimits
      * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param int $maxLogPort
@@ -104,6 +111,7 @@ class Runner
         LoggersService $loggersService,
         JobMapper $jobMapper,
         $oauthApiUrl,
+        array $instanceLimits,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
         $minLogPort = 12202,
         $maxLogPort = 13202
@@ -120,6 +128,7 @@ class Runner
         ]);
         $this->loggersService = $loggersService;
         $this->jobMapper = $jobMapper;
+        $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
@@ -147,8 +156,14 @@ class Runner
      * @param OutputFilterInterface $outputFilter
      * @return Container
      */
-    private function createContainerFromImage(Image $image, $containerId, RunCommandOptions $runCommandOptions, WorkingDirectory $workingDirectory, OutputFilterInterface $outputFilter)
-    {
+    private function createContainerFromImage(
+        Image $image,
+        $containerId,
+        RunCommandOptions $runCommandOptions,
+        WorkingDirectory $workingDirectory,
+        OutputFilterInterface $outputFilter,
+        Limits $limits
+    ) {
         return new Container(
             $containerId,
             $image,
@@ -160,7 +175,8 @@ class Runner
             $this->minLogPort,
             $this->maxLogPort,
             $runCommandOptions,
-            $outputFilter
+            $outputFilter,
+            $limits
         );
     }
 
@@ -388,6 +404,13 @@ class Runner
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->storageClient->verifyToken();
+        $limits = new Limits(
+            $this->loggersService->getLog(),
+            $this->instanceLimits,
+            !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
+            !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
+            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : []
+        );
 
         $counter = 0;
         $imageDigests = [];
@@ -434,7 +457,8 @@ class Runner
                     $environment->getEnvironmentVariables($outputFilter)
                 ),
                 $workingDirectory,
-                $outputFilter
+                $outputFilter,
+                $limits
             );
             if ($mode === self::MODE_DEBUG) {
                 $dataLoader->storeDataArchive('stage_' . $priority, [self::MODE_DEBUG, $image->getSourceComponent()->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId, $image->getImageId()]);
