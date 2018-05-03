@@ -162,7 +162,7 @@ EOF;
             . " --memory-swap '256m'"
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
-            . " --cpus 8"
+            . " --cpus '2'"
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
