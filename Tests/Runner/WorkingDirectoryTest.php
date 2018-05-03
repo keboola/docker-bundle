@@ -4,8 +4,11 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\Temp\Temp;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpKernel\Tests\EventListener\TestLogger;
 use Symfony\Component\Process\Process;
 
 class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
@@ -13,14 +16,18 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
     public function testWorkingDirectoryTimeout()
     {
         $temp = new Temp();
+        $logger = new Logger('test');
+        $handler = new TestHandler();
+        $logger->pushHandler($handler);
         $workingDir = $this->getMockBuilder(WorkingDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), new NullLogger()])
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        $workingDir->method('getNormalizeCommand')
+        $workingDir->expects($this->exactly(2))
+            ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
-                'sleep 70 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
+                'sleep 130 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
                 '/data:/data alpine sh -c \'chown 0 /data -R\'',
                 'sudo docker run --rm --volume=' . $temp->getTmpFolder() .
                 '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
@@ -28,7 +35,11 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
 
         /** @var WorkingDirectory $workingDir */
         $workingDir->createWorkingDir();
+        $workingDir->normalizePermissions();
         $workingDir->dropWorkingDir();
+        self::assertCount(2, $handler->getRecords());
+        self::assertContains($handler->getRecords()[0]['message'], 'Normalizing working directory permissions');
+        self::assertContains($handler->getRecords()[1]['message'], 'Normalizing working directory permissions');
     }
 
     public function testWorkingDirectoryMove()
