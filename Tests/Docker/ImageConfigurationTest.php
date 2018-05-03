@@ -71,7 +71,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 'uri' => 'keboola/docker-demo',
                 'tag' => 'latest',
             ],
-            'cpu_shares' => 1024,
             'memory' => '256m',
             'configuration_format' => 'json',
             'process_timeout' => 3600,
