@@ -158,7 +158,7 @@ EOF;
         // block devices
         $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
         $process->mustRun();
-        $devices = array_filter(explode("\n", $process->getOutput()), function($device) {
+        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
             return !empty($device);
         });
         $deviceLimits = "";
