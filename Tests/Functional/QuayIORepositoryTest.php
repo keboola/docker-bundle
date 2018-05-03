@@ -33,7 +33,6 @@ class QuayIORepositoryTest extends KernelTestCase
                     "type" => "quayio",
                     "uri" => "keboola/docker-demo-app"
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]

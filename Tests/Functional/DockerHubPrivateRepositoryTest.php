@@ -28,7 +28,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
                     "type" => "dockerhub-private",
                     "uri" => "keboolaprivatetest/docker-demo-docker"
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]
@@ -58,7 +57,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
                     ]
 
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]
@@ -90,7 +88,6 @@ class DockerHubPrivateRepositoryTest extends KernelTestCase
                         "server" => DOCKERHUB_PRIVATE_SERVER
                     ]
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]

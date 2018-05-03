@@ -36,7 +36,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                         "region" => AWS_ECR_REGISTRY_REGION
                     ]
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]

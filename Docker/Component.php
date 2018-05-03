@@ -172,14 +172,6 @@ class Component
     }
 
     /**
-     * @return int
-     */
-    public function getCpuShares()
-    {
-        return $this->data['cpu_shares'];
-    }
-
-    /**
      * @return string
      */
     public function getMemory()
