@@ -83,8 +83,12 @@ class Limits
     private function getInstanceCpuLimit()
     {
         if (isset($this->instanceLimits['cpu_count']) &&
-            filter_var($this->instanceLimits['cpu_count'], FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 1, 'max_range' => 128]])) {
+            filter_var(
+                $this->instanceLimits['cpu_count'],
+                FILTER_VALIDATE_INT,
+                ['options' => ['min_range' => 1, 'max_range' => 128]]
+            )
+        ) {
             return $this->instanceLimits['cpu_count'];
         }
         throw new ApplicationException("cpu_count is not set correctly in parameters.yml");
