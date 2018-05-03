@@ -402,7 +402,7 @@ class Container
             . " --memory-swap " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
             . " --cpu-shares " . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
             . " --net " . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
-            . " --cpus 2"
+            . " --cpus 8"
             . $deviceLimits
             . $envs
             . $labels

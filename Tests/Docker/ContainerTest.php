@@ -172,7 +172,7 @@ EOF;
             . " --memory-swap '256m'"
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
-            . " --cpus 2"
+            . " --cpus 8"
             . $deviceLimits
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
