@@ -152,7 +152,7 @@ EOF;
                 'com.keboola.runner.runId=10.20.30',
             ], $envs),
             new OutputFilter(),
-            new Limits($log, [], [], [], [])
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
