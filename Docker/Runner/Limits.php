@@ -5,6 +5,9 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Validator\Constraints\Range;
+use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Limits
 {
@@ -38,6 +41,11 @@ class Limits
     private $logger;
 
     /**
+     * @var ValidatorInterface
+     */
+    private $validator;
+
+    /**
      * Limits constructor.
      * @param LoggerInterface $logger
      * @param array $instanceLimits
@@ -57,6 +65,7 @@ class Limits
         $this->projectLimits = $projectLimits;
         $this->projectFeatures = $projectFeatures;
         $this->userFeatures = $userFeatures;
+        $this->validator = Validation::createValidator();
     }
 
     public function getMemoryLimit(Image $image)
@@ -87,30 +96,46 @@ class Limits
         return min($instance, $project);
     }
 
+    /**
+     * @return Range[]
+     */
+    private function getCPUValidatorConstraints()
+    {
+        return [
+            new Range(['min' => 1, 'max' => self::MAX_CPU_LIMIT])
+        ];
+    }
+
     private function getInstanceCpuLimit()
     {
-        if (isset($this->instanceLimits['cpu_count']) &&
-            filter_var(
+        if (isset($this->instanceLimits['cpu_count'])) {
+            $errors = $this->validator->validate(
                 $this->instanceLimits['cpu_count'],
-                FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 1, 'max_range' => self::MAX_CPU_LIMIT]]
-            )
-        ) {
-            return $this->instanceLimits['cpu_count'];
+                $this->getCPUValidatorConstraints()
+            );
+            if ($errors->count() === 0) {
+                return $this->instanceLimits['cpu_count'];
+            }
+            throw new ApplicationException(
+                "cpu_count is set incorrectly in parameters.yml: " . $errors[0]->getMessage()
+            );
         }
-        throw new ApplicationException("cpu_count is set incorrectly in parameters.yml");
+        throw new ApplicationException("cpu_count is not set in parameters.yml");
     }
 
     private function getProjectCpuLimit()
     {
-        if (isset($this->projectLimits['runner.cpuParallelism']['value']) &&
-            filter_var(
+        if (isset($this->projectLimits['runner.cpuParallelism']['value'])) {
+            $errors = $this->validator->validate(
                 $this->projectLimits['runner.cpuParallelism']['value'],
-                FILTER_VALIDATE_INT,
-                ['options' => ['min_range' => 1, 'max_range' => self::MAX_CPU_LIMIT]]
-            )
-        ) {
-            return $this->projectLimits['runner.cpuParallelism']['value'];
+                $this->getCPUValidatorConstraints()
+            );
+            if ($errors->count() === 0) {
+                return $this->projectLimits['runner.cpuParallelism']['value'];
+            }
+            throw new ApplicationException(
+                "runner.cpuParallelism limit is set incorrectly: " . $errors[0]->getMessage()
+            );
         }
         return self::DEFAULT_CPU_LIMIT;
     }
