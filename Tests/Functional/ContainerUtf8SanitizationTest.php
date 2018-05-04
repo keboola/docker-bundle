@@ -61,7 +61,7 @@ class ContainerUtf8SanitizationTest extends \PHPUnit_Framework_TestCase
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], $envs),
             new OutputFilter(),
-            new Limits($log, [], [], [], [])
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         return $container;
     }

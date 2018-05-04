@@ -124,7 +124,7 @@ class LoggerTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
             $outputFilter,
-            new Limits($log, [], [], [], [])
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
     }
 
@@ -166,7 +166,7 @@ class LoggerTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
             $outputFilter,
-            new Limits($logService->getLog(), [], [], [], [])
+            new Limits($logService->getLog(), ['cpu_count' => 2], [], [], [])
         );
     }
 

@@ -49,7 +49,7 @@ class NetworkTest extends KernelTestCase
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
             new OutputFilter(),
-            new Limits($log, [], [], [], [])
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         return $container;
     }
