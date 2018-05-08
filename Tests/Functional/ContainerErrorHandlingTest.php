@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -65,7 +66,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], $envs),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         return $container;
     }
@@ -200,7 +202,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
 
         // set benchmark time
@@ -221,7 +224,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         $testStartTime = time();
         try {
@@ -263,7 +267,8 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         $container->run();
     }

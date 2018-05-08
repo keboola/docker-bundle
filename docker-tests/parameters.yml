@@ -9,3 +9,6 @@ parameters:
             class: Keboola\DockerBundle\Docker
 
     oauth_api.url: https://syrup.keboola.com/oauth-v2/ 
+    instance_limits:
+      cpu_count: 2
+

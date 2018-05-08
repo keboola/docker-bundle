@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
@@ -79,6 +80,11 @@ class Container
     private $outputFilter;
 
     /**
+     * @var Limits
+     */
+    private $limits;
+
+    /**
      * @return string
      */
     public function getId()
@@ -106,6 +112,7 @@ class Container
      * @param $maxLogPort
      * @param RunCommandOptions $runCommandOptions
      * @param OutputFilterInterface $outputFilter
+     * @param Limits $limits
      */
     public function __construct(
         $containerId,
@@ -118,7 +125,8 @@ class Container
         $minLogPort,
         $maxLogPort,
         RunCommandOptions $runCommandOptions,
-        OutputFilterInterface $outputFilter
+        OutputFilterInterface $outputFilter,
+        Limits $limits
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -131,6 +139,7 @@ class Container
         $this->maxLogPort = $maxLogPort;
         $this->runCommandOptions = $runCommandOptions;
         $this->outputFilter = $outputFilter;
+        $this->limits = $limits;
     }
 
     /**
@@ -386,11 +395,11 @@ class Container
 
         $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
             . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
-            . " --memory " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
-            . " --memory-swap " . escapeshellarg($this->getImage()->getSourceComponent()->getMemory())
-            . " --cpu-shares " . escapeshellarg($this->getImage()->getSourceComponent()->getCpuShares())
-            . " --net " . escapeshellarg($this->getImage()->getSourceComponent()->getNetworkType())
-            . " --cpus 8"
+            . " --memory " . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
+            . " --memory-swap " . escapeshellarg($this->limits->getMemorySwapLimit($this->getImage()))
+            . " --cpu-shares " . escapeshellarg($this->limits->getCpuSharesLimit($this->getImage()))
+            . " --net " . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
+            . " --cpus " . escapeshellarg($this->limits->getCpuLimit($this->getImage()))
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)
