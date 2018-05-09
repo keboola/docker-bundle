@@ -929,6 +929,7 @@ class RunnerTest extends KernelTestCase
             $loggersServiceStub,
             $jobMapperStub,
             "dummy",
+            ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
