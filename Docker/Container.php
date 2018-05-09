@@ -393,7 +393,6 @@ class Container
             $labels .= ' --label ' . escapeshellarg($label);
         }
 
-        // block devices
         $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
         $process->mustRun();
         $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
@@ -401,8 +400,8 @@ class Container
         });
         $deviceLimits = "";
         foreach($devices as $device) {
-            $deviceLimits .= " --device-write-bps " . escapeshellarg("/dev/{$device}:50m");
-            $deviceLimits .= " --device-read-bps " . escapeshellarg("/dev/{$device}:50m");
+            $deviceLimits .= " --device-write-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
+            $deviceLimits .= " --device-read-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
         }
 
         $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
