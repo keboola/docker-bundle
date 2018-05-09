@@ -162,7 +162,7 @@ EOF;
             return !empty($device);
         });
         $deviceLimits = "";
-        foreach($devices as $device) {
+        foreach ($devices as $device) {
             $deviceLimits .= " --device-write-bps '/dev/{$device}:50m'";
             $deviceLimits .= " --device-read-bps '/dev/{$device}:50m'";
         }

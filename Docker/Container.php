@@ -399,7 +399,7 @@ class Container
             return !empty($device);
         });
         $deviceLimits = "";
-        foreach($devices as $device) {
+        foreach ($devices as $device) {
             $deviceLimits .= " --device-write-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
             $deviceLimits .= " --device-read-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
         }
