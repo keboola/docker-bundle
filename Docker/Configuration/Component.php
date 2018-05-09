@@ -16,7 +16,6 @@ class Component extends Configuration
         Image::configureNode($definition);
 
         $root->children()
-            ->integerNode('cpu_shares')->min(0)->defaultValue(1024)->end()
             ->scalarNode('memory')->defaultValue('256m')->end()
             ->scalarNode('configuration_format')
                 ->defaultValue('json')

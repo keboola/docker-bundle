@@ -32,7 +32,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "tag" => "latest"
             ],
             "memory" => "64m",
-            "cpu_shares" => 1024,
             "configuration_format" => "json",
             "process_timeout" => 3600,
             "forward_token" => false,
@@ -73,7 +72,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 'tag' => 'latest',
             ],
             'memory' => '256m',
-            'cpu_shares' => 1024,
             'configuration_format' => 'json',
             'process_timeout' => 3600,
             'forward_token' => false,
@@ -214,7 +212,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 ]
             ],
             "memory" => "64m",
-            "cpu_shares" => 1024,
             "configuration_format" => "json",
             "process_timeout" => 3600,
             "forward_token" => false,
