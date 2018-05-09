@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
@@ -84,7 +83,7 @@ class StateFile
         $stateAdapter->writeToFile($stateFileName);
     }
 
-    public function storeStateFile()
+    public function storeState($currentState)
     {
         $previousState = $this->state;
         // Store state
@@ -92,15 +91,6 @@ class StateFile
             $previousState = new \stdClass();
         }
 
-        $stateAdapter = new Adapter($this->format);
-        $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state'
-            . $stateAdapter->getFileExtension();
-        $fs = new Filesystem();
-        if ($fs->exists($fileName)) {
-            $currentState = $stateAdapter->readFromFile($fileName);
-        } else {
-            $currentState = [];
-        }
         $this->outputFilter->collectValues((array)$currentState);
         if (serialize($currentState) != serialize($previousState)) {
             $components = new Components($this->storageClient);
@@ -117,5 +107,20 @@ class StateFile
                 $components->updateConfiguration($configuration);
             }
         }
+    }
+
+    public function loadStateFromFile()
+    {
+        $stateAdapter = new Adapter($this->format);
+        $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state'
+            . $stateAdapter->getFileExtension();
+        $fs = new Filesystem();
+        if ($fs->exists($fileName)) {
+            $state = $stateAdapter->readFromFile($fileName);
+        } else {
+            $state = [];
+        }
+        $fs->remove($fileName);
+        return $state;
     }
 }

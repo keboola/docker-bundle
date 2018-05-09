@@ -636,6 +636,17 @@ class RunnerTest extends KernelTestCase
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         $configuration->setState(json_encode(['foo' => 'bar']));
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
+        ];
+
+        $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
 
         $componentData = [
@@ -645,20 +656,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -666,7 +667,7 @@ class RunnerTest extends KernelTestCase
             $this->prepareJobDefinitions(
                 $componentData,
                 'test-configuration',
-                [],
+                $configData,
                 []
             ),
             'run',
@@ -696,8 +697,15 @@ class RunnerTest extends KernelTestCase
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configuration->setState(['foo' => 'bar']);
         $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
             'processors' => [
                 'after' => [
                     [
@@ -722,20 +730,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -757,6 +755,308 @@ class RunnerTest extends KernelTestCase
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 
+    public function testExecutorStoreStateWithProcessorError()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $configuration->setState(['foo' => 'bar']);
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
+            'processors' => [
+                'after' => [
+                    [
+                        'definition' => [
+                            'component'=> 'keboola.processor-move-files'
+                        ],
+                        // required parameter direction is missing
+                    ]
+
+                ]
+            ]
+        ];
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
+                ],
+            ],
+        ];
+
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'test-configuration',
+                    $configData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567'
+            );
+            self::fail("Must fail with user error");
+        } catch (UserException $e) {
+            self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
+        }
+
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $this->assertEquals(['foo' => 'bar'], $configuration['state'], "State must not be changed");
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
+    }
+
+    private function getRunnerWithTransformationProcessor($configData)
+    {
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
+                ],
+            ],
+        ];
+        $index = [
+            'components' => [
+                $componentData,
+                [
+                    'id' => 'keboola.processor-dumpy',
+                    'type' => 'other',
+                    'name' => 'Docker Processor State test',
+                    'description' => 'Testing Docker',
+                    'data' => [
+                        'definition' => [
+                            'type' => 'aws-ecr',
+                            'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                            'tag' => 'latest',
+                        ],
+                    ],
+                ],
+            ],
+            'services' => [
+                [
+                    'id' => 'oauth', 'url' => 'https://someurl'
+                ],
+            ],
+        ];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('indexAction')
+            ->will($this->returnValue($index));
+
+        $tokenInfo = $this->client->verifyToken();
+        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageServiceStub->expects($this->any())
+            ->method('getClient')
+            ->will($this->returnValue($clientMock));
+        $storageServiceStub->expects($this->any())
+            ->method('getTokenData')
+            ->will($this->returnValue($tokenInfo));
+        $log = new Logger('null');
+        $handler = new TestHandler();
+        $log->pushHandler(new NullHandler());
+        $containerLogger = new ContainerLogger('null');
+        $containerLogger->pushHandler($handler);
+        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $loggersServiceStub->expects($this->any())
+            ->method('getLog')
+            ->will($this->returnValue($log));
+        $loggersServiceStub->expects($this->any())
+            ->method('getContainerLog')
+            ->will($this->returnValue($containerLogger));
+
+        /** @var JobMapper $jobMapperStub */
+        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock()
+        ;
+
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $encryptorFactory->setComponentId('keboola.r-transformation');
+        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+
+        /** @var StorageApiService $storageServiceStub */
+        /** @var LoggersService $loggersServiceStub */
+        $runner = new Runner(
+            $encryptorFactory,
+            $storageServiceStub,
+            $loggersServiceStub,
+            $jobMapperStub,
+            "dummy",
+            ['cpu_count' => 2],
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT
+        );
+
+        $component = new Components($this->client);
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        return [$runner, $componentData, $handler];
+    }
+
+    public function testExecutorAfterProcessorNoState()
+    {
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bar": "Kochba"}, state_file)',
+                ],
+            ],
+            'processors' => [
+                'after' => [
+                    [
+                        'definition' => [
+                            'component'=> 'keboola.processor-dumpy',
+                        ],
+                        'parameters' => [
+                            'script' => [
+                                'from os import listdir',
+                                'print([f for f in listdir("/data/in/")])',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        list($runner, $componentData, $handler) = $this->getRunnerWithTransformationProcessor($configData);
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $records = $handler->getRecords();
+        self::assertGreaterThan(0, count($records));
+        $output = '';
+        foreach ($records as $record) {
+            $output .= $record['message'];
+        }
+        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
+    }
+
+    public function testExecutorBeforeProcessorNoState()
+    {
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bar": "Kochba"}, state_file)',
+                ],
+            ],
+            'processors' => [
+                'before' => [
+                    [
+                        'definition' => [
+                            'component'=> 'keboola.processor-dumpy',
+                        ],
+                        'parameters' => [
+                            'script' => [
+                                'from os import listdir',
+                                'print([f for f in listdir("/data/in/")])',
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        list($runner, $componentData, $handler) = $this->getRunnerWithTransformationProcessor($configData);
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        $records = $handler->getRecords();
+        self::assertGreaterThan(0, count($records));
+        $output = '';
+        foreach ($records as $record) {
+            $output .= $record['message'];
+        }
+        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        $component = new Components($this->client);
+        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
+    }
+
     public function testExecutorNoStoreState()
     {
         $runner = $this->getRunner(new NullHandler());
@@ -770,6 +1070,16 @@ class RunnerTest extends KernelTestCase
             }
         }
 
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
+        ];
+
         $componentData = [
             'id' => 'docker-demo',
             'type' => 'other',
@@ -777,20 +1087,10 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -798,7 +1098,7 @@ class RunnerTest extends KernelTestCase
             $this->prepareJobDefinitions(
                 $componentData,
                 'test-configuration',
-                [],
+                $configData,
                 []
             ),
             'run',
@@ -837,26 +1137,20 @@ class RunnerTest extends KernelTestCase
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"fooBar\"}" > /data/out/state.json',
-                    ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
         $configData = [
             'parameters' => [
-                'foo' => 'bar'
-            ]
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
         ];
 
         $runner->run(

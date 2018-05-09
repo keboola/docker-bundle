@@ -58,7 +58,7 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $workingDir->moveOutputToInput();
         $this->assertEquals($tableFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table'));
         $this->assertEquals($tableManifestFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest'));
-        $this->assertEquals($stateFile, file_get_contents($workingDir->getDataDir() . '/in/state.json'));
+        $this->assertFalse(file_exists($workingDir->getDataDir() . '/in/state.json'));
         $workingDir->dropWorkingDir();
     }
 }

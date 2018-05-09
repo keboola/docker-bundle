@@ -366,7 +366,6 @@ class Runner
     {
         // initialize
         $workingDirectory->createWorkingDir();
-        $stateFile->createStateFile();
         $dataLoader->loadInputData();
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
@@ -415,9 +414,12 @@ class Runner
 
         $counter = 0;
         $imageDigests = [];
+        $newState = [];
         $outputMessage = '';
         foreach ($images as $priority => $image) {
-            if (!$image->isMain()) {
+            if ($image->isMain()) {
+                $stateFile->createStateFile();
+            } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
             }
             $environment = new Environment(
@@ -468,9 +470,7 @@ class Runner
                 $process = $container->run();
                 if ($image->isMain()) {
                     $outputMessage = $process->getOutput();
-                    if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-                        $stateFile->storeStateFile();
-                    }
+                    $newState = $stateFile->loadStateFromFile();
                 }
             } finally {
                 $workingDirectory->normalizePermissions();
@@ -482,6 +482,9 @@ class Runner
             if ($counter < count($images)) {
                 $workingDirectory->moveOutputToInput();
             }
+        }
+        if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
+            $stateFile->storeState($newState);
         }
         return new Output($imageDigests, $outputMessage, $configVersion);
     }

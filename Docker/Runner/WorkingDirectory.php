@@ -33,9 +33,6 @@ class WorkingDirectory
         $this->logger = $logger;
     }
 
-    /**
-     *
-     */
     public function createWorkingDir()
     {
         $fs = new Filesystem();
@@ -116,6 +113,10 @@ class WorkingDirectory
         $finder->files()->in($structure);
         $fs->remove($finder);
         $fs->remove($structure);
+
+        // delete state file
+        $fs->remove($this->workingDir . "/data/out/state.json");
+        $fs->remove($this->workingDir . "/data/out/state.yml");
 
         // rename
         $fs->rename(

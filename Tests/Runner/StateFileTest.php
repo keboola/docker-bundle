@@ -88,11 +88,9 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
+        /** @var Client $sapiStub */
         $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
-        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
-        file_put_contents($fileName, json_encode($state));
-
-        $stateFile->storeStateFile();
+        $stateFile->storeState($state);
     }
 
     public function testUpdateStateChange()
@@ -108,12 +106,9 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
+        /** @var Client $sapiStub */
         $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
-        $state = ["state" => "fooBar"];
-        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
-        file_put_contents($fileName, json_encode($state));
-
-        $stateFile->storeStateFile();
+        $stateFile->storeState(["state" => "fooBar"]);
     }
 
     public function testUpdateStateChangeFromEmpty()
@@ -129,15 +124,31 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = [];
+        /** @var Client $sapiStub */
         $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
-        $state = ["state" => "fooBar"];
-        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
-        file_put_contents($fileName, json_encode($state));
-
-        $stateFile->storeStateFile();
+        $stateFile->storeState(["state" => "fooBar"]);
     }
 
-    public function testUpdateStateChangeToEmpty()
+    public function testUpdateStateChangeToEmptyArray()
+    {
+        $sapiStub = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects($this->once())
+            ->method("apiPut")
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id"),
+                $this->equalTo(["state" => '[]'])
+            )
+        ;
+
+        $state = ["state" => "fooBar"];
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile->storeState([]);
+    }
+
+    public function testUpdateStateChangeToEmptyObject()
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -151,14 +162,10 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         ;
 
         $state = ["state" => "fooBar"];
+        /** @var Client $sapiStub */
         $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
-        $state = [];
-        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
-        file_put_contents($fileName, json_encode($state));
-
-        $stateFile->storeStateFile();
+        $stateFile->storeState(new \stdClass());
     }
-
 
     public function testUpdateRowStateChange()
     {
@@ -173,11 +180,37 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             );
 
         $state = ["state" => "fooBarBaz"];
+        /** @var Client $sapiStub */
         $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter(), 'row-id');
-        $state = ["state" => "fooBar"];
-        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'out' . DIRECTORY_SEPARATOR . 'state.json';
-        file_put_contents($fileName, json_encode($state));
+        $stateFile->storeState(["state" => "fooBar"]);
+    }
 
-        $stateFile->storeStateFile();
+    public function testPickState()
+    {
+        $fs = new Filesystem();
+        $data = ["time" => ["previousStart" => 1495580620]];
+        $stateFile = \GuzzleHttp\json_encode($data);
+        $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
+        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $this->assertEquals($data, $stateFile->loadStateFromFile());
+        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
+    }
+
+    public function testPickStateEmptyState()
+    {
+        $fs = new Filesystem();
+        $data = [];
+        $stateFile = \GuzzleHttp\json_encode($data);
+        $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
+        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $this->assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
+        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
+    }
+
+    public function testPickStateNoState()
+    {
+        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $this->assertEquals([], $stateFile->loadStateFromFile());
+        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 }
