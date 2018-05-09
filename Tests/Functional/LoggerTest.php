@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
@@ -122,7 +123,8 @@ class LoggerTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            $outputFilter
+            $outputFilter,
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
     }
 
@@ -163,7 +165,8 @@ class LoggerTest extends KernelTestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            $outputFilter
+            $outputFilter,
+            new Limits($logService->getLog(), ['cpu_count' => 2], [], [], [])
         );
     }
 
