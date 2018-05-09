@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Temp\Temp;
@@ -66,7 +67,8 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, [], [], [], [])
         );
 
         $callback = function () {
@@ -149,7 +151,8 @@ EOF;
                 'com.keboola.runner.jobId=12345678',
                 'com.keboola.runner.runId=10.20.30',
             ], $envs),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
 
         // block devices
@@ -172,8 +175,8 @@ EOF;
             . " --memory-swap '256m'"
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
-            . " --cpus 8"
-            . $deviceLimits
+            . " --cpus '2'"
+            . $deviceLimits          
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
@@ -212,7 +215,8 @@ EOF;
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, [], [], [], [])
         );
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
@@ -246,7 +250,8 @@ EOF;
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             new RunCommandOptions([], []),
-            new OutputFilter()
+            new OutputFilter(),
+            new Limits($log, [], [], [], [])
         );
         $expected = "sudo docker rm -f 'name'";
         $this->assertEquals($expected, $container->getRemoveCommand("name"));
