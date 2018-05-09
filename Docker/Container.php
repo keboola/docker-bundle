@@ -397,7 +397,6 @@ class Container
             . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
             . " --memory " . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
             . " --memory-swap " . escapeshellarg($this->limits->getMemorySwapLimit($this->getImage()))
-            . " --cpu-shares " . escapeshellarg($this->limits->getCpuSharesLimit($this->getImage()))
             . " --net " . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
             . " --cpus " . escapeshellarg($this->limits->getCpuLimit($this->getImage()))
             . $envs

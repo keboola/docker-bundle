@@ -78,11 +78,6 @@ class Limits
         return $image->getSourceComponent()->getMemory();
     }
 
-    public function getCpuSharesLimit(Image $image)
-    {
-        return $image->getSourceComponent()->getCpuShares();
-    }
-
     public function getNetworkLimit(Image $image)
     {
         return $image->getSourceComponent()->getNetworkType();
