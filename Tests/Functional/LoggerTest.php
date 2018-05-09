@@ -589,6 +589,52 @@ exit(0);'
         $this->assertCount(0, $events);
     }
 
+    public function testGelfLogApplicationError()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['data']['definition']['uri'] = 'keboola/gelf-test-client';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /data/test.php';
+        $handler = new TestHandler();
+        $containerHandler = new TestHandler();
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+require_once "/src/vendor/autoload.php";
+$transport = new Gelf\Transport\TcpTransport(getenv("KBC_LOGGER_ADDR"), getenv("KBC_LOGGER_PORT"));
+$publisher = new Gelf\Publisher();
+$publisher->addTransport($transport);
+$logger = new Gelf\Logger($publisher);
+$logger->info("Info message.");
+$logger->error("Error message.");
+exit(2);'
+        );
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $dataDir,
+            $handler,
+            $containerHandler
+        );
+        $process = $container->run();
+
+        $out = $process->getOutput();
+        $err = $process->getErrorOutput();
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $this->assertEquals('', $err);
+        $this->assertEquals('Client finished', $out);
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(8, count($records));
+        $this->assertTrue($containerHandler->hasDebug("A debug message."));
+        $this->assertTrue($containerHandler->hasAlert("An alert message"));
+        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
+        $this->assertTrue($containerHandler->hasAlert("[hidden] message"));
+        $this->assertTrue($containerHandler->hasWarning("A warning message."));
+        $this->assertTrue($containerHandler->hasInfoRecords());
+        $this->assertTrue($containerHandler->hasError("Error message."));
+    }
+
     public function testStdoutVerbosity()
     {
         $imageConfiguration = $this->getImageConfiguration();
