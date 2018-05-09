@@ -193,11 +193,8 @@ class LoggerTest extends KernelTestCase
         $dataDir = $this->createScript(
             $temp,
             '<?php
-echo "first message to stdout\n";
-file_put_contents("php://stderr", "first message to stderr\n");
-sleep(5);
-error_log("second message to stderr isAlsoSecure\n");
-print "second message to stdout\nWhat is public is not secure";
+print "What is public is not secure";
+error_log("Message to stderr isAlsoSecure\n");
 exit(0);'
         );
         $container = $this->getContainerDummyLogger(
@@ -210,8 +207,8 @@ exit(0);'
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout\nWhat is public is not [hidden]", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr [hidden]", $err);
+        $this->assertEquals("What is public is not [hidden]", $out);
+        $this->assertEquals("Message to stderr [hidden]", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
@@ -221,12 +218,9 @@ exit(0);'
         }
 
         $records = $containerHandler->getRecords();
-        $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasErrorRecords());
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
-        $this->assertTrue($containerHandler->hasInfo("second message to stdout\nWhat is public is not [hidden]"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr\nsecond message to stderr [hidden]"));
+        $this->assertEquals(2, count($records));
+        $this->assertTrue($containerHandler->hasInfo("What is public is not [hidden]"));
+        $this->assertTrue($containerHandler->hasError("Message to stderr [hidden]"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
