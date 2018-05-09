@@ -375,6 +375,25 @@ class Container
         }
     }
 
+    private function getDeviceLimits()
+    {
+        $process = new \Symfony\Component\Process\Process(
+            "lsblk --nodeps --output NAME --noheadings 2>/dev/null"
+        );
+        $process->mustRun();
+        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
+            return !empty($device);
+        });
+        $deviceLimits = "";
+        foreach ($devices as $device) {
+            $deviceLimits .= " --device-write-bps " .
+                escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
+            $deviceLimits .= " --device-read-bps " .
+                escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
+        }
+        return $deviceLimits;
+    }
+
     /**
      * @param string $containerId
      * @return string
@@ -393,17 +412,6 @@ class Container
             $labels .= ' --label ' . escapeshellarg($label);
         }
 
-        $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
-        $process->mustRun();
-        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
-            return !empty($device);
-        });
-        $deviceLimits = "";
-        foreach ($devices as $device) {
-            $deviceLimits .= " --device-write-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
-            $deviceLimits .= " --device-read-bps " . escapeshellarg("/dev/{$device}:{$this->limits->getDeviceIOLimits($this->getImage())}");
-        }
-
         $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
             . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
             . " --memory " . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
@@ -411,7 +419,7 @@ class Container
             . " --cpu-shares " . escapeshellarg($this->limits->getCpuSharesLimit($this->getImage()))
             . " --net " . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
             . " --cpus " . escapeshellarg($this->limits->getCpuLimit($this->getImage()))
-            . $deviceLimits
+            . $this->getDeviceLimits()
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)
