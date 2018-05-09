@@ -14,7 +14,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "vendor" => ["a" => "b"],
             "image_parameters" => ["foo" => "bar"],
@@ -32,7 +31,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "uri" => "keboola/docker-demo",
                 "tag" => "latest"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "process_timeout" => 3600,
@@ -73,7 +71,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 'uri' => 'keboola/docker-demo',
                 'tag' => 'latest',
             ],
-            'cpu_shares' => 1024,
             'memory' => '256m',
             'configuration_format' => 'json',
             'process_timeout' => 3600,
@@ -117,7 +114,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "whatever",
                 "uri" => "keboola/docker-demo"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m"
         ];
         (new Configuration\Component())->parse(["config" => $config]);
@@ -134,7 +130,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "fail"
         ];
@@ -168,7 +163,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "network" => "whatever"
         ];
@@ -186,7 +180,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo"
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "staging_storage" => [
                 "input" => "whatever"
@@ -218,7 +211,6 @@ class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
                     "cache" => true,
                 ]
             ],
-            "cpu_shares" => 1024,
             "memory" => "64m",
             "configuration_format" => "json",
             "process_timeout" => 3600,

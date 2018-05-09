@@ -28,7 +28,6 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                     "type" => "quayio-private",
                     "uri" => "keboola/docker-demo-private"
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ]
@@ -58,7 +57,6 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                     ]
 
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ],
@@ -90,7 +88,6 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                         "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD)
                     ]
                 ],
-                "cpu_shares" => 1024,
                 "memory" => "64m",
                 "configuration_format" => "json"
             ],

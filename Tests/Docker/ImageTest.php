@@ -37,7 +37,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                     "uri" => "keboola/docker-demo",
                     "tag" => "master"
                 ],
-                "cpu_shares" => 2048,
                 "memory" => "128m",
                 "process_timeout" => 7200,
                 "forward_token" => true,
@@ -66,7 +65,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                         "server" => "dd"
                     ]
                 ],
-                "cpu_shares" => 2048,
                 "memory" => "128m",
                 "process_timeout" => 7200
             ]
@@ -91,7 +89,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                     "type" => "quayio",
                     "uri" => "keboola/docker-demo-app"
                 ],
-                "cpu_shares" => 2048,
                 "memory" => "128m",
                 "process_timeout" => 7200,
                 "forward_token" => true,
@@ -118,7 +115,6 @@ class ImageTest extends \PHPUnit_Framework_TestCase
                         "username" => "cc"
                     ]
                 ],
-                "cpu_shares" => 2048,
                 "memory" => "128m",
                 "process_timeout" => 7200
             ]

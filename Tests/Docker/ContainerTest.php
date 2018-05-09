@@ -160,7 +160,6 @@ EOF;
             . " --volume '/tmp:/tmp'"
             . " --memory '256m'"
             . " --memory-swap '256m'"
-            . " --cpu-shares '1024'"
             . " --net 'bridge'"
             . " --cpus '2'"
             . " --env \"var=val\""

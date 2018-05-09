@@ -16,7 +16,6 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
                     "uri" => "keboola/docker-demo",
                     "tag" => "master"
                 ],
-                "cpu_shares" => 2048,
                 "memory" => "128m",
                 "process_timeout" => 7200,
                 "forward_token" => true,
@@ -28,7 +27,6 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
 
         $component = new Component($configuration);
         $this->assertEquals("128m", $component->getMemory());
-        $this->assertEquals(2048, $component->getCpuShares());
         $this->assertEquals(7200, $component->getProcessTimeout());
         $this->assertEquals('standard', $component->getLoggerType());
         $this->assertEquals('tcp', $component->getLoggerServerType());
@@ -64,7 +62,6 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
 
         $component = new Component($configuration);
         $this->assertEquals("256m", $component->getMemory());
-        $this->assertEquals(1024, $component->getCpuShares());
         $this->assertEquals(3600, $component->getProcessTimeout());
         $this->assertEquals('standard', $component->getLoggerType());
         $this->assertEquals('tcp', $component->getLoggerServerType());
