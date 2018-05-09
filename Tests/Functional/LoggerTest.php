@@ -13,6 +13,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -635,6 +636,66 @@ print "second message to stdout\n";'
         $this->assertCount(2, $info);
         $this->assertEquals("first message to stdout", $info[0]);
         $this->assertEquals("second message to stdout", $info[1]);
+    }
+
+    public function testLogFatal()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $temp = new Temp('docker');
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+echo "message to stdout\n";
+error_log("message to stderr\n");
+exit(2);'
+        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        try {
+            $container->run();
+        } catch (ApplicationException $e) {
+            self::assertContains('message to stderr', $e->getMessage());
+            self::assertContains('message to stderr', $e->getData()['errorOutput']);
+            self::assertContains('message to stdout', $e->getData()['output']);
+        }
+
+        sleep(2); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        self::assertCount(1, $events);
+        self::assertEquals("message to stdout", $events[0]['message']);
+    }
+
+    public function testLogTimeout()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['process_timeout'] = 3;
+        $temp = new Temp('docker');
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+echo "message to stdout\n";
+error_log("message to stderr\n");
+sleep(5);
+exit(2);'
+        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        try {
+            $container->run();
+        } catch (UserException $e) {
+            self::assertContains('container exceeded the timeout of', $e->getMessage());
+            self::assertContains('message to stderr', $e->getData()['errorOutput']);
+            self::assertContains('message to stdout', $e->getData()['output']);
+        }
+
+        sleep(2); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        self::assertCount(1, $events);
+        self::assertEquals("message to stdout", $events[0]['message']);
     }
 
     public function testRunnerLogs()

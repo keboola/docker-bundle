@@ -302,21 +302,6 @@ class Container
     private function handleContainerFailure(Process $process, $startTime)
     {
         $duration = time() - $startTime;
-        // killed containers
-        if ($process->getExitCode() == 137) {
-            // this catches the timeout from `sudo timeout`
-            if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
-                throw new UserException(
-                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of " .
-                    $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds."
-                );
-            } else {
-                throw new InitializationException(
-                    "{$this->getImage()->getFullImageId()} container terminated. Will restart."
-                );
-            }
-        }
-
         $errorOutput = $process->getErrorOutput();
         $output = $process->getOutput();
 
@@ -336,20 +321,30 @@ class Container
         // put the whole message to exception data, but make sure not use too much memory
         $data = [
             "output" => mb_substr($output, -1000000),
-            "errorOutput" => mb_substr($errorOutput, -1000000)
+            "errorOutput" => mb_substr($errorOutput, -1000000),
+            "container" => [
+                "id" => $this->getId(),
+                "image" => $this->getImage()->getFullImageId(),
+            ],
         ];
 
-        if ($process->getExitCode() == 1) {
-            $data["container"] = [
-                "id" => $this->getId(),
-                "image" => $this->getImage()->getFullImageId()
-            ];
-            // syrup will log the process error output as part of the exception body trimmed, so log the entire (if possible) error as a separate event
-            $buffer = $process->getErrorOutput();
-            if (mb_strlen($buffer) > 64000) {
-                $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
+        // killed containers
+        if ($process->getExitCode() == 137) {
+            // this catches the timeout from `sudo timeout`
+            if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
+                throw new UserException(
+                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of " .
+                    $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds.",
+                    null,
+                    $data
+                );
+            } else {
+                throw new InitializationException(
+                    "{$this->getImage()->getFullImageId()} container terminated. Will restart."
+                );
             }
-            $this->containerLogger->error($buffer);
+        } elseif ($process->getExitCode() == 1) {
+            // syrup will log the process error output as part of the exception body
             throw new UserException($message, null, $data);
         } else {
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
@@ -360,12 +355,7 @@ class Container
                     $data
                 );
             } else {
-                // syrup will log the process error output as part of the exception body trimmed, so log the entire (if possible) error as a separate event
-                $buffer = $process->getErrorOutput();
-                if (mb_strlen($buffer) > 64000) {
-                    $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
-                }
-                $this->containerLogger->error($buffer);
+                // syrup will log the process error output as part of the exception body
                 throw new ApplicationException(
                     "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
