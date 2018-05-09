@@ -163,8 +163,8 @@ EOF;
         });
         $deviceLimits = "";
         foreach ($devices as $device) {
-            $deviceLimits .= " --device-write-bps /dev/{$device}:100m";
-            $deviceLimits .= " --device-read-bps /dev/{$device}:100m";
+            $deviceLimits .= " --device-write-bps /dev/{$device}:50m";
+            $deviceLimits .= " --device-read-bps /dev/{$device}:50m";
         }
 
         $expected = "sudo timeout --signal=SIGKILL 3600"
@@ -176,7 +176,7 @@ EOF;
             . " --cpu-shares '1024'"
             . " --net 'bridge'"
             . " --cpus '2'"
-            . $deviceLimits          
+            . $deviceLimits
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
