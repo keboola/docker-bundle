@@ -154,6 +154,19 @@ EOF;
             new OutputFilter(),
             new Limits($log, ['cpu_count' => 2], [], [], [])
         );
+
+        // block devices
+        $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
+        $process->mustRun();
+        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
+            return !empty($device);
+        });
+        $deviceLimits = "";
+        foreach ($devices as $device) {
+            $deviceLimits .= " --device-write-bps '/dev/{$device}:50m'";
+            $deviceLimits .= " --device-read-bps '/dev/{$device}:50m'";
+        }
+
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
             . " --volume '/data:/data'"
@@ -162,6 +175,7 @@ EOF;
             . " --memory-swap '256m'"
             . " --net 'bridge'"
             . " --cpus '2'"
+            . $deviceLimits
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""

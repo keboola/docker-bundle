@@ -91,6 +91,11 @@ class Limits
         return min($instance, $project);
     }
 
+    public function getDeviceIOLimits(Image $image)
+    {
+        return '50m';
+    }
+
     /**
      * @return Range[]
      */

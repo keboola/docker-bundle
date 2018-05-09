@@ -24,19 +24,9 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             [],
             []
         );
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSourceComponent'])
-            ->getMock();
-        $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
-        /** @var Image $image */
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('cpu_count is set incorrectly in parameters.yml: This value should be a valid number.');
-        $limits->getCpuLimit($image);
+        $limits->getCpuLimit($this->getImageMock());
     }
 
     public function testProjectLimitsInvalid()
@@ -50,19 +40,9 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             [],
             []
         );
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSourceComponent'])
-            ->getMock();
-        $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
-        /** @var Image $image */
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('runner.cpuParallelism limit is set incorrectly: This value should be 96 or less.');
-        $limits->getCpuLimit($image);
+        $limits->getCpuLimit($this->getImageMock());
     }
 
     public function testLimitsInstance()
@@ -76,17 +56,7 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             ['foo', 'bar'],
             ['bar', 'kochba']
         );
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSourceComponent'])
-            ->getMock();
-        $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
-        /** @var Image $image */
-        self::assertEquals(1, $limits->getCpuLimit($image));
+        self::assertEquals(1, $limits->getCpuLimit($this->getImageMock()));
         self::assertContains('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
     }
 
@@ -99,17 +69,7 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             [],
             []
         );
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSourceComponent'])
-            ->getMock();
-        $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
-        /** @var Image $image */
-        self::assertEquals(2, $limits->getCpuLimit($image));
+        self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
 
     public function testLimitsProject()
@@ -121,17 +81,7 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             [],
             []
         );
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['getSourceComponent'])
-            ->getMock();
-        $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
-        /** @var Image $image */
-        self::assertEquals(10, $limits->getCpuLimit($image));
+        self::assertEquals(10, $limits->getCpuLimit($this->getImageMock()));
     }
 
     public function testLimitsProjectInstance()
@@ -143,6 +93,26 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             [],
             []
         );
+        self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
+    }
+
+    public function testDeviceIOLimits()
+    {
+        $limits = new Limits(
+            new NullLogger(),
+            [],
+            [],
+            [],
+            []
+        );
+        self::assertEquals("50m", $limits->getDeviceIOLimits($this->getImageMock()));
+    }
+
+    /**
+     * @return Image
+     */
+    private function getImageMock()
+    {
         $componentMock = self::getMockBuilder(Component::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -152,7 +122,6 @@ class LimitsTest extends \PHPUnit_Framework_TestCase
             ->getMock();
         $image->method('getSourceComponent')
             ->will(self::returnValue($componentMock));
-        /** @var Image $image */
-        self::assertEquals(2, $limits->getCpuLimit($image));
+        return $image;
     }
 }
