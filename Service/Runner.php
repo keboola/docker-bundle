@@ -74,11 +74,6 @@ class Runner
     private $jobMapper;
 
     /**
-     * @var array
-     */
-    private $features = [];
-
-    /**
      * @var int
      */
     private $minLogPort;
@@ -284,7 +279,6 @@ class Runner
             $jobDefinition->getRowId()
         );
 
-        $dataLoader->setFeatures($this->features);
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),
             $this->loggersService->getLog(),
@@ -487,16 +481,5 @@ class Runner
             $stateFile->storeState($newState);
         }
         return new Output($imageDigests, $outputMessage, $configVersion);
-    }
-
-    /**
-     * @param array $features
-     * @return $this
-     */
-    public function setFeatures($features)
-    {
-        $this->features = $features;
-
-        return $this;
     }
 }
