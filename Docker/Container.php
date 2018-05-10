@@ -85,6 +85,11 @@ class Container
     private $limits;
 
     /**
+     * @var string
+     */
+    private $lastError;
+
+    /**
      * @return string
      */
     public function getId()
@@ -286,6 +291,9 @@ class Container
                         $event['short_message'],
                         $event
                     );
+                    if ($event['level'] <= 4) {
+                        $this->lastError = $event['short_message'];
+                    }
                 }
             },
             null,
@@ -308,6 +316,9 @@ class Container
         $message = $errorOutput;
         if (!$message) {
             $message = $output;
+        }
+        if (!$message) {
+            $message = $this->lastError;
         }
         if (!$message) {
             $message = "No error message.";

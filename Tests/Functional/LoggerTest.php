@@ -607,7 +607,7 @@ $publisher = new Gelf\Publisher();
 $publisher->addTransport($transport);
 $logger = new Gelf\Logger($publisher);
 $logger->info("Info message.");
-$logger->error("Error message.");
+$logger->error("My Error message.");
 exit(2);'
         );
         $container = $this->getContainerDummyLogger(
@@ -616,23 +616,18 @@ exit(2);'
             $handler,
             $containerHandler
         );
-        $process = $container->run();
+        try {
+            $container->run();
+        } catch (ApplicationException $e) {
+            $this->assertContains("My Error message", $e->getMessage());
+        }
 
-        $out = $process->getOutput();
-        $err = $process->getErrorOutput();
         $records = $handler->getRecords();
         $this->assertGreaterThan(0, count($records));
-        $this->assertEquals('', $err);
-        $this->assertEquals('Client finished', $out);
         $records = $containerHandler->getRecords();
-        $this->assertEquals(8, count($records));
-        $this->assertTrue($containerHandler->hasDebug("A debug message."));
-        $this->assertTrue($containerHandler->hasAlert("An alert message"));
-        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("[hidden] message"));
-        $this->assertTrue($containerHandler->hasWarning("A warning message."));
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasError("Error message."));
+        $this->assertEquals(2, count($records));
+        $this->assertTrue($containerHandler->hasInfo("Info message."));
+        $this->assertTrue($containerHandler->hasError("My Error message."));
     }
 
     public function testStdoutVerbosity()
@@ -678,7 +673,7 @@ print "second message to stdout\n";'
         $this->assertEquals("second message to stdout", $info[1]);
     }
 
-    public function testLogFatal()
+    public function testLogApplicationError()
     {
         $imageConfiguration = $this->getImageConfiguration();
         $temp = new Temp('docker');
