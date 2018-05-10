@@ -100,7 +100,7 @@ class Executor extends BaseExecutor
     public function execute(Job $job)
     {
         $this->tokenInfo = $this->storageApi->verifyToken();
-        $this->runner->setFeatures($this->tokenInfo["owner"]["features"]);
+        $this->runner->setTokenInfo($this->tokenInfo);
         $this->encryptorFactory->setProjectId($this->tokenInfo["owner"]["id"]);
         if (isset($job->getRawParams()["component"])) {
             $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
