@@ -82,7 +82,6 @@ class ActionController extends BaseApiController
 
         /** @var Runner $runner */
         $runner = $this->container->get('docker_bundle.runner');
-        $runner->setFeatures($tokenInfo["owner"]["features"]);
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
         $jobDefinition = new JobDefinition($configData, new Component($component));
         $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0);
