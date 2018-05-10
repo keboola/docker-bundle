@@ -76,7 +76,7 @@ class Runner
     /**
      * @var array
      */
-    private $features = [];
+    private $tokenInfo;
 
     /**
      * @var int
@@ -132,6 +132,7 @@ class Runner
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+        $this->tokenInfo = $this->storageClient->verifyToken();
     }
 
     /**
@@ -284,7 +285,7 @@ class Runner
             $jobDefinition->getRowId()
         );
 
-        $dataLoader->setFeatures($this->features);
+        $dataLoader->setFeatures($this->tokenInfo["owner"]["features"]);
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),
             $this->loggersService->getLog(),
@@ -403,13 +404,12 @@ class Runner
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
-        $tokenInfo = $this->storageClient->verifyToken();
         $limits = new Limits(
             $this->loggersService->getLog(),
             $this->instanceLimits,
-            !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
-            !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
-            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : []
+            !empty($this->tokenInfo['owner']['limits']) ? $this->tokenInfo['owner']['limits'] : [],
+            !empty($this->tokenInfo['owner']['features']) ? $this->tokenInfo['owner']['features'] : [],
+            !empty($this->tokenInfo['admin']['features']) ? $this->tokenInfo['admin']['features'] : []
         );
 
         $counter = 0;
@@ -426,7 +426,7 @@ class Runner
                 $configId,
                 $image->getSourceComponent(),
                 $image->getConfigData()['parameters'],
-                $tokenInfo,
+                $this->tokenInfo,
                 $this->storageClient->getRunId(),
                 $this->storageClient->getApiUrl()
             );
@@ -489,14 +489,4 @@ class Runner
         return new Output($imageDigests, $outputMessage, $configVersion);
     }
 
-    /**
-     * @param array $features
-     * @return $this
-     */
-    public function setFeatures($features)
-    {
-        $this->features = $features;
-
-        return $this;
-    }
 }
