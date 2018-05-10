@@ -488,5 +488,4 @@ class Runner
         }
         return new Output($imageDigests, $outputMessage, $configVersion);
     }
-
 }
