@@ -157,6 +157,11 @@ class Executor extends BaseExecutor
             $job->getId(),
             $rowId
         );
+        if (count($outputs) === 0) {
+            return [
+                "message" => "No configs executed."
+            ];
+        }
         return [
             "message" => "Component processing finished.",
             "images" => array_map(function (Output $output) {
