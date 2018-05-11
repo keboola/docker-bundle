@@ -33,7 +33,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
      */
     private $temp;
 
-    private function getJobExecutor(&$encryptorFactory, $handler = null)
+    private function getJobExecutor(&$encryptorFactory, $handler = null, $configuration = null)
     {
         $storageApiClient = new Client(
             [
@@ -111,10 +111,13 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
             ->disableOriginalConstructor()
             ->getMock()
         ;
+        if (!$configuration) {
+            $configuration = self::getConfiguration();
+        }
         $componentsStub->expects(self::once())
             ->method("getConfiguration")
             ->with("keboola.r-transformation", "my-config")
-            ->will($this->returnValue(self::getConfiguration()))
+            ->will($this->returnValue($configuration))
         ;
 
         $componentsServiceStub = $this->getMockBuilder(ComponentsService::class)
@@ -375,5 +378,22 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $this->assertArrayHasKey('kindness', $data[0]);
 
         $this->assertFalse($this->client->tableExists('out.c-docker-test.transposed-2'));
+    }
+
+
+    public function testRunRowsDisabled()
+    {
+        $configuration = self::getConfiguration();
+        $configuration['rows'][0]['isDisabled'] = true;
+        unset($configuration['rows'][1]);
+        $handler = new TestHandler();
+        $data = $this->getJobParameters();
+        /** @var ObjectEncryptorFactory $encryptor */
+        $jobExecutor = $this->getJobExecutor($encryptor, $handler, $configuration);
+        $job = new Job($encryptor->getEncryptor(), $data);
+        $job->setId(123456);
+        $ret = $jobExecutor->execute($job);
+        $this->assertArrayHasKey('message', $ret);
+        $this->assertEquals('No configs executed.', $ret['message']);
     }
 }
