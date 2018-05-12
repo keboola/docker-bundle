@@ -159,7 +159,9 @@ class Executor extends BaseExecutor
         );
         if (count($outputs) === 0) {
             return [
-                "message" => "No configs executed."
+                "message" => "No configurations executed.",
+                "images" => [],
+                "configVersion" => null,
             ];
         }
         return [
