@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "keboola/syrup": "^9.1",
+        "keboola/syrup": "^10.0",
         "keboola/php-utils": "^2.0",
         "symfony/symfony": "^2.8",
         "symfony/console": "^2.8",
