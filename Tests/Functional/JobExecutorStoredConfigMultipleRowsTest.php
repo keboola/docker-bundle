@@ -394,6 +394,10 @@ class JobExecutorStoredConfigMultipleRowsTest extends KernelTestCase
         $job->setId(123456);
         $ret = $jobExecutor->execute($job);
         $this->assertArrayHasKey('message', $ret);
-        $this->assertEquals('No configs executed.', $ret['message']);
+        $this->assertEquals('No configurations executed.', $ret['message']);
+        $this->assertArrayHasKey('images', $ret);
+        $this->assertEquals([], $ret['images']);
+        $this->assertArrayHasKey('configVersion', $ret);
+        $this->assertEquals(null, $ret['configVersion']);
     }
 }
