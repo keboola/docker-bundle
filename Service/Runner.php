@@ -222,7 +222,6 @@ class Runner
             . ", row id: " . $jobDefinition->getRowId()
         );
         $component = $jobDefinition->getComponent();
-        $this->loggersService->getLog()->info("Running Component " . $component->getId(), $jobDefinition->getConfiguration());
         $this->loggersService->setComponentId($component->getId());
 
         $temp = new Temp("docker");
@@ -323,7 +322,9 @@ class Runner
             throw new UserException("Invalid run mode: $mode");
         }
         $outputs = [];
+        $counter = 0;
         foreach ($jobDefinitions as $jobDefinition) {
+            $counter++;
             if ($jobDefinition->isDisabled()) {
                 if ($rowId !== null) {
                     $this->loggersService->getLog()->info(
@@ -340,7 +341,15 @@ class Runner
                     continue;
                 }
             }
+            $this->loggersService->getLog()->info(
+                "Running component " . $jobDefinition->getComponentId() .
+                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
+            );
             $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
+            $this->loggersService->getLog()->info(
+                "Finished component " . $jobDefinition->getComponentId() .
+                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
+            );
         }
         return $outputs;
     }
@@ -378,7 +387,6 @@ class Runner
 
         // finalize
         $workingDirectory->dropWorkingDir();
-        $this->loggersService->getLog()->info("Component " . $component->getId() . " finished.");
         return $output;
     }
 
