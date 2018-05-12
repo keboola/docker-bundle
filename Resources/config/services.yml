@@ -12,10 +12,6 @@ services:
           - "@syrup.components"
           - "%storage_api.url%"
 
-    syrup.job_factory:
-        class: Keboola\DockerBundle\Job\Metadata\JobFactory
-        arguments: ["%app_name%", "@docker_bundle.object_encryptor_factory", "@syrup.storage_api"]
-
     docker_bundle.loggers:
         class: Keboola\DockerBundle\Service\LoggersService
         arguments: ["@logger", "@docker_bundle.monolog.logger", "@docker_bundle.monolog.sapi_handler"]
