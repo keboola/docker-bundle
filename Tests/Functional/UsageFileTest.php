@@ -15,10 +15,10 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\DockerBundle\Service\StorageApiService;
-use Keboola\Syrup\Job\Metadata\JobFactory;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Keboola\DockerBundle\Job\Metadata\JobFactory;
 
 class UsageFileTest extends KernelTestCase
 {
