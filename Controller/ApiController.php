@@ -13,7 +13,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\DockerBundle\Job\Metadata\JobFactory;
+use Keboola\Syrup\Job\Metadata\JobFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -88,6 +88,7 @@ class ApiController extends BaseApiController
             /** @var JobFactory $jobFactory */
             $jobFactory = $this->container->get('syrup.job_factory');
             $job = $jobFactory->create('run', $params);
+            $job->setEncryptor($this->container->get("docker_bundle.object_encryptor_factory")->getEncryptor());
 
             // Lock name contains component id and configuration id or random string
             $lockName = $job->getLockName() . '-' . $params['component'];
