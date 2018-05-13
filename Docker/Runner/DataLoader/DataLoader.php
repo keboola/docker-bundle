@@ -46,11 +46,6 @@ class DataLoader implements DataLoaderInterface
     private $defaultBucketName;
 
     /**
-     * @var array
-     */
-    protected $features = [];
-
-    /**
      * @var Component
      */
     private $component;
@@ -142,7 +137,6 @@ class DataLoader implements DataLoaderInterface
 
         $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->component->getConfigurationFormat());
-        $writer->setFeatures($this->features);
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
@@ -230,17 +224,6 @@ class DataLoader implements DataLoaderInterface
         $this->storageClient->uploadFile($zipFileName, $uploadOptions);
         $fs = new Filesystem();
         $fs->remove($zipFileName);
-    }
-
-    /**
-     * @param array $features
-     * @return $this
-     */
-    public function setFeatures($features)
-    {
-        $this->features = $features;
-
-        return $this;
     }
 
     protected function getDefaultBucket()
