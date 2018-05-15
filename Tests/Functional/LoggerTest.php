@@ -13,6 +13,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -192,11 +193,8 @@ class LoggerTest extends KernelTestCase
         $dataDir = $this->createScript(
             $temp,
             '<?php
-echo "first message to stdout\n";
-file_put_contents("php://stderr", "first message to stderr\n");
-sleep(5);
-error_log("second message to stderr isAlsoSecure\n");
-print "second message to stdout\nWhat is public is not secure";
+print "What is public is not secure";
+error_log("Message to stderr isAlsoSecure\n");
 exit(0);'
         );
         $container = $this->getContainerDummyLogger(
@@ -209,8 +207,8 @@ exit(0);'
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("first message to stdout\nsecond message to stdout\nWhat is public is not [hidden]", $out);
-        $this->assertEquals("first message to stderr\nsecond message to stderr [hidden]", $err);
+        $this->assertEquals("What is public is not [hidden]", $out);
+        $this->assertEquals("Message to stderr [hidden]", $err);
         $this->assertTrue($handler->hasDebugRecords());
         $this->assertFalse($handler->hasErrorRecords());
         $records = $handler->getRecords();
@@ -220,12 +218,9 @@ exit(0);'
         }
 
         $records = $containerHandler->getRecords();
-        $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasErrorRecords());
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasInfo("first message to stdout"));
-        $this->assertTrue($containerHandler->hasInfo("second message to stdout\nWhat is public is not [hidden]"));
-        $this->assertTrue($containerHandler->hasError("first message to stderr\nsecond message to stderr [hidden]"));
+        $this->assertEquals(2, count($records));
+        $this->assertTrue($containerHandler->hasInfo("What is public is not [hidden]"));
+        $this->assertTrue($containerHandler->hasError("Message to stderr [hidden]"));
         $records = $containerHandler->getRecords();
         foreach ($records as $record) {
             // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
@@ -594,6 +589,47 @@ exit(0);'
         $this->assertCount(0, $events);
     }
 
+    public function testGelfLogApplicationError()
+    {
+        $temp = new Temp('docker');
+        $imageConfiguration = $this->getGelfImageConfiguration();
+        $imageConfiguration['data']['definition']['uri'] = 'keboola/gelf-test-client';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /data/test.php';
+        $handler = new TestHandler();
+        $containerHandler = new TestHandler();
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+require_once "/src/vendor/autoload.php";
+$transport = new Gelf\Transport\TcpTransport(getenv("KBC_LOGGER_ADDR"), getenv("KBC_LOGGER_PORT"));
+$publisher = new Gelf\Publisher();
+$publisher->addTransport($transport);
+$logger = new Gelf\Logger($publisher);
+$logger->info("Info message.");
+$logger->error("My Error message.");
+exit(2);'
+        );
+        $container = $this->getContainerDummyLogger(
+            $imageConfiguration,
+            $dataDir,
+            $handler,
+            $containerHandler
+        );
+        try {
+            $container->run();
+        } catch (ApplicationException $e) {
+            $this->assertContains("My Error message", $e->getMessage());
+        }
+
+        $records = $handler->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $records = $containerHandler->getRecords();
+        $this->assertEquals(2, count($records));
+        $this->assertTrue($containerHandler->hasInfo("Info message."));
+        $this->assertTrue($containerHandler->hasError("My Error message."));
+    }
+
     public function testStdoutVerbosity()
     {
         $imageConfiguration = $this->getImageConfiguration();
@@ -635,6 +671,67 @@ print "second message to stdout\n";'
         $this->assertCount(2, $info);
         $this->assertEquals("first message to stdout", $info[0]);
         $this->assertEquals("second message to stdout", $info[1]);
+    }
+
+    public function testLogApplicationError()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $temp = new Temp('docker');
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+echo "message to stdout\n";
+error_log("message to stderr\n");
+exit(2);'
+        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        try {
+            $container->run();
+        } catch (ApplicationException $e) {
+            self::assertContains('message to stderr', $e->getMessage());
+            self::assertContains('message to stderr', $e->getData()['errorOutput']);
+            self::assertContains('message to stdout', $e->getData()['output']);
+        }
+
+        sleep(2); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        self::assertCount(1, $events);
+        self::assertEquals("message to stdout", $events[0]['message']);
+    }
+
+    public function testLogTimeout()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['process_timeout'] = 10;
+        $temp = new Temp('docker');
+        $dataDir = $this->createScript(
+            $temp,
+            '<?php
+echo "message to stdout\n";
+error_log("message to stderr\n");
+sleep(15);
+exit(2);'
+        );
+        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
+        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        try {
+            $container->run();
+            self::fail("Must raise user exception");
+        } catch (UserException $e) {
+            self::assertContains('container exceeded the timeout of', $e->getMessage());
+            self::assertContains('message to stderr', $e->getData()['errorOutput']);
+            self::assertContains('message to stdout', $e->getData()['output']);
+        }
+
+        sleep(2); // give storage a little timeout to realize that events are in
+        $events = $sapiService->getClient()->listEvents(
+            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        );
+        self::assertCount(1, $events);
+        self::assertEquals("message to stdout", $events[0]['message']);
     }
 
     public function testRunnerLogs()
