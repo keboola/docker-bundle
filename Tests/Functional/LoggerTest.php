@@ -705,20 +705,21 @@ exit(2);'
     public function testLogTimeout()
     {
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration['data']['process_timeout'] = 3;
+        $imageConfiguration['data']['process_timeout'] = 10;
         $temp = new Temp('docker');
         $dataDir = $this->createScript(
             $temp,
             '<?php
 echo "message to stdout\n";
 error_log("message to stderr\n");
-sleep(5);
+sleep(15);
 exit(2);'
         );
         $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
         $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
         try {
             $container->run();
+            self::fail("Must raise user exception");
         } catch (UserException $e) {
             self::assertContains('container exceeded the timeout of', $e->getMessage());
             self::assertContains('message to stderr', $e->getData()['errorOutput']);
