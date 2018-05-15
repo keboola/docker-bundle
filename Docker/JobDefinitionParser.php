@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Syrup\Exception\UserException;
+
 class JobDefinitionParser
 {
     /**
@@ -26,6 +28,7 @@ class JobDefinitionParser
      */
     public function parseConfig(Component $component, $config)
     {
+        $this->validateConfig($component, $config);
         $this->jobDefinitions = [];
         if (count($config['rows']) == 0) {
             $jobDefinition = new JobDefinition($config['configuration'], $component, $config['id'], $config['version'], $config['state']);
@@ -44,6 +47,33 @@ class JobDefinitionParser
                 $this->jobDefinitions[] = $jobDefinition;
             }
         }
+    }
+
+    private function validateConfig(Component $component, $config)
+    {
+        $hasProcessors = !empty($config['processors']['before']) || !empty($config['processors']['after']);
+        $hasRowProcessors = $this->hasRowProcessors($config);
+        if ($component->getStagingStorage() != 'local' && ($hasRowProcessors || $hasProcessors)) {
+            throw new UserException(
+                "Processors cannot be used with component " . $component->getId() .
+                ' because it does not use local staging storage.'
+            );
+        }
+        if ($hasProcessors && $hasRowProcessors) {
+            throw new UserException(
+                "Processors may be set either in configuration or in configuration row, but not in both places."
+            );
+        }
+    }
+
+    private function hasRowProcessors($config)
+    {
+        foreach ($config['rows'] as $row) {
+            if (!empty($row['processors']['before']) || !empty($row['processors']['after'])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
