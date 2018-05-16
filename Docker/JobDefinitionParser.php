@@ -51,9 +51,10 @@ class JobDefinitionParser
 
     private function validateConfig(Component $component, $config)
     {
-        $hasProcessors = !empty($config['processors']['before']) || !empty($config['processors']['after']);
+        $hasProcessors = !empty($config['configuration']['processors']['before'])
+            || !empty($config['configuration']['processors']['after']);
         $hasRowProcessors = $this->hasRowProcessors($config);
-        if ($component->getStagingStorage() != 'local' && ($hasRowProcessors || $hasProcessors)) {
+        if ($component->getStagingStorage()['input'] !== 'local' && ($hasRowProcessors || $hasProcessors)) {
             throw new UserException(
                 "Processors cannot be used with component " . $component->getId() .
                 ' because it does not use local staging storage.'
@@ -69,7 +70,9 @@ class JobDefinitionParser
     private function hasRowProcessors($config)
     {
         foreach ($config['rows'] as $row) {
-            if (!empty($row['processors']['before']) || !empty($row['processors']['after'])) {
+            if (!empty($row['configuration']['processors']['before'])
+                || !empty($row['configuration']['processors']['after'])
+            ) {
                 return true;
             }
         }

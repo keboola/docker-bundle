@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
+use Keboola\Syrup\Exception\UserException;
 
 class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -425,4 +426,306 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         $this->assertEmpty($parser->getJobDefinitions()[0]->getState());
     }
+
+    public function testMultiRowConfigurationWithValidProcessors()
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'state' => [],
+            'configuration' => [
+                'parameters' => ['first' => 'second'],
+                'processors' => [
+                    'before' => [],
+                    'after' => [
+                        [
+                            "definition" => [
+                                "component" => "keboola.processor-skip-lines",
+                            ],
+                            "parameters" => [
+                                "lines" => 1,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'rows' => [
+                [
+                    'id' => 'row1',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'a' => 'b',
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'row2',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'c' => 'd'
+                        ],
+                        'processors' => [
+                            'before' => [
+                                [
+                                    "definition" => [
+                                        "component" => "keboola.processor-iconv",
+                                    ],
+                                    "parameters" => [
+                                        "source_encoding" => "WINDOWS-1250"
+                                    ],
+                                ],
+                            ],
+                            'after' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expectedRow1 = [
+            'storage' => [],
+            'parameters' => ['a' => 'b', 'first' => 'second'],
+            'processors' => [
+                'before' => [],
+                'after' => [
+                    [
+                        "definition" => [
+                            "component" => "keboola.processor-skip-lines",
+                        ],
+                        "parameters" => [
+                            "lines" => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $expectedRow2 = [
+            'storage' => [],
+            'parameters' => ['c' => 'd', 'first' => 'second'],
+            'processors' => [
+                'before' => [
+                    [
+                        "definition" => [
+                            "component" => "keboola.processor-iconv",
+                        ],
+                        "parameters" => [
+                            "source_encoding" => "WINDOWS-1250"
+                        ],
+                    ],
+                ],
+                'after' => [
+                    [
+                        "definition" => [
+                            "component" => "keboola.processor-skip-lines",
+                        ],
+                        "parameters" => [
+                            "lines" => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $parser = new JobDefinitionParser();
+        $parser->parseConfig($this->getComponent(), $config);
+
+        $this->assertCount(2, $parser->getJobDefinitions());
+        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        $this->assertEquals($expectedRow1, $parser->getJobDefinitions()[0]->getConfiguration());
+        $this->assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
+    }
+
+    public function testMultiRowConfigurationWithInvalidProcessors()
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'state' => [],
+            'configuration' => [
+                'parameters' => ['first' => 'second'],
+                'processors' => [
+                    'before' => [
+                        [
+                            "definition" => [
+                                "component" => "keboola.processor-skip-lines",
+                            ],
+                            "parameters" => [
+                                "lines" => 1,
+                            ],
+                        ],
+                    ],
+                    'after' => [],
+                ],
+            ],
+            'rows' => [
+                [
+                    'id' => 'row1',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'a' => 'b',
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'row2',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'c' => 'd'
+                        ],
+                        'processors' => [
+                            'before' => [
+                                [
+                                    "definition" => [
+                                        "component" => "keboola.processor-iconv",
+                                    ],
+                                    "parameters" => [
+                                        "source_encoding" => "WINDOWS-1250"
+                                    ],
+                                ],
+                            ],
+                            'after' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $parser = new JobDefinitionParser();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage(
+            "Processors may be set either in configuration or in configuration row, but not in both places"
+        );
+        $parser->parseConfig($this->getComponent(), $config);
+    }
+
+    public function testMultiRowConfigurationWithProcessorsAndInvalidStaging()
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'state' => [],
+            'configuration' => [
+                'parameters' => ['first' => 'second'],
+            ],
+            'rows' => [
+                [
+                    'id' => 'row1',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'a' => 'b',
+                        ],
+                    ],
+                ],
+                [
+                    'id' => 'row2',
+                    'version' => 1,
+                    'isDisabled' => false,
+                    'state' => [],
+                    'configuration' => [
+                        'parameters' => [
+                            'c' => 'd'
+                        ],
+                        'processors' => [
+                            'before' => [
+                                [
+                                    "definition" => [
+                                        "component" => "keboola.processor-iconv",
+                                    ],
+                                    "parameters" => [
+                                        "source_encoding" => "WINDOWS-1250"
+                                    ],
+                                ],
+                            ],
+                            'after' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $parser = new JobDefinitionParser();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage(
+            "Processors cannot be used with component keboola.r-transformation because it does not use local staging storage."
+        );
+        $component = new Component(
+            [
+                'id' => 'keboola.r-transformation',
+                'data' => [
+                    'definition' => [
+                        'type' => 'dockerhub',
+                        'uri' => 'keboola/docker-demo',
+                    ],
+                    'staging_storage' => [
+                        'input' => 's3',
+                    ],
+                ],
+            ]
+        );
+        $parser->parseConfig($component, $config);
+    }
+
+    public function testConfigurationWithProcessorsAndInvalidStaging()
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'state' => [],
+            'configuration' => [
+                'parameters' => ['first' => 'second'],
+                'processors' => [
+                    'before' => [
+                        [
+                            "definition" => [
+                                "component" => "keboola.processor-skip-lines",
+                            ],
+                            "parameters" => [
+                                "lines" => 1,
+                            ],
+                        ],
+                    ],
+                    'after' => [],
+                ],
+            ],
+            'rows' => [],
+        ];
+
+        $parser = new JobDefinitionParser();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage(
+            "Processors cannot be used with component keboola.r-transformation because it does not use local staging storage."
+        );
+        $component = new Component(
+            [
+                'id' => 'keboola.r-transformation',
+                'data' => [
+                    'definition' => [
+                        'type' => 'dockerhub',
+                        'uri' => 'keboola/docker-demo',
+                    ],
+                    'staging_storage' => [
+                        'input' => 's3',
+                    ],
+                ],
+            ]
+        );
+        $parser->parseConfig($component, $config);
+    }
+
 }
