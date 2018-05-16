@@ -6,7 +6,6 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ConfigurationWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
-use Keboola\StorageApi\Client;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
