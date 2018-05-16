@@ -727,5 +727,4 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         );
         $parser->parseConfig($component, $config);
     }
-
 }
