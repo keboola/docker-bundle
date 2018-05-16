@@ -3,14 +3,10 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Service\Runner;
-use Keboola\DockerBundle\Service\StorageApiService;
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\JobFactory;
@@ -222,90 +218,6 @@ class ApiController extends BaseApiController
             $json->component = $request->get("component");
         }
         return $json;
-    }
-
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
-     */
-    public function encryptConfigAction(Request $request)
-    {
-        $this->logger->warn("Using deprecated encryptConfig call.");
-
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-        $encryptorFactory->setComponentId($request->get("component"));
-        $tokenInfo = $this->storageApi->verifyToken();
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-
-        $contentTypeHeader = $request->headers->get("Content-Type");
-        if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type.");
-        }
-
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($request->getContent(), ComponentProjectWrapper::class);
-            return $this->createResponse($encryptedValue, 200, ["Content-Type" => "text/plain"]);
-        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
-            $params = $this->getPostJson($request, false);
-            $encryptedValue = $encryptorFactory->getEncryptor()->encrypt($params, ComponentProjectWrapper::class);
-            return $this->createJsonResponse($encryptedValue, 200, ["Content-Type" => "application/json"]);
-        } else {
-            throw new UserException("Incorrect Content-Type.");
-        }
-    }
-
-    /**
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
-     */
-    public function saveConfigAction(Request $request)
-    {
-        $this->logger->warn("Using deprecated saveConfig call.");
-        /** @var StorageApiService $storage */
-        $components = new Components($this->storageApi);
-        $options = new Configuration();
-        $options->setComponentId($request->get("component"));
-        $options->setConfigurationId($request->get("configId"));
-
-        if ($request->get("configuration")) {
-            /** @var ObjectEncryptorFactory $encryptorFactory */
-            $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
-            $encryptorFactory->setComponentId($request->get("component"));
-            $tokenInfo = $this->storageApi->verifyToken();
-            $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-            $configuration = $encryptorFactory->getEncryptor()->encrypt(
-                json_decode($request->get("configuration")),
-                ComponentProjectWrapper::class
-            );
-            $options->setConfiguration($configuration);
-        }
-
-        if ($request->get("changeDescription")) {
-            $options->setChangeDescription($request->get("changeDescription"));
-        }
-
-        if ($request->get("name")) {
-            $options->setName($request->get("name"));
-        }
-
-        if ($request->get("description")) {
-            $options->setDescription($request->get("description"));
-        }
-
-        if ($request->get("state")) {
-            $options->setState($request->get("state"));
-        }
-
-        try {
-            $response = $components->updateConfiguration($options);
-        } catch (ClientException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-
-        return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
     }
 
     /**

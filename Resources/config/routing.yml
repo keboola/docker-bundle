@@ -1,10 +1,5 @@
-keboola_docker_encrypt_legacy:
-    path:     /encrypt
-    defaults: { _controller: KeboolaDockerBundle:PublicLegacy:encrypt }
-    methods:  [POST]
-
 keboola_docker_encrypt:
-    path:     /encrypt-new
+    path:     /encrypt
     defaults: { _controller: KeboolaDockerBundle:Public:encrypt }
     methods:  [POST]
 
@@ -34,24 +29,6 @@ keboola_docker_disabled_run:
     path:     /run
     defaults: { _controller: KeboolaDockerBundle:Api:disabled }
     methods:  [POST]
-
-keboola_docker_component_encrypt:
-    path:     /{component}/encrypt
-    defaults:
-      _controller: KeboolaDockerBundle:PublicLegacy:componentEncrypt
-    methods:  [POST]
-
-keboola_docker_encrypt_config:
-    path:     /{component}/configs/encrypt
-    defaults:
-      _controller: KeboolaDockerBundle:Api:encryptConfig
-    methods:  [POST]
-
-keboola_docker_save_config:
-    path:     /{component}/configs/{configId}
-    defaults:
-      _controller: KeboolaDockerBundle:Api:saveConfig
-    methods:  [PUT]
 
 # run sync actions
 keboola_docker_sync_action:
