@@ -427,7 +427,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($parser->getJobDefinitions()[0]->getState());
     }
 
-    public function testMultiRowConfigurationWithValidProcessors()
+    public function testMultiRowConfigurationWithInvalidProcessors1()
     {
         $config = [
             'id' => 'my-config',
@@ -488,61 +488,15 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
             ],
         ];
 
-        $expectedRow1 = [
-            'storage' => [],
-            'parameters' => ['a' => 'b', 'first' => 'second'],
-            'processors' => [
-                'before' => [],
-                'after' => [
-                    [
-                        "definition" => [
-                            "component" => "keboola.processor-skip-lines",
-                        ],
-                        "parameters" => [
-                            "lines" => 1,
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
-        $expectedRow2 = [
-            'storage' => [],
-            'parameters' => ['c' => 'd', 'first' => 'second'],
-            'processors' => [
-                'before' => [
-                    [
-                        "definition" => [
-                            "component" => "keboola.processor-iconv",
-                        ],
-                        "parameters" => [
-                            "source_encoding" => "WINDOWS-1250"
-                        ],
-                    ],
-                ],
-                'after' => [
-                    [
-                        "definition" => [
-                            "component" => "keboola.processor-skip-lines",
-                        ],
-                        "parameters" => [
-                            "lines" => 1,
-                        ],
-                    ],
-                ],
-            ],
-        ];
-
         $parser = new JobDefinitionParser();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage(
+            "Processors may be set either in configuration or in configuration row, but not in both places"
+        );
         $parser->parseConfig($this->getComponent(), $config);
-
-        $this->assertCount(2, $parser->getJobDefinitions());
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
-        $this->assertEquals($expectedRow1, $parser->getJobDefinitions()[0]->getConfiguration());
-        $this->assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
     }
 
-    public function testMultiRowConfigurationWithInvalidProcessors()
+    public function testMultiRowConfigurationWithInvalidProcessors2()
     {
         $config = [
             'id' => 'my-config',
