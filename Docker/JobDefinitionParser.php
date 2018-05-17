@@ -56,13 +56,13 @@ class JobDefinitionParser
         $hasRowProcessors = $this->hasRowProcessors($config);
         if ($component->getStagingStorage()['input'] !== 'local' && ($hasRowProcessors || $hasProcessors)) {
             throw new UserException(
-                "Processors cannot be used with component " . $component->getId() .
+                'Processors cannot be used with component ' . $component->getId() .
                 ' because it does not use local staging storage.'
             );
         }
         if ($hasProcessors && $hasRowProcessors) {
             throw new UserException(
-                "Processors may be set either in configuration or in configuration row, but not in both places."
+                'Processors may be set either in configuration or in configuration row, but not in both places.'
             );
         }
     }
