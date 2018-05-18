@@ -1705,16 +1705,16 @@
         },
         {
             "name": "keboola/gelf-server",
-            "version": "1.2.0",
+            "version": "1.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/gelf-server.git",
-                "reference": "8ff14825c1d6a5778c31feb06481ea4e01f0d0e3"
+                "reference": "1e47a2a7e6e43d35c1bd964d4fa3dcf1a6771dbf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/gelf-server/zipball/8ff14825c1d6a5778c31feb06481ea4e01f0d0e3",
-                "reference": "8ff14825c1d6a5778c31feb06481ea4e01f0d0e3",
+                "url": "https://api.github.com/repos/keboola/gelf-server/zipball/1e47a2a7e6e43d35c1bd964d4fa3dcf1a6771dbf",
+                "reference": "1e47a2a7e6e43d35c1bd964d4fa3dcf1a6771dbf",
                 "shasum": ""
             },
             "require": {
@@ -1745,7 +1745,7 @@
                 }
             ],
             "description": "Simple PHP server for GELF logger",
-            "time": "2018-05-13T09:34:13+00:00"
+            "time": "2018-05-18T11:18:12+00:00"
         },
         {
             "name": "keboola/input-mapping",
@@ -3495,6 +3495,7 @@
                 "compression",
                 "minification"
             ],
+            "abandoned": "symfony/webpack-encore-pack",
             "time": "2017-07-14T07:26:46+00:00"
         },
         {
