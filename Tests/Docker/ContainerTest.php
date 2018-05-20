@@ -119,7 +119,75 @@ EOF;
         $this->assertContains("Processed 2 rows.", trim($process->getOutput()));
     }
 
-    public function testRunCommand()
+    public function testRunCommandWithContainerRootUserFeature()
+    {
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app",
+                    "tag" => "master"
+                ]
+            ]
+        ]);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
+        $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
+        $container = new Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            '/data',
+            '/tmp',
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([
+                'com.keboola.runner.jobId=12345678',
+                'com.keboola.runner.runId=10.20.30',
+            ], $envs),
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], []),
+            ["container-root-user"]
+        );
+
+        // block devices
+        $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
+        $process->mustRun();
+        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
+            return !empty($device);
+        });
+        $deviceLimits = "";
+        foreach ($devices as $device) {
+            $deviceLimits .= " --device-write-bps '/dev/{$device}:50m'";
+            $deviceLimits .= " --device-read-bps '/dev/{$device}:50m'";
+        }
+
+        $expected = "sudo timeout --signal=SIGKILL 3600"
+            . " docker run"
+            . " --volume '/data:/data'"
+            . " --volume '/tmp:/tmp'"
+            . " --memory '256m'"
+            . " --memory-swap '256m'"
+            . " --net 'bridge'"
+            . " --cpus '2'"
+            . $deviceLimits
+            . " --env \"var=val\""
+            . " --env \"příliš=žluťoučký\""
+            . " --env \"var2=weird = '\\\"value\""
+            . " --label 'com.keboola.runner.jobId=12345678'"
+            . " --label 'com.keboola.runner.runId=10.20.30'"
+            . " --name 'name'"
+            . " 'keboola/docker-demo-app:master'";
+        $this->assertEquals($expected, $container->getRunCommand("name"));
+    }
+
+    public function testRunCommandContainerWithoutRootUserFeature()
     {
         $imageConfiguration = new Component([
             "data" => [
@@ -155,35 +223,7 @@ EOF;
             new Limits($log, ['cpu_count' => 2], [], [], [])
         );
 
-        // block devices
-        $process = new \Symfony\Component\Process\Process("lsblk --nodeps --output NAME --noheadings 2>/dev/null");
-        $process->mustRun();
-        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
-            return !empty($device);
-        });
-        $deviceLimits = "";
-        foreach ($devices as $device) {
-            $deviceLimits .= " --device-write-bps '/dev/{$device}:50m'";
-            $deviceLimits .= " --device-read-bps '/dev/{$device}:50m'";
-        }
-
-        $expected = "sudo timeout --signal=SIGKILL 3600"
-            . " docker run"
-            . " --volume '/data:/data'"
-            . " --volume '/tmp:/tmp'"
-            . " --memory '256m'"
-            . " --memory-swap '256m'"
-            . " --net 'bridge'"
-            . " --cpus '2'"
-            . $deviceLimits
-            . " --env \"var=val\""
-            . " --env \"příliš=žluťoučký\""
-            . " --env \"var2=weird = '\\\"value\""
-            . " --label 'com.keboola.runner.jobId=12345678'"
-            . " --label 'com.keboola.runner.runId=10.20.30'"
-            . " --name 'name'"
-            . " 'keboola/docker-demo-app:master'";
-        $this->assertEquals($expected, $container->getRunCommand("name"));
+        $this->assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
     }
 
     public function testInspectCommand()

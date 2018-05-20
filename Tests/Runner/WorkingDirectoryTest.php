@@ -13,14 +13,14 @@ use Symfony\Component\Process\Process;
 
 class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function testWorkingDirectoryTimeout()
+    public function testWorkingDirectoryTimeoutWithContainerRootUserFeature()
     {
         $temp = new Temp();
         $logger = new Logger('test');
         $handler = new TestHandler();
         $logger->pushHandler($handler);
         $workingDir = $this->getMockBuilder(WorkingDirectory::class)
-            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger, ['container-root-user']])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
@@ -41,6 +41,27 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         self::assertContains($handler->getRecords()[0]['message'], 'Normalizing working directory permissions');
         self::assertContains($handler->getRecords()[1]['message'], 'Normalizing working directory permissions');
     }
+
+    public function testNormalizeSkippedWithoutContainerRootUserFeature()
+    {
+        $temp = new Temp();
+        $logger = new Logger('test');
+        $handler = new TestHandler();
+        $logger->pushHandler($handler);
+        $workingDir = $this->getMockBuilder(WorkingDirectory::class)
+            ->setConstructorArgs([$temp->getTmpFolder(), $logger])
+            ->setMethods(['getNormalizeCommand'])
+            ->getMock();
+        $workingDir->expects($this->exactly(0))
+            ->method('getNormalizeCommand');
+
+        /** @var WorkingDirectory $workingDir */
+        $workingDir->createWorkingDir();
+        $workingDir->normalizePermissions();
+        $workingDir->dropWorkingDir();
+        self::assertCount(0, $handler->getRecords());
+    }
+
 
     public function testWorkingDirectoryMove()
     {
