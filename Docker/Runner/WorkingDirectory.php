@@ -23,14 +23,20 @@ class WorkingDirectory
     private $logger;
 
     /**
+     * @var array
+     */
+    private $features;
+
+    /**
      * DataDirectory constructor.
      * @param string $workingDir
      * @param LoggerInterface $logger
      */
-    public function __construct($workingDir, LoggerInterface $logger)
+    public function __construct($workingDir, LoggerInterface $logger, $features = [])
     {
         $this->workingDir = $workingDir;
         $this->logger = $logger;
+        $this->features = $features;
     }
 
     public function createWorkingDir()
@@ -63,6 +69,9 @@ class WorkingDirectory
 
     public function normalizePermissions()
     {
+        if (!$this->hasFeature("container-root-user")) {
+            return;
+        }
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new UniformRandomBackOffPolicy(60000, 180000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
@@ -137,5 +146,14 @@ class WorkingDirectory
         ];
 
         $fs->mkdir($structure);
+    }
+
+    /**
+     * @param $feature
+     * @return bool
+     */
+    private function hasFeature($feature)
+    {
+        return in_array($feature, $this->features);
     }
 }

@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerTest extends BaseContainerTest
 {
-    public function testRunCommand()
+    public function testRunCommandWithContainerRootUserFeature()
     {
         $runCommandOptions = new RunCommandOptions(
             [
@@ -17,7 +17,7 @@ class ContainerTest extends BaseContainerTest
             ],
             ['var' => 'val', 'příliš' => 'žluťoučký', 'var2' => 'weird = \'"value' ]
         );
-        $container = $this->getContainer($this->getImageConfiguration(), $runCommandOptions, [], false);
+        $container = $this->getContainer($this->getImageConfiguration(), $runCommandOptions, [], false, ["container-root-user"]);
 
         // block devices
         $process = new Process('lsblk --nodeps --output NAME --noheadings 2>/dev/null');
@@ -49,6 +49,14 @@ class ContainerTest extends BaseContainerTest
             . " '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:latest'";
         self::assertEquals($expected, $container->getRunCommand('name'));
     }
+
+    public function testRunCommandContainerWithoutRootUserFeature()
+    {
+        $runCommandOptions = new RunCommandOptions([], []);
+        $container = $this->getContainer($this->getImageConfiguration(), $runCommandOptions, [], false);
+        $this->assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
+    }
+
 
     public function testInspectCommand()
     {

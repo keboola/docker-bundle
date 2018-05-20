@@ -150,6 +150,7 @@ class Runner
      * @param WorkingDirectory $workingDirectory
      * @param OutputFilterInterface $outputFilter
      * @param Limits $limits
+     * @param array $features
      * @return Container
      */
     private function createContainerFromImage(
@@ -158,7 +159,8 @@ class Runner
         RunCommandOptions $runCommandOptions,
         WorkingDirectory $workingDirectory,
         OutputFilterInterface $outputFilter,
-        Limits $limits
+        Limits $limits,
+        array $features
     ) {
         return new Container(
             $containerId,
@@ -172,7 +174,8 @@ class Runner
             $this->maxLogPort,
             $runCommandOptions,
             $outputFilter,
-            $limits
+            $limits,
+            $features
         );
     }
 
@@ -221,7 +224,7 @@ class Runner
 
         $temp = new Temp("docker");
         $temp->initRunFolder();
-        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
+        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog(), $component->getFeatures());
 
         $usageFile = new UsageFile(
             $workingDirectory->getDataDir(),
@@ -463,7 +466,8 @@ class Runner
                 ),
                 $workingDirectory,
                 $outputFilter,
-                $limits
+                $limits,
+                $component->getFeatures()
             );
             if ($mode === self::MODE_DEBUG) {
                 $dataLoader->storeDataArchive('stage_' . $priority, [self::MODE_DEBUG, $image->getSourceComponent()->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId, $image->getImageId()]);

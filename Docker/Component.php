@@ -104,6 +104,14 @@ class Component
     }
 
     /**
+     * @return array
+     */
+    public function getFeatures()
+    {
+        return $this->data['features'];
+    }
+
+    /**
      * Change type of component image
      * @param $type
      * @return Component

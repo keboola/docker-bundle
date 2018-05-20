@@ -83,6 +83,10 @@ class Container
      * @var Limits
      */
     private $limits;
+    /**
+     * @var array
+     */
+    private $features;
 
     /**
      * @var string
@@ -131,7 +135,8 @@ class Container
         $maxLogPort,
         RunCommandOptions $runCommandOptions,
         OutputFilterInterface $outputFilter,
-        Limits $limits
+        Limits $limits,
+        array $features = []
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -145,6 +150,7 @@ class Container
         $this->runCommandOptions = $runCommandOptions;
         $this->outputFilter = $outputFilter;
         $this->limits = $limits;
+        $this->features = $features;
     }
 
     /**
@@ -423,6 +429,7 @@ class Container
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)
+            . (!$this->hasFeature("container-root-user") ? ' --user $(id -u):$(id -g)' : "")
             . " " . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }
@@ -507,5 +514,14 @@ class Container
                 $data
             );
         }
+    }
+
+    /**
+     * @param $feature
+     * @return bool
+     */
+    private function hasFeature($feature)
+    {
+        return in_array($feature, $this->features);
     }
 }

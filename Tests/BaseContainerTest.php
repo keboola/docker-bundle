@@ -137,7 +137,7 @@ abstract class BaseContainerTest extends TestCase
         return $this->storageServiceStub;
     }
 
-    protected function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare)
+    protected function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare, $features = [])
     {
         $this->createScript($contents);
         $this->testHandler = new TestHandler();
@@ -193,7 +193,8 @@ abstract class BaseContainerTest extends TestCase
             RUNNER_MAX_LOG_PORT,
             $commandOptions,
             $outputFilter,
-            new Limits($log, ['cpu_count' => 2], [], [], [])
+            new Limits($log, ['cpu_count' => 2], [], [], []),
+            $features
         );
         return $container;
     }
