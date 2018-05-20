@@ -22,6 +22,10 @@ class Component
      * @var string
      */
     private $networkType;
+    /**
+     * @var array
+     */
+    private $features;
 
     /**
      * Component constructor.
@@ -31,6 +35,11 @@ class Component
     {
         $this->id = empty($componentData['id']) ? '' : $componentData['id'];
         $data = empty($componentData['data']) ? [] : $componentData['data'];
+        if (isset($data['features'])) {
+            $this->features = $data['features'];
+        } else {
+            $this->features = [];
+        }
         try {
             $this->data = (new Configuration\Component())->parse(['config' => $data]);
         } catch (InvalidConfigurationException $e) {
@@ -108,7 +117,7 @@ class Component
      */
     public function getFeatures()
     {
-        return $this->data['features'];
+        return $this->features;
     }
 
     /**
