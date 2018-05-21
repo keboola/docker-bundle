@@ -83,10 +83,6 @@ class Container
      * @var Limits
      */
     private $limits;
-    /**
-     * @var array
-     */
-    private $features;
 
     /**
      * @return string
@@ -130,8 +126,7 @@ class Container
         $maxLogPort,
         RunCommandOptions $runCommandOptions,
         OutputFilterInterface $outputFilter,
-        Limits $limits,
-        array $features = []
+        Limits $limits
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -145,7 +140,6 @@ class Container
         $this->runCommandOptions = $runCommandOptions;
         $this->outputFilter = $outputFilter;
         $this->limits = $limits;
-        $this->features = $features;
     }
 
     /**
@@ -513,14 +507,5 @@ class Container
                 $data
             );
         }
-    }
-
-    /**
-     * @param $feature
-     * @return bool
-     */
-    private function hasFeature($feature)
-    {
-        return in_array($feature, $this->features);
     }
 }
