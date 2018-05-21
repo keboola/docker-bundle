@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\Temp\Temp;
 use Symfony\Component\Filesystem\Filesystem;
@@ -25,6 +26,11 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
      */
     private $dataDir;
 
+    /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
     public function setUp()
     {
         parent::setUp();
@@ -40,6 +46,14 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             'url' => STORAGE_API_URL,
             "token" => STORAGE_API_TOKEN,
         ]);
+        $this->encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+        $this->encryptorFactory->setComponentId('docker-demo');
+        $this->encryptorFactory->setProjectId('123');
     }
 
     public function tearDown()
@@ -53,7 +67,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateStateFile()
     {
         $state = ['lastUpdate' => 'today'];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -68,7 +91,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
     public function testCreateEmptyStateFile()
     {
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         $this->assertTrue(file_exists($fileName));
@@ -89,7 +121,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $state = ["state" => "fooBar"];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState($state);
     }
 
@@ -102,13 +143,30 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             ->method("apiPut")
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                $this->equalTo(["state" => '{"state":"fooBar"}'])
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey('state', $data);
+                    self::assertEquals('fooBar', $data['state']);
+                    self::assertArrayHasKey('#foo', $data);
+                    self::assertStringStartsWith('KBC::ComponentProjectEncrypted==', $data['#foo']);
+                    return true;
+                })
             );
 
         $state = ["state" => "fooBarBaz"];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
-        $stateFile->storeState(["state" => "fooBar"]);
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->storeState(["state" => "fooBar", "#foo" => "bar"]);
     }
 
     public function testUpdateStateChangeFromEmpty()
@@ -125,7 +183,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $state = [];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState(["state" => "fooBar"]);
     }
 
@@ -144,7 +211,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $state = ["state" => "fooBar"];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState([]);
     }
 
@@ -163,7 +239,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $state = ["state" => "fooBar"];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState(new \stdClass());
     }
 
@@ -181,7 +266,17 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $state = ["state" => "fooBarBaz"];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter(), 'row-id');
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
         $stateFile->storeState(["state" => "fooBar"]);
     }
 
@@ -191,7 +286,16 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         $data = ["time" => ["previousStart" => 1495580620]];
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $this->assertEquals($data, $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
@@ -202,14 +306,32 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         $data = [];
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $this->assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
     public function testPickStateNoState()
     {
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $this->assertEquals([], $stateFile->loadStateFromFile());
         $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }

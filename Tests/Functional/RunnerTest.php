@@ -621,7 +621,7 @@ class RunnerTest extends KernelTestCase
 
     public function testExecutorStoreState()
     {
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner(new NullHandler(), $encryptorFactory);
 
         $component = new Components($this->client);
         try {
@@ -635,13 +635,15 @@ class RunnerTest extends KernelTestCase
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret');
         $configuration->setState(json_encode(['foo' => 'bar']));
         $configData = [
             'parameters' => [
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)'
                 ],
             ],
         ];
@@ -677,7 +679,14 @@ class RunnerTest extends KernelTestCase
 
         $component = new Components($this->client);
         $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
-        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        $this->assertArrayHasKey('baz', $configuration['state']);
+        $this->assertEquals('fooBar', $configuration['state']['baz']);
+        $this->assertArrayHasKey('#encrypted', $configuration['state']);
+        $this->assertStringStartsWith('KBC::ComponentProjectEncrypted==', $configuration['state']['#encrypted']);
+        $this->assertEquals(
+            'secret',
+            $encryptorFactory->getEncryptor()->decrypt($configuration['state']['#encrypted'])
+        );
         $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 
