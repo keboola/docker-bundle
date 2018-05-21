@@ -22,6 +22,7 @@ class Component
      * @var string
      */
     private $networkType;
+
     /**
      * @var array
      */
@@ -35,8 +36,8 @@ class Component
     {
         $this->id = empty($componentData['id']) ? '' : $componentData['id'];
         $data = empty($componentData['data']) ? [] : $componentData['data'];
-        if (isset($data['features'])) {
-            $this->features = $data['features'];
+        if (isset($componentData['features'])) {
+            $this->features = $componentData['features'];
         } else {
             $this->features = [];
         }
@@ -113,11 +114,11 @@ class Component
     }
 
     /**
-     * @return array
+     * @return bool
      */
-    public function getFeatures()
+    public function runAsRoot()
     {
-        return $this->features;
+        return in_array('container-root-user', $this->features);
     }
 
     /**

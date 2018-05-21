@@ -128,6 +128,9 @@ EOF;
                     "uri" => "keboola/docker-demo-app",
                     "tag" => "master"
                 ]
+            ],
+            "features" => [
+                "container-root-user"
             ]
         ]);
         $log = new Logger("null");
@@ -152,8 +155,7 @@ EOF;
                 'com.keboola.runner.runId=10.20.30',
             ], $envs),
             new OutputFilter(),
-            new Limits($log, ['cpu_count' => 2], [], [], []),
-            ["container-root-user"]
+            new Limits($log, ['cpu_count' => 2], [], [], [])
         );
 
         // block devices
