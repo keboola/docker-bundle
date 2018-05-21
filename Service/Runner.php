@@ -150,7 +150,6 @@ class Runner
      * @param WorkingDirectory $workingDirectory
      * @param OutputFilterInterface $outputFilter
      * @param Limits $limits
-     * @param array $features
      * @return Container
      */
     private function createContainerFromImage(
@@ -159,8 +158,7 @@ class Runner
         RunCommandOptions $runCommandOptions,
         WorkingDirectory $workingDirectory,
         OutputFilterInterface $outputFilter,
-        Limits $limits,
-        array $features
+        Limits $limits
     ) {
         return new Container(
             $containerId,
@@ -174,8 +172,7 @@ class Runner
             $this->maxLogPort,
             $runCommandOptions,
             $outputFilter,
-            $limits,
-            $features
+            $limits
         );
     }
 
@@ -224,7 +221,7 @@ class Runner
 
         $temp = new Temp("docker");
         $temp->initRunFolder();
-        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog(), $component->getFeatures());
+        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
 
         $usageFile = new UsageFile(
             $workingDirectory->getDataDir(),
@@ -466,8 +463,7 @@ class Runner
                 ),
                 $workingDirectory,
                 $outputFilter,
-                $limits,
-                $component->getFeatures()
+                $limits
             );
             if ($mode === self::MODE_DEBUG) {
                 $dataLoader->storeDataArchive('stage_' . $priority, [self::MODE_DEBUG, $image->getSourceComponent()->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId, $image->getImageId()]);
@@ -479,7 +475,9 @@ class Runner
                     $newState = $stateFile->loadStateFromFile();
                 }
             } finally {
-                $workingDirectory->normalizePermissions();
+                if ($image->getSourceComponent()->runAsRoot()) {
+                    $workingDirectory->normalizePermissions();
+                }
                 if ($image->isMain()) {
                     $usageFile->storeUsage();
                 }

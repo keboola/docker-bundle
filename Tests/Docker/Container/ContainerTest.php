@@ -17,7 +17,9 @@ class ContainerTest extends BaseContainerTest
             ],
             ['var' => 'val', 'příliš' => 'žluťoučký', 'var2' => 'weird = \'"value' ]
         );
-        $container = $this->getContainer($this->getImageConfiguration(), $runCommandOptions, [], false, ["container-root-user"]);
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-root-user'];
+        $container = $this->getContainer($imageConfiguration, $runCommandOptions, [], false);
 
         // block devices
         $process = new Process('lsblk --nodeps --output NAME --noheadings 2>/dev/null');
