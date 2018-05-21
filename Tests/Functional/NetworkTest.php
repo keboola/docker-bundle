@@ -126,7 +126,7 @@ class NetworkTest extends KernelTestCase
             $container->run();
             $this->fail("Ping must fail");
         } catch (UserException $e) {
-            $this->assertContains("ping: bad address 'www.example.com'", $e->getMessage());
+            $this->assertContains("ping: unknown host", $e->getMessage());
         }
     }
 
