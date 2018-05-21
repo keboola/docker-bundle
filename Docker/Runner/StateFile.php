@@ -4,6 +4,8 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
+use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -52,9 +54,15 @@ class StateFile
      */
     private $outputFilter;
 
+    /**
+     * @var ObjectEncryptorFactory
+     */
+    private $encryptorFactory;
+
     public function __construct(
         $dataDirectory,
         Client $storageClient,
+        ObjectEncryptorFactory $encryptorFactory,
         array $state,
         $format,
         $componentId,
@@ -64,6 +72,7 @@ class StateFile
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->storageClient = $storageClient;
+        $this->encryptorFactory = $encryptorFactory;
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
@@ -100,10 +109,14 @@ class StateFile
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
-                $configurationRow->setState($currentState);
+                $configurationRow->setState(
+                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ComponentProjectWrapper::class)
+                );
                 $components->updateConfigurationRow($configurationRow);
             } else {
-                $configuration->setState($currentState);
+                $configuration->setState(
+                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ComponentProjectWrapper::class)
+                );
                 $components->updateConfiguration($configuration);
             }
         }

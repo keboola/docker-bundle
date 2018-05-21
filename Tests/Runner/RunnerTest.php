@@ -492,7 +492,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)',
                 ],
             ],
         ];
@@ -523,7 +523,14 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        self::assertArrayHasKey('baz', $configuration['state']);
+        self::assertEquals('fooBar', $configuration['state']['baz']);
+        self::assertArrayHasKey('#encrypted', $configuration['state']);
+        self::assertStringStartsWith('KBC::ComponentProjectEncrypted==', $configuration['state']['#encrypted']);
+        self::assertEquals(
+            'secret',
+            $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state']['#encrypted'])
+        );
         $this->clearConfigurations();
     }
 
