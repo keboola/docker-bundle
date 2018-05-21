@@ -79,7 +79,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => 'dockerhub',
@@ -106,7 +106,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
@@ -136,7 +136,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
@@ -173,7 +173,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
@@ -208,7 +208,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
@@ -236,7 +236,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
@@ -270,7 +270,7 @@ class NetworkTest extends KernelTestCase
             "data" => [
                 "definition" => [
                     "type" => "builder",
-                    "uri" => "alpine",
+                    "uri" => "quay.io/keboola/python-transformation",
                     "tag" => "latest",
                     "build_options" => [
                         "parent_type" => "dockerhub",
