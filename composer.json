@@ -16,8 +16,8 @@
         "symfony/console": "^2.8",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^1.0",
-        "keboola/input-mapping": "^4.0",
-        "keboola/output-mapping": "^4.0",
+        "keboola/input-mapping": "^5.0",
+        "keboola/output-mapping": "^5.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {
