@@ -1589,6 +1589,7 @@ class RunnerTest extends BaseRunnerTest
                     'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
                     'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
                     '   file.write("value1")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part1"])',
                 ],
             ],
         ];
