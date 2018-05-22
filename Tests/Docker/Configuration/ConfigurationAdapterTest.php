@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Tests\Docker\Mock\Configuration\Adapter;
+use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
@@ -20,8 +20,11 @@ class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
                                 0 => 'Id',
                                 1 => 'Name',
                             ],
+                            'where_values' => [],
+                            'where_operator' => 'eq',
                         ],
                     ],
+                    'files' => [],
                 ],
             ],
             'parameters' => [
@@ -35,11 +38,12 @@ class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
                     'credentials' => [
                         'token' => 123456,
                         'params' => [
-                            'key' => 'val'
-                        ]
-                    ]
-                ]
-            ]
+                            'key' => 'val',
+                        ],
+                    ],
+                    'version' => 2,
+                ],
+            ],
         ];
     }
 
@@ -54,6 +58,9 @@ storage:
                 columns:
                     - Id
                     - Name
+                where_values: {  }
+                where_operator: eq
+        files: {  }
 parameters:
     primary_key_column: id
     empty_array: {  }
@@ -65,6 +72,7 @@ authorization:
             token: 123456
             params:
                 key: val
+        version: 2
 
 EOT;
         return $data;
@@ -82,9 +90,12 @@ EOT;
                     "columns": [
                         "Id",
                         "Name"
-                    ]
+                    ],
+                    "where_values": [],
+                    "where_operator": "eq"
                 }
-            ]
+            ],
+            "files": []
         }
     },
     "parameters": {
@@ -100,7 +111,8 @@ EOT;
                 "params": {
                     "key": "val"
                 }
-            }
+            },
+            "version": 2
         }
     }
 }
