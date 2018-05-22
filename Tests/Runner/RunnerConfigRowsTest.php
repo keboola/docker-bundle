@@ -189,7 +189,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
-    
+
     public function testRunMultipleRowsWithContainerRootUserFeature()
     {
         $runner = $this->getRunner($this->getLoggersServiceStub());
