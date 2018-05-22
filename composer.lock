@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "907f11a087a24a5d86817ed0eee08fd2",
+    "content-hash": "d9d74d671a9bfbc459937b03d3d63b34",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.55.12",
+            "version": "3.56.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "5177cbe73c96d25ff759e406ac81b8e25557482c"
+                "reference": "03273bb5c1d8098ff6c23b3fa9ee444c4cc1dcee"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5177cbe73c96d25ff759e406ac81b8e25557482c",
-                "reference": "5177cbe73c96d25ff759e406ac81b8e25557482c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/03273bb5c1d8098ff6c23b3fa9ee444c4cc1dcee",
+                "reference": "03273bb5c1d8098ff6c23b3fa9ee444c4cc1dcee",
                 "shasum": ""
             },
             "require": {
@@ -84,7 +84,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2018-05-10T23:23:00+00:00"
+            "time": "2018-05-18T19:53:15+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1749,17 +1749,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "4.0.0",
+            "version": "5.1.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "79f8927d375fac6b8b2b24dd0c9dd1d1701485c3"
+                "reference": "fcf3cfa1330624912ee4091840bef8a3b832de1b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/79f8927d375fac6b8b2b24dd0c9dd1d1701485c3",
-                "reference": "79f8927d375fac6b8b2b24dd0c9dd1d1701485c3",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/fcf3cfa1330624912ee4091840bef8a3b832de1b",
+                "reference": "fcf3cfa1330624912ee4091840bef8a3b832de1b",
                 "shasum": ""
             },
             "require": {
@@ -1771,10 +1771,10 @@
                 "symfony/yaml": "^2.8"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "^0.3.2",
-                "keboola/php-temp": "^0.1.6",
+                "codeclimate/php-test-reporter": "^0.4",
+                "keboola/php-temp": "^1.0",
                 "phpunit/phpunit": "^5.4",
-                "squizlabs/php_codesniffer": "^2.6"
+                "squizlabs/php_codesniffer": "^3.2"
             },
             "type": "library",
             "autoload": {
@@ -1788,12 +1788,12 @@
             ],
             "authors": [
                 {
-                    "name": "Ondrej Popelka",
-                    "email": "ondrej.popelka@keboola.com"
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2018-03-02T11:59:57+00:00"
+            "time": "2018-05-21T14:03:07+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1887,22 +1887,22 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "4.0.0",
+            "version": "5.1.0",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "6df4857bef3d7794f08934078e680b6022fc604b"
+                "reference": "da959a8ecc2db70b3d245ebe3a94410d40601ab6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/6df4857bef3d7794f08934078e680b6022fc604b",
-                "reference": "6df4857bef3d7794f08934078e680b6022fc604b",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/da959a8ecc2db70b3d245ebe3a94410d40601ab6",
+                "reference": "da959a8ecc2db70b3d245ebe3a94410d40601ab6",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "^4.0",
+                "keboola/input-mapping": "^5.0",
                 "keboola/storage-api-client": "^10.0",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8",
@@ -1911,10 +1911,10 @@
                 "symfony/yaml": "^2.8"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "^0.3",
-                "keboola/php-temp": "^0.1",
+                "codeclimate/php-test-reporter": "^0.4",
+                "keboola/php-temp": "^1.0",
                 "phpunit/phpunit": "^5.4",
-                "squizlabs/php_codesniffer": "^2.6"
+                "squizlabs/php_codesniffer": "^3.2"
             },
             "type": "library",
             "autoload": {
@@ -1928,12 +1928,12 @@
             ],
             "authors": [
                 {
-                    "name": "Ondrej Popelka",
-                    "email": "ondrej.popelka@keboola.com"
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2018-03-03T18:03:34+00:00"
+            "time": "2018-05-21T14:39:05+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2100,16 +2100,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.1.1",
+            "version": "10.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "079e1b1d9575dca9c0490a4ae456387603ca5b2e"
+                "reference": "8d658203a944623836a86b4247c5100c41365e4e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/079e1b1d9575dca9c0490a4ae456387603ca5b2e",
-                "reference": "079e1b1d9575dca9c0490a4ae456387603ca5b2e",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/8d658203a944623836a86b4247c5100c41365e4e",
+                "reference": "8d658203a944623836a86b4247c5100c41365e4e",
                 "shasum": ""
             },
             "require": {
@@ -2123,6 +2123,7 @@
                 "apigen/apigen": "4.0.0-RC4",
                 "ext-pdo_pgsql": "*",
                 "keboola/php-csv-db-import": "^2.2",
+                "phpstan/phpstan-shim": "^0.9.2",
                 "phpunit/phpunit": "^5.6",
                 "psr/log": "~1.0",
                 "squizlabs/php_codesniffer": "^2.7"
@@ -2142,7 +2143,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2018-03-29T19:18:32+00:00"
+            "time": "2018-05-16T16:53:42+00:00"
         },
         {
             "name": "keboola/syrup",
@@ -3615,6 +3616,61 @@
             "time": "2018-04-26T10:06:28+00:00"
         },
         {
+            "name": "symfony/polyfill-ctype",
+            "version": "v1.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/polyfill-ctype.git",
+                "reference": "7cc359f1b7b80fc25ed7796be7d96adc9b354bae"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/7cc359f1b7b80fc25ed7796be7d96adc9b354bae",
+                "reference": "7cc359f1b7b80fc25ed7796be7d96adc9b354bae",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.3"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.8-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Symfony\\Polyfill\\Ctype\\": ""
+                },
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                },
+                {
+                    "name": "Gert de Pagter",
+                    "email": "BackEndTea@gmail.com"
+                }
+            ],
+            "description": "Symfony polyfill for ctype functions",
+            "homepage": "https://symfony.com",
+            "keywords": [
+                "compatibility",
+                "ctype",
+                "polyfill",
+                "portable"
+            ],
+            "time": "2018-04-30T19:57:29+00:00"
+        },
+        {
             "name": "symfony/polyfill-intl-icu",
             "version": "v1.8.0",
             "source": {
@@ -4134,16 +4190,16 @@
         },
         {
             "name": "symfony/symfony",
-            "version": "v2.8.39",
+            "version": "v2.8.40",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/symfony.git",
-                "reference": "9b75ffe7b3adf2dad279e968787b71f829c1c404"
+                "reference": "901a4fb385d02eb407774d6e81a91845a7fb6d66"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/symfony/zipball/9b75ffe7b3adf2dad279e968787b71f829c1c404",
-                "reference": "9b75ffe7b3adf2dad279e968787b71f829c1c404",
+                "url": "https://api.github.com/repos/symfony/symfony/zipball/901a4fb385d02eb407774d6e81a91845a7fb6d66",
+                "reference": "901a4fb385d02eb407774d6e81a91845a7fb6d66",
                 "shasum": ""
             },
             "require": {
@@ -4152,6 +4208,7 @@
                 "php": ">=5.3.9",
                 "psr/log": "~1.0",
                 "symfony/polyfill-apcu": "~1.1",
+                "symfony/polyfill-ctype": "~1.8",
                 "symfony/polyfill-intl-icu": "~1.0",
                 "symfony/polyfill-mbstring": "~1.0",
                 "symfony/polyfill-php54": "~1.0",
@@ -4269,7 +4326,7 @@
             "keywords": [
                 "framework"
             ],
-            "time": "2018-04-30T05:53:09+00:00"
+            "time": "2018-05-21T13:17:42+00:00"
         },
         {
             "name": "twig/twig",
@@ -5480,6 +5537,7 @@
                 "github",
                 "test"
             ],
+            "abandoned": "php-coveralls/php-coveralls",
             "time": "2017-12-06T23:17:56+00:00"
         },
         {

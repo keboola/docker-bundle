@@ -122,7 +122,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $csv->writeRow(["Id", "Name"]);
             $csv->writeRow(["test", "test"]);
             $this->client->createTableAsync("in.c-docker-test", "test", $csv);
-            $this->client->setTableAttribute("in.c-docker-test.test", "attr1", "val1");
         }
 
         $root = $this->tmpDir;
@@ -142,7 +141,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $adapter = new TableAdapter();
         $manifest = $adapter->readFromFile($root . "/download/test.csv.manifest");
         $this->assertEquals("in.c-docker-test.test", $manifest["id"]);
-        $this->assertEquals("val1", $manifest["attributes"][0]["value"]);
     }
 
     public function testReadTablesRedshift()
@@ -158,7 +156,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
             $csv->writeRow(["Id", "Name"]);
             $csv->writeRow(["test", "test"]);
             $this->client->createTableAsync("in.c-docker-test-redshift", "test", $csv);
-            $this->client->setTableAttribute("in.c-docker-test-redshift.test", "attr1", "val2");
         }
 
         $root = $this->tmpDir;
@@ -181,6 +178,5 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $adapter = new TableAdapter();
         $manifest = $adapter->readFromFile($root . "/download/test-redshift.csv.manifest");
         $this->assertEquals("in.c-docker-test-redshift.test", $manifest["id"]);
-        $this->assertEquals("val2", $manifest["attributes"][0]["value"]);
     }
 }
