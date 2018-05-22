@@ -114,6 +114,42 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ]);
     }
 
+    private function getComponentWithContainerRootUserFeature()
+    {
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
+                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
+                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part2'
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ],
+            'features' => ['container-root-user']
+        ];
+        return new Component($componentData);
+    }
+
     public function testRunMultipleRows()
     {
         $runner = $this->getRunner();
@@ -152,6 +188,46 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
         self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+    }
+    
+    public function testRunMultipleRowsWithContainerRootUserFeature()
+    {
+        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $jobDefinition1 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponent());
+        $jobDefinition2 = new JobDefinition([
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable-2",
+                            "columns" => ["col1"]
+                        ]
+                    ]
+                ]
+            ]
+        ], $this->getComponentWithContainerRootUserFeature());
+        $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567'
+        );
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRunMultipleRowsFiltered()
