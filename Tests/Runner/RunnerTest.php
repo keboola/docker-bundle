@@ -1425,7 +1425,76 @@ class RunnerTest extends BaseRunnerTest
         $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
     }
 
-    public function testExecutorSlicedFiles()
+    public function testExecutorSlicedFilesWithComponentRootUserFeature()
+    {
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+            'features' => [
+                'container-root-user',
+            ],
+        ];
+
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-docker-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part1"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
+                    '   file.write("value2")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part2"])',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        $lines = explode("\n", $this->getClient()->getTableDataPreview('in.c-docker-test.mytable'));
+        sort($lines);
+        self::assertEquals(
+            [
+                '',
+                '"col1"',
+                '"value1"',
+                '"value2"'
+            ],
+            $lines
+        );
+    }
+
+    public function testExecutorSlicedFilesWithoutComponentRootUserFeature()
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -1454,13 +1523,10 @@ class RunnerTest extends BaseRunnerTest
                     'from subprocess import call',
                     'import os',
                     'os.makedirs("/data/out/tables/mytable.csv.gz")',
-                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
                     'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
                     '   file.write("value1")',
-                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part1"])',
                     'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
                     '   file.write("value2")',
-                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part2"])',
                 ],
             ],
         ];
