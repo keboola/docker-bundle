@@ -3,9 +3,10 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ConfigurationAdapterTest extends \PHPUnit_Framework_TestCase
+class ConfigurationAdapterTest extends TestCase
 {
 
     protected function getStructure()

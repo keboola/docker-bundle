@@ -3,10 +3,10 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class ImageConfigurationTest extends \PHPUnit_Framework_TestCase
+class ImageConfigurationTest extends TestCase
 {
-
     public function testConfiguration()
     {
         $config = [
