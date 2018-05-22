@@ -1557,6 +1557,58 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
+    public function testPermissionsFailedWithoutContainerRootUserFeature()
+    {
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-docker-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $this->expectException(UserException::class);
+        // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
+        $this->expectExceptionMessageRegExp('/Permission denied/');
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+    }
+
     public function testAuthorizationDecrypt()
     {
         $componentData = [
