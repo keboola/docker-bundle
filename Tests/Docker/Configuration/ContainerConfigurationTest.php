@@ -3,81 +3,81 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use PHPUnit\Framework\TestCase;
 
-class ContainerConfigurationTest extends \PHPUnit_Framework_TestCase
+class ContainerConfigurationTest extends TestCase
 {
-
     public function testConfiguration()
     {
-        (new Configuration\Container())->parse(array(
-            "config" => array(
-                "storage" => array(
-                    "input" => array(
-                        "tables" => array(
-                            array(
+        (new Configuration\Container())->parse([
+            "config" => [
+                "storage" => [
+                    "input" => [
+                        "tables" => [
+                            [
                                 "source" => "in.c-main.data"
-                            )
-                        ),
-                        "files" => array(
-                            array(
-                                "tags" => array("tag1", "tag2"),
+                            ]
+                        ],
+                        "files" => [
+                            [
+                                "tags" => ["tag1", "tag2"],
                                 "query" => "esquery"
-                            )
-                        )
-                    ),
-                    "output" => array(
-                        "tables" => array(
-                            array(
+                            ]
+                        ]
+                    ],
+                    "output" => [
+                        "tables" => [
+                            [
                                 "source" => "test.csv",
                                 "destination" => "out.c-main.data"
-                            )
-                        ),
-                        "files" => array(
-                            array(
+                            ]
+                        ],
+                        "files" => [
+                            [
                                 "source" => "file",
-                                "tags" => array("tag")
-                            )
-                        )
-                    )
-                ),
-                "parameters" => array(
-                    array("var1" => "val1"),
-                    array("arr1" => array("var2" => "val2"))
-                ),
-                "authorization" => array(
-                    "oauth_api" => array(
+                                "tags" => ["tag"]
+                            ]
+                        ]
+                    ]
+                ],
+                "parameters" => [
+                    ["var1" => "val1"],
+                    ["arr1" => ["var2" => "val2"]]
+                ],
+                "authorization" => [
+                    "oauth_api" => [
                         "id" => 1234,
-                        "credentials" => array(
+                        "credentials" => [
                             "token" => "123456",
-                            "params" => array(
+                            "params" => [
                                 "key" => "val"
-                            )
-                        )
-                    )
-                ),
-                "processors" => array(
-                    "before" => array(
-                        array(
-                            "definition" => array(
+                            ]
+                        ]
+                    ]
+                ],
+                "processors" => [
+                    "before" => [
+                        [
+                            "definition" => [
                                 "component" => "a"
-                            ),
-                            "parameters" => array(
+                            ],
+                            "parameters" => [
                                 "key" => "val"
-                            )
-                        )
-                    ),
-                    "after" => array(
-                        array(
-                            "definition" => array(
+                            ]
+                        ]
+                    ],
+                    "after" => [
+                        [
+                            "definition" => [
                                 "component" => "a"
-                            ),
-                            "parameters" => array(
+                            ],
+                            "parameters" => [
                                 "key" => "val"
-                            )
-                        )
-                    )
-                )
-            )
-        ));
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
     }
 }
