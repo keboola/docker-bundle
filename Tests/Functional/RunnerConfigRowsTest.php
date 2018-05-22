@@ -299,7 +299,7 @@ class RunnerConfigRowsTest extends KernelTestCase
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
     }
-    
+
     public function testRunMultipleRowsWithContainerRootUserFeature()
     {
         $runner = $this->getRunner($this->getLoggersServiceStub());
