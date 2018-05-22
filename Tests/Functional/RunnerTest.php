@@ -2051,7 +2051,8 @@ class RunnerTest extends KernelTestCase
                         'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
                             . 'chmod 000 /data/out/tables/mytable.csv.gz && '
                             . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1'
+                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1'
                     ],
                 ],
                 'configuration_format' => 'json',
