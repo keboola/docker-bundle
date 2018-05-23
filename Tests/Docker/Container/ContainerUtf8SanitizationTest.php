@@ -2,21 +2,8 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\Limits;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
-use Symfony\Bridge\Monolog\Logger;
-use Symfony\Component\Filesystem\Filesystem;
-use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class ContainerUtf8SanitizationTest extends BaseContainerTest
 {
@@ -43,9 +30,8 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
         ];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $process = $container->run();
-
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("begin\n=Oend", $process->getOutput());
+        self::assertEquals(0, $process->getExitCode());
+        self::assertContains("begin\n=Oend", $process->getOutput());
     }
 
     public function testUserError()
@@ -57,11 +43,9 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
             'print("end")',
         ];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
-        try {
-            $container->run();
-        } catch (UserException $e) {
-            $this->assertContains("begin\n=Oend", $e->getMessage());
-        }
+        self::expectException(UserException::class);
+        self::expectExceptionMessage("begin\n=Oend");
+        $container->run();
     }
 
     public function testLogs()
@@ -74,7 +58,7 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
         ];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
-        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains("begin\n=Oend"));
-        $this->assertFalse($this->getLogHandler()->hasInfoThatContains("begin\n=Oend"));
+        self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains("begin\n=Oend"));
+        self::assertFalse($this->getLogHandler()->hasInfoThatContains("begin\n=Oend"));
     }
 }
