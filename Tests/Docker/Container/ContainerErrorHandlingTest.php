@@ -105,7 +105,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
     public function testTimeoutMoreThanDefault()
     {
         // check that the container can run longer than the default 60s symfony process timeout
-        $script = ['import time', 'time.sleep(100)'];
+        $script = ['import time', 'time.sleep(80)'];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
