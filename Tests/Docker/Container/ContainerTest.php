@@ -16,24 +16,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class ContainerTest extends \PHPUnit_Framework_TestCase
+class ContainerTest extends BaseContainerTest
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    public function setUp()
-    {
-        $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $this->encryptorFactory->setComponentId('docker-dummy-component');
-    }
-
     public function testRunCommand()
     {
         $imageConfiguration = new Component([
