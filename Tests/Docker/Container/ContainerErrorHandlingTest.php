@@ -46,38 +46,34 @@ class ContainerErrorHandlingTest extends BaseContainerTest
 
     public function testFatal()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php this would be a parse error');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = ['import sys', 'print("application error")', 'sys.exit(2)'];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script);
 
         try {
             $container->run();
             $this->fail("Must raise an exception");
         } catch (ApplicationException $e) {
-            $this->assertContains('Parse error', $e->getMessage());
+            $this->assertContains('application error', $e->getMessage());
         }
     }
 
     public function testGraceful()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php echo "graceful error"; exit(1);');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = ['import sys', 'print("user error")', 'sys.exit(1)'];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script);
 
         try {
             $container->run();
             $this->fail("Must raise an exception");
         } catch (UserException $e) {
-            $this->assertContains('graceful error', $e->getMessage());
+            $this->assertContains('user error', $e->getMessage());
         }
     }
 
-
     public function testLessGraceful()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php echo "less graceful error"; exit(255);');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = ['import sys', 'print("less graceful error")', 'sys.exit(255)'];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script);
 
         try {
             $container->run();
@@ -89,42 +85,21 @@ class ContainerErrorHandlingTest extends BaseContainerTest
 
     public function testEnvironmentPassing()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php echo getenv("KBC_TOKENID");');
+        $script = ['import os', 'print(os.environ["KBC_TOKENID"])'];
         $value = '123 ščř =-\'"321';
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, ['KBC_TOKENID' => $value]);
+        $container = $this->getContainer($this->getImageConfiguration(), ['KBC_TOKENID' => $value], $script);
 
         $process = $container->run();
-        $this->assertEquals($value, $process->getOutput());
+        $this->assertContains($value, $process->getOutput());
     }
 
     public function testTimeout()
     {
-        $temp = new Temp('docker');
+        $timeout = 10;
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration['data']['process_timeout'] = 10;
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfiguration), new Temp(), true);
-        $image->prepare([]);
-        $dataDir = $this->createScript($temp, '<?php echo "done";');
-        $container = new Container(
-            'container-error-test',
-            $image,
-            $log,
-            $containerLog,
-            $dataDir . '/data',
-            $dataDir . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], []),
-            new OutputFilter(),
-            new Limits($log, ['cpu_count' => 2], [], [], [])
-        );
+        $imageConfiguration['data']['process_timeout'] = $timeout;
+        $script = ['print("done")'];
+        $container = $this->getContainer($imageConfiguration, [], $script);
 
         // set benchmark time
         $benchmarkStartTime = time();
@@ -132,21 +107,8 @@ class ContainerErrorHandlingTest extends BaseContainerTest
         $benchmarkDuration = time() - $benchmarkStartTime;
 
         // actual test
-        $dataDir = $this->createScript($temp, '<?php sleep(20);');
-        $container = new Container(
-            'container-error-test',
-            $image,
-            $log,
-            $containerLog,
-            $dataDir . '/data',
-            $dataDir . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], []),
-            new OutputFilter(),
-            new Limits($log, ['cpu_count' => 2], [], [], [])
-        );
+        $script = ['import time', 'time.sleep(20)'];
+        $container = $this->getContainer($imageConfiguration, [], $script);
         $testStartTime = time();
         try {
             $container->run();
@@ -156,58 +118,26 @@ class ContainerErrorHandlingTest extends BaseContainerTest
             $this->assertContains('timeout', $e->getMessage());
             // test should last longer than benchmark
             $this->assertGreaterThan($benchmarkDuration, $testDuration);
-            // test shouldn't last longer than benchmark plus process timeout (plus a safety margin)
-            $this->assertLessThan(
-                $benchmarkDuration + $image->getSourceComponent()->getProcessTimeout() + 5,
-                $testDuration
-            );
+            // test shouldn't last longer than the benchmark plus process timeout (plus a safety margin)
+            $this->assertLessThan($benchmarkDuration + $timeout + 5, $testDuration);
         }
     }
 
     public function testTimeoutMoreThanDefault()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getImageConfiguration();
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfiguration), new Temp(), true);
-        $image->prepare([]);
-        $dataDir = $this->createScript($temp, '<?php sleep(100);');
-        $container = new Container(
-            'container-error-test',
-            $image,
-            $log,
-            $containerLog,
-            $dataDir . '/data',
-            $dataDir . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], []),
-            new OutputFilter(),
-            new Limits($log, ['cpu_count' => 2], [], [], [])
-        );
-        $container->run();
+        // check that the container can run longer than the default 60s symfony process timeout
+        $script = ['import time', 'time.sleep(100)'];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script);
+        $process = $container->run();
+        $this->assertEquals(0, $process->getExitCode());
     }
 
     public function testInvalidImage()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/non-existent"
-                ]
-            ]
-        ];
-
-        $dataDir = $this->createScript($temp, '<?php sleep(10);');
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['definition']['uri'] = '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/non-existent';
         try {
-            $this->getContainer($imageConfiguration, $dataDir, []);
+            $this->getContainer($imageConfiguration, [], []);
             $this->fail("Must raise an exception for invalid image.");
         } catch (ApplicationException $e) {
             $this->assertContains('Cannot pull', $e->getMessage());
@@ -219,20 +149,10 @@ class ContainerErrorHandlingTest extends BaseContainerTest
         $this->expectException(OutOfMemoryException::class);
         $this->expectExceptionMessage('Component out of memory');
 
-        $temp = new Temp('docker');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration["data"]["memory"] = "32m";
-
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-            $array = [];
-            for($i = 0; $i < 1000000; $i++) {
-                $array[] = "0123456789";
-            }
-            print "finished";'
-        );
-        $container = $this->getContainer($imageConfiguration, $dataDir, []);
+        $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
+        $container = $this->getContainer($imageConfiguration, [], $script);
         $container->run();
     }
 
@@ -240,23 +160,27 @@ class ContainerErrorHandlingTest extends BaseContainerTest
     {
         $this->expectException(OutOfMemoryException::class);
         $this->expectExceptionMessage('Component out of memory');
-
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration["data"]["memory"] = "32m";
-        $imageConfiguration["data"]["definition"]["build_options"]["entry_point"] =
-            "php /data/test.php || true";
-
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-            $array = [];
-            for($i = 0; $i < 1000000; $i++) {
-                $array[] = "0123456789";
-            }
-            print "finished";'
-        );
-        $container = $this->getContainer($imageConfiguration, $dataDir, []);
+        $imageConfiguration = [
+            "data" => [
+                "memory" => "32m",
+                "definition" => [
+                    "type" => "builder",
+                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
+                    "tag" => "latest",
+                    "build_options" => [
+                        "parent_type" => "aws-ecr",
+                        "repository" => [
+                            "uri" => "https://github.com/keboola/docker-demo-app.git",
+                            "type" => "git"
+                        ],
+                        "commands" => [],
+                        "entry_point" => "python /home/main.py --data=/data/ || true"
+                    ],
+                ]
+            ]
+        ];
+        $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
+        $container = $this->getContainer($imageConfiguration, [], $script);
         $container->run();
     }
 }
