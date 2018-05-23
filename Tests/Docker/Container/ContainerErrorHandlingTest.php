@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
@@ -18,87 +19,25 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Component\Filesystem\Filesystem;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
+class ContainerErrorHandlingTest extends BaseContainerTest
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    public function setUp()
-    {
-        $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-    }
-
-    private function createScript(Temp $temp, $contents)
-    {
-        $temp->initRunFolder();
-        $dataDir = $temp->getTmpFolder();
-
-        $fs = new Filesystem();
-        $fs->dumpFile($dataDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'test.php', $contents);
-
-        return $dataDir;
-    }
-
-    private function getContainer($imageConfig, $dataDir, $envs)
-    {
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, new Component($imageConfig), new Temp(), true);
-        $image->prepare([]);
-
-        $container = new Container(
-            'container-error-test',
-            $image,
-            $log,
-            $containerLog,
-            $dataDir . '/data',
-            $dataDir . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], $envs),
-            new OutputFilter(),
-            new Limits($log, ['cpu_count' => 2], [], [], [])
-        );
-        return $container;
-    }
-
     private function getImageConfiguration()
     {
         return [
             "data" => [
                 "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-demo-app",
+                    "type" => "aws-ecr",
+                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
                     "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app.git",
-                            "type" => "git"
-                        ],
-                        "commands" => [],
-                        "entry_point" => "php /data/test.php"
-                    ],
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
     public function testSuccess()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php echo "Hello from Keboola Space Program";');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = ['print("Hello from Keboola Space Program")'];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script);
         $process = $container->run();
 
         $this->assertEquals(0, $process->getExitCode());
