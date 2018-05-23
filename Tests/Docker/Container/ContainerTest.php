@@ -34,55 +34,6 @@ class ContainerTest extends \PHPUnit_Framework_TestCase
         $this->encryptorFactory->setComponentId('docker-dummy-component');
     }
 
-    public function testRun()
-    {
-        $imageConfiguration = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo-app"
-                ]
-            ]
-        ]);
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
-        $temp = new Temp();
-        $fs = new Filesystem();
-        $dataDir = $temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'data';
-        $fs->mkdir($dataDir);
-        $tableDir = $dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables' . DIRECTORY_SEPARATOR;
-        $fs->mkdir($tableDir);
-        $container = new Docker\Mock\Container(
-            'docker-container-test',
-            $image,
-            $log,
-            $containerLog,
-            $dataDir . '/data',
-            $dataDir . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], []),
-            new OutputFilter(),
-            new Limits($log, [], [], [], [])
-        );
-
-        $callback = function () {
-            $process = new Process('echo "Processed 2 rows."');
-            $process->run();
-            return $process;
-        };
-
-        $container->setRunMethod($callback);
-        $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("Processed 2 rows.", trim($process->getOutput()));
-    }
-
     public function testRunCommandWithContainerRootUserFeature()
     {
         $imageConfiguration = new Component([
