@@ -50,7 +50,12 @@ class BaseContainerTest extends TestCase
         $fs->dumpFile($this->temp->getTmpFolder() . '/data/config.json', \GuzzleHttp\json_encode($configFile));
     }
 
-    public function getContainer(array $imageConfig, array $environmentVariables, array $contents)
+    protected function getTempDir()
+    {
+        return $this->temp->getTmpFolder();
+    }
+
+    public function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare)
     {
         $this->createScript($contents);
         $log = new Logger("null");
@@ -64,8 +69,12 @@ class BaseContainerTest extends TestCase
             $this->temp,
             true
         );
-        $image->prepare([]);
-
+        if ($prepare) {
+            $image->prepare([]);
+        }
+        if (!$commandOptions) {
+            $commandOptions = new RunCommandOptions([], []);
+        }
         $container = new Container(
             'container-error-test',
             $image,
@@ -76,7 +85,7 @@ class BaseContainerTest extends TestCase
             RUNNER_COMMAND_TO_GET_HOST_IP,
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], $environmentVariables),
+            $commandOptions,
             new OutputFilter(),
             new Limits($log, ['cpu_count' => 2], [], [], [])
         );
