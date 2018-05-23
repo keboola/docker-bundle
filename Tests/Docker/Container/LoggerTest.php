@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -22,25 +23,17 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 
-class LoggerTest extends KernelTestCase
+class LoggerTest extends BaseContainerTest
 {
+
     private function getImageConfiguration()
     {
         return [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-demo-app",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app.git",
-                            "type" => "git"
-                        ],
-                        "commands" => [],
-                        "entry_point" => "php /data/test.php"
-                    ],
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
                 ],
                 "image_parameters" => [
                     "#secure" => "secure",
@@ -51,30 +44,19 @@ class LoggerTest extends KernelTestCase
                         "#b" => "Structured",
                     ]
                 ]
-            ]
+            ],
         ];
     }
 
     private function getGelfImageConfiguration()
     {
         return [
-            /* docker-demo app is actually not used here, it is only needed for
-            builder (because requires URI, builder is used to override for the entry point. */
             "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/gelf-test-client",
-                    "tag" => "master",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app.git",
-                            "type" => "git"
-                        ],
-                        "entry_point" => "php /src/UdpClient.php"
-                    ],
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
                 ],
-                "configuration_format" => "json",
                 "logging" => [
                     "type" => "gelf",
                     "gelf_server_type" => "udp"
@@ -171,61 +153,25 @@ class LoggerTest extends KernelTestCase
         );
     }
 
-    public function setUp()
-    {
-        parent::setUp();
-        self::bootKernel();
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        (new Process(
-            "sudo docker rmi -f $(sudo docker images -aq --filter \"label=com.keboola.docker.runner.origin=builder\")"
-        ))->run();
-    }
-
     public function testLogs()
     {
-        $temp = new Temp('docker');
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-print "What is public is not secure";
-error_log("Message to stderr isAlsoSecure\n");
-exit(0);'
-        );
-        $container = $this->getContainerDummyLogger(
-            $this->getImageConfiguration(),
-            $dataDir,
-            $handler,
-            $containerHandler
-        );
+        $script = [
+            'import sys',
+            'print("What is public is not secure", file=sys.stdout)',
+            'print("Message to stderr isAlsoSecure", file=sys.stderr)',
+        ];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $process = $container->run();
-
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $this->assertEquals("What is public is not [hidden]", $out);
-        $this->assertEquals("Message to stderr [hidden]", $err);
-        $this->assertTrue($handler->hasDebugRecords());
-        $this->assertFalse($handler->hasErrorRecords());
-        $records = $handler->getRecords();
-        foreach ($records as $record) {
-            // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
-            $this->assertEquals('docker', $record['app']);
-        }
-
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(2, count($records));
-        $this->assertTrue($containerHandler->hasInfo("What is public is not [hidden]"));
-        $this->assertTrue($containerHandler->hasError("Message to stderr [hidden]"));
-        $records = $containerHandler->getRecords();
-        foreach ($records as $record) {
-            // todo change this to proper channel, when this is resolved https://github.com/keboola/docker-bundle/issues/64
-            $this->assertEquals('docker', $record['app']);
-        }
+        $this->assertContains("What is public is not [hidden]", $out);
+        $this->assertContains("Message to stderr [hidden]", $err);
+        $this->assertTrue($this->getLogHandler()->hasNoticeRecords());
+        $this->assertFalse($this->getLogHandler()->hasErrorRecords());
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains("What is public is not [hidden]"));
+        $this->assertTrue($this->getContainerLogHandler()->hasErrorThatContains("Message to stderr [hidden]"));
+        $records = $this->getContainerLogHandler()->getRecords();
+        $this->assertGreaterThan(2, count($records));
     }
 
     public function testGelfLogUdp()
