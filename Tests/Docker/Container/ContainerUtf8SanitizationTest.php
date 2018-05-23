@@ -48,33 +48,33 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
         $this->assertContains("begin\n=Oend", $process->getOutput());
     }
 
-
     public function testUserError()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php  echo substr("ěš", 0, 3); exit(1);');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = [
+            'import sys',
+            'print("begin")',
+            'sys.stdout.buffer.write(b"\x3D\xD8\x4F\xDE")',
+            'print("end")',
+        ];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         try {
             $container->run();
         } catch (UserException $e) {
-            $this->assertEquals("ě", $e->getMessage());
+            $this->assertContains("begin\n=Oend", $e->getMessage());
         }
     }
 
     public function testLogs()
     {
-        $log = new Logger("test");
-        $logTestHandler = new TestHandler();
-        $log->pushHandler($logTestHandler);
-        $containerLog = new ContainerLogger("test");
-        $containerLogTestHandler = new TestHandler();
-        $containerLog->pushHandler($containerLogTestHandler);
-
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php  echo substr("ěš", 0, 3); ');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, [], $log, $containerLog);
+        $script = [
+            'import sys',
+            'print("begin")',
+            'sys.stdout.buffer.write(b"\x3D\xD8\x4F\xDE")',
+            'print("end")',
+        ];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
-        $containerLogTestHandler->hasInfoThatContains("ě");
-        $logTestHandler->hasInfoThatContains("ě");
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains("begin\n=Oend"));
+        $this->assertFalse($this->getLogHandler()->hasInfoThatContains("begin\n=Oend"));
     }
 }
