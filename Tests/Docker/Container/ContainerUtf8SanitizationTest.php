@@ -35,14 +35,19 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
 
     public function testStdout()
     {
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript($temp, '<?php echo substr("ěš", 0, 3);');
-        $container = $this->getContainer($this->getImageConfiguration(), $dataDir, []);
+        $script = [
+            'import sys',
+            'print("begin")',
+            'sys.stdout.buffer.write(b"\x3D\xD8\x4F\xDE")',
+            'print("end")',
+        ];
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $process = $container->run();
 
         $this->assertEquals(0, $process->getExitCode());
-        $this->assertEquals("ě", $process->getOutput());
+        $this->assertContains("begin\n=Oend", $process->getOutput());
     }
+
 
     public function testUserError()
     {
