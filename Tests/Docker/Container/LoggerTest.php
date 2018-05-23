@@ -176,151 +176,154 @@ class LoggerTest extends BaseContainerTest
 
     public function testGelfLogUdp()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfUdpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfUdpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+            'print("Client finished")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'udp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/UdpClient.php';
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $temp->getTmpFolder(),
-            $handler,
-            $containerHandler
-        );
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $records = $handler->getRecords();
-        $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
         $this->assertContains('Client finished', $out);
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(8, count($records));
-        $this->assertTrue($containerHandler->hasDebug("A debug message."));
-        $this->assertTrue($containerHandler->hasAlert("An alert message"));
-        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("[hidden] message"));
-        $this->assertTrue($containerHandler->hasWarning("A warning message."));
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasError("Error message."));
+
+        $records = $this->getLogHandler()->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $records = $this->getContainerLogHandler()->getRecords();
+        $this->assertEquals(6, count($records));
+        $this->assertTrue($this->getContainerLogHandler()->hasDebug('A debug message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfo('An info message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasWarning('A warning message with [hidden] secret.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasError('An error message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasCritical('A critical example.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
     }
 
     public function testGelfLogTcp()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfTcpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+            'print("Client finished")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $temp->getTmpFolder(),
-            $handler,
-            $containerHandler
-        );
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $records = $handler->getRecords();
-        $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals('Client finished', $out);
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(8, count($records));
-        $this->assertTrue($containerHandler->hasDebug("A debug message."));
-        $this->assertTrue($containerHandler->hasAlert("An alert message"));
-        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("[hidden] message"));
-        $this->assertTrue($containerHandler->hasWarning("A warning message."));
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasError("Error message."));
+        $this->assertContains('Client finished', $out);
+
+        $records = $this->getLogHandler()->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $records = $this->getContainerLogHandler()->getRecords();
+        $this->assertEquals(6, count($records));
+        $this->assertTrue($this->getContainerLogHandler()->hasDebug('A debug message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfo('An info message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasWarning('A warning message with [hidden] secret.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasError('An error message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasCritical('A critical example.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
     }
 
     public function testGelfLogHttp()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfHttpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfHttpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")), compress=False))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+            'print("Client finished")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'http';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/HttpClient.php';
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $temp->getTmpFolder(),
-            $handler,
-            $containerHandler
-        );
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $records = $handler->getRecords();
-        $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals('Client finished', $out);
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(8, count($records));
-        $this->assertTrue($containerHandler->hasDebug("A debug message."));
-        $this->assertTrue($containerHandler->hasAlert("An alert message"));
-        $this->assertTrue($containerHandler->hasEmergency("Exception example"));
-        $this->assertTrue($containerHandler->hasAlert("[hidden] message"));
-        $this->assertTrue($containerHandler->hasWarning("A warning message."));
-        $this->assertTrue($containerHandler->hasInfoRecords());
-        $this->assertTrue($containerHandler->hasError("Error message."));
+        $this->assertContains('Client finished', $out);
+
+        $records = $this->getLogHandler()->getRecords();
+        $this->assertGreaterThan(0, count($records));
+        $records = $this->getContainerLogHandler()->getRecords();
+        $this->assertEquals(6, count($records));
+        $this->assertTrue($this->getContainerLogHandler()->hasDebug('A debug message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfo('An info message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasWarning('A warning message with [hidden] secret.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasError('An error message.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasCritical('A critical example.'));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
     }
 
     public function testGelfLogInvalid()
     {
         /* install a broken version of pygelf which does not sent required 'host' field
         and check that it is handled gracefully. */
-        $temp = new Temp('docker');
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-custom-python",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docs-example-logging-python.git",
-                            "type" => "git"
-                        ],
-                        "commands" => [
-                            "git clone {{repository}} /code/",
-                            "cd /code/",
-                            "pip3 install pygelf==0.3.1",
-                            "echo \"import logging\" > /code/my-main.py",
-                            "echo \"import pygelf\" >> /code/my-main.py",
-                            "echo \"import os\" >> /code/my-main.py",
-                            "echo \"logging.basicConfig(level=logging.INFO)\" >> /code/my-main.py",
-                            "echo \"logging.getLogger().removeHandler(logging.getLogger().handlers[0])\" >> /code/my-main.py",
-                            "echo \"pygelf_handler = pygelf.GelfTcpHandler(host=os.getenv('KBC_LOGGER_ADDR'), " .
-                                "port=os.getenv('KBC_LOGGER_PORT'), debug=False)\" >> /code/my-main.py",
-                            "echo \"logging.getLogger().addHandler(pygelf_handler)\" >> /code/my-main.py",
-                            "echo \"logging.info('A sample info message (pygelf)')\" >> /code/my-main.py"
-                        ],
-                        "entry_point" => "python /code/my-main.py"
-                    ],
-                ],
-                "logging" => [
-                    "type" => "gelf",
-                    "gelf_server_type" => "tcp"
-                ]
-            ]
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf==0.3.1"])',
+            'import logging',
+            'import pygelf',
+            'import os',
+            'logging.basicConfig(level=logging.INFO)',
+            'logging.getLogger().removeHandler(logging.getLogger().handlers[0])',
+            'pygelf_handler = pygelf.GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=os.getenv("KBC_LOGGER_PORT"), debug=False)',
+            'logging.getLogger().addHandler(pygelf_handler)',
+            'logging.info("A sample info message (pygelf)")',
         ];
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $temp->getTmpFolder(),
-            $handler,
-            $containerHandler
-        );
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
             $container->run();
             self::fail("Must raise error");
@@ -331,68 +334,41 @@ class LoggerTest extends BaseContainerTest
 
     public function testGelfLogInvalidMessage()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "keboola/docker-custom-python",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "quayio",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docs-example-logging-python.git",
-                            "type" => "git"
-                        ],
-                        "commands" => [
-                            "git clone {{repository}} /code/",
-                            "cd /code/",
-                            "pip3 install logging_gelf",
-                            "echo \"import logging\" > /code/my-main.py",
-                            "echo \"import logging_gelf.handlers\" >> /code/my-main.py",
-                            "echo \"import logging_gelf.formatters\" >> /code/my-main.py",
-                            "echo \"import os\" >> /code/my-main.py",
-                            "echo \"logger = logging.getLogger()\" >> /code/my-main.py",
-                            "echo \"logging.basicConfig(level=logging.INFO)\" >> /code/my-main.py",
-                            "echo \"logging.getLogger().removeHandler(logging.getLogger().handlers[0])\" >> /code/my-main.py",
-                            "echo \"logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(" .
-                                "host=os.getenv('KBC_LOGGER_ADDR'), port=int(os.getenv('KBC_LOGGER_PORT')))\" >> /code/my-main.py",
-                            "echo \"#logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))\" >> /code/my-main.py",
-                            "echo \"logger.addHandler(logging_gelf_handler)\" >> /code/my-main.py",
-                            "echo \"logging.info('A sample info message (invalid)\\x00')\" >> /code/my-main.py",
-                            "echo \"logging.warning('A sample warning message (invalid)\\x00')\" >> /code/my-main.py",
-                            "echo \"print('Client finished')\" >> /code/my-main.py",
-                        ],
-                        "entry_point" => "python /code/my-main.py"
-                    ],
-                ],
-                "logging" => [
-                    "type" => "gelf",
-                    "gelf_server_type" => "tcp"
-                ]
-            ]
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "logging_gelf"])',
+            'import logging',
+            'import logging_gelf.handlers',
+            'import logging_gelf.formatters',
+            'import os',
+            'logger = logging.getLogger()',
+            'logging.basicConfig(level=logging.INFO)',
+            'logging.getLogger().removeHandler(logging.getLogger().handlers[0])',
+            'logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")))',
+            '#logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))',
+            'logger.addHandler(logging_gelf_handler)',
+            'logging.info("A sample info message (invalid)\\x00")',
+            'logging.warning("A sample warning message (invalid)\\x00")',
+            'print("Client finished")',
         ];
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $temp->getTmpFolder(),
-            $handler,
-            $containerHandler
-        );
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
+        $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        $records = $handler->getRecords();
+        $records = $this->getLogHandler()->getRecords();
         $this->assertGreaterThan(0, count($records));
         $this->assertEquals('', $err);
-        $this->assertEquals("Client finished", $out);
-        $records = $containerHandler->getRecords();
+        $this->assertContains("Client finished", $out);
+        $records = $this->getContainerLogHandler()->getRecords();
         $this->assertEquals(3, count($records));
-        $this->assertTrue($containerHandler->hasInfo("Client finished"));
-        $this->assertTrue($containerHandler->hasError("Invalid message: A sample info message (invalid)"));
-        $this->assertTrue($containerHandler->hasError("Invalid message: A sample warning message (invalid)"));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
+        $this->assertTrue($this->getContainerLogHandler()->hasError('Invalid message: A sample info message (invalid)'));
+        $this->assertTrue($this->getContainerLogHandler()->hasError('Invalid message: A sample warning message (invalid)'));
     }
 
     public function testVerbosityDefault()
