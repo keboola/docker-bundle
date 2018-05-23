@@ -94,25 +94,6 @@ class ContainerErrorHandlingTest extends \PHPUnit_Framework_TestCase
         ];
     }
 
-    public function testHelloWorld()
-    {
-        $temp = new Temp();
-        $temp->initRunFolder();
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "hello-world"
-                ]
-            ]
-        ];
-
-        $container = $this->getContainer($imageConfiguration, $temp->getTmpFolder(), []);
-        $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("Hello from Docker", trim($process->getOutput()));
-    }
-
     public function testSuccess()
     {
         $temp = new Temp('docker');
