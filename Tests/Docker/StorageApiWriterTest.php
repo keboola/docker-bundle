@@ -77,27 +77,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->clearFileUploads();
     }
 
-    public function testWriteTableOutputMapping()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/table1.csv", "\"Id\",\"Name\"\n\"test\",\"test\"\n\"aabb\",\"ccdd\"\n");
-
-        $configs = array(
-            array(
-                "source" => "table1.csv",
-                "destination" => "out.c-docker-test.table1"
-            )
-        );
-
-        $writer = new Writer($this->client, new NullLogger());
-
-        $writer->uploadTables($root . "/upload", ["mapping" => $configs], ['componentId' => 'foo']);
-
-        $tables = $this->client->listTables("out.c-docker-test");
-        $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-test.table1', $tables[0]["id"]);
-    }
-
     public function testWriteTableManifestCsvRedshift()
     {
         $root = $this->tmp->getTmpFolder();
