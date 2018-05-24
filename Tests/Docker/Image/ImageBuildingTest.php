@@ -9,7 +9,7 @@ use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\Temp\Temp;
 use Symfony\Component\HttpKernel\Log\NullLogger;
 
-class ImageBuilderTest extends BaseImageTest
+class ImageBuildingTest extends BaseImageTest
 {
     public function testDockerFile()
     {
