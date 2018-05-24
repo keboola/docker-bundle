@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -24,7 +25,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class RunnerConfigRowsTest extends KernelTestCase
+class RunnerConfigRowsTest extends BaseRunnerTest
 {
     /**
      * @var Client
@@ -123,57 +124,6 @@ class RunnerConfigRowsTest extends KernelTestCase
             ->will($this->returnValue($containerLogger))
         ;
         return $loggersServiceStub;
-    }
-
-    /**
-     * @param LoggersService $loggersService
-     * @return Runner
-     */
-    private function getRunner(LoggersService $loggersService)
-    {
-        $tokenInfo = $this->client->verifyToken();
-        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($this->client))
-        ;
-        $storageServiceStub->expects($this->any())
-            ->method('getTokenData')
-            ->will($this->returnValue($tokenInfo))
-        ;
-        /** @var JobMapper $jobMapperStub */
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.r-transformation');
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-
-        /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersService,
-            $jobMapperStub,
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-
-        return $runner;
     }
 
     /**
