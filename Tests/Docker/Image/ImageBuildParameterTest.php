@@ -5,8 +5,9 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Image\Builder\BuilderParameter;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use PHPUnit\Framework\TestCase;
 
-class ImageBuildParameterTest extends \PHPUnit_Framework_TestCase
+class ImageBuildParameterTest extends TestCase
 {
     public function testParameter()
     {
