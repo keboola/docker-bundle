@@ -5,21 +5,15 @@ namespace Keboola\DockerBundle\Tests\Functional;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class AWSElasticContainerRegistryTest extends KernelTestCase
+class AWSElasticContainerRegistryTest extends BaseImageTest
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
     /**
      * @expectedException \Keboola\DockerBundle\Exception\LoginFailedException
      */
@@ -40,9 +34,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -51,9 +43,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
      */
     public function testInvalidCredentials()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID . "_invalid");
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
@@ -70,7 +59,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -84,11 +73,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $process = new Process("sudo docker images | grep " . AWS_ECR_REGISTRY_URI . " | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
         $imageConfig = new Component([
             "data" => [
@@ -103,7 +87,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":latest", $image->getFullImageId());
@@ -117,9 +101,6 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
 
     public function testGetAwsAccountId()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -134,18 +115,12 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
             ]
         ]);
         /** @var AWSElasticContainerRegistry $image */
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $this->assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
     }
 
     public function testLogger()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -162,7 +137,7 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         ]);
         $testHandler = new TestHandler();
         $logger = new Logger('null', [$testHandler]);
-        $image = ImageFactory::getImage($encryptor, $logger, $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":test-hash", $image->getFullImageId());
@@ -176,13 +151,5 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         );
 
         (new Process("sudo docker rmi " . AWS_ECR_REGISTRY_URI))->run();
-    }
-
-    public function tearDown()
-    {
-        // remove env variables
-        putenv('AWS_ACCESS_KEY_ID=');
-        putenv('AWS_SECRET_ACCESS_KEY=');
-        parent::tearDown();
     }
 }
