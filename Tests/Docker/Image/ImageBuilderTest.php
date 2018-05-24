@@ -6,22 +6,14 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class ImageBuilderTest extends KernelTestCase
+class ImageBuilderTest extends BaseImageTest
 {
-    public function setUp()
-    {
-        self::bootKernel();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-    }
-
     public function tearDown()
     {
         parent::tearDown();
@@ -36,9 +28,6 @@ class ImageBuilderTest extends KernelTestCase
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -49,7 +38,7 @@ class ImageBuilderTest extends KernelTestCase
                         "repository" => [
                             "uri" => "https://bitbucket.org/keboolaprivatetest/docker-demo-app.git",
                             "type" => "git",
-                            "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                            "#password" => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
                             "username" => GIT_PRIVATE_USERNAME,
                         ],
                         "commands" => [
@@ -65,7 +54,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -80,9 +69,6 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -108,7 +94,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -123,9 +109,6 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $process = new Process("sudo docker images quay.io/keboola/docker-custom-php:1.1.0 | grep docker-custom-php | wc -l");
         $process->run();
@@ -158,7 +141,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -177,16 +160,13 @@ class ImageBuilderTest extends KernelTestCase
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
                     "type" => "builder",
                     "uri" => "keboolaprivatetest/docker-demo-docker",
                     "repository" => [
-                        "#password" => $encryptor->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
+                        "#password" => $this->getEncryptor()->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
                         "username" => DOCKERHUB_PRIVATE_USERNAME,
                         "server" => DOCKERHUB_PRIVATE_SERVER,
                     ],
@@ -195,7 +175,7 @@ class ImageBuilderTest extends KernelTestCase
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
-                            "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                            "#password" => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
                             "username" => GIT_PRIVATE_USERNAME,
                         ],
                         "commands" => [
@@ -211,7 +191,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -220,15 +200,11 @@ class ImageBuilderTest extends KernelTestCase
         $this->assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 
-
     public function testCreatePrivateRepoPrivateHubMissingCredentials()
     {
         // remove image from cache
         $process = new Process("sudo docker rmi -f keboolaprivatetest/docker-demo-docker");
         $process->run();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -243,7 +219,7 @@ class ImageBuilderTest extends KernelTestCase
                         "repository" => [
                             "uri" => "https://github.com/keboola/docker-demo-app",
                             "type" => "git",
-                            "#password" => $encryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                            "#password" => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
                             "username" => GIT_PRIVATE_USERNAME,
                         ],
                         "commands" => [
@@ -260,7 +236,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private image without login should fail");
@@ -269,12 +245,8 @@ class ImageBuilderTest extends KernelTestCase
         }
     }
 
-
     public function testCreatePrivateRepoMissingPassword()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -300,7 +272,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -312,12 +284,8 @@ class ImageBuilderTest extends KernelTestCase
         }
     }
 
-
     public function testCreatePrivateRepoMissingCredentials()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -342,7 +310,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Building from private repository without login should fail");
@@ -359,9 +327,6 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -415,7 +380,7 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -426,9 +391,6 @@ class ImageBuilderTest extends KernelTestCase
 
     public function testInvalidRepo()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -453,7 +415,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail("Invalid repository must raise exception.");
@@ -464,9 +426,6 @@ class ImageBuilderTest extends KernelTestCase
 
     public function testCreateInvalidUrl()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -512,7 +471,7 @@ class ImageBuilderTest extends KernelTestCase
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail("Invalid repository address must fail");
@@ -526,9 +485,6 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -553,7 +509,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
@@ -567,9 +523,6 @@ class ImageBuilderTest extends KernelTestCase
         $process = new Process("sudo docker images | grep builder- | wc -l");
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
 
         $imageConfig = new Component([
             "data" => [
@@ -594,7 +547,7 @@ class ImageBuilderTest extends KernelTestCase
             ]
         ]);
 
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $this->assertContains("builder-", $image->getFullImageId());
 
