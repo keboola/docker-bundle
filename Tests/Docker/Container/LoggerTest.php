@@ -14,26 +14,6 @@ use Symfony\Bridge\Monolog\Logger;
 
 class LoggerTest extends BaseContainerTest
 {
-    private function getImageConfiguration()
-    {
-        return [
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-                'image_parameters' => [
-                    '#secure' => 'secure',
-                    'not-secure' => [
-                        'this' => 'public',
-                        '#andthis' => 'isAlsoSecure',
-                    ]
-                ]
-            ],
-        ];
-    }
-
     public function testLogs()
     {
         $script = [
