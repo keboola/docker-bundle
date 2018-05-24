@@ -13,8 +13,9 @@ use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 
-abstract class BaseRunnerTest extends \PHPUnit_Framework_TestCase
+abstract class BaseRunnerTest extends TestCase
 {
     /**
      * @var TestHandler
@@ -66,6 +67,11 @@ abstract class BaseRunnerTest extends \PHPUnit_Framework_TestCase
      */
     private $client;
 
+    /**
+     * @var Client
+     */
+    private $clientMock;
+
     public function setUp()
     {
         parent::setUp();
@@ -113,6 +119,11 @@ abstract class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         return $this->client;
     }
 
+    protected function setClientMock($clientMock)
+    {
+        $this->clientMock = $clientMock;
+    }
+
     protected function getRunner()
     {
         $this->containerHandler = new TestHandler();
@@ -128,7 +139,11 @@ abstract class BaseRunnerTest extends \PHPUnit_Framework_TestCase
             ->method('indexAction')
             ->will($this->returnValue(['components' => $this->components, 'services' => $this->services]));
         */
-        $storageClientStub = $this->client;
+        if ($this->clientMock) {
+            $storageClientStub = $this->clientMock;
+        } else {
+            $storageClientStub = $this->client;
+        }
 
         $storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
