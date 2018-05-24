@@ -144,43 +144,4 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("in.c-docker-test.test", $manifest["id"]);
         $this->assertEquals("val1", $manifest["attributes"][0]["value"]);
     }
-
-    public function testReadTablesRedshift()
-    {
-        // Create bucket
-        if (!$this->client->bucketExists("in.c-docker-test-redshift")) {
-            $this->client->createBucket("docker-test-redshift", Client::STAGE_IN, "Docker Testsuite", "redshift");
-        }
-
-        // Create table
-        if (!$this->client->tableExists("in.c-docker-test-redshift.test")) {
-            $csv = new CsvFile($this->tmpDir . "/upload.csv");
-            $csv->writeRow(["Id", "Name"]);
-            $csv->writeRow(["test", "test"]);
-            $this->client->createTableAsync("in.c-docker-test-redshift", "test", $csv);
-            $this->client->setTableAttribute("in.c-docker-test-redshift.test", "attr1", "val2");
-        }
-
-        $root = $this->tmpDir;
-
-        $reader = new Reader($this->client, new NullLogger());
-        $configuration = [
-            [
-                "source" => "in.c-docker-test-redshift.test",
-                "destination" => "test-redshift.csv"
-            ]
-        ];
-
-        $reader->downloadTables($configuration, $root . "/download");
-
-        $this->assertEquals(
-            "\"Id\",\"Name\"\n\"test\",\"test\"\n",
-            file_get_contents($root . "/download/test-redshift.csv")
-        );
-
-        $adapter = new TableAdapter();
-        $manifest = $adapter->readFromFile($root . "/download/test-redshift.csv.manifest");
-        $this->assertEquals("in.c-docker-test-redshift.test", $manifest["id"]);
-        $this->assertEquals("val2", $manifest["attributes"][0]["value"]);
-    }
 }
