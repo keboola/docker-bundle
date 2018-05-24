@@ -630,6 +630,38 @@ class LoggerTest extends BaseContainerTest
         $this->assertEquals("first message to stderr", $records[1]->getMessage());
     }
 
+    public function testEmptyMessage()
+    {
+        $script = [
+            'import sys',
+            'print("\n", file=sys.stdout)',
+            'print("\n", file=sys.stderr)',
+        ];
+        /** @var Event[] $records */
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
+        );
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
+        $container->run();
+        $error = [];
+        $info = [];
+        /** @var Event[] $records */
+        foreach ($records as $event) {
+            if ($event->getType() == 'error') {
+                $error[] = $event->getMessage();
+            }
+            if ($event->getType() == 'info') {
+                $info[] = $event->getMessage();
+            }
+        }
+        $this->assertEquals(0, count($error));
+        $this->assertGreaterThan(0, count($info));
+    }
+
     public function testLogApplicationError()
     {
         $script = [
