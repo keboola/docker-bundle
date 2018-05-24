@@ -6,36 +6,29 @@ use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\StorageApi\Client;
+use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 
-class DataLoaderTest extends \PHPUnit_Framework_TestCase
+class DataLoaderTest extends BaseDataLoaderTest
 {
-    /**
-     * @var Client
-     */
-    protected $client;
-
     private function getS3StagingComponent()
     {
         return new Component([
             'id' => 'docker-demo',
             'data' => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
                 ],
-                "staging-storage" => [
-                    "input" => "s3"
+                'staging-storage' => [
+                    'input' => 's3'
                 ]
             ]
         ]);
@@ -46,191 +39,122 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         return new Component([
             'id' => 'docker-demo',
             'data' => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
                 ],
 
             ]
         ]);
-    }
-
-    private function getDefaultBucketComponent()
-    {
-        // use the docker-demo component for testing
-        return new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
-                ],
-                "default_bucket" => true
-            ]
-        ]);
-    }
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['data-loader-test']));
-        foreach ($files as $file) {
-            $this->client->deleteFile($file['id']);
-        }
     }
 
     public function testExecutorDefaultBucket()
     {
-        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
-            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
-        }
-
-        $temp = new Temp();
-        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createWorkingDir();
-
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-
-        $dataLoader = new DataLoader(
-            $this->client,
-            new NullLogger(),
-            $data->getDataDir(),
-            [],
-            $this->getDefaultBucketComponent(),
-            new OutputFilter(),
-            "whatever"
-        );
+        $dataLoader = $this->getDataLoader([]);
         $dataLoader->storeOutput();
-
-        $this->assertTrue($this->client->tableExists('in.c-docker-demo-whatever.sliced'));
-
-        if ($this->client->bucketExists('in.c-docker-demo-whatever')) {
-            $this->client->dropBucket('in.c-docker-demo-whatever', ['force' => true]);
-        }
+        self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
     }
 
     public function testNoConfigDefaultBucketException()
     {
-        try {
-            $temp = new Temp();
-            $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
-            $data->createWorkingDir();
-
-            new DataLoader(
-                $this->client,
-                new NullLogger(),
-                $data->getDataDir(),
-                [],
-                $this->getDefaultBucketComponent(),
-                new OutputFilter()
-            );
-            $this->fail("ConfigId is required for defaultBucket=true component data setting");
-        } catch (UserException $e) {
-            $this->assertStringStartsWith("Configuration ID not set", $e->getMessage());
-        }
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Configuration ID not set');
+        new DataLoader(
+            $this->client,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            [],
+            $this->getDefaultBucketComponent(),
+            new OutputFilter()
+        );
     }
 
     public function testExecutorInvalidOutputMapping()
     {
         $config = [
-            "input" => [
-                "tables" => [
+            'input' => [
+                'tables' => [
                     [
-                        "source" => "in.c-docker-test.test"
-                    ]
-                ]
+                        'source' => 'in.c-docker-demo-testConfig.test',
+                    ],
+                ],
             ],
-            "output" => [
-                "tables" => [
+            'output' => [
+                'tables' => [
                     [
-                        "source" => "sliced.csv",
-                        "destination" => "in.c-docker-test.out",
+                        'source' => 'sliced.csv',
+                        'destination' => 'in.c-docker-demo-testConfig.out',
                         // erroneous lines
-                        "primary_key" => "col1",
-                        "incremental" => 1
-                    ]
-                ]
-            ]
+                        'primary_key' => 'col1',
+                        'incremental' => 1,
+                    ],
+                ],
+            ],
         ];
-
-        $temp = new Temp();
-        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createWorkingDir();
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/out/tables/sliced.csv',
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
 
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $this->workingDir->getDataDir(),
             $config,
             $this->getNoDefaultBucketComponent(),
             new OutputFilter()
         );
-        try {
-            $dataLoader->storeOutput();
-            $this->fail("Invalid configuration must raise UserException.");
-        } catch (UserException $e) {
-        }
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Failed to write manifest for table sliced.csv');
+        $dataLoader->storeOutput();
     }
 
     public function testStoreArchive()
     {
         $config = [
-            "input" => [
-                "tables" => [
+            'input' => [
+                'tables' => [
                     [
-                        "source" => "in.c-docker-test.test"
+                        'source' => 'in.c-docker-demo-testConfig.test',
                     ],
                 ],
             ],
-            "output" => [
-                "tables" => [
+            'output' => [
+                'tables' => [
                     [
-                        "source" => "sliced.csv",
-                        "destination" => "in.c-docker-test.out",
+                        'source' => 'sliced.csv',
+                        'destination' => 'in.c-docker-demo-testConfig.out',
                     ],
                 ],
             ],
         ];
-
-        $temp = new Temp();
-        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createWorkingDir();
         $fs = new Filesystem();
         $fs->dumpFile(
-            $data->getDataDir() . '/in/tables/sliced.csv',
+            $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $this->workingDir->getDataDir(),
             $config,
             $this->getNoDefaultBucketComponent(),
             new OutputFilter()
         );
-        $dataLoader->storeDataArchive('data', ['data-loader-test']);
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['data-loader-test']));
+        $dataLoader->storeDataArchive('data', ['docker-demo-test']);
+        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test']));
         self::assertCount(1, $files);
 
-        $temp2 = new Temp();
-        $temp2->initRunFolder();
-        $target = $temp2->getTmpFolder() . '/tmp-download.zip';
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $target = $temp->getTmpFolder() . '/tmp-download.zip';
         $this->downloadFile($files[0]['id'], $target);
 
         $zipArchive = new \ZipArchive();
@@ -240,8 +164,8 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         for ($i = 0; $i < $zipArchive->numFiles; $i++) {
             $items[] = $zipArchive->getNameIndex($i);
             $data = $zipArchive->getFromIndex($i);
-            $isSame = is_dir($temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) ||
-            (string) file_get_contents($temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) === (string) $data;
+            $isSame = is_dir($this->temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) ||
+            (string) file_get_contents($this->temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) === (string) $data;
             self::assertTrue($isSame, $zipArchive->getNameIndex($i) . ' data: ' . $data);
         }
         sort($items);
@@ -253,37 +177,28 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function testLoadInputDataS3()
     {
-        if ($this->client->bucketExists('in.c-docker-test')) {
-            $this->client->dropBucket('in.c-docker-test', ['force' => true]);
-        }
-        $this->client->createBucket('docker-test', Client::STAGE_IN);
-
         $config = [
-            "input" => [
-                "tables" => [
+            'input' => [
+                'tables' => [
                     [
-                        "source" => "in.c-docker-test.test",
-                    ]
-                ]
-            ]
+                        'source' => 'in.c-docker-demo-testConfig.test',
+                    ],
+                ],
+            ],
         ];
-
-        $temp = new Temp();
-        $data = new WorkingDirectory($temp->getTmpFolder(), new NullLogger());
-        $data->createWorkingDir();
-
         $fs = new Filesystem();
-        $filePath = $data->getDataDir() . '/in/tables/test.csv';
+        $filePath = $this->workingDir->getDataDir() . '/in/tables/test.csv';
         $fs->dumpFile(
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $this->client->createTable('in.c-docker-test', 'test', new CsvFile($filePath));
+        $this->client->createBucket('docker-demo-testConfig', 'in');
+        $this->client->createTable('in.c-docker-demo-testConfig', 'test', new CsvFile($filePath));
 
         $dataLoader = new DataLoader(
             $this->client,
             new NullLogger(),
-            $data->getDataDir(),
+            $this->workingDir->getDataDir(),
             $config,
             $this->getS3StagingComponent(),
             new OutputFilter()
@@ -291,7 +206,7 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
         $dataLoader->loadInputData();
 
         $manifest = json_decode(
-            file_get_contents($data->getDataDir() . '/in/tables/in.c-docker-test.test.manifest'),
+            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig.test.manifest'),
             true
         );
 
@@ -300,18 +215,18 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
 
     private function assertS3info($manifest)
     {
-        $this->assertArrayHasKey("s3", $manifest);
-        $this->assertArrayHasKey("isSliced", $manifest["s3"]);
-        $this->assertArrayHasKey("region", $manifest["s3"]);
-        $this->assertArrayHasKey("bucket", $manifest["s3"]);
-        $this->assertArrayHasKey("key", $manifest["s3"]);
-        $this->assertArrayHasKey("credentials", $manifest["s3"]);
-        $this->assertArrayHasKey("access_key_id", $manifest["s3"]["credentials"]);
-        $this->assertArrayHasKey("secret_access_key", $manifest["s3"]["credentials"]);
-        $this->assertArrayHasKey("session_token", $manifest["s3"]["credentials"]);
-        $this->assertContains(".gz", $manifest["s3"]["key"]);
-        if ($manifest["s3"]["isSliced"]) {
-            $this->assertContains("manifest", $manifest["s3"]["key"]);
+        self::assertArrayHasKey('s3', $manifest);
+        self::assertArrayHasKey('isSliced', $manifest['s3']);
+        self::assertArrayHasKey('region', $manifest['s3']);
+        self::assertArrayHasKey('bucket', $manifest['s3']);
+        self::assertArrayHasKey('key', $manifest['s3']);
+        self::assertArrayHasKey('credentials', $manifest['s3']);
+        self::assertArrayHasKey('access_key_id', $manifest['s3']['credentials']);
+        self::assertArrayHasKey('secret_access_key', $manifest['s3']['credentials']);
+        self::assertArrayHasKey('session_token', $manifest['s3']['credentials']);
+        self::assertContains('.gz', $manifest['s3']['key']);
+        if ($manifest['s3']['isSliced']) {
+            self::assertContains('manifest', $manifest['s3']['key']);
         }
     }
 
@@ -324,17 +239,17 @@ class DataLoaderTest extends \PHPUnit_Framework_TestCase
             'region' => $fileInfo['region'],
             'retries' => $this->client->getAwsRetries(),
             'credentials' => [
-                'key' => $fileInfo["credentials"]["AccessKeyId"],
-                'secret' => $fileInfo["credentials"]["SecretAccessKey"],
-                'token' => $fileInfo["credentials"]["SessionToken"],
+                'key' => $fileInfo['credentials']['AccessKeyId'],
+                'secret' => $fileInfo['credentials']['SecretAccessKey'],
+                'token' => $fileInfo['credentials']['SessionToken'],
             ],
             'http' => [
                 'decode_content' => false,
             ],
         ]);
         $s3Client->getObject(array(
-            'Bucket' => $fileInfo["s3Path"]["bucket"],
-            'Key' => $fileInfo["s3Path"]["key"],
+            'Bucket' => $fileInfo['s3Path']['bucket'],
+            'Key' => $fileInfo['s3Path']['key'],
             'SaveAs' => $targetFile,
         ));
     }
