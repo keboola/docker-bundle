@@ -86,29 +86,6 @@ class StorageApiReaderTest extends \PHPUnit_Framework_TestCase
         }
     }
 
-    public function testReadFiles()
-    {
-        $root = $this->tmpDir;
-        file_put_contents($root . "/upload", "test");
-
-        $id1 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
-        $id2 = $this->client->uploadFile($root . "/upload", (new FileUploadOptions())->setTags(["docker-bundle-test"]));
-
-        $reader = new Reader($this->client, new NullLogger());
-        $configuration = [["tags" => ["docker-bundle-test"]]];
-        $reader->downloadFiles($configuration, $root . "/download");
-
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id1 . '_upload'));
-        $this->assertEquals("test", file_get_contents($root . "/download/" . $id2 . '_upload'));
-
-        $adapter = new FileAdapter();
-        $manifest1 = $adapter->readFromFile($root . "/download/" . $id1 . "_upload.manifest");
-        $manifest2 = $adapter->readFromFile($root . "/download/" . $id2 . "_upload.manifest");
-
-        $this->assertEquals($id1, $manifest1["id"]);
-        $this->assertEquals($id2, $manifest2["id"]);
-    }
-
     public function testReadTablesDefaultBackend()
     {
         // Create bucket
