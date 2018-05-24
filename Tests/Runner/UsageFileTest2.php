@@ -20,7 +20,7 @@ use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Keboola\Syrup\Job\Metadata\JobFactory;
 
-class UsageFileTest extends KernelTestCase
+class UsageFileTest2 extends KernelTestCase
 {
     /**
      * @var Client
