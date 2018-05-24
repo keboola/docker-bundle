@@ -16,12 +16,10 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Templating\Storage\Storage;
 
 class BaseContainerTest extends TestCase
 {
@@ -153,7 +151,7 @@ class BaseContainerTest extends TestCase
         $this->containerTestHandler = new TestHandler();
 
         if (!$this->createEventCallback) {
-            $this->createEventCallback = function (Event $event) {return true;};
+            $this->createEventCallback = function (/** @noinspection PhpUnusedParameterInspection */ Event $event) {return true;};
         }
         $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()

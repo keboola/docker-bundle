@@ -12,107 +12,86 @@ class ImageBuildParameterTest extends TestCase
     public function testParameter()
     {
         $param = new BuilderParameter('foo', 'string', true);
-        $this->assertEquals('foo', $param->getName());
-        $this->assertTrue($param->isRequired());
-        $this->assertNull($param->getValue());
+        self::assertEquals('foo', $param->getName());
+        self::assertTrue($param->isRequired());
+        self::assertNull($param->getValue());
 
         $param = new BuilderParameter('bar', 'string', false);
-        $this->assertEquals('bar', $param->getName());
-        $this->assertFalse($param->isRequired());
-        $this->assertNull($param->getValue());
+        self::assertEquals('bar', $param->getName());
+        self::assertFalse($param->isRequired());
+        self::assertNull($param->getValue());
 
         $param = new BuilderParameter('bar', 'string', false, 'anvil');
-        $this->assertEquals('bar', $param->getName());
-        $this->assertFalse($param->isRequired());
-        $this->assertEquals('anvil', $param->getValue());
+        self::assertEquals('bar', $param->getName());
+        self::assertFalse($param->isRequired());
+        self::assertEquals('anvil', $param->getValue());
 
-        try {
-            $param = new BuilderParameter('bar', 'fooBar', false);
-            $param->setValue('barBaz');
-            $this->fail("Invalid parameter type must raise exception");
-        } catch (BuildException $e) {
-            $this->assertContains('invalid type', strtolower($e->getMessage()));
-        }
+        $param = new BuilderParameter('bar', 'fooBar', false);
+        self::expectException(BuildException::class);
+        self::expectExceptionMessage('Invalid type');
+        $param->setValue('barBaz');
     }
 
     public function testParameterValidationSuccess()
     {
         $param = new BuilderParameter('foo', 'string', true);
         $param->setValue('@!#%@^%$UJTNDFDV');
-        $this->assertEquals('@!#%@^%$UJTNDFDV', $param->getValue());
+        self::assertEquals('@!#%@^%$UJTNDFDV', $param->getValue());
 
         $param = new BuilderParameter('foo', 'argument', true);
         $param->setValue('@!#%@^%$UJTNDFDV');
-        $this->assertEquals(escapeshellarg('@!#%@^%$UJTNDFDV'), $param->getValue());
+        self::assertEquals(escapeshellarg('@!#%@^%$UJTNDFDV'), $param->getValue());
 
         $param = new BuilderParameter('foo', 'integer', true);
         $param->setValue('fooBar');
-        $this->assertEquals(0, $param->getValue());
+        self::assertEquals(0, $param->getValue());
 
         $param = new BuilderParameter('foo', 'integer', true);
         $param->setValue('42');
-        $this->assertEquals(42, $param->getValue());
+        self::assertEquals(42, $param->getValue());
 
         $param = new BuilderParameter('foo', 'plain_string', true);
         $param->setValue('fooBar-baz.Bar');
-        $this->assertEquals('fooBar-baz.Bar', $param->getValue());
+        self::assertEquals('fooBar-baz.Bar', $param->getValue());
 
         $param = new BuilderParameter('foo', 'enumeration', true, null, ['baz', 'bar']);
         $param->setValue('baz');
-        $this->assertEquals('baz', $param->getValue());
+        self::assertEquals('baz', $param->getValue());
 
         $param = new BuilderParameter('foo', 'enumeration', true, 'bar', ['baz', 'bar']);
-        $this->assertEquals('bar', $param->getValue());
+        self::assertEquals('bar', $param->getValue());
     }
 
     public function testParameterValidationFail()
     {
         $param = new BuilderParameter('foo', 'plain_string', true);
-        try {
-            $param->setValue('@!#%@^%$UJTNDFDV');
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue('@!#%@^%$UJTNDFDV');
 
         $param = new BuilderParameter('foo', 'plain_string', true);
-        try {
-            $param->setValue(['fooBar']);
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue(['fooBar']);
 
         $param = new BuilderParameter('foo', 'string', true);
-        try {
-            $param->setValue(['foo' => 'bar']);
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue(['foo' => 'bar']);
 
         $param = new BuilderParameter('foo', 'integer', true);
-        try {
-            $param->setValue(['foo' => '0']);
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue(['foo' => '0']);
 
         $param = new BuilderParameter('foo', 'argument', true);
-        try {
-            $param->setValue(['foo' => '0']);
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue(['foo' => '0']);
 
         $param = new BuilderParameter('foo', 'enumeration', true, null, ['baz', 'bar']);
-        try {
-            $param->setValue('notABaz');
-            $this->fail("Invalid value must raise exception");
-        } catch (BuildParameterException $e) {
-            $this->assertContains('invalid value', strtolower($e->getMessage()));
-        }
+        self::expectException(BuildParameterException::class);
+        self::expectExceptionMessage('Invalid value');
+        $param->setValue('notABaz');
     }
 }
