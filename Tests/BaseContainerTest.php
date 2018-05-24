@@ -60,6 +60,11 @@ class BaseContainerTest extends TestCase
      */
     private $storageServiceStub;
 
+    /**
+     * @var array
+     */
+    private $componentConfig;
+
     public function setUp()
     {
         parent::setUp();
@@ -74,6 +79,9 @@ class BaseContainerTest extends TestCase
         $this->temp = new Temp('runner-tests');
         $this->temp->initRunFolder();
         $this->createEventCallback = null;
+        $this->logService = null;
+        $this->storageServiceStub = null;
+        $this->componentConfig = [];
     }
 
     private function createScript(array $contents)
@@ -101,6 +109,11 @@ class BaseContainerTest extends TestCase
     protected function setCreateEventCallback($createEventCallback)
     {
         $this->createEventCallback = $createEventCallback;
+    }
+
+    protected function setComponentConfig(array $configData)
+    {
+        $this->componentConfig = $configData;
     }
 
     protected function getLoggersService()
@@ -147,7 +160,7 @@ class BaseContainerTest extends TestCase
             true
         );
         if ($prepare) {
-            $image->prepare([]);
+            $image->prepare($this->componentConfig);
         }
         $this->logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         if (!$commandOptions) {
