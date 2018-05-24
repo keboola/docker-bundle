@@ -119,7 +119,7 @@ EOF;
         $this->assertContains("Processed 2 rows.", trim($process->getOutput()));
     }
 
-    public function testRunCommand()
+    public function testRunCommandWithContainerRootUserFeature()
     {
         $imageConfiguration = new Component([
             "data" => [
@@ -128,6 +128,9 @@ EOF;
                     "uri" => "keboola/docker-demo-app",
                     "tag" => "master"
                 ]
+            ],
+            "features" => [
+                "container-root-user"
             ]
         ]);
         $log = new Logger("null");
@@ -184,6 +187,45 @@ EOF;
             . " --name 'name'"
             . " 'keboola/docker-demo-app:master'";
         $this->assertEquals($expected, $container->getRunCommand("name"));
+    }
+
+    public function testRunCommandContainerWithoutRootUserFeature()
+    {
+        $imageConfiguration = new Component([
+            "data" => [
+                "definition" => [
+                    "type" => "dockerhub",
+                    "uri" => "keboola/docker-demo-app",
+                    "tag" => "master"
+                ]
+            ]
+        ]);
+        $log = new Logger("null");
+        $log->pushHandler(new NullHandler());
+        $containerLog = new ContainerLogger("null");
+        $containerLog->pushHandler(new NullHandler());
+
+        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
+        $envs = ["var" => "val", "příliš" => 'žluťoučký', "var2" => "weird = '\"value" ];
+        $container = new Container(
+            'docker-container-test',
+            $image,
+            $log,
+            $containerLog,
+            '/data',
+            '/tmp',
+            RUNNER_COMMAND_TO_GET_HOST_IP,
+            RUNNER_MIN_LOG_PORT,
+            RUNNER_MAX_LOG_PORT,
+            new RunCommandOptions([
+                'com.keboola.runner.jobId=12345678',
+                'com.keboola.runner.runId=10.20.30',
+            ], $envs),
+            new OutputFilter(),
+            new Limits($log, ['cpu_count' => 2], [], [], [])
+        );
+
+        $this->assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
     }
 
     public function testInspectCommand()

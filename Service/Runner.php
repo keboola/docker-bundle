@@ -210,7 +210,7 @@ class Runner
      * @param string $jobId
      * @return Output
      */
-    public function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
+    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
     {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -365,7 +365,7 @@ class Runner
      * @return Output
      * @throws ClientException
      */
-    public function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
+    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
     {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -475,7 +475,9 @@ class Runner
                     $newState = $stateFile->loadStateFromFile();
                 }
             } finally {
-                $workingDirectory->normalizePermissions();
+                if ($image->getSourceComponent()->runAsRoot()) {
+                    $workingDirectory->normalizePermissions();
+                }
                 if ($image->isMain()) {
                     $usageFile->storeUsage();
                 }
