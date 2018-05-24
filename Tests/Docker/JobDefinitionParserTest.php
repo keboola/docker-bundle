@@ -48,9 +48,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                 'script' => [
                     'data <- read.csv(file = "/data/in/tables/transpose.csv");',
                     'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                    'colnames(tdata) <- data[["name"]]',
-                    'tdata <- data.frame(column = rownames(tdata), tdata)',
-                    'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
                 ],
             ],
         ];
@@ -88,31 +85,26 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'files' => [],
                 ],
             ],
-            'parameters' =>
-                [
-                    'script' =>
-                        [
-                            0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
-                            1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                            2 => 'colnames(tdata) <- data[["name"]]',
-                            3 => 'tdata <- data.frame(column = rownames(tdata), tdata)',
-                            4 => 'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
-                        ],
+            'parameters' => [
+                'script' => [
+                    0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
+                    1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
+            ],
             'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
         $parser->parseConfigData($this->getComponent(), $configData);
 
-        $this->assertCount(1, $parser->getJobDefinitions());
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
-        $this->assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
-        $this->assertNull($parser->getJobDefinitions()[0]->getConfigId());
-        $this->assertNull($parser->getJobDefinitions()[0]->getConfigVersion());
-        $this->assertNull($parser->getJobDefinitions()[0]->getRowId());
-        $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
-        $this->assertEmpty($parser->getJobDefinitions()[0]->getState());
+        self::assertCount(1, $parser->getJobDefinitions());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        self::assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
+        self::assertNull($parser->getJobDefinitions()[0]->getConfigId());
+        self::assertNull($parser->getJobDefinitions()[0]->getConfigVersion());
+        self::assertNull($parser->getJobDefinitions()[0]->getRowId());
+        self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
+        self::assertEmpty($parser->getJobDefinitions()[0]->getState());
     }
 
     public function testSingleRowConfiguration()
@@ -143,9 +135,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'script' => [
                         'data <- read.csv(file = "/data/in/tables/transpose.csv");',
                         'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                        'colnames(tdata) <- data[["name"]]',
-                        'tdata <- data.frame(column = rownames(tdata), tdata)',
-                        'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
                     ],
                 ],
             ],
@@ -188,31 +177,26 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                         'files' => [],
                     ],
             ],
-            'parameters' =>
-                [
-                    'script' =>
-                        [
-                            0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
-                            1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                            2 => 'colnames(tdata) <- data[["name"]]',
-                            3 => 'tdata <- data.frame(column = rownames(tdata), tdata)',
-                            4 => 'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
-                        ],
+            'parameters' => [
+                'script' => [
+                    0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
+                    1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
+            ],
             'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
         $parser->parseConfig($this->getComponent(), $config);
 
-        $this->assertCount(1, $parser->getJobDefinitions());
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
-        $this->assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
-        $this->assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
-        $this->assertEquals(1, $parser->getJobDefinitions()[0]->getConfigVersion());
-        $this->assertNull($parser->getJobDefinitions()[0]->getRowId());
-        $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
-        $this->assertEquals($config['state'], $parser->getJobDefinitions()[0]->getState());
+        self::assertCount(1, $parser->getJobDefinitions());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        self::assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
+        self::assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
+        self::assertEquals(1, $parser->getJobDefinitions()[0]->getConfigVersion());
+        self::assertNull($parser->getJobDefinitions()[0]->getRowId());
+        self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
+        self::assertEquals($config['state'], $parser->getJobDefinitions()[0]->getState());
     }
 
     public function testMultiRowConfiguration()
@@ -317,22 +301,22 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new JobDefinitionParser();
         $parser->parseConfig($this->getComponent(), $config);
 
-        $this->assertCount(2, $parser->getJobDefinitions());
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
-        $this->assertEquals($expectedRow1, $parser->getJobDefinitions()[0]->getConfiguration());
-        $this->assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
-        $this->assertEquals(3, $parser->getJobDefinitions()[0]->getConfigVersion());
-        $this->assertEquals('row1', $parser->getJobDefinitions()[0]->getRowId());
-        $this->assertTrue($parser->getJobDefinitions()[0]->isDisabled());
-        $this->assertEquals(['key1' => 'val1'], $parser->getJobDefinitions()[0]->getState());
+        self::assertCount(2, $parser->getJobDefinitions());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        self::assertEquals($expectedRow1, $parser->getJobDefinitions()[0]->getConfiguration());
+        self::assertEquals('my-config', $parser->getJobDefinitions()[0]->getConfigId());
+        self::assertEquals(3, $parser->getJobDefinitions()[0]->getConfigVersion());
+        self::assertEquals('row1', $parser->getJobDefinitions()[0]->getRowId());
+        self::assertTrue($parser->getJobDefinitions()[0]->isDisabled());
+        self::assertEquals(['key1' => 'val1'], $parser->getJobDefinitions()[0]->getState());
 
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[1]->getComponentId());
-        $this->assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
-        $this->assertEquals('my-config', $parser->getJobDefinitions()[1]->getConfigId());
-        $this->assertEquals(3, $parser->getJobDefinitions()[1]->getConfigVersion());
-        $this->assertEquals('row2', $parser->getJobDefinitions()[1]->getRowId());
-        $this->assertFalse($parser->getJobDefinitions()[1]->isDisabled());
-        $this->assertEquals(['key2' => 'val2'], $parser->getJobDefinitions()[1]->getState());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[1]->getComponentId());
+        self::assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
+        self::assertEquals('my-config', $parser->getJobDefinitions()[1]->getConfigId());
+        self::assertEquals(3, $parser->getJobDefinitions()[1]->getConfigVersion());
+        self::assertEquals('row2', $parser->getJobDefinitions()[1]->getRowId());
+        self::assertFalse($parser->getJobDefinitions()[1]->isDisabled());
+        self::assertEquals(['key2' => 'val2'], $parser->getJobDefinitions()[1]->getState());
     }
 
     public function testSimpleConfigDataWithConfigId()
@@ -360,9 +344,6 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                 'script' => [
                     'data <- read.csv(file = "/data/in/tables/transpose.csv");',
                     'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                    'colnames(tdata) <- data[["name"]]',
-                    'tdata <- data.frame(column = rownames(tdata), tdata)',
-                    'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
                 ],
             ],
         ];
@@ -400,31 +381,26 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'files' => [],
                 ],
             ],
-            'parameters' =>
-                [
-                    'script' =>
-                        [
-                            0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
-                            1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
-                            2 => 'colnames(tdata) <- data[["name"]]',
-                            3 => 'tdata <- data.frame(column = rownames(tdata), tdata)',
-                            4 => 'write.csv(tdata, file = "/data/out/tables/transpose.csv", row.names = FALSE)',
-                        ],
+            'parameters' => [
+                'script' => [
+                    0 => 'data <- read.csv(file = "/data/in/tables/transpose.csv");',
+                    1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
+            ],
             'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
         $parser->parseConfigData($this->getComponent(), $configData, '1234');
 
-        $this->assertCount(1, $parser->getJobDefinitions());
-        $this->assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
-        $this->assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
-        $this->assertEquals('1234', $parser->getJobDefinitions()[0]->getConfigId());
-        $this->assertNull($parser->getJobDefinitions()[0]->getConfigVersion());
-        $this->assertNull($parser->getJobDefinitions()[0]->getRowId());
-        $this->assertFalse($parser->getJobDefinitions()[0]->isDisabled());
-        $this->assertEmpty($parser->getJobDefinitions()[0]->getState());
+        self::assertCount(1, $parser->getJobDefinitions());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        self::assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
+        self::assertEquals('1234', $parser->getJobDefinitions()[0]->getConfigId());
+        self::assertNull($parser->getJobDefinitions()[0]->getConfigVersion());
+        self::assertNull($parser->getJobDefinitions()[0]->getRowId());
+        self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
+        self::assertEmpty($parser->getJobDefinitions()[0]->getState());
     }
 
     public function testMultiRowConfigurationWithInvalidProcessors1()
@@ -439,11 +415,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'before' => [],
                     'after' => [
                         [
-                            "definition" => [
-                                "component" => "keboola.processor-skip-lines",
+                            'definition' => [
+                                'component' => 'keboola.processor-skip-lines',
                             ],
-                            "parameters" => [
-                                "lines" => 1,
+                            'parameters' => [
+                                'lines' => 1,
                             ],
                         ],
                     ],
@@ -473,11 +449,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                         'processors' => [
                             'before' => [
                                 [
-                                    "definition" => [
-                                        "component" => "keboola.processor-iconv",
+                                    'definition' => [
+                                        'component' => 'keboola.processor-iconv',
                                     ],
-                                    "parameters" => [
-                                        "source_encoding" => "WINDOWS-1250"
+                                    'parameters' => [
+                                        'source_encoding' => 'WINDOWS-1250'
                                     ],
                                 ],
                             ],
@@ -491,7 +467,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new JobDefinitionParser();
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            "Processors may be set either in configuration or in configuration row, but not in both places"
+            'Processors may be set either in configuration or in configuration row, but not in both places'
         );
         $parser->parseConfig($this->getComponent(), $config);
     }
@@ -507,11 +483,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                 'processors' => [
                     'before' => [
                         [
-                            "definition" => [
-                                "component" => "keboola.processor-skip-lines",
+                            'definition' => [
+                                'component' => 'keboola.processor-skip-lines',
                             ],
-                            "parameters" => [
-                                "lines" => 1,
+                            'parameters' => [
+                                'lines' => 1,
                             ],
                         ],
                     ],
@@ -542,11 +518,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                         'processors' => [
                             'before' => [
                                 [
-                                    "definition" => [
-                                        "component" => "keboola.processor-iconv",
+                                    'definition' => [
+                                        'component' => 'keboola.processor-iconv',
                                     ],
-                                    "parameters" => [
-                                        "source_encoding" => "WINDOWS-1250"
+                                    'parameters' => [
+                                        'source_encoding' => 'WINDOWS-1250'
                                     ],
                                 ],
                             ],
@@ -560,7 +536,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new JobDefinitionParser();
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            "Processors may be set either in configuration or in configuration row, but not in both places"
+            'Processors may be set either in configuration or in configuration row, but not in both places'
         );
         $parser->parseConfig($this->getComponent(), $config);
     }
@@ -598,11 +574,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                         'processors' => [
                             'before' => [
                                 [
-                                    "definition" => [
-                                        "component" => "keboola.processor-iconv",
+                                    'definition' => [
+                                        'component' => 'keboola.processor-iconv',
                                     ],
-                                    "parameters" => [
-                                        "source_encoding" => "WINDOWS-1250"
+                                    'parameters' => [
+                                        'source_encoding' => 'WINDOWS-1250'
                                     ],
                                 ],
                             ],
@@ -616,7 +592,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new JobDefinitionParser();
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            "Processors cannot be used with component keboola.r-transformation because it does not use local staging storage."
+            'Processors cannot be used with component keboola.r-transformation because it does not use local staging storage.'
         );
         $component = new Component(
             [
@@ -646,11 +622,11 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                 'processors' => [
                     'before' => [
                         [
-                            "definition" => [
-                                "component" => "keboola.processor-skip-lines",
+                            'definition' => [
+                                'component' => 'keboola.processor-skip-lines',
                             ],
-                            "parameters" => [
-                                "lines" => 1,
+                            'parameters' => [
+                                'lines' => 1,
                             ],
                         ],
                     ],
@@ -663,7 +639,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
         $parser = new JobDefinitionParser();
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            "Processors cannot be used with component keboola.r-transformation because it does not use local staging storage."
+            'Processors cannot be used with component keboola.r-transformation because it does not use local staging storage.'
         );
         $component = new Component(
             [
