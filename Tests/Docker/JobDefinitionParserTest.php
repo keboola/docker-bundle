@@ -1,12 +1,13 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\Syrup\Exception\UserException;
+use PHPUnit\Framework\TestCase;
 
-class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
+class JobDefinitionParserTest extends TestCase
 {
     private function getComponent()
     {
@@ -444,7 +445,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'state' => [],
                     'configuration' => [
                         'parameters' => [
-                            'c' => 'd'
+                            'c' => 'd',
                         ],
                         'processors' => [
                             'before' => [
@@ -453,7 +454,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                                         'component' => 'keboola.processor-iconv',
                                     ],
                                     'parameters' => [
-                                        'source_encoding' => 'WINDOWS-1250'
+                                        'source_encoding' => 'WINDOWS-1250',
                                     ],
                                 ],
                             ],
@@ -513,7 +514,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                     'state' => [],
                     'configuration' => [
                         'parameters' => [
-                            'c' => 'd'
+                            'c' => 'd',
                         ],
                         'processors' => [
                             'before' => [
@@ -522,7 +523,7 @@ class JobDefinitionParserTest extends \PHPUnit_Framework_TestCase
                                         'component' => 'keboola.processor-iconv',
                                     ],
                                     'parameters' => [
-                                        'source_encoding' => 'WINDOWS-1250'
+                                        'source_encoding' => 'WINDOWS-1250',
                                     ],
                                 ],
                             ],

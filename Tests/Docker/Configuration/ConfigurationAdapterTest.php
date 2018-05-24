@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
 use PHPUnit\Framework\TestCase;
