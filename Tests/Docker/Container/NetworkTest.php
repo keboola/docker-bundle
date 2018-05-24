@@ -42,6 +42,35 @@ class NetworkTest extends BaseContainerTest
         ];
     }
 
+    private function getBuilderImageConfiguration()
+    {
+        return [
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'aws-ecr',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app', // not used, can by anything
+                            'type' => 'git',
+                        ],
+                        'entry_point' => 'ping -W 10 -c 1 www.example.com',
+                        'parameters' => [
+                            [
+                                'name' => 'network',
+                                'type' => 'string',
+                                'required' => false
+                            ]
+                        ]
+                    ]
+                ],
+                'network' => 'bridge'
+            ]
+        ];
+    }
+
     public function testNetworkBridge()
     {
         $script = [
@@ -52,8 +81,8 @@ class NetworkTest extends BaseContainerTest
         $imageConfiguration['data']['network'] = 'bridge';
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains('64 bytes from', $process->getOutput());
+        self::assertEquals(0, $process->getExitCode());
+        self::assertContains('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkNone()
@@ -68,178 +97,66 @@ class NetworkTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
             $container->run();
-            $this->fail('Ping must fail');
+            self::fail('Ping must fail');
         } catch (UserException $e) {
-            $this->assertContains('ping: unknown host', $e->getMessage());
+            self::assertContains('ping: unknown host', $e->getMessage());
         }
     }
 
     public function testNetworkBridgeOverride()
     {
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "aws-ecr",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app", // not used, can by anything
-                            "type" => "git",
-                        ],
-                        "entry_point" => "ping -W 10 -c 1 www.example.com",
-                        "parameters" => [
-                            [
-                                "name" => "network",
-                                "type" => "string",
-                                "required" => false
-                            ]
-                        ]
-                    ]
-                ],
-                "network" => "bridge"
-            ]
-        ];
         $this->setComponentConfig(['runtime' => ['network' => 'none']]);
-        $container = $this->getContainer($imageConfiguration, [], [], true);
+        $container = $this->getContainer($this->getBuilderImageConfiguration(), [], [], true);
         try {
             $container->run();
-            $this->fail('Ping must fail');
+            self::fail('Ping must fail');
         } catch (UserException $e) {
-            $this->assertContains('ping: unknown host', $e->getMessage());
+            self::assertContains('ping: unknown host', $e->getMessage());
         }
     }
 
     public function testNetworkBridgeOverrideNoValue()
     {
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "aws-ecr",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app", // not used, can by anything
-                            "type" => "git",
-                        ],
-                        "entry_point" => "ping -W 10 -c 1 www.example.com",
-                        "parameters" => [
-                            [
-                                "name" => "network",
-                                "type" => "string",
-                                "required" => false
-                            ]
-                        ]
-                    ]
-                ],
-                "network" => "bridge"
-            ]
-        ];
         $this->setComponentConfig(['runtime' => []]);
-        $container = $this->getContainer($imageConfiguration, [], [], true);
+        $container = $this->getContainer($this->getBuilderImageConfiguration(), [], [], true);
         $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("64 bytes from", $process->getOutput());
+        self::assertEquals(0, $process->getExitCode());
+        self::assertContains('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkBridgeOverrideFail()
     {
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "aws-ecr",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app", // not used, can by anything
-                            "type" => "git",
-                        ],
-                        "entry_point" => "ping -W 10 -c 1 www.example.com",
-                    ]
-                ],
-                "network" => "bridge"
-            ]
-        ];
+        $imageConfiguration = $this->getBuilderImageConfiguration();
+        $imageConfiguration['data']['definition']['build_options']['parameters'] = [];
         $this->setComponentConfig(['runtime' => ['network' => 'none']]);
         $container = $this->getContainer($imageConfiguration, [], [], true);
         // parameter is not defined in image, must be ignored
         $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("64 bytes from", $process->getOutput());
+        self::assertEquals(0, $process->getExitCode());
+        self::assertContains('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkNoneOverride()
     {
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "aws-ecr",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app", // not used, can by anything
-                            "type" => "git",
-                        ],
-                        "entry_point" => "ping -W 10 -c 1 www.example.com",
-                        "parameters" => [
-                            [
-                                "name" => "network",
-                                "type" => "string",
-                                "required" => false
-                            ]
-                        ]
-                    ]
-                ],
-                "network" => "none"
-            ]
-        ];
+        $imageConfiguration = $this->getBuilderImageConfiguration();
+        $imageConfiguration['data']['network'] = 'none';
         $this->setComponentConfig(['runtime' => ['network' => 'bridge']]);
         $container = $this->getContainer($imageConfiguration, [], [], true);
         $process = $container->run();
-        $this->assertEquals(0, $process->getExitCode());
-        $this->assertContains("64 bytes from", $process->getOutput());
+        self::assertEquals(0, $process->getExitCode());
+        self::assertContains('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkInvalidOverride()
     {
-        $imageConfiguration = [
-            "data" => [
-                "definition" => [
-                    "type" => "builder",
-                    "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation",
-                    "tag" => "latest",
-                    "build_options" => [
-                        "parent_type" => "aws-ecr",
-                        "repository" => [
-                            "uri" => "https://github.com/keboola/docker-demo-app", // not used, can by anything
-                            "type" => "git",
-                        ],
-                        "entry_point" => "ping -W 10 -c 1 www.example.com",
-                        "parameters" => [
-                            [
-                                "name" => "network",
-                                "type" => "string",
-                                "required" => false
-                            ]
-                        ]
-                    ]
-                ],
-                "network" => "none"
-            ]
-        ];
+        $imageConfiguration = $this->getBuilderImageConfiguration();
+        $imageConfiguration['data']['network'] = 'none';
         $this->setComponentConfig(['runtime' => ['network' => 'fooBar']]);
         try {
             $this->getContainer($imageConfiguration, [], [], true);
-            $this->fail("Invalid network must fail.");
+            self::fail('Invalid network must fail.');
         } catch (ApplicationException $e) {
-            $this->assertContains('not supported', $e->getMessage());
+            self::assertContains('not supported', $e->getMessage());
         }
     }
 }

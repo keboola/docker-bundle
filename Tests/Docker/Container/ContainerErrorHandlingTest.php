@@ -146,7 +146,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
                     'build_options' => [
                         'parent_type' => 'aws-ecr',
                         'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git', // not used, can be anything
                             'type' => 'git'
                         ],
                         'commands' => [],
