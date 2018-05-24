@@ -4,19 +4,13 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class QuayIOPrivateRepositoryTest extends KernelTestCase
+class QuayIOPrivateRepositoryTest extends BaseImageTest
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
     /**
      * @expectedException \Keboola\DockerBundle\Exception\LoginFailedException
      */
@@ -32,9 +26,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
 
@@ -43,8 +35,6 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
      */
     public function testInvalidCredentials()
     {
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -52,7 +42,7 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                     "uri" => "keboola/docker-demo-private",
                     "repository" => [
                         "username" => QUAYIO_PRIVATE_USERNAME . "_invalid",
-                        "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD),
+                        "#password" => $this->getEncryptor()->encrypt(QUAYIO_PRIVATE_PASSWORD),
                         "server" => DOCKERHUB_PRIVATE_SERVER
                     ]
 
@@ -61,10 +51,9 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ],
         ]);
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
     }
-
 
     /**
      * Try do download private image using credentials
@@ -76,8 +65,6 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
         $process = new Process("sudo docker images | grep quay.io/keboola/docker-demo-private | wc -l");
         $process->run();
         $this->assertEquals(0, trim($process->getOutput()));
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
         $imageConfig = new Component([
             "data" => [
                 "definition" => [
@@ -85,14 +72,14 @@ class QuayIOPrivateRepositoryTest extends KernelTestCase
                     "uri" => "keboola/docker-demo-private",
                     "repository" => [
                         "username" => QUAYIO_PRIVATE_USERNAME,
-                        "#password" => $encryptor->encrypt(QUAYIO_PRIVATE_PASSWORD)
+                        "#password" => $this->getEncryptor()->encrypt(QUAYIO_PRIVATE_PASSWORD)
                     ]
                 ],
                 "memory" => "64m",
                 "configuration_format" => "json"
             ],
         ]);
-        $image = ImageFactory::getImage($encryptor, new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals("quay.io/keboola/docker-demo-private:latest", $image->getFullImageId());

@@ -4,22 +4,13 @@ namespace Keboola\DockerBundle\Tests\Functional;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Process\Process;
 
-class QuayIORepositoryTest extends KernelTestCase
+class QuayIORepositoryTest extends BaseImageTest
 {
-    public function setUp()
-    {
-        self::bootKernel();
-    }
-
-    /**
-     * Try do download image from Quay.io repository
-     */
     public function testDownloadedImage()
     {
         (new Process("sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)"))->run();
@@ -37,14 +28,7 @@ class QuayIORepositoryTest extends KernelTestCase
                 "configuration_format" => "json"
             ]
         ]);
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-
-        $image = ImageFactory::getImage($encryptorFactory->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         $this->assertEquals("quay.io/keboola/docker-demo-app:latest", $image->getFullImageId());
