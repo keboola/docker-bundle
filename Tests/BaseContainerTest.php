@@ -102,13 +102,6 @@ class BaseContainerTest extends TestCase
         ];
     }
 
-    private function createScript(array $contents)
-    {
-        $fs = new Filesystem();
-        $configFile['parameters']['script'] = $contents;
-        $fs->dumpFile($this->temp->getTmpFolder() . '/data/config.json', \GuzzleHttp\json_encode($configFile));
-    }
-
     protected function getTempDir()
     {
         return $this->temp->getTmpFolder();
@@ -201,5 +194,12 @@ class BaseContainerTest extends TestCase
             new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         return $container;
+    }
+
+    private function createScript(array $contents)
+    {
+        $fs = new Filesystem();
+        $configFile['parameters']['script'] = $contents;
+        $fs->dumpFile($this->temp->getTmpFolder() . '/data/config.json', \GuzzleHttp\json_encode($configFile));
     }
 }
