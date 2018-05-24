@@ -155,7 +155,7 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
-       return new Runner(
+        return new Runner(
             $this->encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
