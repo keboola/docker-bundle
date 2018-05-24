@@ -173,5 +173,4 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
             RUNNER_MAX_LOG_PORT
         );
     }
-
 }
