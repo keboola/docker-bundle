@@ -14,7 +14,7 @@ use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 
-class BaseRunnerTest extends \PHPUnit_Framework_TestCase
+abstract class BaseRunnerTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var TestHandler
@@ -61,6 +61,11 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
      */
     private $components;
 
+    /**
+     * @var Client
+     */
+    private $client;
+
     public function setUp()
     {
         parent::setUp();
@@ -73,6 +78,12 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
+        );
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]
         );
         $this->configId = '';
         $this->componentId = '';
@@ -97,6 +108,11 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         return $this->containerHandler;
     }
 
+    protected function getClient()
+    {
+        return $this->client;
+    }
+
     protected function getRunner()
     {
         $this->containerHandler = new TestHandler();
@@ -104,12 +120,15 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         $this->encryptorFactory->setComponentId($this->componentId);
         $this->encryptorFactory->setConfigurationId($this->configId);
 
+        /*
         $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $storageClientStub->expects($this->any())
             ->method('indexAction')
             ->will($this->returnValue(['components' => $this->components, 'services' => $this->services]));
+        */
+        $storageClientStub = $this->client;
 
         $storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()

@@ -14,7 +14,7 @@ use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-class BaseDataLoaderTest extends TestCase
+abstract class BaseDataLoaderTest extends TestCase
 {
     /**
      * @var Client

@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use PHPUnit\Framework\TestCase;
 
-class BaseImageTest extends TestCase
+abstract class BaseImageTest extends TestCase
 {
     /**
      * @var ObjectEncryptorFactory
