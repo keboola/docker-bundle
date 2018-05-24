@@ -2,46 +2,12 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\Limits;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Symfony\Bridge\Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
-use Keboola\DockerBundle\Docker\RunCommandOptions;
 
 class NetworkTest extends BaseContainerTest
 {
-    private function getImageConfiguration()
-    {
-        return [
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-                'image_parameters' => [
-                    '#secure' => 'secure',
-                    'not-secure' => [
-                        'this' => 'public',
-                        '#andthis' => 'isAlsoSecure',
-                    ]
-                ]
-            ],
-        ];
-    }
-
     private function getBuilderImageConfiguration()
     {
         return [

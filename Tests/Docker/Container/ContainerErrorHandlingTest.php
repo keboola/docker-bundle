@@ -10,19 +10,6 @@ use Keboola\Syrup\Exception\UserException;
 
 class ContainerErrorHandlingTest extends BaseContainerTest
 {
-    private function getImageConfiguration()
-    {
-        return [
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-            ],
-        ];
-    }
-
     public function testSuccess()
     {
         $script = ['print("Hello from Keboola Space Program")'];

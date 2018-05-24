@@ -7,19 +7,6 @@ use Keboola\Syrup\Exception\UserException;
 
 class ContainerUtf8SanitizationTest extends BaseContainerTest
 {
-    private function getImageConfiguration()
-    {
-        return [
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-            ],
-        ];
-    }
-
     public function testStdout()
     {
         $script = [
