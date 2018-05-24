@@ -14,7 +14,6 @@ use Symfony\Bridge\Monolog\Logger;
 
 class LoggerTest extends BaseContainerTest
 {
-
     private function getImageConfiguration()
     {
         return [
@@ -29,8 +28,6 @@ class LoggerTest extends BaseContainerTest
                     'not-secure' => [
                         'this' => 'public',
                         '#andthis' => 'isAlsoSecure',
-                        '#a' => 'nested',
-                        '#b' => 'Structured',
                     ]
                 ]
             ],
@@ -321,7 +318,7 @@ class LoggerTest extends BaseContainerTest
             'logger.removeHandler(logging.getLogger().handlers[0])',
             'class ContextFilter(logging.Filter):',
             '   def filter(self, record):',
-            '       record.structure = {"foo": "bar", "baz": "secure"}',
+            '       record.structure = {"foo": "bar", "baz": "isAlsoSecure"}',
             '       return True',
             'logger.addFilter(ContextFilter())',
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")), debug=True, include_extra_fields=True))',
