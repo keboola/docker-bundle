@@ -16,6 +16,7 @@
 
     <testsuite name="API Test Suite">
         <directory>Tests</directory>
+        <exclude>Tests/Command</exclude>
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Executor</exclude>
         <exclude>Tests/Runner</exclude>
