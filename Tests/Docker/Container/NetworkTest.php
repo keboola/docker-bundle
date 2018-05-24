@@ -40,6 +40,7 @@ class NetworkTest extends BaseContainerTest
     public function testNetworkBridge()
     {
         $script = [
+            'import sys',
             'from subprocess import call',
             'sys.exit(call(["ping", "-W", "10", "-c", "1", "www.example.com"]))',
         ];

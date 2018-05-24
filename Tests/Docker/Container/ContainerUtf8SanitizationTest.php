@@ -28,6 +28,7 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
             'print("begin")',
             'sys.stdout.buffer.write(b"\x3D\xD8\x4F\xDE")',
             'print("end")',
+            'sys.exit(1)',
         ];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         self::expectException(UserException::class);
@@ -46,6 +47,6 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains("begin\n=Oend"));
-        self::assertFalse($this->getLogHandler()->hasInfoThatContains("begin\n=Oend"));
+        self::assertTrue($this->getLogHandler()->hasInfoThatContains("begin\n=Oend"));
     }
 }
