@@ -423,7 +423,6 @@ class Container
             . $envs
             . $labels
             . " --name " . escapeshellarg($containerId)
-            . (!$this->getImage()->getSourceComponent()->runAsRoot() ? ' --user $(id -u):$(id -g)' : "")
             . " " . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }

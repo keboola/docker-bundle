@@ -24,11 +24,6 @@ class Component
     private $networkType;
 
     /**
-     * @var array
-     */
-    private $features;
-
-    /**
      * Component constructor.
      * @param array $componentData Component data as returned by Storage API
      */
@@ -36,11 +31,6 @@ class Component
     {
         $this->id = empty($componentData['id']) ? '' : $componentData['id'];
         $data = empty($componentData['data']) ? [] : $componentData['data'];
-        if (isset($componentData['features'])) {
-            $this->features = $componentData['features'];
-        } else {
-            $this->features = [];
-        }
         try {
             $this->data = (new Configuration\Component())->parse(['config' => $data]);
         } catch (InvalidConfigurationException $e) {
@@ -111,14 +101,6 @@ class Component
     public function getType()
     {
         return $this->data['definition']['type'];
-    }
-
-    /**
-     * @return bool
-     */
-    public function runAsRoot()
-    {
-        return in_array('container-root-user', $this->features);
     }
 
     /**
