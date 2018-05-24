@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 
 class BaseImageTest extends TestCase
@@ -24,8 +23,6 @@ class BaseImageTest extends TestCase
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
-        $this->temp = new Temp('runner-tests');
-        $this->temp->initRunFolder();
     }
 
     protected function getEncryptor()
