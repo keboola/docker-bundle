@@ -3,8 +3,9 @@
 namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Runner\Output;
+use PHPUnit\Framework\TestCase;
 
-class OutputTest extends \PHPUnit_Framework_TestCase
+class OutputTest extends TestCase
 {
     public function testAccessors()
     {
