@@ -61,11 +61,6 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
      */
     private $components;
 
-    /**
-     * @var Runner
-     */
-    private $runner;
-
     public function setUp()
     {
         parent::setUp();
@@ -85,7 +80,6 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         $this->tokenInfo = [];
         $this->services = [];
         $this->components = [];
-        $this->runner = null;
     }
 
     protected function getEncryptorFactory()
@@ -103,7 +97,7 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         return $this->containerHandler;
     }
 
-    private function initialize()
+    protected function getRunner()
     {
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
@@ -161,7 +155,7 @@ class BaseRunnerTest extends \PHPUnit_Framework_TestCase
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         /** @var JobMapper $jobMapperStub */
-        $this->runner = new Runner(
+       return new Runner(
             $this->encryptorFactory,
             $storageServiceStub,
             $loggersServiceStub,
