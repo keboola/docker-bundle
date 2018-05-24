@@ -278,32 +278,23 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $records = [];
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$error, &$warn, &$info) {
+                if ($event->getType() == 'error') {
+                    $error[] = $event->getMessage();
+                }
+                if ($event->getType() == 'info') {
+                    $info[] = $event->getMessage();
+                }
+                if ($event->getType() == 'warn') {
+                    $warn[] = $event->getMessage();
+                }
                 return true;
             }
         );
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
 
-        self::assertCount(5, $records);
-        $error = [];
-        $info = [];
-        $warn = [];
-        /** @var Event[] $records */
-        foreach ($records as $event) {
-            if ($event->getType() == 'error') {
-                $error[] = $event->getMessage();
-            }
-            if ($event->getType() == 'info') {
-                $info[] = $event->getMessage();
-            }
-            if ($event->getType() == 'warn') {
-                $warn[] = $event->getMessage();
-            }
-        }
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
         self::assertCount(2, $info);
@@ -355,10 +346,25 @@ class LoggerTest extends BaseContainerTest
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
         ];
 
-        $records = [];
+        $error = [];
+        $info = [];
+        $warn = [];
+        /** @var Event $structured */
+        $structured = null;
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$error, &$warn, &$info, &$structured) {
+                if ($event->getType() == 'error') {
+                    $error[] = $event->getMessage();
+                }
+                if ($event->getType() == 'info') {
+                    $info[] = $event->getMessage();
+                }
+                if ($event->getType() == 'warn') {
+                    $warn[] = $event->getMessage();
+                }
+                if ($event->getMessage() == 'A critical example.') {
+                    $structured = $event;
+                }
                 return true;
             }
         );
@@ -368,26 +374,6 @@ class LoggerTest extends BaseContainerTest
             self::fail('Must raise exception');
         } catch (UserException $e) {
             self::assertContains('Exception example', $e->getMessage());
-        }
-        self::assertCount(7, $records);
-        $error = [];
-        $info = [];
-        $warn = [];
-        $structured = [];
-        /** @var Event[] $records */
-        foreach ($records as $event) {
-            if ($event->getType() == 'error') {
-                $error[] = $event->getMessage();
-            }
-            if ($event->getType() == 'info') {
-                $info[] = $event->getMessage();
-            }
-            if ($event->getType() == 'warn') {
-                $warn[] = $event->getMessage();
-            }
-            if ($event->getMessage() == 'A critical example.') {
-                $structured = $event;
-            }
         }
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
@@ -496,30 +482,24 @@ class LoggerTest extends BaseContainerTest
             'print("first message to stdout", file=sys.stdout)',
             'print("first message to stderr", file=sys.stderr)',
         ];
-        /** @var Event[] $records */
-        $records = [];
+        $infoText = '';
+        $errors = [];
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$infoText, &$errors) {
+                if ($event->getType() == 'info') {
+                    $infoText .= $event->getMessage();
+                }
+                if ($event->getType() == 'error') {
+                    $errors[] = $event->getMessage();
+                }
                 return true;
             }
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
-
-        $contents = '';
-        $error = [];
-        foreach ($records as $record) {
-            if ($record->getType() == 'info') {
-                $contents .= $record->getMessage();
-            }
-            if ($record->getType() == 'error') {
-                $error[] = $record->getMessage();
-            }
-        }
-        self::assertEquals(1, count($error));
-        self::assertContains('first message to stdout', $contents);
-        self::assertEquals('first message to stderr', $error[0]);
+        self::assertEquals(1, count($errors));
+        self::assertContains('first message to stdout', $infoText);
+        self::assertEquals('first message to stderr', $errors[0]);
     }
 
     public function testEmptyMessage()
@@ -529,27 +509,21 @@ class LoggerTest extends BaseContainerTest
             'print("\n", file=sys.stdout)',
             'print("\n", file=sys.stderr)',
         ];
-        /** @var Event[] $records */
-        $records = [];
+        $error = [];
+        $info = [];
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$info, &$error) {
+                if ($event->getType() == 'error') {
+                    $error[] = $event->getMessage();
+                }
+                if ($event->getType() == 'info') {
+                    $info[] = $event->getMessage();
+                }
                 return true;
             }
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
-        $error = [];
-        $info = [];
-        /** @var Event[] $records */
-        foreach ($records as $event) {
-            if ($event->getType() == 'error') {
-                $error[] = $event->getMessage();
-            }
-            if ($event->getType() == 'info') {
-                $info[] = $event->getMessage();
-            }
-        }
         self::assertEquals(0, count($error));
         self::assertGreaterThan(0, count($info));
     }
@@ -562,11 +536,10 @@ class LoggerTest extends BaseContainerTest
             'print("first message to stderr", file=sys.stderr)',
             'sys.exit(2)'
         ];
-        /** @var Event[] $records */
-        $records = [];
+        $contents = '';
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$contents) {
+                $contents .= $event->getMessage();
                 return true;
             }
         );
@@ -578,18 +551,13 @@ class LoggerTest extends BaseContainerTest
             self::assertContains('message to stderr', $e->getData()['errorOutput']);
             self::assertContains('message to stdout', $e->getData()['output']);
         }
-
-        self::assertGreaterThanOrEqual(1, count($records));
-        $contents = '';
-        foreach ($records as $record) {
-            $contents .= $record->getMessage();
-        }
         self::assertContains('message to stdout', $contents);
         self::assertNotContains('message to stderr', $contents);
     }
 
     public function testLogTimeout()
     {
+        $contents = '';
         $script = [
             'import sys',
             'import time',
@@ -600,11 +568,9 @@ class LoggerTest extends BaseContainerTest
         ];
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['process_timeout'] = 10;
-        /** @var Event[] $records */
-        $records = [];
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$contents) {
+                $contents .= $event->getMessage();
                 return true;
             }
         );
@@ -617,21 +583,25 @@ class LoggerTest extends BaseContainerTest
             self::assertContains('message to stderr', $e->getData()['errorOutput']);
             self::assertContains('message to stdout', $e->getData()['output']);
         }
-
-        $contents = '';
-        foreach ($records as $record) {
-            $contents .= $record->getMessage();
-        }
         self::assertContains('message to stdout', $contents);
     }
 
     public function testRunnerLogs()
     {
-        /** @var Event[] $records */
-        $records = [];
+        $error = [];
+        $info = [];
+        $warn = [];
         $this->setCreateEventCallback(
-            function ($event) use (&$records) {
-                $records[] = $event;
+            function (Event $event) use (&$error, &$warn, &$info) {
+                if ($event->getType() == 'error') {
+                    $error[] = $event->getMessage();
+                }
+                if ($event->getType() == 'warn') {
+                    $warn[] = $event->getMessage();
+                }
+                if ($event->getType() == 'info') {
+                    $info[] = $event->getMessage();
+                }
                 return true;
             }
         );
@@ -649,21 +619,6 @@ class LoggerTest extends BaseContainerTest
         $logService->getLog()->debug('Test Debug');
         $logService->getLog()->warn('');
 
-        self::assertCount(3, $records);
-        $error = [];
-        $info = [];
-        $warn = [];
-        foreach ($records as $event) {
-            if ($event->getType() == 'error') {
-                $error[] = $event->getMessage();
-            }
-            if ($event->getType() == 'warn') {
-                $warn[] = $event->getMessage();
-            }
-            if ($event->getType() == 'info') {
-                $info[] = $event->getMessage();
-            }
-        }
         self::assertCount(1, $error);
         self::assertEquals('Test Error', $error[0]);
         self::assertCount(1, $info);
