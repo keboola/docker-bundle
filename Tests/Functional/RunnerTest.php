@@ -1781,7 +1781,8 @@ class RunnerTest extends KernelTestCase
         }
     }
 
-    public function testExecutorSlicedFilesWithComponentRootUserFeature()
+
+    public function testExecutorSlicedFiles()
     {
         $runner = $this->getRunner(new NullHandler());
 
@@ -1810,70 +1811,6 @@ class RunnerTest extends KernelTestCase
                             . 'touch /data/out/tables/mytable.csv.gz/part2 && '
                             . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
                             . 'chmod 000 /data/out/tables/mytable.csv.gz/part2'
-                    ],
-                ],
-                'configuration_format' => 'json',
-            ],
-            'features' => [
-                'container-root-user'
-            ]
-        ];
-
-        $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'test-configuration',
-                $config,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
-
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
-    }
-
-    public function testExecutorSlicedFilesWithoutComponentRootUserFeature()
-    {
-        $runner = $this->getRunner(new NullHandler());
-
-        $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2'
                     ],
                 ],
                 'configuration_format' => 'json',
@@ -2025,66 +1962,5 @@ class RunnerTest extends KernelTestCase
         }
         $this->assertNotContains(STORAGE_API_TOKEN, $output);
         $this->assertContains('[hidden]', $output);
-    }
-
-    public function testPermissionsFailedWithoutContainerRootUserFeature()
-    {
-        $runner = $this->getRunner(new NullHandler());
-
-        $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker Runner Test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1'
-                    ],
-                ],
-                'configuration_format' => 'json',
-            ]
-        ];
-
-        $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable"
-                        ]
-                    ]
-                ]
-            ]
-        ];
-
-        $this->expectException(UserException::class);
-        // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
-        $this->expectExceptionMessageRegExp('/Permission denied/');
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'test-configuration',
-                $config,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
     }
 }

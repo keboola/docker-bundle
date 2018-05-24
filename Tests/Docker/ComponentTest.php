@@ -138,40 +138,6 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
     }
 
-    public function testRunAsRoot()
-    {
-        $componentData = [
-            'id' => 'keboola.ex-generic',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'dummy',
-                ],
-            ],
-        ];
-        $component = new Component($componentData);
-        $this->assertFalse($component->runAsRoot());
-    }
-
-
-    public function testDoNotRunAsRoot()
-    {
-        $componentData = [
-            'id' => 'keboola.ex-generic',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'dummy',
-                ],
-            ],
-            'features' => [
-                'container-root-user'
-            ]
-        ];
-        $component = new Component($componentData);
-        $this->assertTrue($component->runAsRoot());
-    }
-
     public function testInvalidRepository()
     {
         try {
