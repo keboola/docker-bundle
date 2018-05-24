@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Functional;
 
+use Aws\AutoScalingPlans\Exception\AutoScalingPlansException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
@@ -12,6 +13,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Event;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\Syrup\Exception\UserException;
@@ -373,53 +375,93 @@ class LoggerTest extends BaseContainerTest
 
     public function testVerbosityDefault()
     {
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfTcpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+            'print("Client finished")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
-
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $temp = new Temp('docker');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
+        );
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
 
-        sleep(5); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
-        );
-        $this->assertCount(7, $events);
+        $this->assertCount(5, $records);
         $error = [];
         $info = [];
         $warn = [];
-        foreach ($events as $event) {
-            if ($event['type'] == 'error') {
-                $error[] = $event['message'];
+        /** @var Event[] $records */
+        foreach ($records as $event) {
+            if ($event->getType() == 'error') {
+                $error[] = $event->getMessage();
             }
-            if ($event['type'] == 'info') {
-                $info[] = $event['message'];
+            if ($event->getType() == 'info') {
+                $info[] = $event->getMessage();
             }
-            if ($event['type'] == 'warn') {
-                $warn[] = $event['message'];
+            if ($event->getType() == 'warn') {
+                $warn[] = $event->getMessage();
             }
         }
         $this->assertCount(1, $warn);
-        $this->assertEquals('A warning message.', $warn[0]);
+        $this->assertEquals('A warning message with [hidden] secret.', $warn[0]);
         $this->assertCount(2, $info);
         sort($info);
-        $this->assertEquals(5827, strlen($info[0]));
-        $this->assertEquals('Client finished', $info[1]);
+        $this->assertEquals('An info message.', $info[0]);
+        $this->assertContains('Client finished', $info[1]);
         sort($error);
-        $this->assertCount(4, $error);
-        $this->assertEquals('Application error', $error[0]);
+        $this->assertCount(2, $error);
+        $this->assertEquals('An error message.', $error[0]);
         $this->assertEquals('Application error', $error[1]);
-        $this->assertEquals('Application error', $error[2]);
-        $this->assertEquals('Error message.', $error[3]);
     }
 
     public function testGelfVerbosityVerbose()
     {
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfTcpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'class ContextFilter(logging.Filter):',
+            '   def filter(self, record):',
+            '       record.structure = {"foo": "bar", "baz": "secure"}',
+            '       return True',
+            'logger.addFilter(ContextFilter())',
+            'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")), debug=True, include_extra_fields=True))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+            'raise ValueError("Exception example")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
         $imageConfiguration['data']['logging']['verbosity'] = [
             Logger::DEBUG => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::INFO => StorageApiHandler::VERBOSITY_VERBOSE,
@@ -430,65 +472,84 @@ class LoggerTest extends BaseContainerTest
             Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
         ];
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $temp = new Temp('docker');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
-        $container->run();
 
-        sleep(5); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $this->assertCount(8, $events);
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
+        try {
+            $container->run();
+            $this->fail("Must raise exception");
+        } catch (UserException $e) {
+            $this->assertContains('Exception example', $e->getMessage());
+        }
+        $this->assertCount(7, $records);
         $error = [];
         $info = [];
         $warn = [];
-        $exception = [];
-        $structure = [];
-        foreach ($events as $event) {
-            if ($event['type'] == 'error') {
-                $error[] = $event['message'];
+        $structured = [];
+        /** @var Event[] $records */
+        foreach ($records as $event) {
+            if ($event->getType() == 'error') {
+                $error[] = $event->getMessage();
             }
-            if ($event['type'] == 'info') {
-                $info[] = $event['message'];
+            if ($event->getType() == 'info') {
+                $info[] = $event->getMessage();
             }
-            if ($event['type'] == 'warn') {
-                $warn[] = $event['message'];
+            if ($event->getType() == 'warn') {
+                $warn[] = $event->getMessage();
             }
-            if ($event['message'] == 'Exception example') {
-                $exception = $event;
-            }
-            if ($event['message'] == 'A warning message.') {
-                $structure = $event;
+            if ($event->getMessage() == 'A critical example.') {
+                $structured = $event;
             }
         }
         $this->assertCount(1, $warn);
-        $this->assertEquals('A warning message.', $warn[0]);
+        $this->assertEquals('A warning message with [hidden] secret.', $warn[0]);
         $this->assertCount(3, $info);
         sort($info);
         $this->assertEquals('A debug message.', $info[0]);
-        $this->assertEquals(5827, strlen($info[1]));
-        $this->assertEquals('Client finished', $info[2]);
+        $this->assertEquals('An info message.', $info[1]);
+        $this->assertContains('Installing collected packages: pygelf', $info[2]);
         sort($error);
-        $this->assertCount(4, $error);
-        $this->assertEquals('An alert message', $error[0]);
-        $this->assertEquals('Error message.', $error[1]);
-        $this->assertEquals('Exception example', $error[2]);
-        $this->assertEquals('[hidden] message', $error[3]);
-        $this->assertNotEmpty($exception);
-        $this->assertArrayHasKey('file', $exception['results']);
-        $this->assertEquals('/src/TcpClient.php', $exception['results']['file']);
-        $this->assertArrayHasKey('full_message', $exception['results']);
-        $this->assertEquals("Exception: Test exception (0)\n\n#0 {main}\n", $exception['results']['full_message']);
-        $this->assertArrayHasKey('several', $structure['results']['_structure']['with']);
-        $this->assertEquals('[hidden]', $structure['results']['_structure']['with']['several']);
+        $this->assertCount(3, $error);
+        $this->assertEquals('A critical example.', $error[0]);
+        $this->assertEquals('An error message.', $error[1]);
+        $this->assertContains('Exception example', $error[2]);
+        $this->assertNotEmpty($structured->getResults());
+        $this->assertArrayHasKey('_file', $structured->getResults());
+        $this->assertArrayHasKey('_structure', $structured->getResults());
+        $this->assertArrayHasKey('_line', $structured->getResults());
+        $this->assertEquals('<string>', $structured->getResults()['_file']);
+        $this->assertEquals('20', $structured->getResults()['_line']);
+        $this->assertEquals(['foo' => 'bar', 'baz' => '[hidden]'], $structured->getResults()['_structure']);
     }
 
     public function testGelfVerbosityNone()
     {
-        $imageConfiguration = $this->getGelfImageConfiguration();
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfTcpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
+            'logging.debug("A debug message.")',
+            'logging.info("An info message.")',
+            'logging.warning("A warning message with secure secret.")',
+            'logging.error("An error message.")',
+            'logging.critical("A critical example.")',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /src/TcpClient.php';
         $imageConfiguration['data']['logging']['verbosity'] = [
             Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
             Logger::INFO => StorageApiHandler::VERBOSITY_NONE,
@@ -499,115 +560,93 @@ class LoggerTest extends BaseContainerTest
             Logger::ALERT => StorageApiHandler::VERBOSITY_NONE,
             Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
         ];
-        $temp = new Temp('docker');
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $temp->getTmpFolder());
-        $container->run();
-
-        sleep(5); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $this->assertCount(0, $events);
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
+        $container->run();
+        $this->assertCount(0, $records);
     }
 
     public function testGelfLogApplicationError()
     {
-        $temp = new Temp('docker');
-        $imageConfiguration = $this->getGelfImageConfiguration();
-        $imageConfiguration['data']['definition']['uri'] = 'keboola/gelf-test-client';
+        $script = [
+            'import subprocess',
+            'import sys',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'import logging',
+            'from pygelf import GelfTcpHandler',
+            'import os',
+            'logging.basicConfig(level=logging.DEBUG)',
+            'logger = logging.getLogger()',
+            'logger.removeHandler(logging.getLogger().handlers[0])',
+            'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
+            'logging.info("Info message.")',
+            'logging.error("My Error message.")',
+            'sys.exit(2);',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
-        $imageConfiguration['data']['definition']['build_options']['entry_point'] = 'php /data/test.php';
-        $handler = new TestHandler();
-        $containerHandler = new TestHandler();
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-require_once "/src/vendor/autoload.php";
-$transport = new Gelf\Transport\TcpTransport(getenv("KBC_LOGGER_ADDR"), getenv("KBC_LOGGER_PORT"));
-$publisher = new Gelf\Publisher();
-$publisher->addTransport($transport);
-$logger = new Gelf\Logger($publisher);
-$logger->info("Info message.");
-$logger->error("My Error message.");
-exit(2);'
-        );
-        $container = $this->getContainerDummyLogger(
-            $imageConfiguration,
-            $dataDir,
-            $handler,
-            $containerHandler
-        );
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            $this->assertContains("My Error message", $e->getMessage());
+            $this->assertContains('Application error', $e->getMessage());
         }
 
-        $records = $handler->getRecords();
+        $records = $this->getContainerLogHandler()->getRecords();
         $this->assertGreaterThan(0, count($records));
-        $records = $containerHandler->getRecords();
-        $this->assertEquals(2, count($records));
-        $this->assertTrue($containerHandler->hasInfo("Info message."));
-        $this->assertTrue($containerHandler->hasError("My Error message."));
+        $records = $this->getContainerLogHandler()->getRecords();
+        $this->assertGreaterThan(2, count($records));
+        $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains("Info message."));
+        $this->assertTrue($this->getContainerLogHandler()->hasError("My Error message."));
     }
 
     public function testStdoutVerbosity()
     {
-        $imageConfiguration = $this->getImageConfiguration();
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-echo "first message to stdout\n";
-file_put_contents("php://stderr", "first message to stderr\n");
-sleep(2);
-print "\n"; // test an empty message
-sleep(2);
-error_log("second message to stderr\n");
-print "second message to stdout\n";'
+        $script = [
+            'import sys',
+            'print("first message to stdout", file=sys.stdout)',
+            'print("first message to stderr", file=sys.stderr)',
+        ];
+        /** @var Event[] $records */
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
 
-        sleep(5); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
-        );
-        $this->assertCount(3, $events);
-        $error = [];
-        $info = [];
-        foreach ($events as $event) {
-            if ($event['type'] == 'error') {
-                $error[] = $event['message'];
-            }
-            if ($event['type'] == 'info') {
-                $info[] = $event['message'];
-            }
-        }
-        $this->assertCount(1, $error);
-        sort($error);
-        $this->assertEquals("first message to stderr\nsecond message to stderr", $error[0]);
-        sort($info);
-        $this->assertCount(2, $info);
-        $this->assertEquals("first message to stdout", $info[0]);
-        $this->assertEquals("second message to stdout", $info[1]);
+        $this->assertGreaterThanOrEqual(2, count($records));
+        $this->assertContains("first message to stdout", $records[0]->getMessage());
+        $this->assertEquals("first message to stderr", $records[1]->getMessage());
     }
 
     public function testLogApplicationError()
     {
-        $imageConfiguration = $this->getImageConfiguration();
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-echo "message to stdout\n";
-error_log("message to stderr\n");
-exit(2);'
+        $script = [
+            'import sys',
+            'print("first message to stdout", file=sys.stdout)',
+            'print("first message to stderr", file=sys.stderr)',
+            'sys.exit(2)'
+        ];
+        /** @var Event[] $records */
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         try {
             $container->run();
         } catch (ApplicationException $e) {
@@ -616,12 +655,13 @@ exit(2);'
             self::assertContains('message to stdout', $e->getData()['output']);
         }
 
-        sleep(2); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
-        );
-        self::assertCount(1, $events);
-        self::assertEquals("message to stdout", $events[0]['message']);
+        self::assertGreaterThanOrEqual(1, count($records));
+        $contents = '';
+        foreach ($records as $record) {
+            $contents .= $record->getMessage();
+        }
+        self::assertContains("message to stdout", $contents);
+        self::assertNotContains("message to stderr", $contents);
     }
 
     public function testLogTimeout()
