@@ -144,8 +144,7 @@ class BaseContainerTest extends TestCase
         $this->containerTestHandler = new TestHandler();
 
         if (!$this->createEventCallback) {
-            $this->createEventCallback = function (/** @noinspection PhpUnusedParameterInspection */
-                Event $event) {
+            $this->createEventCallback = function (/** @noinspection PhpUnusedParameterInspection */Event $event) {
                 return true;
             };
         }
