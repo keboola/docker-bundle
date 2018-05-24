@@ -119,7 +119,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals($response, 'https://someurl');
     }
 
-    public function testRunnerPipeline()
+    public function testRunnerProcessors()
     {
         $components = [
             [
@@ -321,10 +321,8 @@ class RunnerTest extends BaseRunnerTest
                 'foo' => 'bar'
             ]
         ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('someString');
+        $runner = $this->getRunner();
+        $encrypted = $this->getEncryptorFactory()->getEncryptor()->encrypt('someString');
 
         $componentData = [
             'id' => 'docker-dummy-component',
@@ -370,7 +368,7 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $ret = $handler->getRecords();
+        $ret = $this->getContainerHandler()->getRecords();
         $this->assertGreaterThan(0, count($ret));
         $this->assertLessThan(3, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
