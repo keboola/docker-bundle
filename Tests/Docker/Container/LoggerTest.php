@@ -170,11 +170,11 @@ class LoggerTest extends BaseContainerTest
         $this->assertContains("What is public is not [hidden]", $out);
         $this->assertContains("Message to stderr [hidden]", $err);
         $this->assertTrue($this->getLogHandler()->hasNoticeRecords());
-        $this->assertFalse($this->getLogHandler()->hasErrorRecords());
+        $this->assertTrue($this->getLogHandler()->hasErrorRecords());
         $this->assertTrue($this->getContainerLogHandler()->hasInfoThatContains("What is public is not [hidden]"));
         $this->assertTrue($this->getContainerLogHandler()->hasErrorThatContains("Message to stderr [hidden]"));
         $records = $this->getContainerLogHandler()->getRecords();
-        $this->assertGreaterThan(2, count($records));
+        $this->assertGreaterThanOrEqual(2, count($records));
     }
 
     public function testGelfLogUdp()
@@ -626,9 +626,19 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
 
-        $this->assertGreaterThanOrEqual(2, count($records));
-        $this->assertContains("first message to stdout", $records[0]->getMessage());
-        $this->assertEquals("first message to stderr", $records[1]->getMessage());
+        $contents = '';
+        $error = [];
+        foreach ($records as $record) {
+            if ($record->getType() == 'info') {
+                $contents .= $record->getMessage();
+            }
+            if ($record->getType() == 'error') {
+                $error[] = $record->getMessage();
+            }
+        }
+        $this->assertEquals(1, count($error));
+        $this->assertContains("first message to stdout", $contents);
+        $this->assertEquals("first message to stderr", $error[0]);
     }
 
     public function testEmptyMessage()
@@ -727,8 +737,11 @@ class LoggerTest extends BaseContainerTest
             self::assertContains('message to stdout', $e->getData()['output']);
         }
 
-        self::assertCount(1, $records);
-        self::assertEquals("message to stdout", $records[0]->getMessage());
+        $contents = '';
+        foreach ($records as $record) {
+            $contents .= $record->getMessage();
+        }
+        self::assertContains("message to stdout", $contents);
     }
 
     public function testRunnerLogs()
