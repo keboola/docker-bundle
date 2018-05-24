@@ -76,35 +76,5 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->clearBucket();
         $this->clearFileUploads();
     }
-
-    public function testWriteTableManifestCsvRedshift()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-redshift-test.table3.csv",
-            "'Id'\t'Name'\n'test'\t'test''s'\n"
-        );
-        file_put_contents(
-            $root . DIRECTORY_SEPARATOR . "upload/out.c-docker-redshift-test.table3.csv.manifest",
-            "{\"destination\": \"out.c-docker-redshift-test.table3\",\"delimiter\": \"\\t\",\"enclosure\": \"'\"}"
-        );
-
-        $writer = new Writer($this->client, new NullLogger());
-
-        $writer->uploadTables($root . "/upload", [], ['componentId' => 'foo']);
-
-        $tables = $this->client->listTables("out.c-docker-redshift-test");
-        $this->assertCount(1, $tables);
-        $this->assertEquals('out.c-docker-redshift-test.table3', $tables[0]["id"]);
-        $exporter = new TableExporter($this->client);
-        $downloadedFile = $root . DIRECTORY_SEPARATOR . "download.csv";
-        $exporter->exportTable('out.c-docker-redshift-test.table3', $downloadedFile, []);
-        $table = $this->client->parseCsv(file_get_contents($downloadedFile));
-        $this->assertEquals(1, count($table));
-        $this->assertEquals(2, count($table[0]));
-        $this->assertArrayHasKey('Id', $table[0]);
-        $this->assertArrayHasKey('Name', $table[0]);
-        $this->assertEquals('test', $table[0]['Id']);
-        $this->assertEquals('test\'s', $table[0]['Name']);
-    }
+    
 }
