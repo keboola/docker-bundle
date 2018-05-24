@@ -168,10 +168,10 @@ class AWSElasticContainerRegistryTest extends KernelTestCase
         $this->assertEquals(AWS_ECR_REGISTRY_URI . ":test-hash", $image->getFullImageId());
         $this->assertTrue($testHandler->hasNotice(
             'Using image ' . AWS_ECR_REGISTRY_URI .
-            ':test-hash with repo-digest 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:fb3e9bf1a33228e1ddd61eb7df4961b617dea6108b15011029836c431ec74f63'
+            ':test-hash with repo-digest 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a'
         ));
         $this->assertEquals(
-            ['061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:fb3e9bf1a33228e1ddd61eb7df4961b617dea6108b15011029836c431ec74f63'],
+            ['061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a'],
             $image->getImageDigests()
         );
 
