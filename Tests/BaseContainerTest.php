@@ -21,7 +21,7 @@ use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class BaseContainerTest extends TestCase
+abstract class BaseContainerTest extends TestCase
 {
     /**
      * @var ObjectEncryptorFactory
