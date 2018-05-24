@@ -77,64 +77,6 @@ class StorageApiWriterTest extends \PHPUnit_Framework_TestCase
         $this->clearFileUploads();
     }
 
-    public function testWriteFiles()
-    {
-        $root = $this->tmp->getTmpFolder();
-        file_put_contents($root . "/upload/file1", "test");
-        file_put_contents($root . "/upload/file2", "test");
-        file_put_contents(
-            $root . "/upload/file2.manifest",
-            "{\"tags\": [\"docker-bundle-test\", \"xxx\"],\"is_public\": false}"
-        );
-        file_put_contents($root . "/upload/file3", "test");
-        file_put_contents($root . "/upload/file3.manifest", "{\"tags\": [\"docker-bundle-test\"],\"is_public\": true}");
-
-        $configs = array(
-            array(
-                "source" => "file1",
-                "tags" => array("docker-bundle-test")
-            ),
-            array(
-                "source" => "file2",
-                "tags" => array("docker-bundle-test", "another-tag"),
-                "is_public" => true
-            )
-        );
-
-        $writer = new Writer($this->client, new NullLogger());
-
-        $writer->uploadFiles($root . "/upload", ["mapping" => $configs]);
-
-        $options = new ListFilesOptions();
-        $options->setTags(array("docker-bundle-test"));
-        $files = $this->client->listFiles($options);
-        $this->assertCount(3, $files);
-
-        $file1 = $file2 = $file3 = null;
-        foreach ($files as $file) {
-            if ($file["name"] == 'file1') {
-                $file1 = $file;
-            }
-            if ($file["name"] == 'file2') {
-                $file2 = $file;
-            }
-            if ($file["name"] == 'file3') {
-                $file3 = $file;
-            }
-        }
-
-        $this->assertNotNull($file1);
-        $this->assertNotNull($file2);
-        $this->assertNotNull($file3);
-        $this->assertEquals(4, $file1["sizeBytes"]);
-        $this->assertEquals(array("docker-bundle-test"), $file1["tags"]);
-        $this->assertEquals(array("docker-bundle-test", "another-tag"), $file2["tags"]);
-        $this->assertEquals(array("docker-bundle-test"), $file3["tags"]);
-        $this->assertFalse($file1["isPublic"]);
-        $this->assertTrue($file2["isPublic"]);
-        $this->assertTrue($file3["isPublic"]);
-    }
-
     public function testWriteTableOutputMapping()
     {
         $root = $this->tmp->getTmpFolder();
