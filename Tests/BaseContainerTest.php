@@ -9,12 +9,19 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Event;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Templating\Storage\Storage;
 
 class BaseContainerTest extends TestCase
 {
@@ -27,6 +34,31 @@ class BaseContainerTest extends TestCase
      * @var Temp
      */
     private $temp;
+
+    /**
+     * @var TestHandler
+     */
+    private $testHandler;
+
+    /**
+     * @var TestHandler
+     */
+    private $containerTestHandler;
+
+    /**
+     * @var callable
+     */
+    private $createEventCallback;
+
+    /**
+     * @var LoggersService
+     */
+    private $logService;
+
+    /**
+     * @var StorageApiService
+     */
+    private $storageServiceStub;
 
     public function setUp()
     {
@@ -41,6 +73,7 @@ class BaseContainerTest extends TestCase
         );
         $this->temp = new Temp('runner-tests');
         $this->temp->initRunFolder();
+        $this->createEventCallback = null;
     }
 
     private function createScript(array $contents)
@@ -55,13 +88,57 @@ class BaseContainerTest extends TestCase
         return $this->temp->getTmpFolder();
     }
 
-    public function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare)
+    protected function getContainerLogHandler()
+    {
+        return $this->containerTestHandler;
+    }
+
+    protected function getLogHandler()
+    {
+        return $this->testHandler;
+    }
+
+    protected function setCreateEventCallback($createEventCallback)
+    {
+        $this->createEventCallback = $createEventCallback;
+    }
+
+    protected function getLoggersService()
+    {
+        return $this->logService;
+    }
+
+    protected function getStorageApiService()
+    {
+        return $this->storageServiceStub;
+    }
+
+    protected function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare)
     {
         $this->createScript($contents);
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
+        $this->testHandler = new TestHandler();
+        $this->containerTestHandler = new TestHandler();
+
+        if (!$this->createEventCallback) {
+            $this->createEventCallback = function (Event $event) {return true;};
+        }
+        $storageClientStub = $this->getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $storageClientStub->expects($this->any())
+            ->method('createEvent')
+            ->with($this->callback($this->createEventCallback));
+        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->storageServiceStub->expects(self::any())
+            ->method("getClient")
+            ->will(self::returnValue($storageClientStub));
+        /** @var StorageApiService $storageServiceStub */
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->storageServiceStub);
+        $log = new Logger('runner-tests', [$this->testHandler]);
+        $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
+        $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
         $image = ImageFactory::getImage(
             $this->encryptorFactory->getEncryptor(),
             $log,
@@ -72,9 +149,12 @@ class BaseContainerTest extends TestCase
         if ($prepare) {
             $image->prepare([]);
         }
+        $this->logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
         if (!$commandOptions) {
             $commandOptions = new RunCommandOptions([], []);
         }
+        $outputFilter = new OutputFilter();
+        $outputFilter->collectValues([$imageConfig]);
         $container = new Container(
             'container-error-test',
             $image,
@@ -86,7 +166,7 @@ class BaseContainerTest extends TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT,
             $commandOptions,
-            new OutputFilter(),
+            $outputFilter,
             new Limits($log, ['cpu_count' => 2], [], [], [])
         );
         return $container;
