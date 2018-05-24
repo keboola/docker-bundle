@@ -4,11 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -16,27 +12,15 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\DockerBundle\Service\StorageApiService;
-use Monolog\Handler\HandlerInterface;
-use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class RunnerConfigRowsTest extends BaseRunnerTest
 {
-    /**
-     * @var Client
-     */
-    private $client;
-
-    protected function clearBuckets()
+    private function clearBuckets()
     {
         foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
             try {
-                $this->client->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() != 404) {
                     throw $e;
@@ -45,91 +29,50 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
-     * @return JobDefinition[]
-     */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, null, $state);
-
-        return [$jobDefinition];
-    }
-
     public function setUp()
     {
         parent::setUp();
-        $this->client = new Client(
-            [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]
-        );
         $this->clearBuckets();
 
         // Create buckets
-        $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->client->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
+        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
 
         // remove uploaded files
         $options = new ListFilesOptions();
         $options->setTags(['docker-bundle-test']);
-        $files = $this->client->listFiles($options);
+        $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
-            $this->client->deleteFile($file['id']);
+            $this->getClient()->deleteFile($file['id']);
         }
-
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-
-        self::bootKernel();
+        $component = new Components($this->getClient());
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
     }
 
     public function tearDown()
     {
         $this->clearBuckets();
+        $component = new Components($this->getClient());
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
         parent::tearDown();
-    }
-
-    /**
-     * @param HandlerInterface|null $logHandler
-     * @param HandlerInterface|null $containerLogHandler
-     * @return LoggersService
-     */
-    private function getLoggersServiceStub(HandlerInterface $logHandler = null, HandlerInterface $containerLogHandler = null)
-    {
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-        if ($logHandler) {
-            $log->pushHandler($logHandler);
-        }
-        $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler(new NullHandler());
-        if ($containerLogHandler) {
-            $containerLogger->pushHandler($containerLogHandler);
-        }
-        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $loggersServiceStub->expects($this->any())
-            ->method('getLog')
-            ->will($this->returnValue($log))
-        ;
-        $loggersServiceStub->expects($this->any())
-            ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger))
-        ;
-        return $loggersServiceStub;
     }
 
     /**
      * Transform metadata into a key-value array
      *
-     * @param $metadata
+     * @param array $metadata
      * @return array
      */
     private function getMetadataValues($metadata)
@@ -138,13 +81,12 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         foreach ($metadata as $item) {
             $result[$item['provider']][$item['key']] = $item['value'];
         }
-
         return $result;
     }
 
     private function getComponent()
     {
-        $componentData = [
+        return new Component([
             'id' => 'docker-demo',
             'type' => 'other',
             'name' => 'Docker State test',
@@ -171,15 +113,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                             . 'chmod 000 /data/out/tables/mytable.csv.gz/part2'
                     ],
                 ],
-                'configuration_format' => 'json',
             ],
-        ];
-        return new Component($componentData);
+        ]);
     }
 
     public function testRunMultipleRows()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $runner = $this->getRunner();
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -213,13 +153,12 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRunMultipleRowsFiltered()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -247,6 +186,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ]
         ], $this->getComponent(), 'my-config', 1, [], 'row-2');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner = $this->getRunner();
         $runner->run(
             $jobDefinitions,
             'run',
@@ -254,12 +194,11 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567',
             'row-2'
         );
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRunUnknownRow()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -274,23 +213,21 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ]
         ], $this->getComponent(), 'my-config', 1, [], 'row-1');
         $jobDefinitions = [$jobDefinition1];
-        try {
-            $runner->run(
-                $jobDefinitions,
-                'run',
-                'run',
-                '1234567',
-                'row-2'
-            );
-            $this->fail("Exception not caught.");
-        } catch (UserException $e) {
-            $this->assertEquals("Row row-2 not found.", $e->getMessage());
-        }
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Row row-2 not found.');
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            'row-2'
+        );
     }
 
     public function testRunEmptyJobDefinitions()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $runner = $this->getRunner();
         $runner->run(
             [],
             'run',
@@ -301,9 +238,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
     public function testRunDisabled()
     {
-        $logHandler = new TestHandler();
-        $loggersServiceStub = $this->getLoggersServiceStub($logHandler);
-        $runner = $this->getRunner($loggersServiceStub);
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -331,22 +265,22 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ]
         ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner = $this->getRunner();
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567'
         );
-        $this->assertTrue($logHandler->hasInfoThatContains('Skipping disabled configuration: my-config, version: 1, row: disabled-row'));
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
-        $this->assertFalse($this->client->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
+        ));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        self::assertFalse($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRunRowDisabled()
     {
-        $logHandler = new TestHandler();
-        $loggersServiceStub = $this->getLoggersServiceStub($logHandler);
-        $runner = $this->getRunner($loggersServiceStub);
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -374,6 +308,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ]
         ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner = $this->getRunner();
         $runner->run(
             $jobDefinitions,
             'run',
@@ -381,13 +316,14 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567',
             'disabled-row'
         );
-        $this->assertTrue($logHandler->hasInfoThatContains('Force running disabled configuration: my-config, version: 1, row: disabled-row'));
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            'Force running disabled configuration: my-config, version: 1, row: disabled-row'
+        ));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRowMetadata()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -416,43 +352,35 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ], $this->getComponent(), 'config', null, [], 'row-2');
 
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner = $this->getRunner();
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567'
         );
-        $metadata = new Metadata($this->client);
+        $metadata = new Metadata($this->getClient());
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable'));
         $table2Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable-2'));
 
-        $this->assertArrayHasKey('KBC.createdBy.component.id', $table1Metadata['system']);
-        $this->assertArrayHasKey('KBC.createdBy.configuration.id', $table1Metadata['system']);
-        $this->assertArrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata['system']);
-        $this->assertEquals('docker-demo', $table1Metadata['system']['KBC.createdBy.component.id']);
-        $this->assertEquals('config', $table1Metadata['system']['KBC.createdBy.configuration.id']);
-        $this->assertEquals('row-1', $table1Metadata['system']['KBC.createdBy.configurationRow.id']);
+        self::assertArrayHasKey('KBC.createdBy.component.id', $table1Metadata['system']);
+        self::assertArrayHasKey('KBC.createdBy.configuration.id', $table1Metadata['system']);
+        self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata['system']);
+        self::assertEquals('docker-demo', $table1Metadata['system']['KBC.createdBy.component.id']);
+        self::assertEquals('config', $table1Metadata['system']['KBC.createdBy.configuration.id']);
+        self::assertEquals('row-1', $table1Metadata['system']['KBC.createdBy.configurationRow.id']);
 
-        $this->assertArrayHasKey('KBC.createdBy.component.id', $table2Metadata['system']);
-        $this->assertArrayHasKey('KBC.createdBy.configuration.id', $table2Metadata['system']);
-        $this->assertArrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata['system']);
-        $this->assertEquals('docker-demo', $table2Metadata['system']['KBC.createdBy.component.id']);
-        $this->assertEquals('config', $table2Metadata['system']['KBC.createdBy.configuration.id']);
-        $this->assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);
+        self::assertArrayHasKey('KBC.createdBy.component.id', $table2Metadata['system']);
+        self::assertArrayHasKey('KBC.createdBy.configuration.id', $table2Metadata['system']);
+        self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata['system']);
+        self::assertEquals('docker-demo', $table2Metadata['system']['KBC.createdBy.component.id']);
+        self::assertEquals('config', $table2Metadata['system']['KBC.createdBy.configuration.id']);
+        self::assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);
     }
 
     public function testExecutorStoreRowState()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
-
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
+        $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
@@ -495,7 +423,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
-
+        $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
             'run',
@@ -503,27 +431,16 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567'
         );
 
-        $component = new Components($this->client);
         $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
 
-        $this->assertEquals([], $configuration['state']);
-        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
-        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals([], $configuration['state']);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
     }
 
     public function testExecutorStoreRowStateWithProcessor()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
-
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
+        $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
@@ -549,14 +466,12 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
         $configurationRow->setConfiguration($configData);
-
         $component->addConfigurationRow($configurationRow);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-2');
         $configurationRow->setName('Row 2');
         $configurationRow->setConfiguration($configData);
-
         $component->addConfigurationRow($configurationRow);
 
         $componentData = [
@@ -585,7 +500,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
-
+        $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
             'run',
@@ -593,18 +508,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567'
         );
 
-        $component = new Components($this->client);
         $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
 
-        $this->assertEquals([], $configuration['state']);
-        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
-        $this->assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
+        self::assertEquals([], $configuration['state']);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state']);
     }
 
     public function testOutput()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -632,14 +544,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ]
         ], $this->getComponent());
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $runner = $this->getRunner();
         $outputs = $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567'
         );
-        $this->assertCount(2, $outputs);
-        $this->assertCount(1, $outputs[0]->getImages());
-        $this->assertCount(1, $outputs[1]->getImages());
+        self::assertCount(2, $outputs);
+        self::assertCount(1, $outputs[0]->getImages());
+        self::assertCount(1, $outputs[1]->getImages());
     }
 }
