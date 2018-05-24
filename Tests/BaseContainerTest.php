@@ -144,7 +144,10 @@ class BaseContainerTest extends TestCase
         $this->containerTestHandler = new TestHandler();
 
         if (!$this->createEventCallback) {
-            $this->createEventCallback = function (/** @noinspection PhpUnusedParameterInspection */ Event $event) {return true;};
+            $this->createEventCallback = function (/** @noinspection PhpUnusedParameterInspection */
+                Event $event) {
+                return true;
+            };
         }
         $storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
