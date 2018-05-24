@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -26,13 +27,8 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class RunnerTest extends KernelTestCase
+class RunnerTest extends BaseRunnerTest
 {
-    /**
-     * @var Client
-     */
-    private $client;
-
     /**
      * @var Temp
      */
@@ -42,7 +38,7 @@ class RunnerTest extends KernelTestCase
     {
         foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
             try {
-                $this->client->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() != 404) {
                     throw $e;
@@ -67,94 +63,28 @@ class RunnerTest extends KernelTestCase
     public function setUp()
     {
         parent::setUp();
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
+
         $this->temp = new Temp('docker');
         $this->temp->initRunFolder();
         $this->clearBuckets();
 
         // Create buckets
-        $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->client->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
+        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
 
         // remove uploaded files
         $options = new ListFilesOptions();
         $options->setTags(['docker-bundle-test']);
-        $files = $this->client->listFiles($options);
+        $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
-            $this->client->deleteFile($file['id']);
+            $this->getClient()->deleteFile($file['id']);
         }
-
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-
-        self::bootKernel();
     }
 
     public function tearDown()
     {
         $this->clearBuckets();
         parent::tearDown();
-    }
-
-    private function getRunner($handler, &$encryptorFactory = null)
-    {
-        $tokenInfo = $this->client->verifyToken();
-        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($this->client));
-        $storageServiceStub->expects($this->any())
-            ->method('getTokenData')
-            ->will($this->returnValue($tokenInfo));
-
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler($handler);
-        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loggersServiceStub->expects($this->any())
-            ->method('getLog')
-            ->will($this->returnValue($log));
-        $loggersServiceStub->expects($this->any())
-            ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger));
-
-        /** @var JobMapper $jobMapperStub */
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            AWS_KMS_TEST_KEY,
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.r-transformation');
-        $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-        $encryptorFactory->setStackId('test');
-        /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapperStub,
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-        return $runner;
     }
 
     /**
@@ -174,51 +104,14 @@ class RunnerTest extends KernelTestCase
     public function testGetOauthUrl()
     {
         $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
+            ->disableOriginalConstructor()
             ->setMethods(['indexAction'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
-            ->will($this->returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
-
-        $storageServiceStub = self::getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($clientMock));
-
-        $loggersServiceStub = self::getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        /** @var JobMapper $jobMapperStub */
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapperStub,
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
+            ->will(self::returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+        $this->setClientMock($clientMock);
+        $runner = $this->getRunner();
 
         $method = new \ReflectionMethod($runner, 'getOauthUrlV3');
         $method->setAccessible(true);
@@ -239,7 +132,6 @@ class RunnerTest extends KernelTestCase
                     ],
                 ],
             ],
-
             [
                 "id" => "keboola.processor-iconv",
                 "data" => [
@@ -271,21 +163,19 @@ class RunnerTest extends KernelTestCase
                 ],
             ],
         ];
-
-        $clientMock = $this->getMockBuilder(Client::class)
+        $clientMock = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
             ->setMethods(['indexAction'])
             ->getMock();
-        $clientMock->expects($this->any())
+        $clientMock->expects(self::any())
             ->method('indexAction')
-            ->will($this->returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
-        $this->client = $clientMock;
+            ->will(self::returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
-        $this->client->uploadFile(
+        $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-bundle-test', 'texty.csv.gz'])
         );
@@ -343,7 +233,6 @@ class RunnerTest extends KernelTestCase
                 ],
             ],
         ];
-
         $componentData = [
             'id' => 'docker-dummy-component',
             'type' => 'other',
@@ -357,8 +246,8 @@ class RunnerTest extends KernelTestCase
                 ],
             ],
         ];
-
-        $runner = $this->getRunner(new NullHandler());
+        $this->setClientMock($clientMock);
+        $runner = $this->getRunner();
         $outputs = $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -370,7 +259,7 @@ class RunnerTest extends KernelTestCase
             'run',
             '1234567'
         );
-        $this->assertEquals(
+        self::assertEquals(
             [
                 0 => [
                     'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file:0.3.0',
@@ -409,20 +298,20 @@ class RunnerTest extends KernelTestCase
         $lines = array_map(function ($line) {
             return substr($line, 23); // skip the date of event
         }, $lines);
-        $this->assertEquals([
+        self::assertEquals([
             0 => ' : Initializing R transformation',
             1 => ' : Running R script',
             2 => ' : R script finished',
         ], $lines);
 
-        $csvData = $this->client->getTableDataPreview('out.c-docker-pipeline.texty');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-pipeline.texty');
         $data = Client::parseCsv($csvData);
-        $this->assertEquals(4, count($data));
-        $this->assertArrayHasKey('id', $data[0]);
-        $this->assertArrayHasKey('title', $data[0]);
-        $this->assertArrayHasKey('text', $data[0]);
-        $this->assertArrayHasKey('tags', $data[0]);
-        $this->assertEquals('v123', $outputs[0]->getConfigVersion());
+        self::assertEquals(4, count($data));
+        self::assertArrayHasKey('id', $data[0]);
+        self::assertArrayHasKey('title', $data[0]);
+        self::assertArrayHasKey('text', $data[0]);
+        self::assertArrayHasKey('tags', $data[0]);
+        self::assertEquals('v123', $outputs[0]->getConfigVersion());
     }
 
     public function testImageParametersDecrypt()
