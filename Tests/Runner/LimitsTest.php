@@ -9,9 +9,10 @@ use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\Syrup\Exception\ApplicationException;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-class LimitsTest extends \PHPUnit_Framework_TestCase
+class LimitsTest extends TestCase
 {
     public function testInstanceLimitsInvalid()
     {
