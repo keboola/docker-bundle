@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Limits;
+use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
@@ -698,19 +699,25 @@ class LoggerTest extends BaseContainerTest
 
     public function testLogTimeout()
     {
+        $script = [
+            'import sys',
+            'import time',
+            'print("message to stdout", file=sys.stdout)',
+            'print("message to stderr", file=sys.stderr)',
+            'time.sleep(15)',
+            'sys.exit(2)'
+        ];
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['process_timeout'] = 10;
-        $temp = new Temp('docker');
-        $dataDir = $this->createScript(
-            $temp,
-            '<?php
-echo "message to stdout\n";
-error_log("message to stderr\n");
-sleep(15);
-exit(2);'
+        /** @var Event[] $records */
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $sapiService = self::$kernel->getContainer()->get('syrup.storage_api');
-        $container = $this->getContainerStorageLogger($sapiService, $imageConfiguration, $dataDir);
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
             $container->run();
             self::fail("Must raise user exception");
@@ -720,45 +727,27 @@ exit(2);'
             self::assertContains('message to stdout', $e->getData()['output']);
         }
 
-        sleep(2); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
-        );
-        self::assertCount(1, $events);
-        self::assertEquals("message to stdout", $events[0]['message']);
+        self::assertCount(1, $records);
+        self::assertEquals("message to stdout", $records[0]->getMessage());
     }
 
     public function testRunnerLogs()
     {
-        $imageConfiguration = $this->getImageConfiguration();
-
-        //start the symfony kernel
-        $kernel = static::createKernel();
-        $kernel->boot();
-        $serviceContainer = $kernel->getContainer();
-
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$kernel->getContainer()->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        /** @var LoggersService $logService */
-        $logService = $serviceContainer->get('docker_bundle.loggers');
-        $logService->setComponentId('dummy-testing');
-        /** @var StorageApiService $sapiService */
-        $sapiService = $serviceContainer->get('syrup.storage_api');
-        $sapiService->setClient(new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]));
-        $sapiService->getClient()->setRunId($sapiService->getClient()->generateRunId());
-
-        $image = ImageFactory::getImage(
-            $encryptor,
-            $logService->getLog(),
-            new Component($imageConfiguration),
-            new Temp(),
-            true
+        /** @var Event[] $records */
+        $records = [];
+        $this->setCreateEventCallback(
+            function ($event) use (&$records) {
+                $records[] = $event;
+                return true;
+            }
         );
-        $image->prepare([]);
-        $logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
+        $this->getContainer($this->getImageConfiguration(), [], [], false);
+        $testHandler = new TestHandler();
+        $containerTestHandler = new TestHandler();
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageApiService());
+        $log = new Logger('runner-tests', [$testHandler, $sapiHandler]);
+        $containerLog = new ContainerLogger('container-tests', [$containerTestHandler]);
+        $logService = new LoggersService($log, $containerLog, $sapiHandler);
         $logService->getLog()->notice("Test Notice");
         $logService->getLog()->error("Test Error");
         $logService->getLog()->info("Test Info");
@@ -766,23 +755,19 @@ exit(2);'
         $logService->getLog()->debug("Test Debug");
         $logService->getLog()->warn('');
 
-        sleep(5); // give storage a little timeout to realize that events are in
-        $events = $sapiService->getClient()->listEvents(
-            ['component' => 'dummy-testing', 'runId' => $sapiService->getClient()->getRunId()]
-        );
-        $this->assertCount(3, $events);
+        $this->assertCount(3, $records);
         $error = [];
         $info = [];
         $warn = [];
-        foreach ($events as $event) {
-            if ($event['type'] == 'error') {
-                $error[] = $event['message'];
+        foreach ($records as $event) {
+            if ($event->getType() == 'error') {
+                $error[] = $event->getMessage();
             }
-            if ($event['type'] == 'warn') {
-                $warn[] = $event['message'];
+            if ($event->getType() == 'warn') {
+                $warn[] = $event->getMessage();
             }
-            if ($event['type'] == 'info') {
-                $info[] = $event['message'];
+            if ($event->getType() == 'info') {
+                $info[] = $event->getMessage();
             }
         }
         $this->assertCount(1, $error);
