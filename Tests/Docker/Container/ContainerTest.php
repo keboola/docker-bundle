@@ -1,7 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker\Container;
 
+use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 

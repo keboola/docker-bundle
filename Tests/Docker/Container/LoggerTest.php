@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;

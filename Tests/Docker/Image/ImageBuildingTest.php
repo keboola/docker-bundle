@@ -1,11 +1,12 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\Builder\ImageBuilder;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildParameterException;
+use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Temp\Temp;
 use Symfony\Component\HttpKernel\Log\NullLogger;
 

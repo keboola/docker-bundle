@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image\Builder\BuilderParameter;
 use Keboola\DockerBundle\Exception\BuildException;
