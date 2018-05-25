@@ -41,6 +41,18 @@ class RunnerTest extends BaseRunnerTest
         }
     }
 
+    private function clearConfigurations()
+    {
+        $cmp = new Components($this->getClient());
+        try {
+            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+    }
+
     private function createBuckets()
     {
         $this->clearBuckets();
@@ -374,19 +386,13 @@ class RunnerTest extends BaseRunnerTest
 
     public function testClearState()
     {
+        $this->clearConfigurations();
         $state = ['key' => 'value'];
         $runner = $this->getRunner();
         $cmp = new Components($this->getClient());
-        try {
-            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
         $cfg = new Configuration();
         $cfg->setComponentId('keboola.docker-demo-sync');
-        $cfg->setConfigurationId('dummy-configuration');
+        $cfg->setConfigurationId('test-configuration');
         $cfg->setConfiguration([]);
         $cfg->setName('Test configuration');
         $cfg->setState($state);
@@ -405,7 +411,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'dummy-configuration',
+                'test-configuration',
                 ['parameters' => ['script' => ['import os']]],
                 $state
             ),
@@ -413,9 +419,9 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
+        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
         self::assertEquals([], $cfg['state']);
-        $cmp->deleteConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
+        $cmp->deleteConfiguration('keboola.docker-demo-sync', 'test-configuration');
     }
 
     public function testExecutorDefaultBucketWithDot()
@@ -442,9 +448,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'parameters' => [
-                'primary_key_column' => 'id',
-                'data_column' => 'text',
-                'string_length' => '4',
+                'script' => ['import os']
             ]
         ];
         $runner = $this->getRunner();
@@ -453,8 +457,8 @@ class RunnerTest extends BaseRunnerTest
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'default_bucket' => true,
                 'default_bucket_stage' => 'out',
@@ -479,18 +483,19 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreState()
     {
-        $runner = $this->getRunner(new NullHandler(), $encryptorFactory);
+        $this->clearConfigurations();
+        $runner = $this->getRunner();
 
-        $component = new Components($this->client);
+        $component = new Components($this->getClient());
         try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
+            $component->deleteConfiguration('keboola.docker-demo-sync', 'test-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
             }
         }
         $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
+        $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         /** @var ObjectEncryptorFactory $encryptorFactory */
@@ -510,15 +515,11 @@ class RunnerTest extends BaseRunnerTest
         $component->addConfiguration($configuration);
 
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
                 ],
             ],
         ];
@@ -535,8 +536,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $component = new Components($this->client);
-        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $component = new Components($this->getClient());
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
         $this->assertArrayHasKey('baz', $configuration['state']);
         $this->assertEquals('fooBar', $configuration['state']['baz']);
         $this->assertArrayHasKey('#encrypted', $configuration['state']);
@@ -545,7 +546,7 @@ class RunnerTest extends BaseRunnerTest
             'secret',
             $encryptorFactory->getEncryptor()->decrypt($configuration['state']['#encrypted'])
         );
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
+        $this->clearConfigurations();
     }
 
     public function testExecutorStoreStateWithProcessor()
