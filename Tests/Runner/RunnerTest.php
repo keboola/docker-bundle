@@ -59,7 +59,6 @@ class RunnerTest extends BaseRunnerTest
         // Create buckets
         $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
         $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
-
     }
 
     private function clearFiles()
