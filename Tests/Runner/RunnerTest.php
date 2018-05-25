@@ -25,16 +25,10 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class RunnerTest extends BaseRunnerTest
 {
-    /**
-     * @var Temp
-     */
-    private $temp;
-
-    protected function clearBuckets()
+    private function clearBuckets()
     {
         foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
             try {
@@ -44,6 +38,26 @@ class RunnerTest extends BaseRunnerTest
                     throw $e;
                 }
             }
+        }
+    }
+
+    private function createBuckets()
+    {
+        $this->clearBuckets();
+        // Create buckets
+        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
+
+    }
+
+    private function clearFiles()
+    {
+        // remove uploaded files
+        $options = new ListFilesOptions();
+        $options->setTags(['docker-runner-test']);
+        $files = $this->getClient()->listFiles($options);
+        foreach ($files as $file) {
+            $this->getClient()->deleteFile($file['id']);
         }
     }
 
@@ -58,33 +72,6 @@ class RunnerTest extends BaseRunnerTest
     {
         $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
         return [$jobDefinition];
-    }
-
-    public function setUp()
-    {
-        parent::setUp();
-
-        $this->temp = new Temp('docker');
-        $this->temp->initRunFolder();
-        $this->clearBuckets();
-
-        // Create buckets
-        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
-
-        // remove uploaded files
-        $options = new ListFilesOptions();
-        $options->setTags(['docker-bundle-test']);
-        $files = $this->getClient()->listFiles($options);
-        foreach ($files as $file) {
-            $this->getClient()->deleteFile($file['id']);
-        }
-    }
-
-    public function tearDown()
-    {
-        $this->clearBuckets();
-        parent::tearDown();
     }
 
     /**
@@ -121,6 +108,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testRunnerProcessors()
     {
+        $this->clearBuckets();
+        $this->clearFiles();
         $components = [
             [
                 "id" => "keboola.processor-last-file",
@@ -177,7 +166,7 @@ class RunnerTest extends BaseRunnerTest
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'texty.csv.gz'])
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
         );
 
         $configurationData = [
@@ -193,7 +182,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'texty.csv',
-                            'destination' => 'out.c-docker-pipeline.texty'
+                            'destination' => 'out.c-docker-test.texty'
                         ],
                     ],
                 ],
@@ -234,10 +223,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-app',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -304,7 +290,7 @@ class RunnerTest extends BaseRunnerTest
             2 => ' : R script finished',
         ], $lines);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-pipeline.texty');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.texty');
         $data = Client::parseCsv($csvData);
         self::assertEquals(4, count($data));
         self::assertArrayHasKey('id', $data[0]);
@@ -312,6 +298,8 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('text', $data[0]);
         self::assertArrayHasKey('tags', $data[0]);
         self::assertEquals('v123', $outputs[0]->getConfigVersion());
+        $this->clearBuckets();
+        $this->clearFiles();
     }
 
     public function testImageParametersDecrypt()
@@ -322,8 +310,8 @@ class RunnerTest extends BaseRunnerTest
                'script' => [
                    'import os',
                    'import sys',
-                   //'print(os.environ["KBC_TOKEN"])',
-                   'print(os.environ["KBC_CONFIGID"])',
+                   'print(os.environ.get("KBC_TOKEN"))',
+                   'print(os.environ.get("KBC_CONFIGID"))',
                    'with open("/data/config.json", "r") as file:',
                    '    print(file.read(), file=sys.stderr)',
                ],
@@ -333,7 +321,7 @@ class RunnerTest extends BaseRunnerTest
         $encrypted = $this->getEncryptorFactory()->getEncryptor()->encrypt('someString');
 
         $componentData = [
-            'id' => 'test-component',
+            'id' => 'keboola.docker-demo-app',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -405,7 +393,7 @@ class RunnerTest extends BaseRunnerTest
         $cmp->addConfiguration($cfg);
 
         $componentData = [
-            'id' => 'docker-demo',
+            'id' => 'keboola.docker-demo-app',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -433,20 +421,14 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorDefaultBucketWithDot()
     {
-        // Create bucket
-        if (!$this->getClient()->bucketExists('in.c-docker-test')) {
-            $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
-        }
-
-        // Create table
-        if (!$this->client->tableExists('in.c-docker-test.test')) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . '/upload.csv');
-            $csv->writeRow(['id', 'text']);
-            $csv->writeRow(['test', 'test']);
-            $this->client->createTableAsync('in.c-docker-test', 'test', $csv);
-            $this->client->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
-            unset($csv);
-        }
+        $this->createBuckets();
+        $temp = new Temp();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test', 'test']);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
+        $this->getClient()->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
+        unset($csv);
 
         $configurationData = [
             'storage' => [
@@ -465,19 +447,15 @@ class RunnerTest extends BaseRunnerTest
                 'string_length' => '4',
             ]
         ];
-        $runner = $this->getRunner(new NullHandler());
+        $runner = $this->getRunner();
 
         $componentData = [
             'id' => 'keboola.docker-demo-app',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
                     'uri' => 'keboola/docker-demo-app',
                 ],
-                'configuration_format' => 'json',
                 'default_bucket' => true,
                 'default_bucket_stage' => 'out',
             ],
@@ -495,8 +473,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $this->assertTrue($this->client->tableExists('out.c-keboola-docker-demo-app-test-config.sliced'));
-        $this->client->dropBucket('out.c-keboola-docker-demo-app-test-config', ['force' => true]);
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-app-test-config.sliced'));
+        $this->clearBuckets();
     }
 
     public function testExecutorStoreState()
