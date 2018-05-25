@@ -127,7 +127,7 @@ class RunnerTest extends BaseRunnerTest
                     "definition" => [
                       "type" => "aws-ecr",
                       "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv",
-                      "tag" => "3.0.0",
+                      "tag" => "4.0.0",
                     ],
                 ],
             ],
@@ -223,7 +223,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -266,9 +266,9 @@ class RunnerTest extends BaseRunnerTest
                     ],
                 ],
                 3 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:3.0.0',
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:4.0.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:2059a7ec45ea71915283790ccaef00b6f3dbcd2f4628f261ac7e4a8ff02f6939'
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:5c92ba8195dafe80455e59b99554155fd7095d59b1993e0dfc25ae44506e8be5'
                     ],
                 ],
                 4 => [
@@ -321,7 +321,7 @@ class RunnerTest extends BaseRunnerTest
         $encrypted = $this->getEncryptorFactory()->getEncryptor()->encrypt('someString');
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -378,14 +378,14 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         $cmp = new Components($this->getClient());
         try {
-            $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
+            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
             }
         }
         $cfg = new Configuration();
-        $cfg->setComponentId('docker-demo');
+        $cfg->setComponentId('keboola.docker-demo-sync');
         $cfg->setConfigurationId('dummy-configuration');
         $cfg->setConfiguration([]);
         $cfg->setName('Test configuration');
@@ -393,12 +393,11 @@ class RunnerTest extends BaseRunnerTest
         $cmp->addConfiguration($cfg);
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
                 ],
             ],
         ];
@@ -414,15 +413,16 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $cfg = $cmp->getConfiguration('docker-demo', 'dummy-configuration');
+        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
         self::assertEquals([], $cfg['state']);
-        $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
+        $cmp->deleteConfiguration('keboola.docker-demo-sync', 'dummy-configuration');
     }
 
     public function testExecutorDefaultBucketWithDot()
     {
         $this->createBuckets();
         $temp = new Temp();
+        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
@@ -450,7 +450,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -473,7 +473,7 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-app-test-config.sliced'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-test-config.sliced'));
         $this->clearBuckets();
     }
 
@@ -1126,7 +1126,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
@@ -1208,7 +1208,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
@@ -1287,7 +1287,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
@@ -1369,7 +1369,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'type' => 'other',
             'name' => 'Docker Pipe test',
             'description' => 'Testing Docker',
@@ -1409,7 +1409,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -1443,7 +1443,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -1476,7 +1476,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -1513,7 +1513,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'builder',
@@ -1549,7 +1549,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -1592,7 +1592,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner(new NullHandler());
 
         $componentData = [
-            'id' => 'keboola.docker-demo-app',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
