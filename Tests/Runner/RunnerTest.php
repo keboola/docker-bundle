@@ -1093,33 +1093,14 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorSyncActionNoStorage()
     {
-        // Initialize buckets
-        try {
-            $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        try {
-            $this->client->dropBucket('in.c-docker-test', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
-
-        // Create table
-        if (!$this->client->tableExists('in.c-docker-test.test')) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . '/upload.csv');
-            $csv->writeRow(['id', 'text']);
-            $csv->writeRow(['test', 'test']);
-            $this->client->createTableAsync('in.c-docker-test', 'test', $csv);
-            $this->client->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
-            unset($csv);
-        }
-
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test', 'test']);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
+        $this->getClient()->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
         $configurationData = [
             'storage' => [
                 'input' => [
@@ -1132,45 +1113,38 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'parameters' => [
-                'primary_key_column' => 'id',
-                'data_column' => 'text',
-                'string_length' => '4',
-            ]
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced")',
+                ],
+            ],
         ];
-        $runner = $this->getRunner(new NullHandler());
-
+        $runner = $this->getRunner();
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
-                'synchronous_actions' => [],
                 'default_bucket' => true,
+                'synchronous_actions' => [],
             ],
         ];
 
-        try {
-            $runner->run(
-                $this->prepareJobDefinitions(
-                    $componentData,
-                    'test-config',
-                    $configurationData,
-                    []
-                ),
-                'some-sync-action',
-                'run',
-                '1234567'
-            );
-            $this->fail("Component must fail");
-        } catch (UserException $e) {
-            $this->assertContains("File '/data/in/tables/source.csv' not found", $e->getMessage());
-        }
+        self::expectException(UserException::class);
+        self::expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-config',
+                $configurationData,
+                []
+            ),
+            'some-sync-action',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorNoStorage()
