@@ -406,21 +406,11 @@ class RunnerTest extends BaseRunnerTest
 
         $componentData = [
             'id' => 'docker-demo',
-            'type' => 'other',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'cat /data/config.json',
-                    ],
                 ],
             ],
         ];
@@ -429,7 +419,7 @@ class RunnerTest extends BaseRunnerTest
             $this->prepareJobDefinitions(
                 $componentData,
                 'dummy-configuration',
-                [],
+                ['parameters' => ['script' => ['import os']]],
                 $state
             ),
             'run',
@@ -444,8 +434,8 @@ class RunnerTest extends BaseRunnerTest
     public function testExecutorDefaultBucketWithDot()
     {
         // Create bucket
-        if (!$this->client->bucketExists('in.c-docker-test')) {
-            $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
+        if (!$this->getClient()->bucketExists('in.c-docker-test')) {
+            $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
         }
 
         // Create table
