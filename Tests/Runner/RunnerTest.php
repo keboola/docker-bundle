@@ -318,48 +318,42 @@ class RunnerTest extends BaseRunnerTest
     {
         $configurationData = [
            'parameters' => [
-                'foo' => 'bar'
-            ]
+               'foo' => 'bar',
+               'script' => [
+                   'import os',
+                   'import sys',
+                   //'print(os.environ["KBC_TOKEN"])',
+                   'print(os.environ["KBC_CONFIGID"])',
+                   'with open("/data/config.json", "r") as file:',
+                   '    print(file.read(), file=sys.stderr)',
+               ],
+           ],
         ];
         $runner = $this->getRunner();
         $encrypted = $this->getEncryptorFactory()->getEncryptor()->encrypt('someString');
 
         $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
+            'id' => 'test-component',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        // also attempt to pass the token to verify that it does not work
-                        'entry_point' => 'cat /data/config.json && echo $KBC_TOKEN',
-                    ],
                 ],
-                'configuration_format' => 'json',
                 'image_parameters' => [
                     'foo' => 'bar',
                     'baz' => [
-                        'lily' => 'pond'
+                        'lily' => 'pond',
                     ],
-                    '#encrypted' => $encrypted
-                ]
+                    '#encrypted' => $encrypted,
+                ],
             ],
         ];
-
+        $configId = uniqid('test-');
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                uniqid('test-'),
+                $configId,
                 $configurationData,
                 []
             ),
@@ -368,24 +362,33 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $ret = $this->getContainerHandler()->getRecords();
-        $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
+        $records = $this->getContainerHandler()->getRecords();
+        $contents = '';
+        $config = [];
+        foreach ($records as $record) {
+            if ($record['level'] == Logger::ERROR) {
+                $config = \GuzzleHttp\json_decode($record['message'], true);
+            } else {
+                $contents .= $record['message'];
+            }
+        }
+
         // verify that the token is not passed by default
-        $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
-        $this->assertEquals('bar', $config['parameters']['foo']);
-        $this->assertEquals('bar', $config['image_parameters']['foo']);
-        $this->assertEquals('pond', $config['image_parameters']['baz']['lily']);
-        $this->assertEquals('[hidden]', $config['image_parameters']['#encrypted']);
+        $this->assertNotContains(STORAGE_API_TOKEN, $contents);
+        $this->assertContains($configId, $contents);
+        unset($config['parameters']['script']);
+        self::assertEquals(['foo' => 'bar'], $config['parameters']);
+        self::assertEquals(
+            ['foo' => 'bar', 'baz' => ['lily' => 'pond'], '#encrypted' => '[hidden]'],
+            $config['image_parameters']
+        );
     }
 
     public function testClearState()
     {
         $state = ['key' => 'value'];
-        $runner = $this->getRunner(new NullHandler());
-        $cmp = new Components($this->client);
+        $runner = $this->getRunner();
+        $cmp = new Components($this->getClient());
         try {
             $cmp->deleteConfiguration('docker-demo', 'dummy-configuration');
         } catch (ClientException $e) {
