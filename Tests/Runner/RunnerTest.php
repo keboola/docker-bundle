@@ -30,7 +30,7 @@ class RunnerTest extends BaseRunnerTest
 {
     private function clearBuckets()
     {
-        foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
+        foreach (['in.c-docker-test', 'out.c-docker-test', 'in.c-keboola-docker-demo-sync-test-config'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -869,17 +869,7 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorNoStoreState()
     {
-        $runner = $this->getRunner(new NullHandler());
-
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
+        $this->clearConfigurations();
         $configData = [
             'parameters' => [
                 'script' => [
@@ -889,21 +879,16 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
                 ],
             ],
         ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -916,40 +901,21 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $component = new Components($this->client);
-        try {
-            $component->getConfiguration('docker-demo', 'test-configuration');
-            $this->fail("Configuration should not exist");
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
+        $component = new Components($this->getClient());
+        self::expectException(ClientException::class);
+        self:$this->expectExceptionMessage('Configuration test-configuration not found');
+        $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
     }
 
     public function testExecutorStateNoConfigId()
     {
-        $runner = $this->getRunner(new NullHandler());
-
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
+        $this->clearConfigurations();
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
                 ],
             ],
         ];
@@ -962,7 +928,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -975,51 +941,22 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $component = new Components($this->client);
-        try {
-            $component->getConfiguration('docker-demo', 'test-configuration');
-            $this->fail("Configuration should not exist");
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
+        $component = new Components($this->getClient());
+        self::expectException(ClientException::class);
+        self:$this->expectExceptionMessage('Configuration test-configuration not found');
+        $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
     }
 
     public function testExecutorNoConfigIdNoMetadata()
     {
-        $runner = $this->getRunner(new NullHandler());
-
-        $component = new Components($this->client);
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-
+        $this->clearConfigurations();
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "id,name\n1,test" > /data/out/tables/data.csv',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
         $configData = [
@@ -1028,13 +965,19 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'data.csv',
-                            'destination' => 'in.c-docker-demo-whatever.some-table'
-                        ]
-                    ]
-                ]
-            ]
+                            'destination' => 'in.c-keboola-docker-demo-sync.some-table',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/data.csv", "w") as file:',
+                    '   file.write("id,name\n1,test")',
+                ],
+            ],
         ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -1046,11 +989,11 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $metadataApi = new Metadata($this->client);
-        $bucketMetadata = $metadataApi->listBucketMetadata('in.c-docker-demo-whatever');
+        $metadataApi = new Metadata($this->getClient());
+        $bucketMetadata = $metadataApi->listBucketMetadata('in.c-keboola-docker-demo-sync');
         $expectedBucketMetadata = [
             'system' => [
-                'KBC.createdBy.component.id' => 'docker-demo'
+                'KBC.createdBy.component.id' => 'keboola.docker-demo-sync'
             ]
         ];
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
@@ -1075,71 +1018,42 @@ class RunnerTest extends BaseRunnerTest
                 'credentials' => 'tde-exporter-tde-bug-32',
             ]
         ];
-        $runner = $this->getRunner(new NullHandler());
-
+        $runner = $this->getRunner();
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
-                'default_bucket' => true,
-                'default_bucket_stage' => 'out',
             ],
         ];
 
-        try {
-            $runner->run(
-                $this->prepareJobDefinitions(
-                    $componentData,
-                    'test-config',
-                    $configurationData,
-                    []
-                ),
-                'run',
-                'run',
-                '1234567'
-            );
-            $this->fail("Invalid configuration must fail.");
-        } catch (UserException $e) {
-            $this->assertContains('Unrecognized option "filterByRunId"', $e->getMessage());
-        }
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Unrecognized option "filterByRunId');
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-config',
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorDefaultBucketNoStage()
     {
-        // Initialize buckets
-        try {
-            $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        try {
-            $this->client->dropBucket('in.c-docker-test', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        $this->client->createBucket('docker-test', Client::STAGE_IN, 'Docker Testsuite');
-
-        // Create table
-        if (!$this->client->tableExists('in.c-docker-test.test')) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . '/upload.csv');
-            $csv->writeRow(['id', 'text']);
-            $csv->writeRow(['test', 'test']);
-            $this->client->createTableAsync('in.c-docker-test', 'test', $csv);
-            $this->client->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
-            unset($csv);
-        }
-
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test', 'test']);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
+        $this->getClient()->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
         $configurationData = [
             'storage' => [
                 'input' => [
@@ -1152,24 +1066,20 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'parameters' => [
-                'primary_key_column' => 'id',
-                'data_column' => 'text',
-                'string_length' => '4',
-            ]
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced")',
+                ],
+            ],
         ];
-        $runner = $this->getRunner(new NullHandler());
-
+        $runner = $this->getRunner();
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
                 'default_bucket' => true,
             ],
         ];
@@ -1186,8 +1096,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $this->assertTrue($this->client->tableExists('in.c-keboola-docker-demo-app-test-config.sliced'));
-        $this->client->dropBucket('in.c-keboola-docker-demo-app-test-config', ['force' => true]);
+        self::assertTrue($this->getClient()->tableExists('in.c-keboola-docker-demo-sync-test-config.sliced'));
+        $this->clearBuckets();
     }
 
     public function testExecutorSyncActionNoStorage()
