@@ -5,11 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -17,16 +13,10 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
-use Keboola\DockerBundle\Service\StorageApiService;
-use Keboola\Syrup\Test\Job\Executor\UserErrorExecutor;
 use Keboola\Temp\Temp;
-use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
 use Monolog\Logger;
-use Symfony\Component\Security\Core\User\User;
 
 class RunnerTest extends BaseRunnerTest
 {
