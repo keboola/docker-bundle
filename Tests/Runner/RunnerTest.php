@@ -21,10 +21,12 @@ use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Test\Job\Executor\UserErrorExecutor;
 use Keboola\Temp\Temp;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use Symfony\Component\Security\Core\User\User;
 
 class RunnerTest extends BaseRunnerTest
 {
@@ -1215,142 +1217,138 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorApplicationError()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    'import sys',
+                    'print("Class 2 error", file=sys.stderr)',
+                    'sys.exit(2)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage(
+            'Application error: 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/' .
+            'keboola.python-transformation:latest container \'1234567-norunid--0-keboola-docker-demo-sync\'' .
+            ' failed: (2) Class 2 error'
+        );
 
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', [], []), 'run', 'run', '1234567');
-            $this->fail("Application exception must be raised");
-        } catch (ApplicationException $e) {
-            $this->assertContains('Application error', $e->getMessage());
-            $this->assertContains('Class 2 error', $e->getMessage());
-        }
+        $runner->run(
+            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            'run',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorUserError()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "Class 1 error" >&2 && exit 1',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
-
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', [], []), 'run', 'run', '1234567');
-            $this->fail('User exception must be raised');
-        } catch (UserException $e) {
-            $this->assertContains('Class 1 error', $e->getMessage());
-        }
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    'import sys',
+                    'print("Class 1 error", file=sys.stderr)',
+                    'sys.exit(1)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Class 1 error');
+        $runner->run(
+            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            'run',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorApplicationErrorDisabled()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
                 'logging' => [
                     'no_application_errors' => true,
                 ],
             ],
         ];
-
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', [], []), 'run', 'run', '1234567');
-            $this->fail("Application exception must not be raised.");
-        } catch (UserException $e) {
-            $this->assertNotContains('Application error', $e->getMessage());
-            $this->assertContains('Class 2 error', $e->getMessage());
-        }
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    'import sys',
+                    'print("Class 2 error", file=sys.stderr)',
+                    'sys.exit(2)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Class 2 error');
+        $runner->run(
+            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            'run',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorApplicationErrorDisabledButStillError()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'completely_invalid_uri',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "Class 2 error" >&2 && exit 2',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/non-existent',
                 ],
-                'configuration_format' => 'json',
                 'logging' => [
                     'no_application_errors' => true,
                 ],
             ],
         ];
+        $configurationData = [
+            'parameters' => [
+                'script' => [
+                    'import sys',
+                    'print("Class 2 error", file=sys.stderr)',
+                    'sys.exit(2)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
 
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', [], []), 'run', 'run', '1234567');
-            $this->fail("Application exception must be raised even though it is disabled.");
-        } catch (ApplicationException $e) {
-            $this->assertContains('Application error', $e->getMessage());
-            $this->assertContains('Failed to pull parent image completely_invalid_uri', $e->getMessage());
-        }
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage('Application error: Cannot pull image');
+        $runner->run(
+            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            'run',
+            'run',
+            '1234567'
+        );
     }
 
     public function testExecutorInvalidInputMapping()
