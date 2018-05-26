@@ -115,42 +115,42 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
         $components = [
             [
-                "id" => "keboola.processor-last-file",
-                "data" => [
-                    "definition" => [
-                      "type" => "aws-ecr",
-                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file",
-                      "tag" => "0.3.0",
+                'id' => 'keboola.processor-last-file',
+                'data' => [
+                    'definition' => [
+                      'type' => 'aws-ecr',
+                      'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file',
+                      'tag' => '0.3.0',
                     ],
                 ],
             ],
             [
-                "id" => "keboola.processor-iconv",
-                "data" => [
-                    "definition" => [
-                      "type" => "aws-ecr",
-                      "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv",
-                      "tag" => "4.0.0",
+                'id' => 'keboola.processor-iconv',
+                'data' => [
+                    'definition' => [
+                      'type' => 'aws-ecr',
+                      'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv',
+                      'tag' => '4.0.0',
                     ],
                 ],
             ],
             [
-                "id" => "keboola.processor-move-files",
-                "data" => [
-                    "definition" => [
-                        "type" => "aws-ecr",
-                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files",
-                        "tag" => "v2.2.1",
+                'id' => 'keboola.processor-move-files',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files',
+                        'tag' => 'v2.2.1',
                     ],
                 ],
             ],
             [
-                "id" => "keboola.processor-decompress",
-                "data" => [
-                    "definition" => [
-                        "type" => "aws-ecr",
-                        "uri" => "147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress",
-                        "tag" => "v4.1.0",
+                'id' => 'keboola.processor-decompress',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress',
+                        'tag' => 'v4.1.0',
                     ],
                 ],
             ],
@@ -636,13 +636,13 @@ class RunnerTest extends BaseRunnerTest
                 'run',
                 '1234567'
             );
-            self::fail("Must fail with user error");
+            self::fail('Must fail with user error');
         } catch (UserException $e) {
             self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        self::assertEquals(['foo' => 'bar'], $configuration['state'], "State must not be changed");
+        self::assertEquals(['foo' => 'bar'], $configuration['state'], 'State must not be changed');
         $this->clearConfigurations();
     }
 
@@ -746,7 +746,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
     }
 
     public function testExecutorBeforeProcessorNoState()
@@ -849,7 +849,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], "State must be changed");
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
     }
 
     public function testExecutorNoStoreState()
@@ -1347,21 +1347,21 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
+            'storage' => [
+                'input' => [
+                    'tables' => [
                         [
-                            "source" => "in.c-docker-test.test",
+                            'source' => 'in.c-docker-test.test',
                             // erroneous lines
-                            "foo" => "bar"
+                            'foo' => 'bar'
                         ]
                     ]
                 ],
-                "output" => [
-                    "tables" => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-docker-test.out'
                         ]
                     ]
                 ]
@@ -1385,30 +1385,30 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $config = [
-            "storage" => [
-                "input" => [
-                    "tables" => [
+            'storage' => [
+                'input' => [
+                    'tables' => [
                         [
-                            "source" => "in.c-docker-test.test",
+                            'source' => 'in.c-docker-test.test',
                             // erroneous lines
-                            "columns" => [
+                            'columns' => [
                                 [
-                                    "value" => "id",
-                                    "label" => "id"
+                                    'value' => 'id',
+                                    'label' => 'id'
                                 ],
                                 [
-                                    "value" => "col1",
-                                    "label" => "col1"
+                                    'value' => 'col1',
+                                    'label' => 'col1'
                                 ]
                             ]
                         ]
                     ]
                 ],
-                "output" => [
-                    "tables" => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "sliced.csv",
-                            "destination" => "in.c-docker-test.out"
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-docker-test.out'
                         ]
                     ]
                 ]
@@ -1433,19 +1433,19 @@ class RunnerTest extends BaseRunnerTest
         ];
 
         $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"],
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-docker-test.mytable',
+                            'columns' => ['col1'],
                         ],
                     ],
                 ],
             ],
-            "parameters" => [
-                "script" => [
+            'parameters' => [
+                'script' => [
                     'from subprocess import call',
                     'import os',
                     'os.makedirs("/data/out/tables/mytable.csv.gz")',
@@ -1559,8 +1559,8 @@ class RunnerTest extends BaseRunnerTest
         $configurationData = [
             'parameters' => [
                 'script' => [
-                    "import os",
-                    "print(os.environ['KBC_TOKEN'])",
+                    'import os',
+                    'print(os.environ["KBC_TOKEN"])',
                 ],
             ],
         ];
