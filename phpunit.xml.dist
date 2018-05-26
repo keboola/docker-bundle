@@ -19,7 +19,6 @@
         <exclude>Tests/Command</exclude>
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Executor</exclude>
-        <exclude>Tests/Runner</exclude>
     </testsuite>
 
     <filter>
