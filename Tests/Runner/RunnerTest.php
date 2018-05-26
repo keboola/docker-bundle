@@ -448,7 +448,10 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'parameters' => [
-                'script' => ['import os']
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced.csv")',
+                ]
             ]
         ];
         $componentData = [
@@ -1344,16 +1347,14 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorInvalidInputMapping()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
-                ]
-            ]
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
         ];
         $config = [
             "storage" => [
@@ -1376,27 +1377,22 @@ class RunnerTest extends BaseRunnerTest
                 ]
             ]
         ];
-
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
-            $this->fail("User exception must be raised");
-        } catch (UserException $e) {
-            $this->assertContains('Unrecognized option "foo" under "container.storage.input.tables.0"', $e->getMessage());
-        }
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
+        $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
     }
 
     public function testExecutorInvalidInputMapping2()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
-                ]
-            ]
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
         ];
         $config = [
             "storage" => [
@@ -1428,48 +1424,21 @@ class RunnerTest extends BaseRunnerTest
                 ]
             ]
         ];
-
-        try {
-            $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
-            $this->fail("User exception must be raised");
-        } catch (UserException $e) {
-            $this->assertContains('Invalid type for path "container.storage.input.tables.0.columns.0".', $e->getMessage());
-        }
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
+        $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
     }
-
 
     public function testExecutorSlicedFiles()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part2'
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -1480,13 +1449,27 @@ class RunnerTest extends BaseRunnerTest
                         [
                             "source" => "mytable.csv.gz",
                             "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            "columns" => ["col1"],
+                        ],
+                    ],
+                ],
+            ],
+            "parameters" => [
+                "script" => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part1"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
+                    '   file.write("value2")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part2"])',
+                ],
+            ],
         ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -1499,15 +1482,41 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        $lines = explode("\n", $this->getClient()->getTableDataPreview('in.c-docker-test.mytable'));
+        sort($lines);
+        self::assertEquals(
+            [
+                '',
+                '"col1"',
+                '"value1"',
+                '"value2"'
+            ],
+            $lines
+        );
     }
 
     public function testAuthorizationDecrypt()
     {
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
         $configurationData = [
             'parameters' => [
                 '#one' => 'bar',
-                'two' => 'anotherBar'
+                'two' => 'anotherBar',
+                'script' => [
+                    'import sys',
+                    'import os',
+                    'with open("/data/config.json", "r") as file:',
+                    '    print(file.read(), file=sys.stderr)',
+                ],
             ],
             'authorization' => [
                 'oauth_api' => [
@@ -1518,32 +1527,7 @@ class RunnerTest extends BaseRunnerTest
                 ]
             ]
         ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Pipe test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'cat /data/config.json',
-                    ],
-                ],
-                'configuration_format' => 'json'
-            ],
-        ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -1556,21 +1540,32 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $ret = $handler->getRecords();
-        $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
-        $config = json_decode($ret[0]['message'], true);
-        // verify that the token is not passed by default
-        $this->assertNotContains(STORAGE_API_TOKEN, $ret[0]['message']);
-        $this->assertEquals('[hidden]', $config['parameters']['#one']);
-        $this->assertEquals('anotherBar', $config['parameters']['two']);
-        $this->assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
-        $this->assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
+        $records = $this->getContainerHandler()->getRecords();
+        $error = '';
+        foreach ($records as $record) {
+            if ($record['level'] === Logger::ERROR) {
+                $error .= $record['message'];
+            }
+        }
+        $config = \GuzzleHttp\json_decode($error, true);
+        self::assertEquals('[hidden]', $config['parameters']['#one']);
+        self::assertEquals('anotherBar', $config['parameters']['two']);
+        self::assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
+        self::assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
     }
 
     public function testTokenObfuscate()
     {
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+                'forward_token' => true,
+            ],
+        ];
         $configurationData = [
             'parameters' => [
                 'script' => [
@@ -1579,23 +1574,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $handler = new TestHandler();
-        $runner = $this->getRunner($handler, $encryptorFactory);
-        $componentData = [
-            'id' => 'docker-dummy-component',
-            'type' => 'other',
-            'name' => 'Docker Token test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                ],
-                'forward_token' => true,
-            ],
-        ];
-
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -1608,15 +1587,12 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        $ret = $handler->getRecords();
-        $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
-        $this->assertArrayHasKey('message', $ret[0]);
+        $records = $this->getContainerHandler()->getRecords();
         $output = '';
-        foreach ($ret as $message) {
-            $output .= $message['message'];
+        foreach ($records as $record) {
+            $output .= $record['message'];
         }
-        $this->assertNotContains(STORAGE_API_TOKEN, $output);
-        $this->assertContains('[hidden]', $output);
+        self::assertNotContains(STORAGE_API_TOKEN, $output);
+        self::assertContains('[hidden]', $output);
     }
 }
