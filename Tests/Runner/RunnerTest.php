@@ -1155,7 +1155,6 @@ class RunnerTest extends BaseRunnerTest
     public function testExecutorNoStorage()
     {
         $this->createBuckets();
-        $this->createBuckets();
         $temp = new Temp();
         $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
@@ -1725,6 +1724,7 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreUsage()
     {
+        $this->clearConfigurations();
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
         $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
@@ -1736,13 +1736,6 @@ class RunnerTest extends BaseRunnerTest
             ->willReturn($job);
         $this->setJobMapperMock($jobMapperStub);
         $component = new Components($this->getClient());
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
         $configuration = new Configuration();
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
@@ -1774,12 +1767,11 @@ class RunnerTest extends BaseRunnerTest
                 'value' => 150
             ]
         ], $job->getUsage());
-
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 
     public function testExecutorStoreRowsUsage()
     {
+        $this->clearConfigurations();
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
         $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
@@ -1792,13 +1784,6 @@ class RunnerTest extends BaseRunnerTest
         $this->setJobMapperMock($jobMapperStub);
 
         $component = new Components($this->getClient());
-        try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
         $configuration = new Configuration();
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
@@ -1847,7 +1832,5 @@ class RunnerTest extends BaseRunnerTest
                 'value' => 150
             ]
         ], $job->getUsage());
-
-        $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 }
