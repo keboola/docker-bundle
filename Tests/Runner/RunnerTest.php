@@ -11,10 +11,13 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 
@@ -1558,6 +1561,67 @@ class RunnerTest extends BaseRunnerTest
 
         $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
     }
+    
+    public function testPermissionsFailedWithoutContainerRootUserFeature()
+    {
+        $runner = $this->getRunner(new NullHandler());
+
+        $componentData = [
+            'id' => 'docker-demo',
+            'type' => 'other',
+            'name' => 'Docker Runner Test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'builder',
+                    'uri' => 'keboola/docker-custom-php',
+                    'tag' => 'latest',
+                    'build_options' => [
+                        'parent_type' => 'quayio',
+                        'repository' => [
+                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
+                            'type' => 'git'
+                        ],
+                        'commands' => [],
+                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
+                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
+                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1'
+                    ],
+                ],
+                'configuration_format' => 'json',
+            ]
+        ];
+
+        $config = [
+            "storage" => [
+                "output" => [
+                    "tables" => [
+                        [
+                            "source" => "mytable.csv.gz",
+                            "destination" => "in.c-docker-test.mytable"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        $this->expectException(UserException::class);
+        // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
+        $this->expectExceptionMessageRegExp('/Permission denied/');
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'test-configuration',
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567'
+        );
+    }
 
     public function testAuthorizationDecrypt()
     {
@@ -1659,64 +1723,131 @@ class RunnerTest extends BaseRunnerTest
         self::assertContains('[hidden]', $output);
     }
 
-    public function testPermissionsFailedWithoutContainerRootUserFeature()
+    public function testExecutorStoreUsage()
     {
-        $runner = $this->getRunner(new NullHandler());
-
+        $job = new Job($this->getEncryptorFactory()->getEncryptor());
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['get', 'update'])
+            ->getMock();
+        $jobMapperStub->expects(self::once())
+            ->method('get')
+            ->with('987654')
+            ->willReturn($job);
+        $this->setJobMapperMock($jobMapperStub);
+        $component = new Components($this->getClient());
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $component->addConfiguration($configuration);
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker Runner Test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1'
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
+            ],
+        ];
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/usage.json", "w") as file:',
+                    '   file.write(\'[{"metric": "kB", "value": 150}]\')',
+                ],
+            ],
+        ];
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'test-configuration');
+        $runner = $this->getRunner();
+        $runner->run([$jobDefinition], 'run', 'run', '987654');
+        self::assertEquals([
+            [
+                'metric' => 'kB',
+                'value' => 150
             ]
+        ], $job->getUsage());
+
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
+    }
+
+    public function testExecutorStoreRowsUsage()
+    {
+        $job = new Job($this->getEncryptorFactory()->getEncryptor());
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['get', 'update'])
+            ->getMock();
+        $jobMapperStub->expects(self::atLeastOnce())
+            ->method('get')
+            ->with('987654')
+            ->willReturn($job);
+        $this->setJobMapperMock($jobMapperStub);
+
+        $component = new Components($this->getClient());
+        try {
+            $component->deleteConfiguration('docker-demo', 'test-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+        $configuration = new Configuration();
+        $configuration->setComponentId('docker-demo');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('test-configuration');
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/usage.json", "w") as file:',
+                    '   file.write(\'[{"metric": "kB", "value": 150}]\')',
+                ],
+            ],
         ];
 
-        $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable"
-                        ]
-                    ]
-                ]
+        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
+        $runner = $this->getRunner();
+        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654');
+        self::assertEquals([
+            [
+                'metric' => 'kB',
+                'value' => 150
+            ],
+            [
+                'metric' => 'kB',
+                'value' => 150
             ]
-        ];
+        ], $job->getUsage());
 
-        $this->expectException(UserException::class);
-        // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
-        $this->expectExceptionMessageRegExp('/Permission denied/');
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'test-configuration',
-                $config,
-                []
-            ),
-            'run',
-            'run',
-            '1234567'
-        );
+        $component->deleteConfiguration('docker-demo', 'test-configuration');
     }
 }
