@@ -50,6 +50,11 @@ abstract class BaseRunnerTest extends TestCase
      */
     private $storageServiceStub;
 
+    /**
+     * @var LoggersService
+     */
+    private $loggersServiceStub;
+
     public function setUp()
     {
         parent::setUp();
@@ -88,6 +93,11 @@ abstract class BaseRunnerTest extends TestCase
         return $this->containerHandler;
     }
 
+    protected function getLoggersService()
+    {
+        return $this->loggersServiceStub;
+    }
+
     protected function getClient()
     {
         return $this->client;
@@ -101,6 +111,11 @@ abstract class BaseRunnerTest extends TestCase
     protected function setJobMapperMock($jobMapperMock)
     {
         $this->jobMapperStub = $jobMapperMock;
+    }
+
+    protected function getStorageService()
+    {
+        return $this->storageServiceStub;
     }
 
     protected function getRunner()
@@ -130,22 +145,21 @@ abstract class BaseRunnerTest extends TestCase
 
         $log = new Logger("test-logger", [$this->runnerHandler]);
         $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
-        $loggersServiceStub = self::getMockBuilder(LoggersService::class)
+        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $loggersServiceStub->expects(self::any())
+        $this->loggersServiceStub->expects(self::any())
             ->method("getLog")
             ->will($this->returnValue($log));
-        $loggersServiceStub->expects(self::any())
+        $this->loggersServiceStub->expects(self::any())
             ->method("getContainerLog")
             ->will($this->returnValue($containerLogger));
 
         /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
         return new Runner(
             $this->encryptorFactory,
             $this->storageServiceStub,
-            $loggersServiceStub,
+            $this->loggersServiceStub,
             $this->jobMapperStub,
             "dummy",
             ['cpu_count' => 2],

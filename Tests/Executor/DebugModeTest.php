@@ -1,37 +1,21 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Executor;
 
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Job\Executor;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\ComponentsService;
-use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
-use Keboola\DockerBundle\Service\StorageApiService;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\DockerBundle\Tests\BaseExecutorTest;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
-use Monolog\Handler\HandlerInterface;
-use Monolog\Handler\NullHandler;
-use Monolog\Handler\TestHandler;
-use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-class DebugModeTest extends KernelTestCase
+class DebugModeTest extends BaseExecutorTest
 {
-    /**
-     * @var Client
-     */
-    private $client;
     /**
      * @var Temp
      */
@@ -40,191 +24,80 @@ class DebugModeTest extends KernelTestCase
     public function setUp()
     {
         parent::setUp();
-        $this->client = new Client(
-            [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]
-        );
-        $this->temp = new Temp('docker');
+        $this->temp = new Temp('runner-test');
         $this->temp->initRunFolder();
-        foreach ($this->client->listBuckets() as $bucket) {
-            $this->client->dropBucket($bucket["id"], ["force" => true]);
-        }
-
-        // remove uploaded files
-        $options = new ListFilesOptions();
-        $options->setTags(["docker-bundle-test", "debug"]);
-        $files = $this->client->listFiles($options);
-        foreach ($files as $file) {
-            $this->client->deleteFile($file["id"]);
-        }
-
-        // Create buckets
-        $this->client->createBucket("docker-test", Client::STAGE_IN, "Docker TestSuite");
-        $this->client->createBucket("docker-test", Client::STAGE_OUT, "Docker TestSuite");
-
-        self::bootKernel();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-    }
-
-    public function tearDown()
-    {
-        // remove env variables
-        putenv('AWS_ACCESS_KEY_ID=');
-        putenv('AWS_SECRET_ACCESS_KEY=');
-        parent::tearDown();
-    }
-
-    private function getJobExecutor(ObjectEncryptorFactory $encryptorFactory, array $configuration, HandlerInterface $handler = null)
-    {
-        list($runner, $componentsService, $loggersServiceStub, $tokenData) = $this->getRunner($encryptorFactory, $configuration);
-        if ($handler) {
-            /** @var LoggersService $loggersServiceStub */
-            $loggersServiceStub->getContainerLog()->pushHandler($handler);
-        }
-        $encryptorFactory->setProjectId($tokenData["owner"]["id"]);
-
-        $jobExecutor = new Executor(
-            $loggersServiceStub->getLog(),
-            $runner,
-            $encryptorFactory,
-            $componentsService,
-            self::$kernel->getContainer()->getParameter('storage_api.url')
-        );
-        $jobExecutor->setStorageApi($this->client);
-
-        return $jobExecutor;
-    }
-
-    private function getRunner(&$encryptorFactory, array $configuration)
-    {
-        $storageApiClient = new Client(
-            [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-                'userAgent' => 'docker-bundle',
-            ]
-        );
-        $tokenData = $storageApiClient->verifyToken();
-
-        $storageServiceStub = self::getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $storageServiceStub->expects(self::any())
-            ->method("getClient")
-            ->will(self::returnValue($this->client))
-        ;
-        $storageServiceStub->expects(self::any())
-            ->method("getTokenData")
-            ->will(self::returnValue($tokenData))
-        ;
-
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger("null");
-        $containerLogger->pushHandler(new NullHandler());
-        $loggersServiceStub = self::getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $loggersServiceStub->expects(self::any())
-            ->method("getLog")
-            ->will($this->returnValue($log))
-        ;
-        $loggersServiceStub->expects(self::any())
-            ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger))
-        ;
-
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-
-        $componentsStub = self::getMockBuilder(Components::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $componentsStub->expects(self::any())
-            ->method("getConfiguration")
-            ->with("keboola.python-transformation", "my-config")
-            ->will(self::returnValue($configuration))
-        ;
-
-        $componentsServiceStub = self::getMockBuilder(ComponentsService::class)
-            ->disableOriginalConstructor()
-            ->getMock()
-        ;
-        $componentsServiceStub->expects(self::any())
-            ->method("getComponents")
-            ->will(self::returnValue($componentsStub))
-        ;
-
-        /** @var StorageApiService $storageServiceStub */
-        /** @var LoggersService $loggersServiceStub */
-        /** @var JobMapper $jobMapperStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapperStub,
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-        return [$runner, $componentsServiceStub, $loggersServiceStub, $tokenData];
     }
 
     private function downloadFile($fileId)
     {
-        $fileInfo = $this->client->getFile($fileId, (new GetFileOptions())->setFederationToken(true));
+        $fileInfo = $this->getClient()->getFile($fileId, (new GetFileOptions())->setFederationToken(true));
         // Initialize S3Client with credentials from Storage API
         $target = $this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'downloaded-data.zip';
         $s3Client = new S3Client([
             'version' => '2006-03-01',
             'region' => $fileInfo['region'],
-            'retries' => $this->client->getAwsRetries(),
+            'retries' => $this->getClient()->getAwsRetries(),
             'credentials' => [
-                'key' => $fileInfo["credentials"]["AccessKeyId"],
-                'secret' => $fileInfo["credentials"]["SecretAccessKey"],
-                'token' => $fileInfo["credentials"]["SessionToken"],
+                'key' => $fileInfo['credentials']['AccessKeyId'],
+                'secret' => $fileInfo['credentials']['SecretAccessKey'],
+                'token' => $fileInfo['credentials']['SessionToken'],
             ],
             'http' => [
                 'decode_content' => false,
             ],
         ]);
         $s3Client->getObject(array(
-            'Bucket' => $fileInfo["s3Path"]["bucket"],
-            'Key' => $fileInfo["s3Path"]["key"],
+            'Bucket' => $fileInfo['s3Path']['bucket'],
+            'Key' => $fileInfo['s3Path']['key'],
             'SaveAs' => $target,
         ));
         return $target;
     }
 
+    private function clearBuckets()
+    {
+        foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
+            try {
+                $this->getClient()->dropBucket($bucket, ['force' => true]);
+            } catch (ClientException $e) {
+                if ($e->getCode() != 404) {
+                    throw $e;
+                }
+            }
+        }
+    }
+
+    private function createBuckets()
+    {
+        $this->clearBuckets();
+        // Create buckets
+        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
+    }
+
+    private function clearFiles()
+    {
+        // remove uploaded files
+        $options = new ListFilesOptions();
+        $options->setTags(['debug']);
+        $files = $this->getClient()->listFiles($options);
+        foreach ($files as $file) {
+            $this->getClient()->deleteFile($file['id']);
+        }
+    }
+
     public function testDebugModeInline()
     {
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 4; $i++) {
-                $csv->writeRow([$i, $i * 100, '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->createBuckets();
+        $this->clearFiles();
+        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv->writeRow(['name', 'oldValue', 'newValue']);
+        for ($i = 0; $i < 4; $i++) {
+            $csv->writeRow([$i, $i * 100, '1000']);
         }
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.python-transformation');
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, []);
+        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
+        $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
@@ -265,13 +138,13 @@ class DebugModeTest extends KernelTestCase
             ],
         ];
 
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
         // check that output mapping was not done
         try {
-            $this->client->getTableDataPreview('out.c-docker-test.modified');
+            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
             $this->fail("Table should not exist.");
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -281,7 +154,7 @@ class DebugModeTest extends KernelTestCase
 
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
-        $files = $this->client->listFiles($listOptions);
+        $files = $this->getClient()->listFiles($listOptions);
         self::assertEquals(2, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
@@ -343,23 +216,16 @@ class DebugModeTest extends KernelTestCase
 
     public function testDebugModeFailure()
     {
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 4; $i++) {
-                $csv->writeRow([$i, $i * 100, '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->createBuckets();
+        $this->clearFiles();
+        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv->writeRow(['name', 'oldValue', 'newValue']);
+        for ($i = 0; $i < 4; $i++) {
+            $csv->writeRow([$i, $i * 100, '1000']);
         }
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.python-transformation');
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, []);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
+        $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
@@ -395,7 +261,7 @@ class DebugModeTest extends KernelTestCase
             ],
         ];
 
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         try {
             $jobExecutor->execute($job);
@@ -406,8 +272,8 @@ class DebugModeTest extends KernelTestCase
 
         // check that output mapping was not done
         try {
-            $this->client->getTableDataPreview('out.c-docker-test.modified');
-            $this->fail("Table should not exist.");
+            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
+            $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -416,7 +282,7 @@ class DebugModeTest extends KernelTestCase
 
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
-        $files = $this->client->listFiles($listOptions);
+        $files = $this->getClient()->listFiles($listOptions);
         self::assertEquals(1, count($files));
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[0]['name']));
         self::assertContains('keboola.python-transformation', $files[0]['tags']);
@@ -428,82 +294,68 @@ class DebugModeTest extends KernelTestCase
 
     public function testDebugModeConfiguration()
     {
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 100; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->createBuckets();
+        $this->clearFiles();
+        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv->writeRow(['name', 'oldValue', 'newValue']);
+        for ($i = 0; $i < 100; $i++) {
+            $csv->writeRow([$i, '100', '1000']);
         }
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
 
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.python-transformation');
-
-        $handler = new TestHandler();
         $configuration = [
-            'id' => 'my-config',
-            'version' => 1,
-            'state' => [],
-            'rows' => [],
-            'configuration' => [
-                'storage' => [
-                    'input' => [
-                        'tables' => [
-                            [
-                                'source' => 'in.c-docker-test.source',
-                                'destination' => 'source.csv',
-                            ],
-                        ],
-                    ],
-                    'output' => [
-                        'tables' => [
-                            [
-                                'source' => 'destination.csv',
-                                'destination' => 'out.c-docker-test.modified',
-                            ],
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-test.source',
+                            'destination' => 'source.csv',
                         ],
                     ],
                 ],
-                'parameters' => [
-                    'plain' => 'not-secret',
-                    '#encrypted' => $encryptorFactory->getEncryptor()->encrypt('secret'),
-                    'script' => [
-                        'from pathlib import Path',
-                        'import sys',
-                        'import base64',
-                        // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
-                        'contents = Path("/data/config.json").read_text()[::-1]',
-                        'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
-                        'from shutil import copyfile',
-                        'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination.csv")',
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'destination.csv',
+                            'destination' => 'out.c-docker-test.modified',
+                        ],
                     ],
                 ],
             ],
+            'parameters' => [
+                'plain' => 'not-secret',
+                '#encrypted' => $this->getEncryptorFactory()->getEncryptor()->encrypt('secret'),
+                'script' => [
+                    'from pathlib import Path',
+                    'import sys',
+                    'import base64',
+                    // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                    'contents = Path("/data/config.json").read_text()[::-1]',
+                    'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination.csv")',
+                ],
+            ],
         ];
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $configuration, $handler);
+        $jobExecutor = $this->getJobExecutor($configuration, []);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'my-config',
+                'config' => 'test-configuration',
             ],
         ];
 
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
         // check that output mapping was not done
         try {
-            $this->client->getTableDataPreview('out.c-docker-test.modified');
-            $this->fail("Table should not exist.");
+            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
+            $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -512,7 +364,7 @@ class DebugModeTest extends KernelTestCase
 
         // check that the component got deciphered values
         $output = '';
-        foreach ($handler->getRecords() as $record) {
+        foreach ($this->getContainerHandler()->getRecords() as $record) {
             if ($record['level'] == 400) {
                 $output = $record['message'];
             }
@@ -524,7 +376,7 @@ class DebugModeTest extends KernelTestCase
         // check that the files were stored
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
-        $files = $this->client->listFiles($listOptions);
+        $files = $this->getClient()->listFiles($listOptions);
         self::assertEquals(2, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertEquals(0, strcasecmp('stage_0.zip', $files[1]['name']));
@@ -544,38 +396,31 @@ class DebugModeTest extends KernelTestCase
 
     public function testConfigurationRows()
     {
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 100; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->createBuckets();
+        $this->clearFiles();
+        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv->writeRow(['name', 'oldValue', 'newValue']);
+        for ($i = 0; $i < 100; $i++) {
+            $csv->writeRow([$i, '100', '1000']);
         }
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'my-config',
+                'config' => 'test-configuration',
             ],
         ];
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.python-transformation');
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $this->getConfiguration());
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
+        $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
         try {
-            $this->client->getTableDataPreview('out.c-docker-test.transposed');
-            $this->fail("Table should not exist.");
+            $this->getClient()->getTableDataPreview('out.c-docker-test.transposed');
+            $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -584,7 +429,7 @@ class DebugModeTest extends KernelTestCase
 
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
-        $files = $this->client->listFiles($listOptions);
+        $files = $this->getClient()->listFiles($listOptions);
         self::assertEquals(4, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('RowId:row2', $files[0]['tags']);
@@ -617,103 +462,91 @@ class DebugModeTest extends KernelTestCase
         self::assertGreaterThan(1500, $files[3]['sizeBytes']);
     }
 
-    private function getConfiguration()
+    private function getConfigurationRows()
     {
         return [
-            'id' => 'my-config',
-            'version' => 1,
-            'state' => [],
-            'rows' => [
-                [
-                    'id' => 'row1',
-                    'version' => 1,
-                    'isDisabled' => false,
-                    'state' => [],
-                    'configuration' => [
-                        'storage' => [
-                            'input' => [
-                                'tables' => [
-                                    [
-                                        'source' => 'in.c-docker-test.source',
-                                        'destination' => 'source.csv',
-                                    ],
-                                ],
-                            ],
-                            'output' => [
-                                'tables' => [
-                                    [
-                                        'source' => 'destination.csv',
-                                        'destination' => 'out.c-docker-test.destination',
-                                    ],
+            [
+                'id' => 'row1',
+                'configuration' => [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-docker-test.source',
+                                    'destination' => 'source.csv',
                                 ],
                             ],
                         ],
-                        'parameters' => [
-                            'script' => [
-                                'from shutil import copyfile',
-                                'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination.csv")',
+                        'output' => [
+                            'tables' => [
+                                [
+                                    'source' => 'destination.csv',
+                                    'destination' => 'out.c-docker-test.destination',
+                                ],
                             ],
                         ],
                     ],
-                ],
-                [
-                    'id' => 'row2',
-                    'version' => 1,
-                    'isDisabled' => false,
-                    'state' => [],
-                    'configuration' => [
-                        'storage' => [
-                            'input' => [
-                                'tables' => [
-                                    [
-                                        'source' => 'in.c-docker-test.source',
-                                        'destination' => 'source.csv',
-                                    ],
-                                ],
-                            ],
-                            'output' => [
-                                'tables' => [
-                                    [
-                                        'source' => 'destination-2.csv',
-                                        'destination' => 'out.c-docker-test.destination-2',
-                                    ],
-                                ],
-                            ],
-                        ],
-                        'parameters' => [
-                            'script' => [
-                                'from shutil import copyfile',
-                                'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination-2.csv")',
-                            ],
+                    'parameters' => [
+                        'script' => [
+                            'from shutil import copyfile',
+                            'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination.csv")',
                         ],
                     ],
                 ],
             ],
-            'configuration' => [],
+            [
+                'id' => 'row2',
+                'configuration' => [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-docker-test.source',
+                                    'destination' => 'source.csv',
+                                ],
+                            ],
+                        ],
+                        'output' => [
+                            'tables' => [
+                                [
+                                    'source' => 'destination-2.csv',
+                                    'destination' => 'out.c-docker-test.destination-2',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'script' => [
+                            'from shutil import copyfile',
+                            'copyfile("/data/in/tables/source.csv", "/data/out/tables/destination-2.csv")',
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
     public function testConfigurationRowsProcessors()
     {
-        if (!$this->client->tableExists("in.c-docker-test.source")) {
-            $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-            $csv->writeRow(['name', 'oldValue', 'newValue']);
-            for ($i = 0; $i < 100; $i++) {
-                $csv->writeRow([$i, '100', '1000']);
-            }
-            $this->client->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->createBuckets();
+        $this->clearFiles();
+        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv->writeRow(['name', 'oldValue', 'newValue']);
+        for ($i = 0; $i < 100; $i++) {
+            $csv->writeRow([$i, '100', '1000']);
         }
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'my-config',
+                'config' => 'test-configuration',
             ],
         ];
 
-        $configuration = $this->getConfiguration();
-        $configuration['rows'][0]['configuration']['processors'] = [
+        $configurationRows = $this->getConfigurationRows();
+        $configurationRows[0]['configuration']['processors'] = [
             'after' => [
                 [
                     "definition" => [
@@ -730,21 +563,15 @@ class DebugModeTest extends KernelTestCase
                 ],
             ],
         ];
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setComponentId('keboola.python-transformation');
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $configuration);
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
+        $jobExecutor = $this->getJobExecutor([], $configurationRows);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
         try {
-            $this->client->getTableDataPreview('out.c-docker-test.transposed');
-            $this->fail("Table should not exist.");
+            $this->getClient()->getTableDataPreview('out.c-docker-test.transposed');
+            $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -753,7 +580,7 @@ class DebugModeTest extends KernelTestCase
 
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
-        $files = $this->client->listFiles($listOptions);
+        $files = $this->getClient()->listFiles($listOptions);
         self::assertEquals(6, count($files));
         self::assertEquals(0, strcasecmp('stage_output.zip', $files[0]['name']));
         self::assertContains('RowId:row2', $files[0]['tags']);
