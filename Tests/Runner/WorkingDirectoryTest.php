@@ -9,7 +9,6 @@ use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\Tests\EventListener\TestLogger;
 use Symfony\Component\Process\Process;
 
 class WorkingDirectoryTest extends TestCase
