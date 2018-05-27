@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -15,84 +16,33 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Job\Metadata\Job;
 use Monolog\Handler\NullHandler;
 use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Keboola\Syrup\Job\Metadata\JobFactory;
 
-class UsageFileTest2 extends KernelTestCase
+class UsageFileTest2 extends BaseRunnerTest
 {
-    /**
-     * @var Client
-     */
-    private $storageApiClient;
-
-    public function setUp()
-    {
-        $this->storageApiClient = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-
-        self::bootKernel();
-    }
 
     public function testExecutorStoreUsage()
     {
-        $tokenInfo = $this->storageApiClient->verifyToken();
-        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
+        $job = new Job($this->getEncryptorFactory()->getEncryptor());
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
+            ->setMethods(['create', 'get', 'update'])
             ->getMock();
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($this->storageApiClient));
-        $storageServiceStub->expects($this->any())
-            ->method('getTokenData')
-            ->will($this->returnValue($tokenInfo));
+        $jobMapperStub->expects(self::once())
+            ->method('create')
+            ->willReturn('987654');
+        $jobMapperStub->expects(self::atLeastOnce())
+            ->method('get')
+            ->with('987654')
+            ->willReturn($job);
+        $this->setJobMapperMock($jobMapperStub);
+        $runner = $this->getRunner();
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler(new NullHandler());
-        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loggersServiceStub->expects($this->any())
-            ->method('getLog')
-            ->will($this->returnValue($log));
-        $loggersServiceStub->expects($this->any())
-            ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger));
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-        $encryptorFactory->setStackId('test');
-        $encryptorFactory->setProjectId($tokenInfo['owner']['id']);
-        $encryptorFactory->setComponentId('docker-demo');
-
-        /** @var $jobMapper JobMapper */
-        $jobMapper = self::$kernel->getContainer()
-            ->get('syrup.elasticsearch.current_component_job_mapper');
-
-        /** @var LoggersService $loggersServiceStub */
-        /** @var StorageApiService $storageServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapper, // using job mapper from container here
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-
-        $component = new Components($this->storageApiClient);
+        $component = new Components($this->getClient());
         try {
             $component->deleteConfiguration('docker-demo', 'test-configuration');
         } catch (ClientException $e) {
@@ -133,21 +83,8 @@ CMD
             ],
         ];
 
-        $jobFactory = new JobFactory('docker-bundle', $encryptorFactory, $storageServiceStub);
-
-        $job = $jobFactory->create('run', [
-            'configData' => [],
-            'component' =>
-                'docker-demo'
-        ], uniqid());
-
-        $jobId = $jobMapper->create($job);
-
         $jobDefinition = new JobDefinition([], new Component($componentData), 'test-configuration');
-
-        $runner->run([$jobDefinition], 'run', 'run', $jobId);
-
-        $job = $jobMapper->get($jobId);
+        $runner->run([$jobDefinition], 'run', 'run', '987654');
         $this->assertEquals([
             [
                 'metric' => 'kB',
