@@ -98,11 +98,14 @@ class RunnerTest extends BaseRunnerTest
     {
         $clientMock = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
-            ->setMethods(['indexAction'])
+            ->setMethods(['indexAction', 'verifyToken'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
             ->will(self::returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+        $clientMock->expects(self::any())
+            ->method('verifyToken')
+            ->willReturn([]);
         $this->setClientMock($clientMock);
         $runner = $this->getRunner();
 
@@ -1737,7 +1740,7 @@ class RunnerTest extends BaseRunnerTest
         $this->setJobMapperMock($jobMapperStub);
         $component = new Components($this->getClient());
         $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
+        $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         $component->addConfiguration($configuration);
@@ -1785,7 +1788,7 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
+        $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         $component->addConfiguration($configuration);
