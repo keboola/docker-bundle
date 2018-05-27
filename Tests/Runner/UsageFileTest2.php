@@ -4,23 +4,13 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\Syrup\Job\Metadata\Job;
-use Monolog\Handler\NullHandler;
-use Monolog\Logger;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Keboola\Syrup\Job\Metadata\JobFactory;
 
 class UsageFileTest2 extends BaseRunnerTest
 {
@@ -69,7 +59,7 @@ class UsageFileTest2 extends BaseRunnerTest
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'test-configuration');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654');
-        $this->assertEquals([
+        self::assertEquals([
             [
                 'metric' => 'kB',
                 'value' => 150
@@ -138,7 +128,7 @@ class UsageFileTest2 extends BaseRunnerTest
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654');
-        $this->assertEquals([
+        self::assertEquals([
             [
                 'metric' => 'kB',
                 'value' => 150
