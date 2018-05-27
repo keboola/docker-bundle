@@ -8,10 +8,11 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class UsageFileTest extends \PHPUnit_Framework_TestCase
+class UsageFileTest extends TestCase
 {
     /**
      * @var Temp
@@ -33,22 +34,11 @@ class UsageFileTest extends \PHPUnit_Framework_TestCase
         $this->temp = new Temp('runner-usage-file-test');
         $this->fs = new Filesystem;
         $this->dataDir = $this->temp->getTmpFolder();
-        $this->fs->mkdir([
-            $this->dataDir . '/out'
-        ]);
-    }
-
-    public function tearDown()
-    {
-        $this->fs->remove($this->dataDir);
-        $this->temp = null;
+        $this->fs->mkdir($this->dataDir . '/out');
     }
 
     public function testStoreUsageWrongDataJson()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
-
         // there should be "metric" key instead of "random"
         $usage = <<<JSON
 [
@@ -71,14 +61,13 @@ JSON;
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
     public function testStoreUsageWrongDataYaml()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
-
         // there should be "metric" key instead of "random"
         $usage = <<<YAML
 - metric: kiloBytes
@@ -95,6 +84,8 @@ YAML;
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
@@ -142,9 +133,6 @@ JSON;
 
     public function testStoreUsageUnknownJob()
     {
-        $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('Job not found');
-
         $usage = <<<JSON
 [
   {
@@ -167,6 +155,8 @@ JSON;
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $this->expectException(ApplicationException::class);
+        $this->expectExceptionMessage('Job not found');
         $usageFile->storeUsage();
     }
 }
