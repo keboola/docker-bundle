@@ -30,12 +30,9 @@ class UsageFileTest2 extends BaseRunnerTest
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
         $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->setMethods(['create', 'get', 'update'])
+            ->setMethods(['get', 'update'])
             ->getMock();
         $jobMapperStub->expects(self::once())
-            ->method('create')
-            ->willReturn('987654');
-        $jobMapperStub->expects(self::atLeastOnce())
             ->method('get')
             ->with('987654')
             ->willReturn($job);
