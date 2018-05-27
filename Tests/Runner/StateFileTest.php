@@ -46,7 +46,15 @@ class StateFileTest extends TestCase
     public function testCreateStateFile()
     {
         $state = ['lastUpdate' => 'today'];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
@@ -61,7 +69,15 @@ class StateFileTest extends TestCase
     public function testCreateEmptyStateFile()
     {
         $state = [];
-        $stateFile = new StateFile($this->dataDir, $this->client, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
@@ -77,12 +93,19 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects($this->never())
-            ->method('apiPut')
-        ;
+            ->method('apiPut');
 
         $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState($state);
     }
 
@@ -100,7 +123,15 @@ class StateFileTest extends TestCase
 
         $state = ['state' => 'fooBarBaz'];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState(['state' => 'fooBar']);
     }
 
@@ -118,7 +149,15 @@ class StateFileTest extends TestCase
 
         $state = [];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState(['state' => 'fooBar']);
     }
 
@@ -137,7 +176,15 @@ class StateFileTest extends TestCase
 
         $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState([]);
     }
 
@@ -156,7 +203,15 @@ class StateFileTest extends TestCase
 
         $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         $stateFile->storeState(new \stdClass());
     }
 
@@ -174,7 +229,16 @@ class StateFileTest extends TestCase
 
         $state = ['state' => 'fooBarBaz'];
         /** @var Client $sapiStub */
-        $stateFile = new StateFile($this->dataDir, $sapiStub, $state, 'json', 'docker-demo', 'config-id', new NullFilter(), 'row-id');
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $state,
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
         $stateFile->storeState(['state' => 'fooBar']);
     }
 
@@ -184,7 +248,15 @@ class StateFileTest extends TestCase
         $data = ['time' => ['previousStart' => 1495580620]];
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         self::assertEquals($data, $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
@@ -195,14 +267,30 @@ class StateFileTest extends TestCase
         $data = [];
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         self::assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
     public function testPickStateNoState()
     {
-        $stateFile = new StateFile($this->dataDir, $this->client, [], 'json', 'docker-demo', 'config-id', new NullFilter());
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            [],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
         self::assertEquals([], $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
