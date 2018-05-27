@@ -53,16 +53,6 @@ abstract class BaseRunnerTest extends TestCase
     private $tokenInfo;
 
     /**
-     * @var array
-     */
-    private $services;
-
-    /**
-     * @var array
-     */
-    private $components;
-
-    /**
      * @var Client
      */
     private $client;
@@ -71,6 +61,16 @@ abstract class BaseRunnerTest extends TestCase
      * @var Client
      */
     private $clientMock;
+
+    /**
+     * @var JobMapper
+     */
+    private $jobMapperStub;
+
+    /**
+     * @var StorageApiService
+     */
+    private $storageServiceStub;
 
     public function setUp()
     {
@@ -95,8 +95,8 @@ abstract class BaseRunnerTest extends TestCase
         $this->componentId = '';
         $this->configuration = [];
         $this->tokenInfo = [];
-        $this->services = [];
-        $this->components = [];
+        $this->jobMapperStub = null;
+        $this->storageServiceStub = null;
     }
 
     protected function getEncryptorFactory()
@@ -124,6 +124,21 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
+    protected function setJobMapperMock($jobMapperMock)
+    {
+        $this->jobMapperStub = $jobMapperMock;
+    }
+
+    protected function getJobMapper()
+    {
+        return $this->jobMapperStub;
+    }
+
+    protected function getStorageService()
+    {
+        return $this->storageServiceStub;
+    }
+
     protected function getRunner()
     {
         $this->containerHandler = new TestHandler();
@@ -131,29 +146,26 @@ abstract class BaseRunnerTest extends TestCase
         $this->encryptorFactory->setComponentId($this->componentId);
         $this->encryptorFactory->setConfigurationId($this->configId);
 
-        /*
-        $storageClientStub = $this->getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageClientStub->expects($this->any())
-            ->method('indexAction')
-            ->will($this->returnValue(['components' => $this->components, 'services' => $this->services]));
-        */
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
         } else {
             $storageClientStub = $this->client;
         }
+        if (!$this->jobMapperStub) {
+            $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
+                ->disableOriginalConstructor()
+                ->getMock();
+        }
 
-        $storageServiceStub = self::getMockBuilder(StorageApiService::class)
+        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageServiceStub->expects(self::any())
+        $this->storageServiceStub->expects(self::any())
             ->method("getClient")
             ->will(self::returnValue($storageClientStub));
-        $storageServiceStub->expects(self::any())
+        $this->storageServiceStub->expects(self::any())
             ->method("getTokenData")
-            ->will(self::returnValue($this->tokenInfo));
+            ->will(self::returnValue($storageClientStub->verifyToken()));
 
         $log = new Logger("test-logger", [$this->runnerHandler]);
         $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
@@ -166,10 +178,6 @@ abstract class BaseRunnerTest extends TestCase
         $loggersServiceStub->expects(self::any())
             ->method("getContainerLog")
             ->will($this->returnValue($containerLogger));
-
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->getMock();
 
         $componentsStub = self::getMockBuilder(Components::class)
             ->disableOriginalConstructor()
@@ -188,12 +196,11 @@ abstract class BaseRunnerTest extends TestCase
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
-        /** @var JobMapper $jobMapperStub */
         return new Runner(
             $this->encryptorFactory,
-            $storageServiceStub,
+            $this->storageServiceStub,
             $loggersServiceStub,
-            $jobMapperStub,
+            $this->jobMapperStub,
             "dummy",
             ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,
