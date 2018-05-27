@@ -24,7 +24,6 @@ use Keboola\Syrup\Job\Metadata\JobFactory;
 
 class UsageFileTest2 extends BaseRunnerTest
 {
-
     public function testExecutorStoreUsage()
     {
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
@@ -37,8 +36,6 @@ class UsageFileTest2 extends BaseRunnerTest
             ->with('987654')
             ->willReturn($job);
         $this->setJobMapperMock($jobMapperStub);
-        $runner = $this->getRunner();
-
         $component = new Components($this->getClient());
         try {
             $component->deleteConfiguration('docker-demo', 'test-configuration');
@@ -52,35 +49,25 @@ class UsageFileTest2 extends BaseRunnerTest
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
         $component->addConfiguration($configuration);
-
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker Usage file test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => <<<CMD
-echo '[{"metric": "kB", "value": 150}]' > /data/out/usage.json
-CMD
-                        ,
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
-
-        $jobDefinition = new JobDefinition([], new Component($componentData), 'test-configuration');
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/usage.json", "w") as file:',
+                    '   file.write(\'[{"metric": "kB", "value": 150}]\')',
+                ],
+            ],
+        ];
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'test-configuration');
+        $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654');
         $this->assertEquals([
             [
@@ -94,57 +81,18 @@ CMD
 
     public function testExecutorStoreRowsUsage()
     {
-        $tokenInfo = $this->storageApiClient->verifyToken();
-        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
+        $job = new Job($this->getEncryptorFactory()->getEncryptor());
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
+            ->setMethods(['get', 'update'])
             ->getMock();
-        $storageServiceStub->expects($this->any())
-            ->method('getClient')
-            ->will($this->returnValue($this->storageApiClient));
-        $storageServiceStub->expects($this->any())
-            ->method('getTokenData')
-            ->will($this->returnValue($tokenInfo));
+        $jobMapperStub->expects(self::atLeastOnce())
+            ->method('get')
+            ->with('987654')
+            ->willReturn($job);
+        $this->setJobMapperMock($jobMapperStub);
 
-        $log = new Logger('null');
-        $log->pushHandler(new NullHandler());
-        $containerLogger = new ContainerLogger('null');
-        $containerLogger->pushHandler(new NullHandler());
-        $loggersServiceStub = $this->getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $loggersServiceStub->expects($this->any())
-            ->method('getLog')
-            ->will($this->returnValue($log));
-        $loggersServiceStub->expects($this->any())
-            ->method('getContainerLog')
-            ->will($this->returnValue($containerLogger));
-
-        $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
-
-        /** @var $jobMapper JobMapper */
-        $jobMapper = self::$kernel->getContainer()
-            ->get('syrup.elasticsearch.current_component_job_mapper');
-
-        /** @var LoggersService $loggersServiceStub */
-        /** @var StorageApiService $storageServiceStub */
-        $runner = new Runner(
-            $encryptorFactory,
-            $storageServiceStub,
-            $loggersServiceStub,
-            $jobMapper, // using job mapper from container here
-            "dummy",
-            ['cpu_count' => 2],
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
-        );
-
-        $component = new Components($this->storageApiClient);
+        $component = new Components($this->getClient());
         try {
             $component->deleteConfiguration('docker-demo', 'test-configuration');
         } catch (ClientException $e) {
@@ -169,48 +117,27 @@ CMD
         $component->addConfigurationRow($configurationRow);
 
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker Usage file test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => <<<CMD
-echo '[{"metric": "kB", "value": 150}]' > /data/out/usage.json
-CMD
-                        ,
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
+            ],
+        ];
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/usage.json", "w") as file:',
+                    '   file.write(\'[{"metric": "kB", "value": 150}]\')',
+                ],
             ],
         ];
 
-        $jobFactory = new JobFactory('docker-bundle', $encryptorFactory, $storageServiceStub);
-
-        $job = $jobFactory->create('run', [
-            'configData' => [],
-            'component' =>
-                'docker-demo'
-        ], uniqid());
-
-        $jobId = $jobMapper->create($job);
-
-        $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
-
-        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', $jobId);
-
-        $job = $jobMapper->get($jobId);
+        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
+        $runner = $this->getRunner();
+        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654');
         $this->assertEquals([
             [
                 'metric' => 'kB',
