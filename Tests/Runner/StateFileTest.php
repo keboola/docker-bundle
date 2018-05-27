@@ -112,8 +112,7 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects($this->never())
-            ->method('apiPut')
-        ;
+            ->method('apiPut');
 
         $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
