@@ -3,13 +3,11 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -31,26 +29,6 @@ abstract class BaseRunnerTest extends TestCase
      * @var ObjectEncryptorFactory
      */
     private $encryptorFactory;
-
-    /**
-     * @var string
-     */
-    private $configId;
-
-    /**
-     * @var string
-     */
-    private $componentId;
-
-    /**
-     * @var array
-     */
-    private $configuration;
-
-    /**
-     * @var array
-     */
-    private $tokenInfo;
 
     /**
      * @var Client
@@ -91,10 +69,6 @@ abstract class BaseRunnerTest extends TestCase
                 'token' => STORAGE_API_TOKEN,
             ]
         );
-        $this->configId = '';
-        $this->componentId = '';
-        $this->configuration = [];
-        $this->tokenInfo = [];
         $this->jobMapperStub = null;
         $this->storageServiceStub = null;
     }
@@ -129,23 +103,10 @@ abstract class BaseRunnerTest extends TestCase
         $this->jobMapperStub = $jobMapperMock;
     }
 
-    protected function getJobMapper()
-    {
-        return $this->jobMapperStub;
-    }
-
-    protected function getStorageService()
-    {
-        return $this->storageServiceStub;
-    }
-
     protected function getRunner()
     {
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
-        $this->encryptorFactory->setComponentId($this->componentId);
-        $this->encryptorFactory->setConfigurationId($this->configId);
-
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
         } else {
@@ -178,21 +139,6 @@ abstract class BaseRunnerTest extends TestCase
         $loggersServiceStub->expects(self::any())
             ->method("getContainerLog")
             ->will($this->returnValue($containerLogger));
-
-        $componentsStub = self::getMockBuilder(Components::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $componentsStub->expects(self::any())
-            ->method("getConfiguration")
-            ->with($this->componentId, $this->configId)
-            ->will(self::returnValue($this->configuration));
-
-        $componentsServiceStub = self::getMockBuilder(ComponentsService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $componentsServiceStub->expects(self::any())
-            ->method("getComponents")
-            ->will(self::returnValue($componentsStub));
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */

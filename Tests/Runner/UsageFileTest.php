@@ -40,24 +40,15 @@ class UsageFileTest extends TestCase
     public function testStoreUsageWrongDataJson()
     {
         // there should be "metric" key instead of "random"
-        $usage = <<<JSON
-[
-  {
-    "random": "API calls",
-    "value": 150
-  },
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'random' => 'API calls',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
@@ -79,8 +70,7 @@ YAML;
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
@@ -91,20 +81,15 @@ YAML;
 
     public function testStoreUsageOk()
     {
-        $usage = <<<JSON
-[
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'metric' => 'kiloBytes',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         $encryptorFactory = new ObjectEncryptorFactory(
             'alias/dummy-key',
@@ -133,20 +118,15 @@ JSON;
 
     public function testStoreUsageUnknownJob()
     {
-        $usage = <<<JSON
-[
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'metric' => 'kiloBytes',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         $jobMapperStub
             ->expects($this->once())
