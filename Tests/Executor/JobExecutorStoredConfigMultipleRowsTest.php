@@ -95,11 +95,11 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
     public function testRun()
     {
         $this->createBuckets();
-        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
 
         $data = $this->getJobParameters();
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
@@ -166,11 +166,11 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
     public function testRunOneRow()
     {
         $this->createBuckets();
-        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
 
         $data = $this->getJobParameters('row1');
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
