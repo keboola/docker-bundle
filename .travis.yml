@@ -5,13 +5,13 @@ php:
 install:
 - composer install --no-scripts
 before_script:
-- "./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n ."
+- ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
 script:
-- "./vendor/bin/phpunit --coverage-clover build/logs/clover.xml --debug"
+- ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml --debug
 after_success:
-- "./vendor/bin/test-reporter --stdout > codeclimate.json"
-- 'curl -X POST -d @codeclimate.json -H ''Content-Type: application/json'' -H ''User-Agent:
-  Code Climate (PHP Test Reporter v0.1.1)'' https://codeclimate.com/test_reports'
+- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+- chmod +x ./cc-test-reporter
+- ./cc-test-reporter after-build
 notifications:
   email: false
   slack:
