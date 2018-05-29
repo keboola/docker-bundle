@@ -5,34 +5,19 @@ namespace Keboola\DockerBundle\Tests\Executor;
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
-use Keboola\StorageApi\Client;
-use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Job\Metadata\Job;
-use Keboola\Temp\Temp;
 
 class DebugModeTest extends BaseExecutorTest
 {
-    /**
-     * @var Temp
-     */
-    private $temp;
-
-    public function setUp()
-    {
-        parent::setUp();
-        $this->temp = new Temp('runner-test');
-        $this->temp->initRunFolder();
-    }
-
     private function downloadFile($fileId)
     {
         $fileInfo = $this->getClient()->getFile($fileId, (new GetFileOptions())->setFederationToken(true));
         // Initialize S3Client with credentials from Storage API
-        $target = $this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'downloaded-data.zip';
+        $target = $this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'downloaded-data.zip';
         $s3Client = new S3Client([
             'version' => '2006-03-01',
             'region' => $fileInfo['region'],
@@ -54,49 +39,16 @@ class DebugModeTest extends BaseExecutorTest
         return $target;
     }
 
-    private function clearBuckets()
-    {
-        foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
-            try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
-            } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
-                    throw $e;
-                }
-            }
-        }
-    }
-
-    private function createBuckets()
-    {
-        $this->clearBuckets();
-        // Create buckets
-        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-    }
-
-    private function clearFiles()
-    {
-        // remove uploaded files
-        $options = new ListFilesOptions();
-        $options->setTags(['debug']);
-        $files = $this->getClient()->listFiles($options);
-        foreach ($files as $file) {
-            $this->getClient()->deleteFile($file['id']);
-        }
-    }
-
     public function testDebugModeInline()
     {
         $this->createBuckets();
         $this->clearFiles();
-        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         for ($i = 0; $i < 4; $i++) {
             $csv->writeRow([$i, $i * 100, '1000']);
         }
         $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
-
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
@@ -145,7 +97,7 @@ class DebugModeTest extends BaseExecutorTest
         // check that output mapping was not done
         try {
             $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
-            $this->fail("Table should not exist.");
+            $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -218,13 +170,12 @@ class DebugModeTest extends BaseExecutorTest
     {
         $this->createBuckets();
         $this->clearFiles();
-        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         for ($i = 0; $i < 4; $i++) {
             $csv->writeRow([$i, $i * 100, '1000']);
         }
         $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
@@ -265,7 +216,7 @@ class DebugModeTest extends BaseExecutorTest
         $job->setId(123456);
         try {
             $jobExecutor->execute($job);
-            self::fail("Must throw exception");
+            self::fail('Must throw exception');
         } catch (UserException $e) {
             self::assertContains('Intentional error', $e->getMessage());
         }
@@ -296,14 +247,12 @@ class DebugModeTest extends BaseExecutorTest
     {
         $this->createBuckets();
         $this->clearFiles();
-        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
         }
         $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
-
         $configuration = [
             'storage' => [
                 'input' => [
@@ -398,7 +347,7 @@ class DebugModeTest extends BaseExecutorTest
     {
         $this->createBuckets();
         $this->clearFiles();
-        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
@@ -412,7 +361,6 @@ class DebugModeTest extends BaseExecutorTest
                 'config' => 'test-configuration',
             ],
         ];
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
@@ -530,7 +478,7 @@ class DebugModeTest extends BaseExecutorTest
     {
         $this->createBuckets();
         $this->clearFiles();
-        $csv = new CsvFile($this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
+        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
@@ -549,21 +497,20 @@ class DebugModeTest extends BaseExecutorTest
         $configurationRows[0]['configuration']['processors'] = [
             'after' => [
                 [
-                    "definition" => [
-                        "component" => "keboola.processor-create-manifest"
+                    'definition' => [
+                        'component' => 'keboola.processor-create-manifest'
                     ],
-                    "parameters" => [
-                       "columns_from" => "header"
+                    'parameters' => [
+                       'columns_from' => 'header'
                     ],
                 ],
                 [
-                    "definition" => [
-                        "component" => "keboola.processor-add-row-number-column"
+                    'definition' => [
+                        'component' => 'keboola.processor-add-row-number-column'
                     ],
                 ],
             ],
         ];
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $jobExecutor = $this->getJobExecutor([], $configurationRows);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);

@@ -38,9 +38,6 @@ class EncryptionTest extends BaseExecutorTest
 
     public function testStoredConfigDecryptEncryptComponent()
     {
-        $tokenData = $this->getClient()->verifyToken();
-        $this->getEncryptorFactory()->setProjectId($tokenData['owner']['id']);
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $configuration = [
             'parameters' => [
                 'script' => [
@@ -92,9 +89,6 @@ class EncryptionTest extends BaseExecutorTest
 
     public function testStoredConfigRowDecryptEncryptComponent()
     {
-        $tokenData = $this->getClient()->verifyToken();
-        $this->getEncryptorFactory()->setProjectId($tokenData['owner']['id']);
-        $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
         $configuration = [
             'parameters' => [
                 'script' => [
