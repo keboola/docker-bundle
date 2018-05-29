@@ -280,7 +280,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
 
         $data = $this->getJobParameters();
         $data['params']['tag'] = '1.1.12';
-        $jobExecutor = $this->getJobExecutor([],[]);
+        $jobExecutor = $this->getJobExecutor([], []);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);

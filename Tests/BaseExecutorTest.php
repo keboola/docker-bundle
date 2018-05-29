@@ -123,5 +123,4 @@ abstract class BaseExecutorTest extends BaseRunnerTest
 
         return $jobExecutor;
     }
-
 }
