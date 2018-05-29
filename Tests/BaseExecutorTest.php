@@ -108,6 +108,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             $cfgRow = new ConfigurationRow($cfg);
             $cfgRow->setConfiguration($item['configuration']);
             $cfgRow->setRowId($item['id']);
+            $cfgRow->setIsDisabled($item['isDisabled']);
             $cmp->addConfigurationRow($cfgRow);
         }
 

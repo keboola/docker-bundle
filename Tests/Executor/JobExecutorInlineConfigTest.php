@@ -94,12 +94,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         self::assertArrayHasKey('configVersion', $ret);
         self::assertEquals(null, $ret['configVersion']);
 
-        $csvData = $this->getClient()->getTableDataPreview(
-            'out.c-docker-test.output',
-            [
-                'limit' => 1000,
-            ]
-        );
+        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
@@ -290,12 +285,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->getClient()->getTableDataPreview(
-            'out.c-docker-test.output',
-            [
-                'limit' => 1000,
-            ]
-        );
+        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
