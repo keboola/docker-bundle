@@ -18,7 +18,6 @@
         <directory>Tests</directory>
         <exclude>Tests/Command</exclude>
         <exclude>Tests/Controller</exclude>
-        <exclude>Tests/Executor</exclude>
     </testsuite>
 
     <filter>
