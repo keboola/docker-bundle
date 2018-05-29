@@ -81,6 +81,7 @@ class EncryptionTest extends BaseExecutorTest
         $rows = [
             [
                 'id' => 'row-1',
+                'isDisabled' => false,
                 'configuration' => [
                     'parameters' => [
                         'rowKey1' => 'value1',

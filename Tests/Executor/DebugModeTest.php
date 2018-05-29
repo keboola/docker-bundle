@@ -415,6 +415,7 @@ class DebugModeTest extends BaseExecutorTest
         return [
             [
                 'id' => 'row1',
+                'isDisabled' => false,
                 'configuration' => [
                     'storage' => [
                         'input' => [
@@ -444,6 +445,7 @@ class DebugModeTest extends BaseExecutorTest
             ],
             [
                 'id' => 'row2',
+                'isDisabled' => false,
                 'configuration' => [
                     'storage' => [
                         'input' => [
