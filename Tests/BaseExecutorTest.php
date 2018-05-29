@@ -42,7 +42,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
 
     protected function clearBuckets()
     {
-        foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
+        foreach (['in.c-docker-test', 'out.c-docker-test', 'out.c-keboola-python-transformation-docker-test'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -118,7 +118,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             $componentService,
             STORAGE_API_URL
         );
-        $jobExecutor->setStorageApi($this->getClient());
+        $jobExecutor->setStorageApi($this->getStorageService()->getClient());
 
         return $jobExecutor;
     }
