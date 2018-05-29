@@ -6,13 +6,10 @@ use Keboola\DockerBundle\Controller\ApiController;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
-use Keboola\StorageApi\Client;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
-use Keboola\DockerBundle\Service\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -363,103 +360,6 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('12345', $data['id']);
     }
 
-    public function testEncryptProject()
-    {
-        $content = '
-        {
-            "key1": "value1",
-            "#key2": "value2"
-        }';
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
-            'CONTENT_TYPE' => 'application/json'
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test"
-        ];
-        $request = Request::create(
-            "/docker/docker-dummy-test/configs/encrypt",
-            'POST',
-            $parameters,
-            [],
-            [],
-            $server,
-            $content
-        );
-        self::$container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStub(true));
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $response = $ctrl->encryptConfigAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $result = json_decode($response->getContent(), true);
-        $this->assertEquals("value1", $result["key1"]);
-        $this->assertEquals("KBC::ComponentProjectEncrypted==", substr($result["#key2"], 0, 32));
-        /** @var ObjectEncryptor $encryptor */
-        $encryptor = self::$container->get('docker_bundle.object_encryptor_factory')->getEncryptor();
-        $this->assertEquals("value2", $encryptor->decrypt($result["#key2"]));
-        $this->assertCount(2, $result);
-    }
-
-    public function testSaveEncryptedConfig()
-    {
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
-
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test",
-            "configId" => 1,
-            "configuration" => '{
-                "parameters": {
-                    "plain": "test",
-                    "#encrypted": "test"
-                }
-            }'
-        ];
-        $container = self::$container;
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        $container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
-        $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageClientStub = $this->getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->atLeastOnce())
-            ->method("getClient")
-            ->will($this->returnValue($storageClientStub));
-        $storageClientStub->expects($this->once())
-            ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
-
-        $encryptorFactory = $container->get('docker_bundle.object_encryptor_factory');
-        $encryptorFactory->setComponentId('docker-dummy-test');
-        $encryptorFactory->setProjectId('123');
-
-        $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"KBC::Encrypt==ABCDEFGH"}}},"state":{}}';
-        $storageClientStub->expects($this->once())
-            ->method("apiPut")
-            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) use ($encryptorFactory) {
-                $params = json_decode($body["configuration"], true);
-                if ($encryptorFactory->getEncryptor()->decrypt($params["parameters"]["#encrypted"]) == 'test') {
-                    return true;
-                }
-                return false;
-            }))
-            ->will($this->returnValue(json_decode($responseJson, true)));
-
-        $container->set("syrup.storage_api", $storageServiceStub);
-
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $ctrl->saveConfigAction($request);
-    }
-
     public function testMigrateNoMigration()
     {
         $data = ['a' => 'b', 'c' => ['d' => 'not-secret']];
@@ -662,110 +562,6 @@ class ApiControllerTest extends WebTestCase
         self::assertEquals(200, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         self::assertNotEquals($data, $response);
         self::assertStringStartsWith('KBC::ProjectSecure::', $response);
-    }
-
-    public function testSaveUnencryptedConfig()
-    {
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
-
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test",
-            "configId" => 1,
-            "configuration" => '{
-                "parameters": {
-                    "plain": "test",
-                    "#encrypted": "test"
-                }
-            }'
-        ];
-        $container = self::$container;
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        $container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->atLeastOnce())
-            ->method("getClient")
-            ->will($this->returnValue($storageClientStub));
-        $responseJson = '{"id":"1","name":"devel","description":"","created":"2015-10-15T05:28:49+0200","creatorToken":{"id":3800,"description":"ondrej.hlavacek@keboola.com"},"version":2,"changeDescription":null,"configuration":{"configData":{"parameters":{"plain":"test","#encrypted":"test"}}},"state":{}}';
-
-        $storageClientStub->expects($this->atLeastOnce())
-            ->method("verifyToken")
-            ->will($this->returnValue(["id" => "123", "owner" => ["id" => "456"]]));
-        $storageClientStub->expects($this->once())
-            ->method("apiPut")
-            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
-                $params = json_decode($body["configuration"], true);
-                if (substr($params["parameters"]["#encrypted"], 0, 16) != 'KBC::Encrypted==') {
-                    return true;
-                }
-                return false;
-            }))
-            ->will($this->returnValue(json_decode($responseJson, true)));
-
-        $container->set("syrup.storage_api", $storageServiceStub);
-
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $ctrl->saveConfigAction($request);
-    }
-
-
-    public function testSaveChangeDescription()
-    {
-        $server = [
-            'HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN,
-
-        ];
-        $parameters = [
-            "component" => "docker-dummy-test",
-            "configId" => 1,
-            "configuration" => '{
-                "parameters": {
-                    "plain": "test",
-                    "#encrypted": "test"
-                }
-            }',
-            "changeDescription" => "added or removed something"
-        ];
-        $container = self::$container;
-        $request = Request::create("/docker/docker-dummy-test/configs/1", 'PUT', $parameters, [], [], $server, null);
-        $container->get('request_stack')->push($request);
-        $ctrl = new ApiController();
-
-        $storageServiceStub = $this->getMockBuilder("\\Keboola\\DockerBundle\\Service\\StorageApiService")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageClientStub = $this->getMockBuilder("\\Keboola\\StorageApi\\Client")
-            ->disableOriginalConstructor()
-            ->getMock();
-        $storageServiceStub->expects($this->atLeastOnce())
-            ->method("getClient")
-            ->will($this->returnValue($storageClientStub));
-        $storageClientStub->expects($this->atLeastOnce())
-            ->method("verifyToken")
-            ->will($this->returnValue(["id" => "123", "owner" => ["id" => "456"]]));
-        $storageClientStub->expects($this->once())
-            ->method("apiPut")
-            ->with("storage/components/docker-dummy-test/configs/1", $this->callback(function ($body) {
-                if (isset($body["changeDescription"])) {
-                    return true;
-                }
-                return false;
-            }));
-
-        $container->set("syrup.storage_api", $storageServiceStub);
-
-        $ctrl->setContainer($container);
-        $ctrl->preExecute($request);
-        $ctrl->saveConfigAction($request);
     }
 
     public function testRunEmptyParams()

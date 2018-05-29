@@ -30,7 +30,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -56,7 +56,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -76,7 +76,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -92,7 +92,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -107,7 +107,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify&projectId=123',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -134,7 +134,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123&configId=123456789',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify&projectId=123&configId=123456789',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -162,7 +162,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&configId=123456789',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify&configId=123456789',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -182,7 +182,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json; charset=UTF-8'],
@@ -208,7 +208,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'text/plain; charset=UTF-8'],
@@ -229,7 +229,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify',
             [],
             [],
             ['CONTENT_TYPE' => 'someotherheader;'],
@@ -251,7 +251,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new',
+            '/docker/encrypt',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
@@ -272,7 +272,7 @@ class PublicControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/encrypt-new?componentId=docker-config-encrypt-verify&projectId=123&nonExistentParameter=123456789',
+            '/docker/encrypt?componentId=docker-config-encrypt-verify&projectId=123&nonExistentParameter=123456789',
             [],
             [],
             ['CONTENT_TYPE' => 'application/json'],
