@@ -5,37 +5,11 @@ namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
-use Keboola\StorageApi\Client;
 use Keboola\Syrup\Job\Metadata\Job;
 use Monolog\Logger;
 
 class EncryptionTest extends BaseExecutorTest
 {
-    private function setComponentMock()
-    {
-        $componentData = [
-            'id' => 'keboola.python-transformation',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation',
-                ],
-            ],
-            "rows" => [],
-        ];
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]])
-            ->setMethods(['indexAction', 'verifyToken'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->will(self::returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']], 'components' => [$componentData]]));
-        $clientMock->expects(self::any())
-            ->method('verifyToken')
-            ->willReturn(['owner' => ['id' => '321', 'name' => 'Name'], 'id' => '123', 'description' => 'Description']);
-        $this->setClientMock($clientMock);
-    }
-
     public function testStoredConfigDecryptEncryptComponent()
     {
         $configuration = [
@@ -68,7 +42,6 @@ class EncryptionTest extends BaseExecutorTest
             ],
         ];
 
-        $this->setComponentMock();
         $jobExecutor = $this->getJobExecutor($configuration, []);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
@@ -127,7 +100,6 @@ class EncryptionTest extends BaseExecutorTest
             ]
         ];
 
-        $this->setComponentMock();
         $jobExecutor = $this->getJobExecutor($configuration, $rows);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
