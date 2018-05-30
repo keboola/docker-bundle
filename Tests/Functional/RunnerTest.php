@@ -2017,7 +2017,6 @@ class RunnerTest extends KernelTestCase
 
         $ret = $handler->getRecords();
         $this->assertGreaterThan(0, count($ret));
-        $this->assertLessThan(3, count($ret));
         $this->assertArrayHasKey('message', $ret[0]);
         $output = '';
         foreach ($ret as $message) {
