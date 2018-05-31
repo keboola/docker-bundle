@@ -38,7 +38,7 @@ class EncryptionTest extends KernelTestCase
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
     }
 
-    private function getJobExecutor(&$encryptorFactory, $handler, $indexActionValue)
+    private function getJobExecutor(&$encryptorFactory, $handler, $indexActionValue, $dump)
     {
         $tokenData = $this->client->verifyToken();
 
@@ -106,17 +106,20 @@ class EncryptionTest extends KernelTestCase
                         'import sys',
                         'import base64',
                         // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
-                        'contents = Path("/data/config.json").read_text()[::-1]',
+                        'contents = Path("' . $dump . '").read_text()[::-1]',
                         'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
                     ],
                     "key1" => "first",
                     "#key2" => $encryptorFactory->getEncryptor()->encrypt("second"),
                     "#key3" => $encryptorFactory->getEncryptor()->encrypt("third", ComponentWrapper::class),
                     "#key4" => $encryptorFactory->getEncryptor()->encrypt("fourth", ComponentProjectWrapper::class),
-                ]
+                ],
             ],
             "rows" => [],
-            "state" => []
+            "state" => [
+                "#key5" => $encryptorFactory->getEncryptor()->encrypt("fifth"),
+                "key6" => "sixth",
+            ],
         ];
 
         $configDataRows = [
@@ -129,7 +132,7 @@ class EncryptionTest extends KernelTestCase
                         'import sys',
                         'import base64',
                         // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
-                        'contents = Path("/data/config.json").read_text()[::-1]',
+                        'contents = Path("' . $dump . '").read_text()[::-1]',
                         'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
                     ],
                     "configKey1" => "first",
@@ -237,7 +240,7 @@ class EncryptionTest extends KernelTestCase
 
         $handler = new TestHandler();
         /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/config.json');
         $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
@@ -271,7 +274,7 @@ class EncryptionTest extends KernelTestCase
 
         $handler = new TestHandler();
         /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue);
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/config.json');
         $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
@@ -291,5 +294,36 @@ class EncryptionTest extends KernelTestCase
         $this->assertEquals("value2", $config["parameters"]["#rowKey2"]);
         $this->assertEquals("value3", $config["parameters"]["#rowKey3"]);
         $this->assertEquals("value4", $config["parameters"]["#rowKey4"]);
+    }
+
+    public function testStoredConfigDecryptState()
+    {
+        $data = [
+            'params' => [
+                'component' => 'docker-dummy-component',
+                'mode' => 'run',
+                'config' => 'config',
+            ],
+        ];
+
+        // fake image data
+        $indexActionValue = $this->getComponentDefinition();
+
+        $handler = new TestHandler();
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/out/state.json');
+        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        $output = '';
+        foreach ($handler->getRecords() as $record) {
+            if ($record['level'] == 400) {
+                $output = $record['message'];
+            }
+        }
+        $state = json_decode(strrev(base64_decode($output)), true);
+        $this->assertEquals("fifth", $state["#key5"]);
+        $this->assertEquals("sixth", $state["key6"]);
     }
 }
