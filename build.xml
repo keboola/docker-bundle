@@ -51,6 +51,7 @@
             <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
             <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>
             <env key="AWS_ECR_REGISTRY_REGION" value="${aws-ecr-registry-region}"/>
+            <env key="AWS_KMS_TEST_KEY" value="${aws-kms-test-key}"/>
             <arg value="--configuration"/>
             <arg path="phpunit.xml.dist"/>
             <arg value="--stop-on-error"/>

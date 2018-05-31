@@ -54,6 +54,9 @@ defined('AWS_ECR_ACCESS_KEY_ID')
 defined('AWS_ECR_SECRET_ACCESS_KEY')
 || define('AWS_ECR_SECRET_ACCESS_KEY', getenv('AWS_ECR_SECRET_ACCESS_KEY') ?: 'secret');
 
+defined('AWS_KMS_TEST_KEY')
+|| define('AWS_KMS_TEST_KEY', getenv('AWS_KMS_TEST_KEY') ?: 'alias/something');
+
 defined('RUNNER_COMMAND_TO_GET_HOST_IP')
 || define(
     'RUNNER_COMMAND_TO_GET_HOST_IP',

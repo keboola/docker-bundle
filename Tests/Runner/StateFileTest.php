@@ -21,7 +21,6 @@ class StateFileTest extends TestCase
      * @var Temp
      */
     private $temp;
-
     /**
      * @var string
      */
@@ -35,6 +34,9 @@ class StateFileTest extends TestCase
     public function setUp()
     {
         parent::setUp();
+        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
+        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+
         // Create folders
         $this->temp = new Temp('docker');
         $fs = new Filesystem();
@@ -48,11 +50,12 @@ class StateFileTest extends TestCase
             'token' => STORAGE_API_TOKEN,
         ]);
         $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
+            AWS_KMS_TEST_KEY,
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
+        $this->encryptorFactory->setStackId('test');
         $this->encryptorFactory->setComponentId('docker-demo');
         $this->encryptorFactory->setProjectId('123');
     }
@@ -141,7 +144,7 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('state', $data);
                     self::assertEquals('fooBar', $data['state']);
                     self::assertArrayHasKey('#foo', $data);
-                    self::assertStringStartsWith('KBC::ComponentProjectEncrypted==', $data['#foo']);
+                    self::assertStringStartsWith('KBC::ProjectSecure::', $data['#foo']);
                     return true;
                 })
             );
