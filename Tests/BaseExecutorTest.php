@@ -88,7 +88,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $this->runnerStub = $runnerMock;
     }
 
-    protected function getJobExecutor(array $configuration, array $rows)
+    protected function getJobExecutor(array $configuration, array $rows, array $state = [])
     {
         $this->clearConfigurations();
         if ($this->runnerStub) {
@@ -102,6 +102,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $cfg->setComponentId('keboola.python-transformation');
         $cfg->setConfigurationId('test-configuration');
         $cfg->setConfiguration($configuration);
+        $cfg->setState($state);
         $cfg->setName('Test configuration');
         $cmp->addConfiguration($cfg);
         foreach ($rows as $item) {
