@@ -127,7 +127,7 @@ class EncryptionTest extends BaseExecutorTest
                     'import sys',
                     'import base64',
                     // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
-                    'contents = Path("/data/out/state.json").read_text()[::-1]',
+                    'contents = Path("/data/in/state.json").read_text()[::-1]',
                     'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
                 ],
                 'key1' => 'first',
