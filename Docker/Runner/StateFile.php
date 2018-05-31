@@ -4,8 +4,8 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -110,12 +110,12 @@ class StateFile
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
                 $configurationRow->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ComponentProjectWrapper::class)
+                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ProjectWrapper::class)
                 );
                 $components->updateConfigurationRow($configurationRow);
             } else {
                 $configuration->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ComponentProjectWrapper::class)
+                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ProjectWrapper::class)
                 );
                 $components->updateConfiguration($configuration);
             }
