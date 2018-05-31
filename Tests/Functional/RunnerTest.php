@@ -133,14 +133,14 @@ class RunnerTest extends KernelTestCase
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
+            AWS_KMS_TEST_KEY,
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-
+        $encryptorFactory->setStackId('test');
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
         $runner = new Runner(
@@ -682,7 +682,7 @@ class RunnerTest extends KernelTestCase
         $this->assertArrayHasKey('baz', $configuration['state']);
         $this->assertEquals('fooBar', $configuration['state']['baz']);
         $this->assertArrayHasKey('#encrypted', $configuration['state']);
-        $this->assertStringStartsWith('KBC::ComponentProjectEncrypted==', $configuration['state']['#encrypted']);
+        $this->assertStringStartsWith('KBC::ProjectSecure::', $configuration['state']['#encrypted']);
         $this->assertEquals(
             'secret',
             $encryptorFactory->getEncryptor()->decrypt($configuration['state']['#encrypted'])
@@ -922,13 +922,14 @@ class RunnerTest extends KernelTestCase
         ;
 
         $encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
+            AWS_KMS_TEST_KEY,
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptorFactory->setStackId('test');
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
