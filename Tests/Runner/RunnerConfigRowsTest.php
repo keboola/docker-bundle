@@ -494,9 +494,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
-        $this->getEncryptorFactory()->setComponentId('docker-demo');
-        $this->getEncryptorFactory()->setProjectId('123');
-        $this->getEncryptorFactory()->setStackId('test');
         $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
@@ -574,9 +571,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
-        $this->getEncryptorFactory()->setComponentId('docker-demo');
-        $this->getEncryptorFactory()->setProjectId('123');
-        $this->getEncryptorFactory()->setStackId('test');
         $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],

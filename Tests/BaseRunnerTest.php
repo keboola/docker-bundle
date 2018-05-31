@@ -68,6 +68,9 @@ abstract class BaseRunnerTest extends TestCase
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
+        $this->getEncryptorFactory()->setComponentId('docker-demo');
+        $this->getEncryptorFactory()->setProjectId('123');
+        $this->getEncryptorFactory()->setStackId('test');
         $this->client = new Client(
             [
                 'url' => STORAGE_API_URL,
