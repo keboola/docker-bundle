@@ -311,7 +311,7 @@ class EncryptionTest extends KernelTestCase
 
         $handler = new TestHandler();
         /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/out/state.json');
+        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/in/state.json');
         $job = new Job($encryptorFactory->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
