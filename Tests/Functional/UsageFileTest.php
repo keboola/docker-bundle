@@ -70,6 +70,9 @@ class UsageFileTest extends KernelTestCase
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
+        $encryptorFactory->setStackId('test');
+        $encryptorFactory->setProjectId($tokenInfo['owner']['id']);
+        $encryptorFactory->setComponentId('docker-demo');
 
         /** @var $jobMapper JobMapper */
         $jobMapper = self::$kernel->getContainer()
@@ -188,7 +191,10 @@ CMD
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
-
+        $encryptorFactory->setStackId('test');
+        $encryptorFactory->setProjectId($tokenInfo['owner']['id']);
+        $encryptorFactory->setComponentId('docker-demo');
+        
         /** @var $jobMapper JobMapper */
         $jobMapper = self::$kernel->getContainer()
             ->get('syrup.elasticsearch.current_component_job_mapper');
