@@ -147,9 +147,8 @@ class ComponentTest extends TestCase
             ],
         ];
         $component = new Component($componentData);
-        $this->assertFalse($component->runAsRoot());
+        self::assertFalse($component->runAsRoot());
     }
-
 
     public function testDoNotRunAsRoot()
     {
@@ -166,7 +165,7 @@ class ComponentTest extends TestCase
             ]
         ];
         $component = new Component($componentData);
-        $this->assertTrue($component->runAsRoot());
+        self::assertTrue($component->runAsRoot());
     }
 
     public function testInvalidRepository()
