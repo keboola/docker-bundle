@@ -110,15 +110,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                             . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2'
                     ],
                 ],
-                'configuration_format' => 'json',
             ],
-        ];
-        return new Component($componentData);
+        ]);
     }
 
     private function getComponentWithContainerRootUserFeature()
     {
-        $componentData = [
+        return new Component([
             'id' => 'docker-demo',
             'type' => 'other',
             'name' => 'Docker State test',
@@ -147,8 +145,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                 ],
             ],
             'features' => ['container-root-user'],
-        ];
-        return new Component($componentData);
+        ]);
     }
 
     public function testRunMultipleRows()
@@ -193,7 +190,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
     public function testRunMultipleRowsWithContainerRootUserFeature()
     {
-        $runner = $this->getRunner($this->getLoggersServiceStub());
+        $runner = $this->getRunner();
         $jobDefinition1 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -206,7 +203,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ]
                 ]
             ]
-        ], $this->getComponent());
+        ], $this->getComponentWithContainerRootUserFeature());
         $jobDefinition2 = new JobDefinition([
             "storage" => [
                 "output" => [
@@ -227,8 +224,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
     }
 
     public function testRunMultipleRowsFiltered()
@@ -491,7 +488,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                         'entry_point' => 'echo "{\"baz\": \"bar\"}" > /data/out/state.json',
                     ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
@@ -568,7 +564,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                         'entry_point' => 'echo "{\"baz\": \"bar\"}" > /data/out/state.json',
                     ],
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 

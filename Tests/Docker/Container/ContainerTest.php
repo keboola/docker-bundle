@@ -19,7 +19,7 @@ class ContainerTest extends BaseContainerTest
         );
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['container-root-user'];
-        $container = $this->getContainer($imageConfiguration, $runCommandOptions, []);
+        $container = $this->getContainer($imageConfiguration, $runCommandOptions, [], false);
 
         // block devices
         $process = new Process('lsblk --nodeps --output NAME --noheadings 2>/dev/null');
@@ -54,8 +54,8 @@ class ContainerTest extends BaseContainerTest
 
     public function testRunCommandContainerWithoutRootUserFeature()
     {
-        $container = $this->getContainer($this->getImageConfiguration(), [], []);
-        $this->assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
+        $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
+        self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
     }
 
     public function testInspectCommand()

@@ -138,7 +138,7 @@ EOT;
 
         $str = $this->getStructure();
         $str['parameters']['empty_object'] = null;
-        $this->assertEquals($str, $adapter->getConfig());
+        self::assertEquals($str, $adapter->getConfig());
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
@@ -160,7 +160,7 @@ EOT;
 
         $str = $this->getStructure();
         $str['parameters']['empty_object'] = [];
-        $this->assertEquals($str, $adapter->getConfig());
+        self::assertEquals($str, $adapter->getConfig());
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
@@ -180,7 +180,7 @@ EOT;
         $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.yml");
 
-        $this->assertEquals(file_get_contents($root . "/config.yml"), $this->getYmlConfigFileTemplate());
+        self::assertEquals(file_get_contents($root . "/config.yml"), $this->getYmlConfigFileTemplate());
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
@@ -199,7 +199,7 @@ EOT;
         $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.json");
 
-        $this->assertEquals(file_get_contents($root . "/config.json"), $this->getJsonConfigFileTemplate());
+        self::assertEquals(file_get_contents($root . "/config.json"), $this->getJsonConfigFileTemplate());
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);

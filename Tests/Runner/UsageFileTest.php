@@ -52,8 +52,8 @@ class UsageFileTest extends TestCase
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
@@ -68,14 +68,14 @@ class UsageFileTest extends TestCase
 YAML;
         $this->fs->dumpFile($this->dataDir . '/out/usage.yml', $usage);
 
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
             ->getMock();
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
@@ -87,7 +87,7 @@ YAML;
         ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -99,14 +99,14 @@ YAML;
         );
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('get')
             ->willReturn(new Job($encryptorFactory->getEncryptor()));
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('update')
-            ->with($this->callback(function ($job) use ($usage) {
+            ->with(self::callback(function ($job) use ($usage) {
                 /** @var $job Job */
                 return $job->getUsage() === \json_decode($usage, true);
             }));
@@ -129,14 +129,14 @@ YAML;
             ->getMock();
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('get')
             ->willReturn(null);
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
-        $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('Job not found');
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage('Job not found');
         $usageFile->storeUsage();
     }
 }

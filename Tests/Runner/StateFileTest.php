@@ -62,12 +62,11 @@ class StateFileTest extends TestCase
 
     public function testCreateStateFile()
     {
-        $state = ['lastUpdate' => 'today'];
         $stateFile = new StateFile(
             $this->dataDir,
             $this->client,
             $this->encryptorFactory,
-            $state,
+            ['lastUpdate' => 'today'],
             'json',
             'docker-demo',
             'config-id',
@@ -86,12 +85,11 @@ class StateFileTest extends TestCase
 
     public function testCreateEmptyStateFile()
     {
-        $state = [];
         $stateFile = new StateFile(
             $this->dataDir,
             $this->client,
             $this->encryptorFactory,
-            $state,
+            [],
             'json',
             'docker-demo',
             'config-id',
@@ -131,10 +129,10 @@ class StateFileTest extends TestCase
 
     public function testUpdateStateChange()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
@@ -149,13 +147,12 @@ class StateFileTest extends TestCase
                 })
             );
 
-        $state = ['state' => 'fooBarBaz'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
@@ -166,23 +163,22 @@ class StateFileTest extends TestCase
 
     public function testUpdateStateChangeFromEmpty()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo('storage/components/docker-demo/configs/config-id'),
-                $this->equalTo(['state' => '{"state":"fooBar"}'])
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
             );
 
-        $state = [];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            [],
             'json',
             'docker-demo',
             'config-id',
@@ -193,24 +189,22 @@ class StateFileTest extends TestCase
 
     public function testUpdateStateChangeToEmptyArray()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo('storage/components/docker-demo/configs/config-id'),
-                $this->equalTo(['state' => '[]'])
-            )
-        ;
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '[]'])
+            );
 
-        $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
@@ -221,24 +215,22 @@ class StateFileTest extends TestCase
 
     public function testUpdateStateChangeToEmptyObject()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo('storage/components/docker-demo/configs/config-id'),
-                $this->equalTo(['state' => '{}'])
-            )
-        ;
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{}'])
+            );
 
-        $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
@@ -249,23 +241,22 @@ class StateFileTest extends TestCase
 
     public function testUpdateRowStateChange()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                $this->equalTo(['state' => '{"state":"fooBar"}'])
+                self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
             );
 
-        $state = ['state' => 'fooBarBaz'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',

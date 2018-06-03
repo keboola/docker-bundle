@@ -29,11 +29,6 @@ class EncryptionTest extends BaseExecutorTest
             ],
         ];
 
-        $state = [
-            '#key5' => $this->getEncryptorFactory()->getEncryptor()->encrypt('fifth'),
-            'key6' => 'sixth',
-        ];
-        
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
@@ -125,32 +120,47 @@ class EncryptionTest extends BaseExecutorTest
 
     public function testStoredConfigDecryptState()
     {
-        $data = [
-            'params' => [
-                'component' => 'docker-dummy-component',
-                'mode' => 'run',
-                'config' => 'config',
+        $configuration = [
+            'parameters' => [
+                'script' => [
+                    'from pathlib import Path',
+                    'import sys',
+                    'import base64',
+                    // [::-1] reverses string, because substr(base64(str)) may be equal to base64(substr(str)
+                    'contents = Path("/data/config.json").read_text()[::-1]',
+                    'print(base64.standard_b64encode(contents.encode("utf-8")).decode("utf-8"), file=sys.stderr)',
+                ],
+                'key1' => 'first',
+                '#key2' => $this->getEncryptorFactory()->getEncryptor()->encrypt('second'),
+                '#key3' => $this->getEncryptorFactory()->getEncryptor()->encrypt('third', ComponentWrapper::class),
+                '#key4' => $this->getEncryptorFactory()->getEncryptor()->encrypt('fourth', ComponentProjectWrapper::class),
             ],
         ];
+        $state = [
+            '#key5' => $this->getEncryptorFactory()->getEncryptor()->encrypt('fifth'),
+            'key6' => 'sixth',
+        ];
+        $data = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'config' => 'test-configuration'
+            ]
+        ];
 
-        // fake image data
-        $indexActionValue = $this->getComponentDefinition();
-
-        $handler = new TestHandler();
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $jobExecutor = $this->getJobExecutor($encryptorFactory, $handler, $indexActionValue, '/data/in/state.json');
-        $job = new Job($encryptorFactory->getEncryptor(), $data);
+        $jobExecutor = $this->getJobExecutor($configuration, [], $state);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
         $output = '';
-        foreach ($handler->getRecords() as $record) {
+        foreach ($this->getContainerHandler()->getRecords() as $record) {
             if ($record['level'] == 400) {
                 $output = $record['message'];
             }
         }
         $state = json_decode(strrev(base64_decode($output)), true);
-        $this->assertEquals("fifth", $state["#key5"]);
-        $this->assertEquals("sixth", $state["key6"]);
+        self::assertEquals("fifth", $state["#key5"]);
+        self::assertEquals("sixth", $state["key6"]);
     }
 }

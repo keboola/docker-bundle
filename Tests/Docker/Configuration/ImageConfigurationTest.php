@@ -53,7 +53,7 @@ class ImageConfigurationTest extends TestCase
             ],
         ];
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
     public function testEmptyConfiguration()
@@ -100,7 +100,7 @@ class ImageConfigurationTest extends TestCase
                 'no_application_errors' => false,
             ],
         ];
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
     /**
@@ -243,6 +243,6 @@ class ImageConfigurationTest extends TestCase
 
         $expectedConfiguration = $config;
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
-        $this->assertEquals($expectedConfiguration, $processedConfiguration);
+        self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
 }

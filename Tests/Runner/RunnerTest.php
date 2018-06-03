@@ -371,8 +371,8 @@ class RunnerTest extends BaseRunnerTest
         }
 
         // verify that the token is not passed by default
-        $this->assertNotContains(STORAGE_API_TOKEN, $contents);
-        $this->assertContains($configId, $contents);
+        self::assertNotContains(STORAGE_API_TOKEN, $contents);
+        self::assertContains($configId, $contents);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
         self::assertEquals(
@@ -486,8 +486,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('test-configuration');
-        /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('secret');
         $configuration->setState(json_encode(['foo' => 'bar']));
         $configData = [
             'parameters' => [
@@ -525,13 +523,13 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        $this->assertArrayHasKey('baz', $configuration['state']);
-        $this->assertEquals('fooBar', $configuration['state']['baz']);
-        $this->assertArrayHasKey('#encrypted', $configuration['state']);
-        $this->assertStringStartsWith('KBC::ProjectSecure::', $configuration['state']['#encrypted']);
-        $this->assertEquals(
+        self::assertArrayHasKey('baz', $configuration['state']);
+        self::assertEquals('fooBar', $configuration['state']['baz']);
+        self::assertArrayHasKey('#encrypted', $configuration['state']);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state']['#encrypted']);
+        self::assertEquals(
             'secret',
-            $encryptorFactory->getEncryptor()->decrypt($configuration['state']['#encrypted'])
+            $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state']['#encrypted'])
         );
         $this->clearConfigurations();
     }
@@ -593,7 +591,7 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
-        $this->assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        self::assertEquals(['baz' => 'fooBar'], $configuration['state']);
         $this->clearConfigurations();
     }
 
@@ -1505,50 +1503,42 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorSlicedFilesWithoutComponentRootUserFeature()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2'
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
             ],
         ];
 
         $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-docker-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                    'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
+                    '   file.write("value2")',
+                ],
+            ],
         ];
 
+        $runner = $this->getRunner();
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -1560,58 +1550,49 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-
-        $this->assertTrue($this->client->tableExists('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
     }
     
     public function testPermissionsFailedWithoutContainerRootUserFeature()
     {
-        $runner = $this->getRunner(new NullHandler());
-
         $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker Runner Test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1'
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
-                'configuration_format' => 'json',
-            ]
+            ],
         ];
 
         $config = [
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable"
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-docker-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
         ];
 
-        $this->expectException(UserException::class);
+        $runner = $this->getRunner();
+        self::expectException(UserException::class);
         // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
-        $this->expectExceptionMessageRegExp('/Permission denied/');
+        self::expectExceptionMessageRegExp('/Permission denied/');
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,

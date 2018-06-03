@@ -119,7 +119,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
 
     public function testRunInvalidRowId()
     {
-        $data = $data = [
+        $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
@@ -266,7 +266,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             'image_parameters' => [],
             'action' => 'run',
         ];
-        $this->assertEquals($expectedConfig, json_decode(strrev(base64_decode($output)), true));
+        self::assertEquals($expectedConfig, json_decode(strrev(base64_decode($output)), true));
     }
 
     public function testRunTag()
