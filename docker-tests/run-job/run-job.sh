@@ -25,6 +25,6 @@ export JOB_ID=279278925
 /code/docker-tests/run-job/createJob.sh
 
 echo "Running the job"
-/usr/local/bin/php -dxdebug.remote_enable=1 -dxdebug.remote_mode=req -dxdebug.remote_port=9000 -dxdebug.remote_connect_back=0 -dxdebug.remote_autostart=1 -dxdebug.idekey=PHPSTORM -dxdebug.remote_host=192.168.0.104 /code/vendor/keboola/syrup/app/console syrup:run-job $JOB_ID
+/usr/local/bin/php -dxdebug.remote_enable=1 -dxdebug.remote_mode=req -dxdebug.remote_port=9000 -dxdebug.remote_connect_back=0 -dxdebug.remote_autostart=1 -dxdebug.idekey=PHPSTORM -dxdebug.remote_host=host.docker.internal /code/vendor/keboola/syrup/app/console syrup:run-job $JOB_ID
 echo "Job finished with result $?"
 exit

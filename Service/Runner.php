@@ -270,6 +270,7 @@ class Runner
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
             $this->storageClient,
+            $this->encryptorFactory,
             $jobDefinition->getState(),
             $component->getConfigurationFormat(),
             $component->getId(),

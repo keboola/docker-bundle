@@ -158,6 +158,7 @@ class RunnerConfigRowsTest extends KernelTestCase
         );
         $encryptorFactory->setComponentId('keboola.r-transformation');
         $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
+        $encryptorFactory->setStackId('test');
 
         /** @var StorageApiService $storageServiceStub */
         /** @var LoggersService $loggersServiceStub */
