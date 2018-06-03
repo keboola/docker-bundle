@@ -1,17 +1,44 @@
 sudo: required
+
 language: php
-php:
-- '5.6'
-install:
-- composer install --no-scripts
-before_script:
-- ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
-script:
-- ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml --debug
-after_success:
-- curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-- chmod +x ./cc-test-reporter
-- ./cc-test-reporter after-build
+php: 5.6
+
+ cache:
+    directories:
+     - vendor
+
+env:
+  global:
+    # for cc-test-reporter
+    - GIT_COMMIT_SHA=$TRAVIS_COMMIT
+    - GIT_BRANCH=$TRAVIS_BRANCH
+
+jobs: 
+  include:
+    - stage: prepare
+      script:
+        - composer install --no-scripts
+        - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
+        - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        - chmod +x ./cc-test-reporter
+        - ./cc-test-reporter before-build
+    - stage: tests
+      script:
+        - ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
+        - ./cc-test-reporter format-coverage --output "coverage/codeclimate.1.json"
+        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY keboola/aws-cli:latest s3 sync coverage/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
+      script:
+        - ./vendor/bin/phpunit --testsuite runner-tests --coverage-clover build/logs/clover.xml --debug
+        - ./cc-test-reporter format-coverage --output "coverage/codeclimate.2.json"
+        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY keboola/aws-cli:latest s3 sync coverage/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
+      script:
+        - ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
+        - ./cc-test-reporter format-coverage --output "coverage/codeclimate.3.json"
+        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY keboola/aws-cli:latest s3 sync coverage/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
+    - stage: after-tests
+        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY keboola/aws-cli:latest s3 sync "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER" coverage/
+        - ./cc-test-reporter sum-coverage --output - --parts 3 coverage/codeclimate.*.json | ./cc-test-reporter upload-coverage --input -
+
 notifications:
   email: false
   slack:

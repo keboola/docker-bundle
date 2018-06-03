@@ -123,6 +123,7 @@ class LimitsTest extends TestCase
             ->getMock();
         $image->method('getSourceComponent')
             ->will(self::returnValue($componentMock));
+        /** @var Image $image */
         return $image;
     }
 }
