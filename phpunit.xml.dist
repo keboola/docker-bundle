@@ -14,17 +14,17 @@
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
 
-    <testsuite name="Base Tests">
+    <testsuite name="base-tests">
         <directory>Tests</directory>
         <exclude>Tests/Command</exclude>
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Runner</exclude>
         <exclude>Tests/Executor</exclude>
     </testsuite>
-    <testsuite name="Runner Tests">
+    <testsuite name="runner-tests">
         <directory>Tests/Runner</directory>
     </testsuite>
-    <testsuite name="Executor Tests">
+    <testsuite name="executor-tests">
         <directory>Tests/Executor</directory>
     </testsuite>
 
