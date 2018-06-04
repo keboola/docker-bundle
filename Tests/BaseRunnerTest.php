@@ -63,11 +63,14 @@ abstract class BaseRunnerTest extends TestCase
         $this->containerHandler = null;
         $this->runnerHandler = null;
         $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
+            AWS_KMS_TEST_KEY,
             'us-east-1',
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
+        $this->encryptorFactory->setComponentId('keboola.docker-demo-sync');
+        $this->encryptorFactory->setProjectId('12345');
+        $this->encryptorFactory->setStackId('test');
         $this->client = new Client(
             [
                 'url' => STORAGE_API_URL,

@@ -112,7 +112,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'input' => [
                 'tables' => [
                     [
-                        'source' => 'in.c-docker-test.test',
+                        'source' => 'in.c-runner-test.test',
                     ],
                 ],
             ],
@@ -120,7 +120,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
                 'tables' => [
                     [
                         'source' => 'sliced.csv',
-                        'destination' => 'in.c-docker-test.out',
+                        'destination' => 'in.c-runner-test.out',
                         'metadata' => [
                             [
                                 'key' => 'table.key.one',
@@ -271,7 +271,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'input' => [
                 'tables' => [
                     [
-                        'source' => 'in.c-docker-test.test',
+                        'source' => 'in.c-runner-test.test',
                     ],
                 ],
             ],

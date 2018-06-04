@@ -25,7 +25,7 @@ class RunnerTest extends BaseRunnerTest
 {
     private function clearBuckets()
     {
-        foreach (['in.c-docker-test', 'out.c-docker-test', 'in.c-keboola-docker-demo-sync-test-config'] as $bucket) {
+        foreach (['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -40,7 +40,7 @@ class RunnerTest extends BaseRunnerTest
     {
         $cmp = new Components($this->getClient());
         try {
-            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'test-configuration');
+            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -52,8 +52,8 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->clearBuckets();
         // Create buckets
-        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite');
     }
 
     private function clearFiles()
@@ -191,7 +191,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'texty.csv',
-                            'destination' => 'out.c-docker-test.texty'
+                            'destination' => 'out.c-runner-test.texty'
                         ],
                     ],
                 ],
@@ -299,7 +299,7 @@ class RunnerTest extends BaseRunnerTest
             2 => ' : R script finished',
         ], $lines);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.texty');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-runner-test.texty');
         $data = Client::parseCsv($csvData);
         self::assertEquals(4, count($data));
         self::assertArrayHasKey('id', $data[0]);
@@ -388,7 +388,7 @@ class RunnerTest extends BaseRunnerTest
         $cmp = new Components($this->getClient());
         $cfg = new Configuration();
         $cfg->setComponentId('keboola.docker-demo-sync');
-        $cfg->setConfigurationId('test-configuration');
+        $cfg->setConfigurationId('runner-configuration');
         $cfg->setConfiguration([]);
         $cfg->setName('Test configuration');
         $cfg->setState($state);
@@ -407,7 +407,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 ['parameters' => ['script' => ['import os']]],
                 $state
             ),
@@ -415,7 +415,7 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals([], $cfg['state']);
         $this->clearConfigurations();
     }
@@ -428,8 +428,8 @@ class RunnerTest extends BaseRunnerTest
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
-        $this->getClient()->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
+        $this->getClient()->setTableAttribute('in.c-runner-test.test', 'attr1', 'val1');
         unset($csv);
 
         $configurationData = [
@@ -437,7 +437,7 @@ class RunnerTest extends BaseRunnerTest
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             'destination' => 'source.csv',
                         ],
                     ],
@@ -465,7 +465,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
+                'runner-configuration',
                 $configurationData,
                 []
             ),
@@ -474,7 +474,7 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-test-config.sliced'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
         $this->clearBuckets();
     }
 
@@ -485,7 +485,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $configuration->setState(json_encode(['foo' => 'bar']));
         $configData = [
             'parameters' => [
@@ -512,7 +512,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $configData,
                 []
             ),
@@ -522,7 +522,7 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $component = new Components($this->getClient());
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertArrayHasKey('baz', $configuration['state']);
         self::assertEquals('fooBar', $configuration['state']['baz']);
         self::assertArrayHasKey('#encrypted', $configuration['state']);
@@ -541,7 +541,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $configuration->setState(['foo' => 'bar']);
         $configData = [
             'parameters' => [
@@ -580,7 +580,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $configData,
                 []
             ),
@@ -590,7 +590,7 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $component = new Components($this->getClient());
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['baz' => 'fooBar'], $configuration['state']);
         $this->clearConfigurations();
     }
@@ -603,7 +603,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $configuration->setState(['foo' => 'bar']);
         $configData = [
             'parameters' => [
@@ -641,7 +641,7 @@ class RunnerTest extends BaseRunnerTest
             $runner->run(
                 $this->prepareJobDefinitions(
                     $componentData,
-                    'test-configuration',
+                    'runner-configuration',
                     $configData,
                     []
                 ),
@@ -654,7 +654,7 @@ class RunnerTest extends BaseRunnerTest
             self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
         }
 
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['foo' => 'bar'], $configuration['state'], 'State must not be changed');
         $this->clearConfigurations();
     }
@@ -731,7 +731,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $configuration->setState(json_encode(['foo' => 'bar']));
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
@@ -739,7 +739,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $configData,
                 []
             ),
@@ -758,7 +758,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertContains('tables', $output);
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
     }
 
@@ -834,7 +834,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $configuration->setState(json_encode(['foo' => 'bar']));
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
@@ -842,7 +842,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $configData,
                 []
             ),
@@ -861,7 +861,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertContains('tables', $output);
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
     }
 
@@ -890,7 +890,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $configData,
                 []
             ),
@@ -901,8 +901,8 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         self::expectException(ClientException::class);
-        self:$this->expectExceptionMessage('Configuration test-configuration not found');
-        $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        self:$this->expectExceptionMessage('Configuration runner-configuration not found');
+        $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 
     public function testExecutorStateNoConfigId()
@@ -941,8 +941,8 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         self::expectException(ClientException::class);
-        self:$this->expectExceptionMessage('Configuration test-configuration not found');
-        $component->getConfiguration('keboola.docker-demo-sync', 'test-configuration');
+        self:$this->expectExceptionMessage('Configuration runner-configuration not found');
+        $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 
     public function testExecutorNoConfigIdNoMetadata()
@@ -1032,7 +1032,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
+                'runner-configuration',
                 $configurationData,
                 []
             ),
@@ -1050,14 +1050,14 @@ class RunnerTest extends BaseRunnerTest
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
-        $this->getClient()->setTableAttribute('in.c-docker-test.test', 'attr1', 'val1');
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
+        $this->getClient()->setTableAttribute('in.c-runner-test.test', 'attr1', 'val1');
         $configurationData = [
             'storage' => [
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             'destination' => 'source.csv',
                         ],
                     ],
@@ -1085,7 +1085,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
+                'runner-configuration',
                 $configurationData,
                 []
             ),
@@ -1094,7 +1094,7 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        self::assertTrue($this->getClient()->tableExists('in.c-keboola-docker-demo-sync-test-config.sliced'));
+        self::assertTrue($this->getClient()->tableExists('in.c-keboola-docker-demo-sync-runner-configuration.sliced'));
         $this->clearBuckets();
     }
 
@@ -1106,13 +1106,13 @@ class RunnerTest extends BaseRunnerTest
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
         $configurationData = [
             'storage' => [
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             'destination' => 'source.csv',
                         ],
                     ],
@@ -1143,7 +1143,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
+                'runner-configuration',
                 $configurationData,
                 []
             ),
@@ -1161,14 +1161,14 @@ class RunnerTest extends BaseRunnerTest
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'test', $csv);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             'destination' => 'source.csv',
                         ],
                     ],
@@ -1201,7 +1201,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-config',
+                'runner-configuration',
                 $configurationData,
                 []
             ),
@@ -1240,7 +1240,7 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $runner->run(
-            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
             'run',
             '1234567'
@@ -1271,7 +1271,7 @@ class RunnerTest extends BaseRunnerTest
         self::expectException(UserException::class);
         self::expectExceptionMessage('Class 1 error');
         $runner->run(
-            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
             'run',
             '1234567'
@@ -1305,7 +1305,7 @@ class RunnerTest extends BaseRunnerTest
         self::expectException(UserException::class);
         self::expectExceptionMessage('Class 2 error');
         $runner->run(
-            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
             'run',
             '1234567'
@@ -1340,7 +1340,7 @@ class RunnerTest extends BaseRunnerTest
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('Application error: Cannot pull image');
         $runner->run(
-            $this->prepareJobDefinitions($componentData, 'test-config', $configurationData, []),
+            $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
             'run',
             '1234567'
@@ -1363,7 +1363,7 @@ class RunnerTest extends BaseRunnerTest
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             // erroneous lines
                             'foo' => 'bar'
                         ]
@@ -1373,7 +1373,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'sliced.csv',
-                            'destination' => 'in.c-docker-test.out'
+                            'destination' => 'in.c-runner-test.out'
                         ]
                     ]
                 ]
@@ -1382,7 +1382,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         self::expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
-        $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
+        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567');
     }
 
     public function testExecutorInvalidInputMapping2()
@@ -1401,7 +1401,7 @@ class RunnerTest extends BaseRunnerTest
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.test',
+                            'source' => 'in.c-runner-test.test',
                             // erroneous lines
                             'columns' => [
                                 [
@@ -1420,7 +1420,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'sliced.csv',
-                            'destination' => 'in.c-docker-test.out'
+                            'destination' => 'in.c-runner-test.out'
                         ]
                     ]
                 ]
@@ -1429,7 +1429,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         self::expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
-        $runner->run($this->prepareJobDefinitions($componentData, 'test-config', $config, []), 'run', 'run', '1234567');
+        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567');
     }
 
     public function testExecutorSlicedFilesWithComponentRootUserFeature()
@@ -1453,7 +1453,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'mytable.csv.gz',
-                            'destination' => 'in.c-docker-test.mytable',
+                            'destination' => 'in.c-runner-test.mytable',
                             'columns' => ['col1'],
                         ],
                     ],
@@ -1478,7 +1478,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $config,
                 []
             ),
@@ -1487,8 +1487,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567'
         );
 
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
-        $lines = explode("\n", $this->getClient()->getTableDataPreview('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        $lines = explode("\n", $this->getClient()->getTableDataPreview('in.c-runner-test.mytable'));
         sort($lines);
         self::assertEquals(
             [
@@ -1519,7 +1519,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'mytable.csv.gz',
-                            'destination' => 'in.c-docker-test.mytable',
+                            'destination' => 'in.c-runner-test.mytable',
                             'columns' => ['col1'],
                         ],
                     ],
@@ -1542,7 +1542,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $config,
                 []
             ),
@@ -1550,7 +1550,7 @@ class RunnerTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
     
     public function testPermissionsFailedWithoutContainerRootUserFeature()
@@ -1571,7 +1571,7 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'mytable.csv.gz',
-                            'destination' => 'in.c-docker-test.mytable',
+                            'destination' => 'in.c-runner-test.mytable',
                             'columns' => ['col1'],
                         ],
                     ],
@@ -1596,7 +1596,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'test-configuration',
+                'runner-configuration',
                 $config,
                 []
             ),
@@ -1723,7 +1723,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -1742,7 +1742,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'test-configuration');
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654');
         self::assertEquals([
@@ -1771,7 +1771,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -1802,8 +1802,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
+        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654');
         self::assertEquals([

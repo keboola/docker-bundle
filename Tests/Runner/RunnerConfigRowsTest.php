@@ -18,7 +18,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 {
     private function clearBuckets()
     {
-        foreach (['in.c-docker-test', 'out.c-docker-test'] as $bucket) {
+        foreach (['in.c-runner-test', 'out.c-runner-test'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -29,14 +29,26 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
+    private function clearConfigurations()
+    {
+        $cmp = new Components($this->getClient());
+        try {
+            $cmp->deleteConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+    }
+
     public function setUp()
     {
         parent::setUp();
         $this->clearBuckets();
 
         // Create buckets
-        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->getClient()->createBucket('docker-test', Client::STAGE_OUT, 'Docker TestSuite');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite');
 
         // remove uploaded files
         $options = new ListFilesOptions();
@@ -47,7 +59,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
         $component = new Components($this->getClient());
         try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
+            $component->deleteConfiguration('docker-demo', 'runner-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -60,7 +72,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $this->clearBuckets();
         $component = new Components($this->getClient());
         try {
-            $component->deleteConfiguration('docker-demo', 'test-configuration');
+            $component->deleteConfiguration('docker-demo', 'runner-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -87,96 +99,49 @@ class RunnerConfigRowsTest extends BaseRunnerTest
     private function getComponent()
     {
         return new Component([
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
+            'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2'
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
-        ]);
-    }
-
-    private function getComponentWithContainerRootUserFeature()
-    {
-        return new Component([
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'mkdir /data/out/tables/mytable.csv.gz && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'echo "value1" > /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part1 && '
-                            . 'touch /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'echo "value2" > /data/out/tables/mytable.csv.gz/part2 && '
-                            . 'chmod 000 /data/out/tables/mytable.csv.gz/part2'
-                    ],
-                ],
+            'features' => [
+                'container-root-user'
             ],
-            'features' => ['container-root-user'],
         ]);
     }
 
     public function testRunMultipleRows()
     {
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                    'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
+                    '   file.write("value2")',
+                ],
+            ],
+        ];
+
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent());
-        $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent());
+        $jobDefinition1 = new JobDefinition($config, $this->getComponent());
+        $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
+        $jobDefinition2 = new JobDefinition($config, $this->getComponent());
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
@@ -184,39 +149,57 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
     public function testRunMultipleRowsWithContainerRootUserFeature()
     {
+        $componentData = new Component([
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+            'features' => [
+                'container-root-user'
+            ]
+        ]);
+
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from subprocess import call',
+                    'import os',
+                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
+                    '   file.write("value1")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part1"])',
+                    'with open("/data/out/tables/mytable.csv.gz/part2", "w") as file:',
+                    '   file.write("value2")',
+                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz/part2"])',
+                ],
+            ],
+        ];
+
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponentWithContainerRootUserFeature());
-        $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponentWithContainerRootUserFeature());
+        $jobDefinition1 = new JobDefinition($config, $componentData);
+        $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
+        $jobDefinition2 = new JobDefinition($config, $componentData);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner->run(
             $jobDefinitions,
@@ -224,37 +207,49 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567'
         );
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
     public function testRunMultipleRowsFiltered()
     {
         $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
         ], $this->getComponent(), 'my-config', 1, [], 'row-1');
         $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable-2',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value2")',
+                ],
+            ],
         ], $this->getComponent(), 'my-config', 1, [], 'row-2');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
@@ -265,19 +260,20 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567',
             'row-2'
         );
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+        self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
     public function testRunUnknownRow()
     {
         $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1']
                         ]
                     ]
                 ]
@@ -310,30 +306,42 @@ class RunnerConfigRowsTest extends BaseRunnerTest
     public function testRunDisabled()
     {
         $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1']
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
         ], $this->getComponent());
         $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable-2',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value2")',
+                ],
+            ],
         ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
@@ -346,38 +354,61 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
         ));
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable'));
-        self::assertFalse($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
     public function testRunRowDisabled()
     {
-        $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent());
-        $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
+        $jobDefinition1 = new JobDefinition(
+            [
+                'storage' => [
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable',
+                                'columns' => ['col1']
+                            ],
+                        ],
+                    ],
+                ],
+                'parameters' => [
+                    'script' => [
+                        'with open("/data/out/tables/mytable", "w") as file:',
+                        '   file.write("value1")',
+                    ],
+                ],
+            ],
+            $this->getComponent()
+        );
+        $jobDefinition2 = new JobDefinition(
+            [
+                'storage' => [
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable-2',
+                                'columns' => ['col1'],
+                            ],
+                        ],
+                    ],
+                ],
+                'parameters' => [
+                    'script' => [
+                        'with open("/data/out/tables/mytable", "w") as file:',
+                        '   file.write("value2")',
+                    ],
+                ],
+            ],
+            $this->getComponent(),
+            'my-config',
+            1,
+            [],
+            'disabled-row',
+            true
+        );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
         $runner->run(
@@ -390,36 +421,49 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Force running disabled configuration: my-config, version: 1, row: disabled-row'
         ));
-        self::assertTrue($this->getClient()->tableExists('in.c-docker-test.mytable-2'));
+        self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
     public function testRowMetadata()
     {
         $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
         ], $this->getComponent(), 'config', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
+            'storage' => [
+                'output' => [
+                    'tables' => [
                         [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
+                            'source' => 'mytable',
+                            'destination' => 'in.c-runner-test.mytable-2',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/tables/mytable", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
         ], $this->getComponent(), 'config', null, [], 'row-2');
 
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
@@ -431,31 +475,32 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567'
         );
         $metadata = new Metadata($this->getClient());
-        $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable'));
-        $table2Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-docker-test.mytable-2'));
+        $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable'));
+        $table2Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable-2'));
 
         self::assertArrayHasKey('KBC.createdBy.component.id', $table1Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configuration.id', $table1Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata['system']);
-        self::assertEquals('docker-demo', $table1Metadata['system']['KBC.createdBy.component.id']);
+        self::assertEquals('keboola.docker-demo-sync', $table1Metadata['system']['KBC.createdBy.component.id']);
         self::assertEquals('config', $table1Metadata['system']['KBC.createdBy.configuration.id']);
         self::assertEquals('row-1', $table1Metadata['system']['KBC.createdBy.configurationRow.id']);
 
         self::assertArrayHasKey('KBC.createdBy.component.id', $table2Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configuration.id', $table2Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata['system']);
-        self::assertEquals('docker-demo', $table2Metadata['system']['KBC.createdBy.component.id']);
+        self::assertEquals('keboola.docker-demo-sync', $table2Metadata['system']['KBC.createdBy.component.id']);
         self::assertEquals('config', $table2Metadata['system']['KBC.createdBy.configuration.id']);
         self::assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);
     }
 
     public function testExecutorStoreRowState()
     {
+        $this->clearConfigurations();
         $component = new Components($this->getClient());
         $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
+        $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -468,31 +513,17 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configurationRow->setName('Row 2');
         $component->addConfigurationRow($configurationRow);
 
-        $componentData = [
-            'id' => 'docker-demo',
-            'type' => 'other',
-            'name' => 'Docker State test',
-            'description' => 'Testing Docker',
-            'data' => [
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"bar\"}" > /data/out/state.json',
-                    ],
+        $config = [
+            'parameters' => [
+                'script' => [
+                    'with open("/data/out/state.json", "w") as file:',
+                    '   file.write("{\"baz\": \"bar\"}")',
                 ],
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition([], new Component($componentData), 'test-configuration', null, [], 'row-2');
+        $jobDefinition1 = new JobDefinition($config, $this->getComponent(), 'runner-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition($config, $this->getComponent(), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
@@ -501,7 +532,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567'
         );
 
-        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
         self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
@@ -514,7 +545,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configuration = new Configuration();
         $configuration->setComponentId('docker-demo');
         $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('test-configuration');
+        $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
         $configData = [
@@ -567,8 +598,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'test-configuration', null, [], 'row-2');
+        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
+        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
@@ -577,7 +608,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1234567'
         );
 
-        $configuration = $component->getConfiguration('docker-demo', 'test-configuration');
+        $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
         self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state']);
@@ -586,32 +617,50 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
     public function testOutput()
     {
-        $jobDefinition1 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent());
-        $jobDefinition2 = new JobDefinition([
-            "storage" => [
-                "output" => [
-                    "tables" => [
-                        [
-                            "source" => "mytable.csv.gz",
-                            "destination" => "in.c-docker-test.mytable-2",
-                            "columns" => ["col1"]
-                        ]
-                    ]
-                ]
-            ]
-        ], $this->getComponent());
+        $jobDefinition1 = new JobDefinition(
+            [
+                'storage' => [
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable',
+                                'columns' => ['col1'],
+                            ],
+                        ],
+                    ],
+                ],
+                'parameters' => [
+                    'script' => [
+                        'with open("/data/out/tables/mytable", "w") as file:',
+                        '   file.write("value1")',
+                    ],
+                ],
+            ],
+            $this->getComponent()
+        );
+        $jobDefinition2 = new JobDefinition(
+            [
+                'storage' => [
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable-2',
+                                'columns' => ['col1'],
+                            ],
+                        ],
+                    ],
+                ],
+                'parameters' => [
+                    'script' => [
+                        'with open("/data/out/tables/mytable", "w") as file:',
+                        '   file.write("value2")',
+                    ],
+                ],
+            ],
+            $this->getComponent()
+        );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
         $outputs = $runner->run(
