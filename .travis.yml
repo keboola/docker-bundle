@@ -35,7 +35,7 @@ jobs:
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
         - chmod +x ./cc-test-reporter        
         - ./cc-test-reporter format-coverage --output "coverage/codeclimate.2.json"
-        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
+        - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
     - stage: tests
       script:
         - ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
