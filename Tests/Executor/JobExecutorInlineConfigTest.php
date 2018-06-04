@@ -81,7 +81,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
@@ -317,15 +317,15 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
 
         $id1 = $this->getClient()->uploadFile(
             $root . '/upload',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'toprocess'])
+            (new FileUploadOptions())->setTags(['executor-test', 'toprocess'])
         );
         $id2 = $this->getClient()->uploadFile(
             $root . '/upload',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'toprocess'])
+            (new FileUploadOptions())->setTags(['executor-test', 'toprocess'])
         );
         $id3 = $this->getClient()->uploadFile(
             $root . '/upload',
-            (new FileUploadOptions())->setTags(['docker-bundle-test', 'incremental-test'])
+            (new FileUploadOptions())->setTags(['executor-test', 'incremental-test'])
         );
 
         $data = $this->getJobParameters();
@@ -352,7 +352,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
                 '       print("ntp" + filename)',
                 '       copyfile("/data/in/files/" + filename, "/data/out/files/" + filename)',
                 '       with open("/data/out/files/" + filename + ".manifest", "w") as outfile:',
-                '           data = {"tags": ["docker-bundle-test", "processed"]}',
+                '           data = {"tags": ["executor-test", "processed"]}',
                 '           json.dump(data, outfile)',
             ],
         ];

@@ -64,7 +64,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
     {
         // remove uploaded files
         $options = new ListFilesOptions();
-        $options->setTags(['debug', 'docker-bundle-test']);
+        $options->setTags(['debug', 'executor-test']);
         $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
             $this->getClient()->deleteFile($file['id']);
