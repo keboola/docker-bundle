@@ -58,6 +58,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'udp';
+        $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
@@ -101,6 +102,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
@@ -144,6 +146,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'http';
+        $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
@@ -184,6 +187,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
             $container->run();
@@ -216,6 +220,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+        $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
 
@@ -253,6 +258,7 @@ class LoggerTest extends BaseContainerTest
             'print("Client finished")',
         ];
         $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-root-user'];
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $this->setCreateEventCallback(
@@ -310,6 +316,7 @@ class LoggerTest extends BaseContainerTest
             'raise ValueError("Exception example")',
         ];
         $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-root-user'];
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
@@ -393,6 +400,7 @@ class LoggerTest extends BaseContainerTest
             'logging.critical("A critical example.")',
         ];
         $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-root-user'];
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
@@ -435,6 +443,7 @@ class LoggerTest extends BaseContainerTest
             'sys.exit(2);',
         ];
         $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-root-user'];
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $container = $this->getContainer($imageConfiguration, [], $script, true);
