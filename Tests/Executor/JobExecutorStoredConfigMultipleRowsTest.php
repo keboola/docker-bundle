@@ -20,7 +20,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'input.csv',
                                 ],
                             ],
@@ -29,7 +29,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'result.csv',
-                                    'destination' => 'out.c-docker-test.output',
+                                    'destination' => 'out.c-executor-test.output',
                                 ],
                             ],
                         ],
@@ -50,7 +50,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'input.csv',
                                 ],
                             ],
@@ -59,7 +59,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'result.csv',
-                                    'destination' => 'out.c-docker-test.output-2',
+                                    'destination' => 'out.c-executor-test.output-2',
                                 ],
                             ],
                         ],
@@ -81,7 +81,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
 
@@ -99,7 +99,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $data = $this->getJobParameters();
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
@@ -111,7 +111,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
         self::assertArrayHasKey('configVersion', $ret);
 
         $csvData = $this->getClient()->getTableDataPreview(
-            'out.c-docker-test.output',
+            'out.c-executor-test.output',
             [
                 'limit' => 1000,
             ]
@@ -137,7 +137,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
         );
 
         $csvData = $this->getClient()->getTableDataPreview(
-            'out.c-docker-test.output-2',
+            'out.c-executor-test.output-2',
             [
                 'limit' => 1000,
             ]
@@ -170,7 +170,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $data = $this->getJobParameters('row1');
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
@@ -181,7 +181,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
         self::assertArrayHasKey('images', $ret);
         self::assertArrayHasKey('configVersion', $ret);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-executor-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
@@ -202,7 +202,7 @@ class JobExecutorStoredConfigMultipleRowsTest extends BaseExecutorTest
             $data
         );
         self::assertEquals(2, count($data));
-        self::assertFalse($this->getClient()->tableExists('out.c-docker-test.transposed-2'));
+        self::assertFalse($this->getClient()->tableExists('out.c-executor-test.transposed-2'));
     }
 
     public function testRunRowsDisabled()

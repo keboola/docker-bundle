@@ -17,7 +17,7 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.source',
+                            'source' => 'in.c-executor-test.source',
                             'destination' => 'input.csv',
                         ],
                     ],
@@ -26,7 +26,7 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
                     'tables' => [
                         [
                             'source' => 'result.csv',
-                            'destination' => 'out.c-docker-test.output',
+                            'destination' => 'out.c-executor-test.output',
                         ],
                     ],
                 ],
@@ -42,13 +42,13 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
         $jobExecutor = $this->getJobExecutor($configuration, []);
@@ -59,7 +59,7 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         self::assertArrayHasKey('images', $ret);
         self::assertArrayHasKey('configVersion', $ret);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-executor-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);

@@ -48,7 +48,7 @@ class DebugModeTest extends BaseExecutorTest
         for ($i = 0; $i < 4; $i++) {
             $csv->writeRow([$i, $i * 100, '1000']);
         }
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
         $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
@@ -59,7 +59,7 @@ class DebugModeTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'source.csv',
                                 ],
                             ],
@@ -68,7 +68,7 @@ class DebugModeTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'destination.csv',
-                                    'destination' => 'out.c-docker-test.modified',
+                                    'destination' => 'out.c-executor-test.modified',
                                 ],
                             ],
                         ],
@@ -96,7 +96,7 @@ class DebugModeTest extends BaseExecutorTest
 
         // check that output mapping was not done
         try {
-            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
+            $this->getClient()->getTableDataPreview('out.c-executor-test.modified');
             $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -175,7 +175,7 @@ class DebugModeTest extends BaseExecutorTest
         for ($i = 0; $i < 4; $i++) {
             $csv->writeRow([$i, $i * 100, '1000']);
         }
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
         $jobExecutor = $this->getJobExecutor([], []);
         $data = [
             'params' => [
@@ -186,7 +186,7 @@ class DebugModeTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'source.csv',
                                 ],
                             ],
@@ -195,7 +195,7 @@ class DebugModeTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'destination.csv',
-                                    'destination' => 'out.c-docker-test.modified',
+                                    'destination' => 'out.c-executor-test.modified',
                                 ],
                             ],
                         ],
@@ -223,7 +223,7 @@ class DebugModeTest extends BaseExecutorTest
 
         // check that output mapping was not done
         try {
-            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
+            $this->getClient()->getTableDataPreview('out.c-executor-test.modified');
             $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -252,13 +252,13 @@ class DebugModeTest extends BaseExecutorTest
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
         }
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
         $configuration = [
             'storage' => [
                 'input' => [
                     'tables' => [
                         [
-                            'source' => 'in.c-docker-test.source',
+                            'source' => 'in.c-executor-test.source',
                             'destination' => 'source.csv',
                         ],
                     ],
@@ -267,7 +267,7 @@ class DebugModeTest extends BaseExecutorTest
                     'tables' => [
                         [
                             'source' => 'destination.csv',
-                            'destination' => 'out.c-docker-test.modified',
+                            'destination' => 'out.c-executor-test.modified',
                         ],
                     ],
                 ],
@@ -293,7 +293,7 @@ class DebugModeTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
 
@@ -303,7 +303,7 @@ class DebugModeTest extends BaseExecutorTest
 
         // check that output mapping was not done
         try {
-            $this->getClient()->getTableDataPreview('out.c-docker-test.modified');
+            $this->getClient()->getTableDataPreview('out.c-executor-test.modified');
             $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -352,13 +352,13 @@ class DebugModeTest extends BaseExecutorTest
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
         }
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
         $jobExecutor = $this->getJobExecutor([], $this->getConfigurationRows());
@@ -367,7 +367,7 @@ class DebugModeTest extends BaseExecutorTest
         $jobExecutor->execute($job);
 
         try {
-            $this->getClient()->getTableDataPreview('out.c-docker-test.transposed');
+            $this->getClient()->getTableDataPreview('out.c-executor-test.transposed');
             $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {
@@ -421,7 +421,7 @@ class DebugModeTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'source.csv',
                                 ],
                             ],
@@ -430,7 +430,7 @@ class DebugModeTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'destination.csv',
-                                    'destination' => 'out.c-docker-test.destination',
+                                    'destination' => 'out.c-executor-test.destination',
                                 ],
                             ],
                         ],
@@ -451,7 +451,7 @@ class DebugModeTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'source.csv',
                                 ],
                             ],
@@ -460,7 +460,7 @@ class DebugModeTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'destination-2.csv',
-                                    'destination' => 'out.c-docker-test.destination-2',
+                                    'destination' => 'out.c-executor-test.destination-2',
                                 ],
                             ],
                         ],
@@ -485,13 +485,13 @@ class DebugModeTest extends BaseExecutorTest
         for ($i = 0; $i < 100; $i++) {
             $csv->writeRow([$i, '100', '1000']);
         }
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $data = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'debug',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
 
@@ -519,7 +519,7 @@ class DebugModeTest extends BaseExecutorTest
         $jobExecutor->execute($job);
 
         try {
-            $this->getClient()->getTableDataPreview('out.c-docker-test.transposed');
+            $this->getClient()->getTableDataPreview('out.c-executor-test.transposed');
             $this->fail('Table should not exist.');
         } catch (Exception $e) {
             if ($e->getCode() != 404) {

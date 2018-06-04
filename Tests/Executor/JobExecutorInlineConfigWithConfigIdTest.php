@@ -39,13 +39,13 @@ class JobExecutorInlineConfigWithConfigIdTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'docker-test',
+                'config' => 'executor-test',
                 'configData' => [
                     'storage' => [
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'input.csv',
                                 ],
                             ],
@@ -64,7 +64,7 @@ class JobExecutorInlineConfigWithConfigIdTest extends BaseExecutorTest
         $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . 'upload.csv');
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
-        $this->getClient()->createTableAsync('in.c-docker-test', 'source', $csv);
+        $this->getClient()->createTableAsync('in.c-executor-test', 'source', $csv);
 
         $jobExecutor = $this->getJobExecutor([], []);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
@@ -74,6 +74,6 @@ class JobExecutorInlineConfigWithConfigIdTest extends BaseExecutorTest
         self::assertArrayHasKey('images', $ret);
         self::assertArrayHasKey('configVersion', $ret);
         self::assertEquals(null, $ret['configVersion']);
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-python-transformation-docker-test.result'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-python-transformation-executor-test.result'));
     }
 }

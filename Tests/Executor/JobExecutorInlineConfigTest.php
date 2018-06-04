@@ -27,7 +27,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
                         'input' => [
                             'tables' => [
                                 [
-                                    'source' => 'in.c-docker-test.source',
+                                    'source' => 'in.c-executor-test.source',
                                     'destination' => 'input.csv',
                                 ],
                             ],
@@ -36,7 +36,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
                             'tables' => [
                                 [
                                     'source' => 'result.csv',
-                                    'destination' => 'out.c-docker-test.output',
+                                    'destination' => 'out.c-executor-test.output',
                                 ],
                             ],
                         ],
@@ -81,7 +81,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
 
         $handler = new TestHandler();
         $data = $this->getJobParameters();
@@ -94,7 +94,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         self::assertArrayHasKey('configVersion', $ret);
         self::assertEquals(null, $ret['configVersion']);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-executor-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
@@ -276,7 +276,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $csv->writeRow(['name', 'oldValue', 'newValue']);
         $csv->writeRow(['price', '100', '1000']);
         $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-docker-test", "source", $csv);
+        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
 
         $data = $this->getJobParameters();
         $data['params']['tag'] = '1.1.12';
@@ -285,7 +285,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-docker-test.output');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-executor-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);

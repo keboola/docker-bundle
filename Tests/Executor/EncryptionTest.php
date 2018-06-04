@@ -33,7 +33,7 @@ class EncryptionTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'test-configuration',
+                'config' => 'executor-configuration',
             ],
         ];
 
@@ -92,7 +92,7 @@ class EncryptionTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'test-configuration'
+                'config' => 'executor-configuration'
             ]
         ];
 
@@ -144,7 +144,7 @@ class EncryptionTest extends BaseExecutorTest
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
-                'config' => 'test-configuration'
+                'config' => 'executor-configuration'
             ]
         ];
 

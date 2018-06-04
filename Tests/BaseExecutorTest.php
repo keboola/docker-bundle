@@ -42,7 +42,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
 
     protected function clearBuckets()
     {
-        foreach (['in.c-docker-test', 'out.c-docker-test', 'out.c-keboola-python-transformation-docker-test'] as $bucket) {
+        foreach (['in.c-executor-test', 'out.c-executor-test', 'out.c-keboola-python-transformation-executor-test'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -57,7 +57,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
     {
         $this->clearBuckets();
         // Create buckets
-        $this->getClient()->createBucket('docker-test', Client::STAGE_IN, 'Docker TestSuite');
+        $this->getClient()->createBucket('executor-test', Client::STAGE_IN, 'Docker TestSuite');
     }
 
     protected function clearFiles()
@@ -75,7 +75,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
     {
         $cmp = new Components($this->getClient());
         try {
-            $cmp->deleteConfiguration('keboola.python-transformation', 'test-configuration');
+            $cmp->deleteConfiguration('keboola.python-transformation', 'executor-configuration');
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
@@ -100,7 +100,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $cmp = new Components($this->getClient());
         $cfg = new Configuration();
         $cfg->setComponentId('keboola.python-transformation');
-        $cfg->setConfigurationId('test-configuration');
+        $cfg->setConfigurationId('executor-configuration');
         $cfg->setConfiguration($configuration);
         $cfg->setState($state);
         $cfg->setName('Test configuration');
