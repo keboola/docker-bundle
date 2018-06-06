@@ -15,9 +15,9 @@
     </php>
 
     <testsuite name="API Test Suite">
-        <directory>Tests/Docker</directory>
-        <directory>Tests/Job</directory>
-        <directory>Tests/Runner</directory>
+        <directory>Tests</directory>
+        <exclude>Tests/Command</exclude>
+        <exclude>Tests/Controller</exclude>
     </testsuite>
 
     <filter>

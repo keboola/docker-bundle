@@ -1,36 +1,36 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests;
+namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\Syrup\Exception\ApplicationException;
+use PHPUnit\Framework\TestCase;
 
-class ComponentTest extends \PHPUnit_Framework_TestCase
+class ComponentTest extends TestCase
 {
     public function testConfiguration()
     {
         $configuration = [
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
                 ],
-                "memory" => "128m",
-                "process_timeout" => 7200,
-                "forward_token" => true,
-                "forward_token_details" => true,
-                "default_bucket" => true,
-                "configuration_format" => 'json'
-            ]
+                'memory' => '128m',
+                'process_timeout' => 7200,
+                'forward_token' => true,
+                'forward_token_details' => true,
+                'default_bucket' => true,
+            ],
         ];
 
         $component = new Component($configuration);
-        $this->assertEquals("128m", $component->getMemory());
-        $this->assertEquals(7200, $component->getProcessTimeout());
-        $this->assertEquals('standard', $component->getLoggerType());
-        $this->assertEquals('tcp', $component->getLoggerServerType());
-        $this->assertEquals(
+        self::assertEquals('128m', $component->getMemory());
+        self::assertEquals(7200, $component->getProcessTimeout());
+        self::assertEquals('standard', $component->getLoggerType());
+        self::assertEquals('tcp', $component->getLoggerServerType());
+        self::assertEquals(
             [
                 100 => 'none',
                 200 => 'normal',
@@ -43,29 +43,29 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
             $component->getLoggerVerbosity()
         );
-        $this->assertEquals(true, $component->forwardToken());
-        $this->assertEquals(true, $component->forwardTokenDetails());
-        $this->assertEquals(true, $component->hasDefaultBucket());
+        self::assertEquals(true, $component->forwardToken());
+        self::assertEquals(true, $component->forwardTokenDetails());
+        self::assertEquals(true, $component->hasDefaultBucket());
     }
 
     public function testConfigurationDefaults()
     {
         $configuration = [
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo",
-                    "tag" => "master"
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
                 ],
-            ]
+            ],
         ];
 
         $component = new Component($configuration);
-        $this->assertEquals("256m", $component->getMemory());
-        $this->assertEquals(3600, $component->getProcessTimeout());
-        $this->assertEquals('standard', $component->getLoggerType());
-        $this->assertEquals('tcp', $component->getLoggerServerType());
-        $this->assertEquals(
+        self::assertEquals('256m', $component->getMemory());
+        self::assertEquals(3600, $component->getProcessTimeout());
+        self::assertEquals('standard', $component->getLoggerType());
+        self::assertEquals('tcp', $component->getLoggerServerType());
+        self::assertEquals(
             [
                 100 => 'none',
                 200 => 'normal',
@@ -78,19 +78,16 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
             $component->getLoggerVerbosity()
         );
-        $this->assertEquals(false, $component->forwardToken());
-        $this->assertEquals(false, $component->forwardTokenDetails());
-        $this->assertEquals(false, $component->hasDefaultBucket());
+        self::assertEquals(false, $component->forwardToken());
+        self::assertEquals(false, $component->forwardTokenDetails());
+        self::assertEquals(false, $component->hasDefaultBucket());
     }
 
     public function testInvalidDefinition()
     {
-        try {
-            new Component([]);
-            $this->fail("Invalid image definition must fail.");
-        } catch (ApplicationException $e) {
-            $this->assertContains('definition is empty', $e->getMessage());
-        }
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage('definition is empty');
+        new Component([]);
     }
 
     public function testGetSanitizedBucketNameDot()
@@ -105,7 +102,7 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         $component = new Component($component);
-        $this->assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
+        self::assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
     }
 
     public function testGetSanitizedBucketNameNoDot()
@@ -120,7 +117,7 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         $component = new Component($component);
-        $this->assertEquals('in.c-ex-generic-test', $component->getDefaultBucketName('test'));
+        self::assertEquals('in.c-ex-generic-test', $component->getDefaultBucketName('test'));
     }
 
     public function testGetSanitizedBucketNameTwoDot()
@@ -135,7 +132,7 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         $component = new Component($component);
-        $this->assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
+        self::assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
     }
 
     public function testRunAsRoot()
@@ -150,9 +147,8 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ],
         ];
         $component = new Component($componentData);
-        $this->assertFalse($component->runAsRoot());
+        self::assertFalse($component->runAsRoot());
     }
-
 
     public function testDoNotRunAsRoot()
     {
@@ -169,34 +165,33 @@ class ComponentTest extends \PHPUnit_Framework_TestCase
             ]
         ];
         $component = new Component($componentData);
-        $this->assertTrue($component->runAsRoot());
+        self::assertTrue($component->runAsRoot());
     }
 
     public function testInvalidRepository()
     {
         try {
             new Component([
-                "data" => [
-                    "definition" => [
-                        "type" => "builder",
-                        "uri" => "keboolaprivatetest/docker-demo-docker",
-                        "build_options" => [
-                            "parent_type" => "dockerhub-private",
-                            "repository" => [
-                                "uri" => "https://github.com/keboola/docker-demo-app",
-                                "type" => "fooBar",
+                'data' => [
+                    'definition' => [
+                        'type' => 'builder',
+                        'uri' => 'keboolaprivatetest/docker-demo-docker',
+                        'build_options' => [
+                            'parent_type' => 'dockerhub-private',
+                            'repository' => [
+                                'uri' => 'https://github.com/keboola/docker-demo-app',
+                                'type' => 'fooBar',
                             ],
-                            "commands" => [
-                                "composer install"
+                            'commands' => [
+                                'composer install'
                             ],
-                            "entry_point" => "php /home/run.php --data=/data"
+                            'entry_point' => 'php /home/run.php --data=/data',
                         ]
                     ],
-                    "configuration_format" => "yaml",
-                ]
+                ],
             ]);
         } catch (ApplicationException $e) {
-            $this->assertContains('Invalid repository_type', $e->getMessage());
+            self::assertContains('Invalid repository_type', $e->getMessage());
         }
     }
 }

@@ -5,37 +5,26 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
+use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 
-class ConfigFileTest extends \PHPUnit_Framework_TestCase
+class ConfigFileTest extends BaseRunnerTest
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    public function setUp()
+    private function getAuthorization()
     {
-        $this->encryptorFactory = new ObjectEncryptorFactory(
-            'alias/dummy-key',
-            'us-east-1',
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid())
-        );
+        $oauthClientStub = self::getMockBuilder(Credentials::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        /** @var Credentials $oauthClientStub */
+        return new Authorization($oauthClientStub, $oauthClientStub, $this->getEncryptorFactory()->getEncryptor(), 'dummy-component');
     }
 
     public function testConfig()
     {
         $temp = new Temp();
-        $oauthClientStub = $this->getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
-        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
+        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile(
             ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
             new OutputFilter()
@@ -56,92 +45,69 @@ class ConfigFileTest extends \PHPUnit_Framework_TestCase
     "action": "run"
 }
 SAMPLE;
-        $this->assertEquals($sampleData, $data);
+        self::assertEquals($sampleData, $data);
     }
 
     public function testInvalidConfig()
     {
         $temp = new Temp();
-
-        $oauthClientStub = $this->getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
-
-        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $authorization, 'run', 'json');
-        try {
-            $config->createConfigFile(['key1' => 'value1'], new OutputFilter());
-            $this->fail("Invalid config file must fail.");
-        } catch (UserException $e) {
-            $this->assertContains('Error in configuration: Unrecognized option', $e->getMessage());
-        }
+        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Error in configuration: Unrecognized option');
+        $config->createConfigFile(['key1' => 'value1'], new OutputFilter());
     }
 
     public function testDefinitionParameters()
     {
         $imageConfig = [
-            "definition" => [
-                "type" => "dockerhub",
-                "uri" => "keboola/docker-demo"
+            'definition' => [
+                'type' => 'dockerhub',
+                'uri' => 'keboola/docker-demo',
             ],
-            "configuration_format" => "yaml",
+            'configuration_format' => 'yaml',
         ];
 
         $configData = [
-            "storage" => [
+            'storage' => [
             ],
-            "parameters" => [
-                "primary_key_column" => "id",
-                "data_column" => "text",
-                "string_length" => "4"
+            'parameters' => [
+                'primary_key_column' => 'id',
+                'data_column' => 'text',
+                'string_length' => '4',
             ],
-            "runtime" => [
-                "foo" => "bar",
-                "baz" => "next"
+            'runtime' => [
+                'foo' => 'bar',
+                'baz' => 'next',
             ]
         ];
 
         $temp = new Temp();
-
-        $oauthClientStub = $this->getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
-        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
+        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
-        $this->assertEquals('id', $config['parameters']['primary_key_column']);
-        $this->assertEquals('text', $config['parameters']['data_column']);
-        $this->assertEquals('4', $config['parameters']['string_length']);
+        self::assertEquals('id', $config['parameters']['primary_key_column']);
+        self::assertEquals('text', $config['parameters']['data_column']);
+        self::assertEquals('4', $config['parameters']['string_length']);
         // volatile parameters must not get stored
-        $this->assertArrayNotHasKey('foo', $config['parameters']);
-        $this->assertArrayNotHasKey('baz', $config['parameters']);
+        self::assertArrayNotHasKey('foo', $config['parameters']);
+        self::assertArrayNotHasKey('baz', $config['parameters']);
     }
 
     public function testEmptyConfig()
     {
         $imageConfig = [];
         $configData = [];
-
         $temp = new Temp();
-
-        $oauthClientStub = $this->getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        /** @var Credentials $oauthClientStub */
-        $authorization = new Authorization($oauthClientStub, $oauthClientStub, $this->encryptorFactory->getEncryptor(), 'dummy-component');
-        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $authorization, 'run', 'json');
+        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
-        $this->assertArrayNotHasKey('storage', $config);
-        $this->assertArrayNotHasKey('authorization', $config);
-        $this->assertArrayNotHasKey('parameters', $config);
-        $this->assertArrayHasKey('image_parameters', $config);
-        $this->assertArrayHasKey('action', $config);
-        $this->assertEquals('run', $config['action']);
+        self::assertArrayNotHasKey('storage', $config);
+        self::assertArrayNotHasKey('authorization', $config);
+        self::assertArrayNotHasKey('parameters', $config);
+        self::assertArrayHasKey('image_parameters', $config);
+        self::assertArrayHasKey('action', $config);
+        self::assertEquals('run', $config['action']);
     }
 }
