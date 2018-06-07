@@ -2,12 +2,14 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\Syrup\Job\Exception\InitializationException;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\UniformRandomBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
 class WorkingDirectory
@@ -66,13 +68,21 @@ class WorkingDirectory
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new UniformRandomBackOffPolicy(60000, 180000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $proxy->call(function () use (&$process) {
-            $this->logger->notice("Normalizing working directory permissions");
-            $command = $this->getNormalizeCommand();
-            $process = new Process($command);
-            $process->setTimeout(120);
-            $process->run();
-        });
+        try {
+            $proxy->call(
+                function () use (&$process) {
+                    $this->logger->notice("Normalizing working directory permissions");
+                    $command = $this->getNormalizeCommand();
+                    $process = new Process($command);
+                    $process->setTimeout(120);
+                    $process->run();
+                }
+            );
+        } catch (ProcessTimedOutException $e) {
+            throw new InitializationException(
+                "Could not normalize permissions. Job will restart."
+            );
+        }
     }
 
     public function getDataDir()
