@@ -162,9 +162,6 @@ class Container
         // Check old containers, delete if found
         $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
         $process->mustRun();
-        if (trim($process->getOutput()) !== '0') {
-            $this->removeContainer($this->id);
-        }
     }
 
     /**
@@ -199,20 +196,6 @@ class Container
                     }
                     $this->containerLogger->error($buffer);
                 }
-            }
-        } finally {
-            try {
-                $this->removeContainer($this->id);
-            } catch (ProcessFailedException $e) {
-                $this->logger->notice(
-                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                );
-                // continue
-            } catch (ProcessTimedOutException $e) {
-                $this->logger->notice(
-                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                );
-                // continue
             }
         }
         return $process;
@@ -432,34 +415,12 @@ class Container
      * @param string $containerId
      * @return string
      */
-    public function getRemoveCommand($containerId)
-    {
-        setlocale(LC_CTYPE, "en_US.UTF-8");
-        $command = "sudo docker rm -f ";
-        $command .= escapeshellarg($containerId);
-        return $command;
-    }
-
-    /**
-     * @param string $containerId
-     * @return string
-     */
     public function getInspectCommand($containerId)
     {
         setlocale(LC_CTYPE, "en_US.UTF-8");
         $command = "sudo docker inspect ";
         $command .= escapeshellarg($containerId);
         return $command;
-    }
-
-    /**
-     * @param $containerId
-     */
-    public function removeContainer($containerId)
-    {
-        $process = new Process($this->getRemoveCommand($containerId));
-        $process->setTimeout($this->dockerCliTimeout);
-        $process->mustRun();
     }
 
     /**
