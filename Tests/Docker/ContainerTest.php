@@ -262,39 +262,4 @@ EOF;
         $expected = "sudo docker inspect 'name'";
         $this->assertEquals($expected, $container->getInspectCommand("name"));
     }
-
-    public function testRemoveCommand()
-    {
-        $imageConfiguration = new Component([
-            "data" => [
-                "definition" => [
-                    "type" => "dockerhub",
-                    "uri" => "keboola/docker-demo-app"
-                ]
-            ]
-        ]);
-        $log = new Logger("null");
-        $log->pushHandler(new NullHandler());
-        $containerLog = new ContainerLogger("null");
-        $containerLog->pushHandler(new NullHandler());
-
-        $image = ImageFactory::getImage($this->encryptorFactory->getEncryptor(), $log, $imageConfiguration, new Temp(), true);
-        $temp = new Temp();
-        $container = new Container(
-            'docker-container-test',
-            $image,
-            $log,
-            $containerLog,
-            $temp->getTmpFolder(),
-            $temp->getTmpFolder(),
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
-            new RunCommandOptions([], []),
-            new OutputFilter(),
-            new Limits($log, [], [], [], [])
-        );
-        $expected = "sudo docker rm -f 'name'";
-        $this->assertEquals($expected, $container->getRemoveCommand("name"));
-    }
 }
