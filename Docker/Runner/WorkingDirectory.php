@@ -74,7 +74,7 @@ class WorkingDirectory
                     $this->logger->notice("Normalizing working directory permissions");
                     $command = $this->getNormalizeCommand();
                     $process = new Process($command);
-                    $process->setTimeout(1);
+                    $process->setTimeout(120);
                     $process->run();
                 }
             );
