@@ -33,7 +33,6 @@
             <directory suffix=".php">.</directory>
             <exclude>
                 <directory suffix=".php">vendor</directory>
-                <directory suffix=".php">Tests/Functional/loggers</directory>
             </exclude>
         </whitelist>
     </filter>
