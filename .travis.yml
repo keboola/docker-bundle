@@ -55,3 +55,7 @@ notifications:
   email: false
   slack:
     secure: doRb1zL09mK/dGUFgXAz3TqSAkCASbYMQYrGbOtfolIiBHwDHpO8J7QDXo2OHCUvYd4bOMv2HAluooz4nYn50RskUdYDkqUTgDRLVmRwdsH3KiBdQ5awnxfbZTvXPPGKSAbbOaH4AF+ig++I9oBJqzF5pBvcp2sfOiQkIrsjKr8=
+
+branches:
+  only:
+  - master
