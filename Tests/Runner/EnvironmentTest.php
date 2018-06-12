@@ -5,23 +5,27 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Environment;
-use Keboola\StorageApi\Client;
-use Keboola\Syrup\Exception\UserException;
+use PHPUnit\Framework\TestCase;
 
-class EnvironmentTest extends \PHPUnit_Framework_TestCase
+class EnvironmentTest extends TestCase
 {
     /**
-     * @var Client
+     * @var array
      */
-    protected $client;
+    private $tokenInfo;
 
     public function setUp()
     {
         parent::setUp();
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            "token" => STORAGE_API_TOKEN,
-        ]);
+        $this->tokenInfo = [
+            'description' => 'dummy token',
+            'id' => '123',
+            'owner' => [
+                'id' => '321',
+                'name' => 'some person',
+            ],
+            'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+        ];
     }
 
     public function testExecutorEnvs()
@@ -37,20 +41,20 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
                 'forward_token_details' => false,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
-        $this->assertArrayHasKey('KBC_PROJECTID', $envs);
-        $this->assertArrayHasKey('KBC_CONFIGID', $envs);
-        $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
-        $this->assertArrayHasKey('KBC_STACKID', $envs);
-        $this->assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
-        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
-        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
-        $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
-        $this->assertArrayNotHasKey('KBC_URL', $envs);
-        $this->assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
-        $this->assertArrayNotHasKey('KBC_TOKENID', $envs);
-        $this->assertArrayNotHasKey('KBC_TOKENDESC', $envs);
+        self::assertArrayHasKey('KBC_PROJECTID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        self::assertArrayHasKey('KBC_STACKID', $envs);
+        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertArrayHasKey('KBC_COMPONENTID', $envs);
+        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertArrayNotHasKey('KBC_TOKEN', $envs);
+        self::assertArrayNotHasKey('KBC_URL', $envs);
+        self::assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
+        self::assertArrayNotHasKey('KBC_TOKENID', $envs);
+        self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
     }
 
     public function testExecutorForwardToken()
@@ -66,21 +70,21 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
                 'forward_token_details' => false,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
-        $this->assertArrayHasKey('KBC_PROJECTID', $envs);
-        $this->assertArrayHasKey('KBC_CONFIGID', $envs);
-        $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
-        $this->assertArrayHasKey('KBC_STACKID', $envs);
-        $this->assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
-        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
-        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
-        $this->assertArrayHasKey('KBC_TOKEN', $envs);
-        $this->assertArrayHasKey('KBC_URL', $envs);
-        $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
-        $this->assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
-        $this->assertArrayNotHasKey('KBC_TOKENID', $envs);
-        $this->assertArrayNotHasKey('KBC_TOKENDESC', $envs);
+        self::assertArrayHasKey('KBC_PROJECTID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        self::assertArrayHasKey('KBC_STACKID', $envs);
+        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertArrayHasKey('KBC_COMPONENTID', $envs);
+        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertArrayHasKey('KBC_TOKEN', $envs);
+        self::assertArrayHasKey('KBC_URL', $envs);
+        self::assertEquals($envs['KBC_TOKEN'], $this->tokenInfo['token']);
+        self::assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
+        self::assertArrayNotHasKey('KBC_TOKENID', $envs);
+        self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
     }
 
     public function testExecutorForwardTokenAndDetails()
@@ -96,21 +100,21 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
                 'forward_token_details' => true,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->client->verifyToken(), 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
-        $this->assertArrayHasKey('KBC_PROJECTID', $envs);
-        $this->assertArrayHasKey('KBC_CONFIGID', $envs);
-        $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
-        $this->assertArrayHasKey('KBC_STACKID', $envs);
-        $this->assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
-        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
-        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
-        $this->assertArrayHasKey('KBC_TOKEN', $envs);
-        $this->assertArrayHasKey('KBC_URL', $envs);
-        $this->assertEquals($envs['KBC_TOKEN'], STORAGE_API_TOKEN);
-        $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
-        $this->assertArrayHasKey('KBC_TOKENID', $envs);
-        $this->assertArrayHasKey('KBC_TOKENDESC', $envs);
+        self::assertArrayHasKey('KBC_PROJECTID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        self::assertArrayHasKey('KBC_STACKID', $envs);
+        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertArrayHasKey('KBC_COMPONENTID', $envs);
+        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertArrayHasKey('KBC_TOKEN', $envs);
+        self::assertArrayHasKey('KBC_URL', $envs);
+        self::assertEquals($envs['KBC_TOKEN'], $this->tokenInfo['token']);
+        self::assertArrayHasKey('KBC_PROJECTNAME', $envs);
+        self::assertArrayHasKey('KBC_TOKENID', $envs);
+        self::assertArrayHasKey('KBC_TOKENDESC', $envs);
     }
 
     public function testExecutorForwardDetails()
@@ -130,19 +134,19 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment('config-test-id', $component, $parameters, $this->client->verifyToken(), 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, $parameters, $this->tokenInfo, 123, STORAGE_API_URL);
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
-        $this->assertArrayHasKey('KBC_PROJECTID', $envs);
-        $this->assertArrayHasKey('KBC_CONFIGID', $envs);
-        $this->assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
-        $this->assertArrayHasKey('KBC_STACKID', $envs);
-        $this->assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
-        $this->assertArrayHasKey('KBC_COMPONENTID', $envs);
-        $this->assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
-        $this->assertArrayNotHasKey('KBC_TOKEN', $envs);
-        $this->assertArrayNotHasKey('KBC_URL', $envs);
-        $this->assertArrayHasKey('KBC_PROJECTNAME', $envs);
-        $this->assertArrayHasKey('KBC_TOKENID', $envs);
-        $this->assertArrayHasKey('KBC_TOKENDESC', $envs);
+        self::assertArrayHasKey('KBC_PROJECTID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        self::assertArrayHasKey('KBC_STACKID', $envs);
+        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertArrayHasKey('KBC_COMPONENTID', $envs);
+        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertArrayNotHasKey('KBC_TOKEN', $envs);
+        self::assertArrayNotHasKey('KBC_URL', $envs);
+        self::assertArrayHasKey('KBC_PROJECTNAME', $envs);
+        self::assertArrayHasKey('KBC_TOKENID', $envs);
+        self::assertArrayHasKey('KBC_TOKENDESC', $envs);
     }
 }

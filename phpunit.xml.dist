@@ -14,10 +14,18 @@
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
 
-    <testsuite name="API Test Suite">
-        <directory>Tests/Docker</directory>
-        <directory>Tests/Job</directory>
+    <testsuite name="base-tests">
+        <directory>Tests</directory>
+        <exclude>Tests/Command</exclude>
+        <exclude>Tests/Controller</exclude>
+        <exclude>Tests/Runner</exclude>
+        <exclude>Tests/Executor</exclude>
+    </testsuite>
+    <testsuite name="runner-tests">
         <directory>Tests/Runner</directory>
+    </testsuite>
+    <testsuite name="executor-tests">
+        <directory>Tests/Executor</directory>
     </testsuite>
 
     <filter>
@@ -25,7 +33,6 @@
             <directory suffix=".php">.</directory>
             <exclude>
                 <directory suffix=".php">vendor</directory>
-                <directory suffix=".php">Tests/Functional/loggers</directory>
             </exclude>
         </whitelist>
     </filter>

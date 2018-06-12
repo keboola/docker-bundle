@@ -6,12 +6,12 @@ use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpKernel\Tests\EventListener\TestLogger;
 use Symfony\Component\Process\Process;
 
-class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
+class WorkingDirectoryTest extends TestCase
 {
     public function testWorkingDirectoryTimeout()
     {
@@ -19,12 +19,12 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $logger = new Logger('test');
         $handler = new TestHandler();
         $logger->pushHandler($handler);
-        $workingDir = $this->getMockBuilder(WorkingDirectory::class)
+        $workingDir = self::getMockBuilder(WorkingDirectory::class)
             ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
         $uid = trim((new Process('id -u'))->mustRun()->getOutput());
-        $workingDir->expects($this->exactly(2))
+        $workingDir->expects(self::exactly(2))
             ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
                 'sleep 130 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
@@ -56,9 +56,9 @@ class WorkingDirectoryTest extends \PHPUnit_Framework_TestCase
         $fs->dumpFile($workingDir->getDataDir() . '/out/tables/table.manifest', $tableManifestFile);
         $fs->dumpFile($workingDir->getDataDir() . '/out/state.json', $stateFile);
         $workingDir->moveOutputToInput();
-        $this->assertEquals($tableFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table'));
-        $this->assertEquals($tableManifestFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest'));
-        $this->assertFalse(file_exists($workingDir->getDataDir() . '/in/state.json'));
+        self::assertEquals($tableFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table'));
+        self::assertEquals($tableManifestFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest'));
+        self::assertFalse(file_exists($workingDir->getDataDir() . '/in/state.json'));
         $workingDir->dropWorkingDir();
     }
 }

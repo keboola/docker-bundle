@@ -110,7 +110,7 @@ class Executor extends BaseExecutor
             $rowId = ($params['row']);
         } else {
             if (isset($params['row'])) {
-                throw new UserException("Unsupported row value (" . var_export($params['row']) . "), scalar is required.");
+                throw new UserException("Unsupported row value (" . var_export($params['row'], true) . "), scalar is required.");
             }
             $rowId = null;
         }

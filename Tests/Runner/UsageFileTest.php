@@ -8,10 +8,11 @@ use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
-class UsageFileTest extends \PHPUnit_Framework_TestCase
+class UsageFileTest extends TestCase
 {
     /**
      * @var Temp
@@ -33,52 +34,31 @@ class UsageFileTest extends \PHPUnit_Framework_TestCase
         $this->temp = new Temp('runner-usage-file-test');
         $this->fs = new Filesystem;
         $this->dataDir = $this->temp->getTmpFolder();
-        $this->fs->mkdir([
-            $this->dataDir . '/out'
-        ]);
-    }
-
-    public function tearDown()
-    {
-        $this->fs->remove($this->dataDir);
-        $this->temp = null;
+        $this->fs->mkdir($this->dataDir . '/out');
     }
 
     public function testStoreUsageWrongDataJson()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
-
         // there should be "metric" key instead of "random"
-        $usage = <<<JSON
-[
-  {
-    "random": "API calls",
-    "value": 150
-  },
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'random' => 'API calls',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
     public function testStoreUsageWrongDataYaml()
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "random" under');
-
         // there should be "metric" key instead of "random"
         $usage = <<<YAML
 - metric: kiloBytes
@@ -88,32 +68,28 @@ JSON;
 YAML;
         $this->fs->dumpFile($this->dataDir . '/out/usage.yml', $usage);
 
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
     }
 
     public function testStoreUsageOk()
     {
-        $usage = <<<JSON
-[
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'metric' => 'kiloBytes',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
-        $jobMapperStub = $this->getMockBuilder(JobMapper::class)
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         $encryptorFactory = new ObjectEncryptorFactory(
             'alias/dummy-key',
@@ -123,14 +99,14 @@ JSON;
         );
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('get')
             ->willReturn(new Job($encryptorFactory->getEncryptor()));
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('update')
-            ->with($this->callback(function ($job) use ($usage) {
+            ->with(self::callback(function ($job) use ($usage) {
                 /** @var $job Job */
                 return $job->getUsage() === \json_decode($usage, true);
             }));
@@ -142,31 +118,25 @@ JSON;
 
     public function testStoreUsageUnknownJob()
     {
-        $this->expectException(ApplicationException::class);
-        $this->expectExceptionMessage('Job not found');
-
-        $usage = <<<JSON
-[
-  {
-    "metric": "kiloBytes",
-    "value": 150
-  }
-]
-JSON;
+        $usage = \GuzzleHttp\json_encode([[
+            'metric' => 'kiloBytes',
+            'value' => 150,
+        ]]);
         $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
 
         $jobMapperStub = $this->getMockBuilder(JobMapper::class)
             ->disableOriginalConstructor()
-            ->getMock()
-        ;
+            ->getMock();
 
         $jobMapperStub
-            ->expects($this->once())
+            ->expects(self::once())
             ->method('get')
             ->willReturn(null);
 
         /** @var JobMapper $jobMapperStub */
         $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage('Job not found');
         $usageFile->storeUsage();
     }
 }

@@ -7,9 +7,10 @@ use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\Temp\Temp;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
-class StateFileTest extends \PHPUnit_Framework_TestCase
+class StateFileTest extends TestCase
 {
     /**
      * @var Client
@@ -46,7 +47,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
         $this->client = new Client([
             'url' => STORAGE_API_URL,
-            "token" => STORAGE_API_TOKEN,
+            'token' => STORAGE_API_TOKEN,
         ]);
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
@@ -59,22 +60,13 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         $this->encryptorFactory->setProjectId('123');
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-        $fs = new Filesystem();
-        $fs->remove($this->dataDir);
-        $this->temp = null;
-    }
-
     public function testCreateStateFile()
     {
-        $state = ['lastUpdate' => 'today'];
         $stateFile = new StateFile(
             $this->dataDir,
             $this->client,
             $this->encryptorFactory,
-            $state,
+            ['lastUpdate' => 'today'],
             'json',
             'docker-demo',
             'config-id',
@@ -82,10 +74,10 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
-        $this->assertTrue(file_exists($fileName));
+        self::assertTrue(file_exists($fileName));
         $obj = new \stdClass();
         $obj->lastUpdate = 'today';
-        $this->assertEquals(
+        self::assertEquals(
             $obj,
             json_decode(file_get_contents($fileName), false)
         );
@@ -93,12 +85,11 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
     public function testCreateEmptyStateFile()
     {
-        $state = [];
         $stateFile = new StateFile(
             $this->dataDir,
             $this->client,
             $this->encryptorFactory,
-            $state,
+            [],
             'json',
             'docker-demo',
             'config-id',
@@ -106,8 +97,8 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
-        $this->assertTrue(file_exists($fileName));
-        $this->assertEquals(
+        self::assertTrue(file_exists($fileName));
+        self::assertEquals(
             new \stdClass(),
             json_decode(file_get_contents($fileName), false)
         );
@@ -119,10 +110,9 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects($this->never())
-            ->method("apiPut")
-        ;
+            ->method('apiPut');
 
-        $state = ["state" => "fooBar"];
+        $state = ['state' => 'fooBar'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
@@ -139,11 +129,11 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateChange()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
                 $this->callback(function ($argument) {
@@ -157,13 +147,12 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
                 })
             );
 
-        $state = ["state" => "fooBarBaz"];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
@@ -174,51 +163,48 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateChangeFromEmpty()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
             ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                $this->equalTo(["state" => '{"state":"fooBar"}'])
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
             );
 
-        $state = [];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            [],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState(["state" => "fooBar"]);
+        $stateFile->storeState(['state' => 'fooBar']);
     }
 
     public function testUpdateStateChangeToEmptyArray()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
             ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                $this->equalTo(["state" => '[]'])
-            )
-        ;
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '[]'])
+            );
 
-        $state = ["state" => "fooBar"];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
@@ -229,24 +215,22 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateStateChangeToEmptyObject()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
             ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                $this->equalTo(["state" => '{}'])
-            )
-        ;
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{}'])
+            );
 
-        $state = ["state" => "fooBar"];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
@@ -257,36 +241,35 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
 
     public function testUpdateRowStateChange()
     {
-        $sapiStub = $this->getMockBuilder(Client::class)
+        $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->once())
-            ->method("apiPut")
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
             ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
-                $this->equalTo(["state" => '{"state":"fooBar"}'])
+                self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
             );
 
-        $state = ["state" => "fooBarBaz"];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            $state,
+            ['state' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter(),
             'row-id'
         );
-        $stateFile->storeState(["state" => "fooBar"]);
+        $stateFile->storeState(['state' => 'fooBar']);
     }
 
     public function testPickState()
     {
         $fs = new Filesystem();
-        $data = ["time" => ["previousStart" => 1495580620]];
+        $data = ['time' => ['previousStart' => 1495580620]];
         $stateFile = \GuzzleHttp\json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile(
@@ -299,8 +282,8 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             'config-id',
             new NullFilter()
         );
-        $this->assertEquals($data, $stateFile->loadStateFromFile());
-        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
+        self::assertEquals($data, $stateFile->loadStateFromFile());
+        self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
     public function testPickStateEmptyState()
@@ -319,8 +302,8 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             'config-id',
             new NullFilter()
         );
-        $this->assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
-        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
+        self::assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
+        self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
     public function testPickStateNoState()
@@ -335,7 +318,7 @@ class StateFileTest extends \PHPUnit_Framework_TestCase
             'config-id',
             new NullFilter()
         );
-        $this->assertEquals([], $stateFile->loadStateFromFile());
-        $this->assertFalse(file_exists($this->dataDir . '/out/state.json'));
+        self::assertEquals([], $stateFile->loadStateFromFile());
+        self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 }
