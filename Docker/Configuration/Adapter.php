@@ -142,7 +142,13 @@ class Adapter
             }
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
-            $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
+            $config = $this->getConfig();
+            foreach (['storage', 'parameters', 'image_parameters', 'authorization'] as $objectProp) {
+                if (empty($config[$objectProp])) {
+                    $config[$objectProp] = new \stdClass();
+                }
+            }
+            $serialized = $encoder->encode($config, $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
         } else {
             throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
