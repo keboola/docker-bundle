@@ -42,7 +42,9 @@ class ConfigFileTest extends BaseRunnerTest
     "image_parameters": {
         "fooBar": "baz"
     },
-    "action": "run"
+    "action": "run",
+    "storage": {},
+    "authorization": {}
 }
 SAMPLE;
         self::assertEquals($sampleData, $data);
@@ -103,9 +105,9 @@ SAMPLE;
         $config->createConfigFile($configData, new OutputFilter());
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
-        self::assertArrayNotHasKey('storage', $config);
-        self::assertArrayNotHasKey('authorization', $config);
-        self::assertArrayNotHasKey('parameters', $config);
+        self::assertArrayHasKey('storage', $config);
+        self::assertArrayHasKey('authorization', $config);
+        self::assertArrayHasKey('parameters', $config);
         self::assertArrayHasKey('image_parameters', $config);
         self::assertArrayHasKey('action', $config);
         self::assertEquals('run', $config['action']);
