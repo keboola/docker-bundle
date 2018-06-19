@@ -2,7 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
+use Keboola\DockerBundle\Docker\Configuration\Container;
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
+use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -45,6 +47,7 @@ class ConfigurationAdapterTest extends TestCase
                     'version' => 2,
                 ],
             ],
+            'image_parameters' => [],
         ];
     }
 
@@ -74,6 +77,7 @@ authorization:
             params:
                 key: val
         version: 2
+image_parameters: {  }
 
 EOT;
         return $data;
@@ -115,7 +119,8 @@ EOT;
             },
             "version": 2
         }
-    }
+    },
+    "image_parameters": {}
 }
 EOT;
         return $data;
@@ -166,9 +171,6 @@ EOT;
         $fs->remove($root);
     }
 
-    /**
-     *
-     */
     public function testWriteYml()
     {
         $root = "/tmp/docker/" . uniqid("", true);
@@ -186,9 +188,6 @@ EOT;
         $fs->remove($root);
     }
 
-    /**
-     *
-     */
     public function testWriteJson()
     {
         $root = "/tmp/docker/" . uniqid("", true);
@@ -203,5 +202,20 @@ EOT;
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
+    }
+
+
+    public function testConfigurationEmpty()
+    {
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $container = new Container();
+        $data = $container->parse(["config" => ['parameters' => [], 'image_parameters' => []]]);
+        self::assertEquals(['parameters' => [], 'image_parameters' => []], $data);
+        $adapter = new Adapter('json');
+        $adapter->setConfig($data);
+        $adapter->writeToFile($temp->getTmpFolder() . '/config.json');
+        $string = file_get_contents($temp->getTmpFolder() . '/config.json');
+        self::assertEquals("{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    \"storage\": {},\n    \"authorization\": {}\n}", $string);
     }
 }

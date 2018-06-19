@@ -3,8 +3,6 @@
 namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
-use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 
 class ContainerConfigurationTest extends TestCase
@@ -81,19 +79,5 @@ class ContainerConfigurationTest extends TestCase
                 ]
             ]
         ]);
-    }
-
-    public function testConfigurationEmpty()
-    {
-        $temp = new Temp();
-        $temp->initRunFolder();
-        $container = new Configuration\Container();
-        $data = $container->parse(["config" => ['parameters' => [], 'image_parameters' => []]]);
-        self::assertEquals(['parameters' => [], 'image_parameters' => []], $data);
-        $adapter = new Adapter('json');
-        $adapter->setConfig($data);
-        $adapter->writeToFile($temp->getTmpFolder() . '/config.json');
-        $string = file_get_contents($temp->getTmpFolder() . '/config.json');
-        self::assertEquals("{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    \"storage\": {},\n    \"authorization\": {}\n}", $string);
     }
 }
