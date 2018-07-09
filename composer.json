@@ -1,4 +1,4 @@
-
+{
     "name": "keboola/dockerbundle",
     "type": "symfony-bundle",
     "description": "Component for running Docker images in KBC",
