@@ -14,7 +14,7 @@
         "symfony/symfony": "^2.8|^4.1",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^1.0",
-        "keboola/input-mapping": "^5.0",
+        "keboola/input-mapping": "dev-odin-symfony-forward",
         "keboola/output-mapping": "^5.0",
         "vkartaviy/retry": "^0.2"
     },
