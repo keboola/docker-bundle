@@ -13,7 +13,7 @@
         "keboola/php-utils": "^2.0",
         "symfony/symfony": "^2.8|^4.1",
         "keboola/oauth-v2-php-client": "^2.2",
-        "keboola/gelf-server": "^1.0",
+        "keboola/gelf-server": "dev-odin-symfony-forward",
         "keboola/input-mapping": "dev-odin-symfony-forward",
         "keboola/output-mapping": "dev-odin-symfony-forward",
         "vkartaviy/retry": "^0.2"
@@ -26,6 +26,10 @@
         {
             "type": "vcs",
             "url": "D:\\wwwroot\\output-mapping\\"
+        },
+        {
+            "type": "vcs",
+            "url": "D:\\wwwroot\\gelf-server\\"
         }        
     ],
     "require-dev": {
