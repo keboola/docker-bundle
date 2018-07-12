@@ -11,7 +11,6 @@
     ],
     "require": {
         "keboola/php-utils": "^2.0",
-        "symfony/symfony": "^2.8|^4.1",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "dev-odin-symfony-forward",
         "keboola/input-mapping": "dev-odin-symfony-forward",
