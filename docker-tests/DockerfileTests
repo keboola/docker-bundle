@@ -17,6 +17,7 @@ RUN apt-get update -q \
         vim \
         zlib1g-dev \
         wget \
+        iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 # install composer
