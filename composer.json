@@ -15,7 +15,8 @@
         "keboola/gelf-server": "dev-odin-symfony-forward",
         "keboola/input-mapping": "dev-odin-symfony-forward",
         "keboola/output-mapping": "dev-odin-symfony-forward",
-        "vkartaviy/retry": "^0.2"
+        "vkartaviy/retry": "^0.2",
+        "keboola/object-encryptor": "dev-master"
     },
     "repositories": [
         {
@@ -40,6 +41,11 @@
     "autoload": {
         "psr-0": {
             "Keboola\\DockerBundle": ""
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Keboola\\DockerBundle\\Tests\\": "Tests/"
         }
     }
 }
