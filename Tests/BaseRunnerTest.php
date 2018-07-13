@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Elasticsearch\JobMapper;
+//use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -41,9 +41,9 @@ abstract class BaseRunnerTest extends TestCase
     private $clientMock;
 
     /**
-     * @var JobMapper
+     //* @var JobMapper
      */
-    private $jobMapperStub;
+    //private $jobMapperStub;
 
     /**
      * @var StorageApiService
@@ -130,11 +130,12 @@ abstract class BaseRunnerTest extends TestCase
         } else {
             $storageClientStub = $this->client;
         }
+        /*
         if (!$this->jobMapperStub) {
             $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
                 ->disableOriginalConstructor()
                 ->getMock();
-        }
+        }*/
 
         $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -163,7 +164,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->encryptorFactory,
             $this->storageServiceStub,
             $this->loggersServiceStub,
-            $this->jobMapperStub,
+           // $this->jobMapperStub,
             "dummy",
             ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,

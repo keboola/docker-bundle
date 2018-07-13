@@ -2,13 +2,13 @@
 
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
+use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\StorageApi\Event;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
 

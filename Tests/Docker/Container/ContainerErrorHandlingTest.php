@@ -3,10 +3,10 @@
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Docker\RunCommandOptions;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 
 class ContainerErrorHandlingTest extends BaseContainerTest
 {
