@@ -1,63 +1,44 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Image\DockerHub;
+namespace Keboola\DockerBundle\Docker\Image;
 
+use Aws\Ecr\EcrClient;
+use Aws\Ecr\Exception\EcrException;
+use Aws\Exception\CredentialsException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\Syrup\Exception\ApplicationException;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
-class PrivateRepository extends Image\DockerHub
+class AWSElasticContainerRegistry extends Image
 {
-    protected $loginUsername;
-    protected $loginPassword;
-    protected $loginServer;
+    protected $awsRegion = 'us-east-1';
 
     public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
     {
         parent::__construct($encryptor, $component, $logger);
-        $config = $component->getImageDefinition();
-        if (isset($config["repository"])) {
-            if (isset($config["repository"]["username"])) {
-                $this->loginUsername = $config["repository"]["username"];
-            }
-            if (isset($config["repository"]["#password"])) {
-                $this->loginPassword = $this->getEncryptor()->decrypt($config["repository"]["#password"]);
-            }
-            if (isset($config["repository"]["server"])) {
-                $this->loginServer = $config["repository"]["server"];
-            }
+        if (!empty($component->getImageDefinition()["repository"]["region"])) {
+            $this->awsRegion = $component->getImageDefinition()["repository"]["region"];
         }
     }
 
     /**
      * @return string
      */
-    public function getLoginUsername()
+    public function getAwsRegion()
     {
-        return $this->loginUsername;
+        return $this->awsRegion;
     }
 
-    /**
-     * @return string
-     */
-    public function getLoginPassword()
+    public function getAwsAccountId()
     {
-        return $this->loginPassword;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLoginServer()
-    {
-        return $this->loginServer;
+        return substr($this->getImageId(), 0, strpos($this->getImageId(), '.'));
     }
 
     /**
@@ -65,17 +46,23 @@ class PrivateRepository extends Image\DockerHub
      */
     public function getLoginParams()
     {
-        // Login
-        $loginParams = [];
-        if ($this->getLoginUsername()) {
-            $loginParams[] = "--username=" . escapeshellarg($this->getLoginUsername());
+        $ecrClient = new EcrClient(array(
+            'region' => $this->getAwsRegion(),
+            'version' => '2015-09-21'
+        ));
+        try {
+            $authorization = $ecrClient->getAuthorizationToken(["registryIds" => [$this->getAwsAccountId()]]);
+        } catch (CredentialsException $e) {
+            throw new LoginFailedException($e->getMessage());
+        } catch (EcrException $e) {
+            throw new LoginFailedException($e->getMessage());
         }
-        if ($this->getLoginPassword()) {
-            $loginParams[] = "--password=" . escapeshellarg($this->getLoginPassword());
-        }
-        if ($this->getLoginServer()) {
-            $loginParams[] = escapeshellarg($this->getLoginServer());
-        }
+        // decode token and extract user
+        list($user, $token) = explode(":", base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
+
+        $loginParams[] = "--username=" . escapeshellarg($user);
+        $loginParams[] = "--password=" . escapeshellarg($token);
+        $loginParams[] = escapeshellarg($authorization->get('authorizationData')[0]['proxyEndpoint']);
         return join(" ", $loginParams);
     }
 
@@ -85,9 +72,7 @@ class PrivateRepository extends Image\DockerHub
     public function getLogoutParams()
     {
         $logoutParams = [];
-        if ($this->getLoginServer()) {
-            $logoutParams[] = escapeshellarg($this->getLoginServer());
-        }
+        $logoutParams[] = escapeshellarg($this->getImageId());
         return join(" ", $logoutParams);
     }
 
@@ -99,6 +84,7 @@ class PrivateRepository extends Image\DockerHub
         $retryPolicy = new SimpleRetryPolicy(3);
         $backOffPolicy = new ExponentialBackOffPolicy(10000);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
             "docker:1.11 sh -c " .
             escapeshellarg(
@@ -114,11 +100,8 @@ class PrivateRepository extends Image\DockerHub
             });
             $this->logImageHash();
         } catch (\Exception $e) {
-            if (strpos($process->getOutput(), "Login with your Docker ID to push and pull images from Docker Hub.") !== false) {
+            if (strpos($process->getOutput(), "403 Forbidden") !== false) {
                 throw new LoginFailedException($process->getOutput());
-            }
-            if (strpos($process->getErrorOutput(), "unauthorized: incorrect username or password") !== false) {
-                throw new LoginFailedException($process->getErrorOutput());
             }
             throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }

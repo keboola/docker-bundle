@@ -3,9 +3,8 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use Keboola\Syrup\Exception\UserException;
+use Keboola\DockerBundle\Exception\UserException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigFile

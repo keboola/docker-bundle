@@ -2,15 +2,18 @@
 
 namespace Keboola\DockerBundle\Monolog\Handler;
 
+use Keboola\DockerBundle\Exception\NoRequestException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\StorageApi\Event;
+use Keboola\StorageApi\Exception;
 use Monolog\Logger;
 
 /**
  * Class StorageApiHandler
  * @package Keboola\DockerBundle\Monolog\Handler
  */
-class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
+class StorageApiHandler extends \Monolog\Handler\AbstractHandler
 {
     /**
      * Verbosity None - event will not be stored in Storage at all.
@@ -38,13 +41,30 @@ class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
     private $verbosity;
 
     /**
+     * @var  StorageApiService
+     */
+    protected $storageApiService;
+
+    /**
+     * @var string
+     */
+    protected $appName;
+
+    /**
+     * @var \Keboola\StorageApi\Client
+     */
+    protected $storageApiClient;
+
+    /**
      * StorageApiHandler constructor.
-     * @param int $appName
+     * @param string $appName
      * @param StorageApiService $storageApiService
      */
     public function __construct($appName, StorageApiService $storageApiService)
     {
-        parent::__construct($appName, $storageApiService);
+        parent::__construct();
+        $this->appName = $appName;
+        $this->storageApiService = $storageApiService;
         $this->verbosity[Logger::DEBUG] = self::VERBOSITY_NONE;
         $this->verbosity[Logger::INFO] = self::VERBOSITY_NORMAL;
         $this->verbosity[Logger::NOTICE] = self::VERBOSITY_NORMAL;
@@ -73,6 +93,21 @@ class StorageApiHandler extends \Keboola\Syrup\Monolog\Handler\StorageApiHandler
     public function getVerbosity()
     {
         return $this->verbosity;
+    }
+
+    protected function initStorageApiClient()
+    {
+        try {
+            $this->storageApiClient = $this->storageApiService->getClient();
+        } catch (NoRequestException $e) {
+            // Ignore when no SAPI client setup
+        } catch (UserException $e) {
+            // Ignore when no SAPI client setup
+        } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
+            // Ignore when no SAPI client setup
+        } catch (Exception $e) {
+            // Ignore when SAPI client setup is wrong
+        }
     }
 
     /**

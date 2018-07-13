@@ -16,7 +16,7 @@
         "keboola/input-mapping": "dev-odin-symfony-forward",
         "keboola/output-mapping": "dev-odin-symfony-forward",
         "vkartaviy/retry": "^0.2",
-        "keboola/object-encryptor": "dev-master"
+        "keboola/object-encryptor": "^0.1"
     },
     "repositories": [
         {
@@ -39,8 +39,8 @@
     },
     "minimum-stability": "dev",
     "autoload": {
-        "psr-0": {
-            "Keboola\\DockerBundle": ""
+        "psr-4": {
+            "Keboola\\DockerBundle\\": "src/"
         }
     },
     "autoload-dev": {

@@ -2,8 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\Gelf\ServerFactory;
-use Keboola\Syrup\Exception\ApplicationException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Component

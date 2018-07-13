@@ -3,9 +3,8 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
-use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Symfony\Component\Filesystem\Filesystem;
-use Keboola\Syrup\Exception\ApplicationException;
 
 class UsageFile
 {
@@ -44,14 +43,14 @@ class UsageFile
      *
      * @param string $dataDir
      * @param string $format
-     * @param JobMapper $jobMapper
+     //* @param JobMapper $jobMapper
      * @param string $jobId
      */
-    public function __construct($dataDir, $format, JobMapper $jobMapper, $jobId)
+    public function __construct($dataDir, $format,/* JobMapper $jobMapper, */$jobId)
     {
         $this->dataDir = $dataDir;
         $this->format = $format;
-        $this->jobMapper = $jobMapper;
+       // $this->jobMapper = $jobMapper;
         $this->jobId = $jobId;
 
         $this->fs = new Filesystem;

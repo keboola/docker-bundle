@@ -4,16 +4,15 @@ namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Limits;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\Gelf\ServerFactory;
-use Keboola\Syrup\Job\Exception\InitializationException;
 use Monolog\Logger;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Keboola\DockerBundle\Docker\Container\Process;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 
 class Container
 {
@@ -350,6 +349,7 @@ class Container
                     $data
                 );
             } else {
+                // @todo FIXME
                 throw new InitializationException(
                     "{$this->getImage()->getFullImageId()} container terminated. Will restart."
                 );

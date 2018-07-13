@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Validator\Constraints\Range;
 use Symfony\Component\Validator\Validation;
