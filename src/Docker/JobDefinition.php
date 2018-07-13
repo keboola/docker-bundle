@@ -1,7 +1,7 @@
 <?php
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\Syrup\Exception\UserException;
+use Keboola\DockerBundle\Exception\UserException;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinition
