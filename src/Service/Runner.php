@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Docker\Runner\Limits;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
@@ -68,9 +69,9 @@ class Runner
     private $commandToGetHostIp;
 
     /**
-     * @var JobMapper
+     * @var UsageFileInterface
      */
-    //private $jobMapper;
+    private $usageFile;
 
     /**
      * @var int
@@ -92,7 +93,7 @@ class Runner
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
-     //* @param JobMapper $jobMapper
+     * @param UsageFileInterface $usageFile
      * @param string $oauthApiUrl
      * @param array $instanceLimits
      * @param string $commandToGetHostIp
@@ -103,7 +104,7 @@ class Runner
         ObjectEncryptorFactory $encryptorFactory,
         StorageApiService $storageApi,
         LoggersService $loggersService,
-        //JobMapper $jobMapper,
+        UsageFileInterface $usageFile,
         $oauthApiUrl,
         array $instanceLimits,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
@@ -121,7 +122,7 @@ class Runner
             'url' => $this->getOauthUrlV3()
         ]);
         $this->loggersService = $loggersService;
-        //$this->jobMapper = $jobMapper;
+        $this->usageFile = $usageFile;
         $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
@@ -222,12 +223,10 @@ class Runner
         $temp->initRunFolder();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
 
-        $usageFile = new UsageFile(
-            $workingDirectory->getDataDir(),
-            $component->getConfigurationFormat(),
-            //$this->jobMapper,
-            $jobId
-        );
+        $usageFile = clone $this->usageFile;
+        $usageFile->setFormat($component->getConfigurationFormat());
+        $usageFile->setDataDir($workingDirectory->getDataDir());
+        $usageFile->setJobId($jobId);
 
         $configData = $jobDefinition->getConfiguration();
         $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
@@ -479,8 +478,7 @@ class Runner
                     $workingDirectory->normalizePermissions();
                 }
                 if ($image->isMain()) {
-                    // @TODO fix usage
-                    //$usageFile->storeUsage();
+                    $usageFile->storeUsage();
                 }
             }
             $counter++;

@@ -3,10 +3,11 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Symfony\Component\Filesystem\Filesystem;
 
-class UsageFile
+class UsageFile implements UsageFileInterface
 {
     /**
      * @var string
@@ -38,23 +39,9 @@ class UsageFile
      */
     private $jobId;
 
-    /**
-     * UsageFile constructor.
-     *
-     * @param string $dataDir
-     * @param string $format
-     //* @param JobMapper $jobMapper
-     * @param string $jobId
-     */
-    public function __construct($dataDir, $format,/* JobMapper $jobMapper, */$jobId)
+    public function __construct()
     {
-        $this->dataDir = $dataDir;
-        $this->format = $format;
-       // $this->jobMapper = $jobMapper;
-        $this->jobId = $jobId;
-
         $this->fs = new Filesystem;
-        $this->adapter = new Adapter($format);
     }
 
     /**
@@ -77,5 +64,26 @@ class UsageFile
                 throw new ApplicationException('Job not found', null, ['jobId' => $this->jobId]);
             }
         }
+    }
+
+    public function setDataDir($dataDir)
+    {
+        $this->dataDir = $dataDir;
+    }
+
+    public function setFormat($format)
+    {
+        $this->format = $format;
+        $this->adapter = new Adapter($format);
+    }
+
+    public function setJobId($jobId)
+    {
+        $this->jobId = $jobId;
+    }
+
+    public function setJobMapper($jobMapper)
+    {
+        $this->jobMapper = $jobMapper;
     }
 }

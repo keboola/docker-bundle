@@ -2,13 +2,14 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-//use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -41,9 +42,9 @@ abstract class BaseRunnerTest extends TestCase
     private $clientMock;
 
     /**
-     //* @var JobMapper
+     * @var UsageFileInterface
      */
-    //private $jobMapperStub;
+    private $usageFile;
 
     /**
      * @var StorageApiService
@@ -77,7 +78,7 @@ abstract class BaseRunnerTest extends TestCase
                 'token' => STORAGE_API_TOKEN,
             ]
         );
-        $this->jobMapperStub = null;
+        $this->usageFile = null;
         $this->storageServiceStub = null;
     }
 
@@ -111,9 +112,9 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function setJobMapperMock($jobMapperMock)
+    protected function setUsageFile($usageFile)
     {
-        $this->jobMapperStub = $jobMapperMock;
+        $this->usageFile = $usageFile;
     }
 
     protected function getStorageService()
@@ -130,12 +131,9 @@ abstract class BaseRunnerTest extends TestCase
         } else {
             $storageClientStub = $this->client;
         }
-        /*
-        if (!$this->jobMapperStub) {
-            $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-        }*/
+        if (!$this->usageFile) {
+            $this->usageFile = new NullUsageFile();
+        }
 
         $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -164,7 +162,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->encryptorFactory,
             $this->storageServiceStub,
             $this->loggersServiceStub,
-           // $this->jobMapperStub,
+            $this->usageFile,
             "dummy",
             ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,
