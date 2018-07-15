@@ -352,7 +352,7 @@ class Runner
      * @param $configId
      * @param $rowId
      * @param Component $component
-     * @param UsageFile $usageFile
+     * @param UsageFileInterface $usageFile
      * @param DataLoaderInterface $dataLoader
      * @param WorkingDirectory $workingDirectory
      * @param StateFile $stateFile
@@ -364,7 +364,7 @@ class Runner
      * @return Output
      * @throws ClientException
      */
-    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
+    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
     {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -388,7 +388,7 @@ class Runner
      * @param $configId
      * @param $rowId
      * @param Component $component
-     * @param UsageFile $usageFile
+     * @param UsageFileInterface $usageFile
      * @param WorkingDirectory $workingDirectory
      * @param ImageCreator $imageCreator
      * @param ConfigFile $configFile
@@ -400,7 +400,7 @@ class Runner
      * @return Output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFile $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
+    private function runImages($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
