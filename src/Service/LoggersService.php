@@ -25,11 +25,13 @@ class LoggersService
      */
     private $sapiHandler;
 
-    public function __construct(Logger $log, ContainerLogger $containerLog, StorageApiHandler $sapiHandler)
+    public function __construct(Logger $log, ContainerLogger $containerLog, $sapiHandler)
     {
         $this->logger = $log;
         $this->containerLogger = $containerLog;
-        $this->sapiHandler = $sapiHandler;
+        if ($sapiHandler && $sapiHandler instanceof StorageApiHandler) {
+            $this->sapiHandler = $sapiHandler;
+        }
 
         // copy all processors to ContainerLogger
         foreach ($this->logger->getProcessors() as $processor) {
@@ -49,7 +51,9 @@ class LoggersService
 
         // Storage API handler for container is overridden, because it has different visibility
         // settings than the runner handler above.
-        $this->containerLogger->pushHandler($this->sapiHandler);
+        if ($this->sapiHandler) {
+            $this->containerLogger->pushHandler($this->sapiHandler);
+        }
     }
 
     public function setComponentId($componentId)
