@@ -85,6 +85,8 @@ class LoggersService
 
     public function setVerbosity(array $verbosity)
     {
-        $this->sapiHandler->setVerbosity($verbosity);
+        if ($this->sapiHandler) {
+            $this->sapiHandler->setVerbosity($verbosity);
+        }
     }
 }
