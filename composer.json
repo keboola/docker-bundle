@@ -25,6 +25,24 @@
         "codeclimate/php-test-reporter": "^0.4",
         "squizlabs/php_codesniffer": "^3.0"
     },
+    "scripts": {
+        "post-install-cmd": [
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
+        ],
+        "post-update-cmd": [
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
+            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
+        ],
+        "build-bootstrap": [
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
+        ]
+    },    
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
