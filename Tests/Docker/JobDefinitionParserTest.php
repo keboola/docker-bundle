@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
+
 use Keboola\DockerBundle\Exception\UserException;
 use PHPUnit\Framework\TestCase;
 

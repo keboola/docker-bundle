@@ -2,7 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\Syrup\Exception\UserException;
+
+use Keboola\DockerBundle\Exception\UserException;
 
 class JobDefinitionParser
 {

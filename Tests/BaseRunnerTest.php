@@ -56,6 +56,7 @@ abstract class BaseRunnerTest extends TestCase
      */
     private $loggersServiceStub;
 
+
     public function setUp()
     {
         parent::setUp();

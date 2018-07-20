@@ -4,12 +4,14 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\ComponentsService;
+use Keboola\DockerBundle\Service\Runner;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Temp\Temp;
 
 abstract class BaseExecutorTest extends BaseRunnerTest
@@ -20,9 +22,14 @@ abstract class BaseExecutorTest extends BaseRunnerTest
     private $temp;
 
     /**
-     * @var Runner\
+     * @var Runner
      */
     private $runnerStub;
+
+    /**
+     * @var JobMapper
+     */
+    private $jobMapperStub;
 
     public function setUp()
     {
@@ -88,6 +95,8 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $this->runnerStub = $runnerMock;
     }
 
+
+
     protected function getJobExecutor(array $configuration, array $rows, array $state = [])
     {
         $this->clearConfigurations();
@@ -95,6 +104,11 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             $runner = $this->runnerStub;
         } else {
             $runner = $this->getRunner();
+        }
+        if (!$this->jobMapperStub) {
+            $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
+                ->disableOriginalConstructor()
+                ->getMock();
         }
         $componentService = new ComponentsService($this->getStorageService());
         $cmp = new Components($this->getClient());
@@ -118,7 +132,8 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             $runner,
             $this->getEncryptorFactory(),
             $componentService,
-            STORAGE_API_URL
+            STORAGE_API_URL,
+            $this->jobMapperStub
         );
         $jobExecutor->setStorageApi($this->getStorageService()->getClient());
 
