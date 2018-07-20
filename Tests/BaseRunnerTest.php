@@ -162,7 +162,6 @@ abstract class BaseRunnerTest extends TestCase
             $this->encryptorFactory,
             $this->storageServiceStub,
             $this->loggersServiceStub,
-            $this->usageFile,
             "dummy",
             ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,

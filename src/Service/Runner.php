@@ -285,10 +285,11 @@ class Runner
      * @param $action
      * @param $mode
      * @param $jobId
+     * @param $usageFile
      * @param string|null $rowId
      * @return Output[]
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, $usageFile, $rowId = null)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, $rowId = null)
     {
         if ($rowId) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowId) {
