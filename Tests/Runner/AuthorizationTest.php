@@ -155,6 +155,8 @@ class AuthorizationTest extends BaseRunnerTest
                 'fooBar' => 'baz',
             ],
             'action' => 'run',
+            'storage' => [],
+            'parameters' => [],
         ];
         self::assertEquals($sampleData, $data);
     }
@@ -311,6 +313,8 @@ class AuthorizationTest extends BaseRunnerTest
                 'fooBar' => 'baz',
             ],
             'action' => 'run',
+            'storage' => [],
+            'parameters' => [],
         ];
         self::assertEquals($sampleData, $data);
     }

@@ -126,8 +126,17 @@ class Adapter
         return $this->getConfig();
     }
 
+    protected function normalizeConfig($config)
+    {
+        foreach (['storage', 'parameters', 'image_parameters', 'authorization'] as $objectProp) {
+            if (empty($config[$objectProp])) {
+                $config[$objectProp] = new \stdClass();
+            }
+        }
+        return $config;
+    }
+
     /**
-     *
      * Write configuration to file in given format
      *
      * @param $file
@@ -142,7 +151,8 @@ class Adapter
             }
         } elseif ($this->getFormat() == 'json') {
             $encoder = new JsonEncoder();
-            $serialized = $encoder->encode($this->getConfig(), $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
+            $config = $this->normalizeConfig($this->getConfig());
+            $serialized = $encoder->encode($config, $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
         } else {
             throw new ApplicationException("Invalid configuration format {$this->format}.");
         }
