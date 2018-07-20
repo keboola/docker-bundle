@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Component\HttpFoundation\Request;
@@ -84,7 +85,8 @@ class ActionController extends BaseApiController
         $runner = $this->container->get('docker_bundle.runner');
         $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
         $jobDefinition = new JobDefinition($configData, new Component($component));
-        $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0);
+        $usageFile = new NullUsageFile();
+        $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0, $usageFile);
 
         $message = $outputs[0]->getProcessOutput();
         if ($message == '' || !$message) {

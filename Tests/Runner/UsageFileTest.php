@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
@@ -36,6 +37,14 @@ class UsageFileTest extends TestCase
         $this->fs->mkdir($this->dataDir . '/out');
     }
 
+    public function testStoreUsageBadInit()
+    {
+        $usageFile = new UsageFile();
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage('Usage file not initialized.');
+        $usageFile->storeUsage();
+    }
+
     public function testStoreUsageWrongDataJson()
     {
         // there should be "metric" key instead of "random"
@@ -50,7 +59,11 @@ class UsageFileTest extends TestCase
             ->getMock();
 
         /** @var JobMapper $jobMapperStub */
-        $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $usageFile = new UsageFile();
+        $usageFile->setDataDir($this->dataDir);
+        $usageFile->setFormat('json');
+        $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setJobId(1);
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
@@ -72,7 +85,11 @@ YAML;
             ->getMock();
 
         /** @var JobMapper $jobMapperStub */
-        $usageFile = new UsageFile($this->dataDir, 'yaml', $jobMapperStub, 1);
+        $usageFile = new UsageFile();
+        $usageFile->setDataDir($this->dataDir);
+        $usageFile->setFormat('yaml');
+        $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setJobId(1);
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage('Unrecognized option "random" under');
         $usageFile->storeUsage();
@@ -111,7 +128,11 @@ YAML;
             }));
 
         /** @var JobMapper $jobMapperStub */
-        $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $usageFile = new UsageFile();
+        $usageFile->setDataDir($this->dataDir);
+        $usageFile->setFormat('json');
+        $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setJobId(1);
         $usageFile->storeUsage();
     }
 
@@ -133,7 +154,11 @@ YAML;
             ->willReturn(null);
 
         /** @var JobMapper $jobMapperStub */
-        $usageFile = new UsageFile($this->dataDir, 'json', $jobMapperStub, 1);
+        $usageFile = new UsageFile();
+        $usageFile->setDataDir($this->dataDir);
+        $usageFile->setFormat('json');
+        $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setJobId(1);
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('Job not found');
         $usageFile->storeUsage();

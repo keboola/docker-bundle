@@ -22,7 +22,6 @@ use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\OAuthV2Api\Credentials;
@@ -69,11 +68,6 @@ class Runner
     private $commandToGetHostIp;
 
     /**
-     * @var UsageFileInterface
-     */
-    private $usageFile;
-
-    /**
      * @var int
      */
     private $minLogPort;
@@ -93,7 +87,6 @@ class Runner
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param StorageApiService $storageApi
      * @param LoggersService $loggersService
-     * @param UsageFileInterface $usageFile
      * @param string $oauthApiUrl
      * @param array $instanceLimits
      * @param string $commandToGetHostIp
@@ -104,7 +97,6 @@ class Runner
         ObjectEncryptorFactory $encryptorFactory,
         StorageApiService $storageApi,
         LoggersService $loggersService,
-        UsageFileInterface $usageFile,
         $oauthApiUrl,
         array $instanceLimits,
         $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
@@ -122,7 +114,6 @@ class Runner
             'url' => $this->getOauthUrlV3()
         ]);
         $this->loggersService = $loggersService;
-        $this->usageFile = $usageFile;
         $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $commandToGetHostIp;
         $this->minLogPort = $minLogPort;
@@ -208,9 +199,10 @@ class Runner
      * @param string $action
      * @param string $mode
      * @param string $jobId
+     * @param UsageFileInterface $usageFile
      * @return Output
      */
-    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId)
+    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile)
     {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -223,7 +215,6 @@ class Runner
         $temp->initRunFolder();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
 
-        $usageFile = clone $this->usageFile;
         $usageFile->setFormat($component->getConfigurationFormat());
         $usageFile->setDataDir($workingDirectory->getDataDir());
         $usageFile->setJobId($jobId);
@@ -297,7 +288,7 @@ class Runner
      * @param string|null $rowId
      * @return Output[]
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, $rowId = null)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, $usageFile, $rowId = null)
     {
         if ($rowId) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowId) {
@@ -338,7 +329,7 @@ class Runner
                 "Running component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
-            $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId);
+            $outputs[] = $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile);
             $this->loggersService->getLog()->info(
                 "Finished component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'

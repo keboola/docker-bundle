@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Symfony\Component\Filesystem\Filesystem;
 
 class UsageFile implements UsageFileInterface
@@ -12,12 +13,12 @@ class UsageFile implements UsageFileInterface
     /**
      * @var string
      */
-    private $dataDir;
+    private $dataDir = null;
 
     /**
      * @var string
      */
-    private $format;
+    private $format = null;
 
     /**
      * @var Filesystem
@@ -32,12 +33,12 @@ class UsageFile implements UsageFileInterface
     /**
      * @var JobMapper
      */
-    private $jobMapper;
+    private $jobMapper = null;
 
     /**
      * @var string
      */
-    private $jobId;
+    private $jobId = null;
 
     public function __construct()
     {
@@ -49,6 +50,9 @@ class UsageFile implements UsageFileInterface
      */
     public function storeUsage()
     {
+        if ($this->dataDir === null || $this->format === null || $this->jobId === null || $this->jobMapper === null) {
+            throw new ApplicationException('Usage file not initialized.');
+        }
         $usageFileName = $this->dataDir . '/out/usage' . $this->adapter->getFileExtension();
         if ($this->fs->exists($usageFileName)) {
             $usage = $this->adapter->readFromFile($usageFileName);

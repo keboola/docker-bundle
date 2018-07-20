@@ -5,12 +5,15 @@ namespace Keboola\DockerBundle\Job;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
+use Keboola\DockerBundle\Docker\Runner\UsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
@@ -52,11 +55,17 @@ class Executor extends BaseExecutor
     private $runner;
 
     /**
+     * @var JobMapper
+     */
+    private $jobMapper;
+
+    /**
      * @param Logger $logger
      * @param Runner $runner
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param ComponentsService $components
      * @param $storageApiUrl
+     * @param JobMapper $jobMapper
      * @throws \Keboola\ObjectEncryptor\Exception\ApplicationException
      */
     public function __construct(
@@ -64,12 +73,14 @@ class Executor extends BaseExecutor
         Runner $runner,
         ObjectEncryptorFactory $encryptorFactory,
         ComponentsService $components,
-        $storageApiUrl
+        $storageApiUrl,
+        JobMapper $jobMapper
     ) {
         $this->encryptorFactory = $encryptorFactory;
         $this->components = $components->getComponents();
         $this->logger = $logger;
         $this->runner = $runner;
+        $this->jobMapper = $jobMapper;
         $this->encryptorFactory->setStackId(parse_url($storageApiUrl, PHP_URL_HOST));
     }
 
@@ -148,12 +159,14 @@ class Executor extends BaseExecutor
         }
 
         $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
-
+        $usageFile = new UsageFile();
+        $usageFile->setJobMapper($this->jobMapper);
         $outputs = $this->runner->run(
             $jobDefinitions,
             'run',
             $params['mode'],
             $job->getId(),
+            $usageFile,
             $rowId
         );
         if (count($outputs) === 0) {
