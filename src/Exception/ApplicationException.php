@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-class ApplicationException extends \RuntimeException
+class ApplicationException extends \Keboola\Syrup\Exception\ApplicationException
 {
     protected $data = array();
 

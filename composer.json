@@ -10,11 +10,12 @@
         }
     ],
     "require": {
+		"keboola/syrup": "^10.0",    	
         "keboola/php-utils": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
-        "keboola/gelf-server": "dev-odin-symfony-forward",
-        "keboola/input-mapping": "dev-odin-symfony-forward",
-        "keboola/output-mapping": "dev-odin-symfony-forward",
+        "keboola/gelf-server": "dev-odin-symfony-forward@dev",
+        "keboola/input-mapping": "dev-odin-symfony-forward@dev",
+        "keboola/output-mapping": "dev-odin-symfony-forward@dev",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "^0.1"
@@ -24,7 +25,7 @@
         "codeclimate/php-test-reporter": "^0.4",
         "squizlabs/php_codesniffer": "^3.0"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
             "Keboola\\DockerBundle\\": "src/"
