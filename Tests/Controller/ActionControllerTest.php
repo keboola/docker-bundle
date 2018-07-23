@@ -429,7 +429,7 @@ class ActionControllerTest extends WebTestCase
     }
 
     /**
-     * @expectedException \Keboola\Syrup\Exception\ApplicationException
+     * @expectedException \Keboola\DockerBundle\Exception\ApplicationException
      * @expectedExceptionMessageRegExp /Application error/
      */
     public function testAppException()
