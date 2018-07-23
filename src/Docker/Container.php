@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\InitializationException;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -349,7 +350,6 @@ class Container
                     $data
                 );
             } else {
-                // @todo FIXME
                 throw new InitializationException(
                     "{$this->getImage()->getFullImageId()} container terminated. Will restart."
                 );

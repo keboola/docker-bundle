@@ -6,7 +6,6 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -14,8 +13,6 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
@@ -98,7 +95,7 @@ class Executor extends BaseExecutor
             }
         }
         if (!isset($component)) {
-            throw new UserException("Component '{$id}' not found.");
+            throw new \Keboola\Syrup\Exception\UserException("Component '{$id}' not found.");
         }
         return $component;
     }
@@ -110,79 +107,85 @@ class Executor extends BaseExecutor
      */
     public function execute(Job $job)
     {
-        $this->tokenInfo = $this->storageApi->verifyToken();
-        $this->encryptorFactory->setProjectId($this->tokenInfo["owner"]["id"]);
-        if (isset($job->getRawParams()["component"])) {
-            $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
-        }
-        $job->setEncryptor($this->encryptorFactory->getEncryptor());
-        $params = $job->getParams();
-        if (isset($params['row']) && is_scalar($params['row'])) {
-            $rowId = ($params['row']);
-        } else {
-            if (isset($params['row'])) {
-                throw new UserException("Unsupported row value (" . var_export($params['row'], true) . "), scalar is required.");
+        try {
+            $this->tokenInfo = $this->storageApi->verifyToken();
+            $this->encryptorFactory->setProjectId($this->tokenInfo["owner"]["id"]);
+            if (isset($job->getRawParams()["component"])) {
+                $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
             }
-            $rowId = null;
-        }
-
-        $jobDefinitionParser = new JobDefinitionParser();
-
-        $component = $this->getComponent($params["component"]);
-        if (!empty($params['tag'])) {
-            $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
-            $component['data']['definition']['tag'] = $params['tag'];
-        }
-
-        if (!$this->storageApi->getRunId()) {
-            $this->storageApi->setRunId($this->storageApi->generateRunId());
-        }
-
-        // Manual config from request
-        if (isset($params["configData"]) && is_array($params["configData"])) {
-            $configId = null;
-            if (isset($params["config"])) {
-                $configId = $params["config"];
+            $job->setEncryptor($this->encryptorFactory->getEncryptor());
+            $params = $job->getParams();
+            if (isset($params['row']) && is_scalar($params['row'])) {
+                $rowId = ($params['row']);
+            } else {
+                if (isset($params['row'])) {
+                    throw new \Keboola\Syrup\Exception\UserException("Unsupported row value (" . var_export($params['row'], true) . "), scalar is required.");
+                }
+                $rowId = null;
             }
-            $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
-        } else {
-            // Read config from storage
-            try {
-                $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-                $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
-            } catch (ClientException $e) {
-                throw new UserException(
-                    "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
-                    $e
-                );
-            }
-        }
 
-        $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
-        $usageFile = new UsageFile();
-        $usageFile->setJobMapper($this->jobMapper);
-        $outputs = $this->runner->run(
-            $jobDefinitions,
-            'run',
-            $params['mode'],
-            $job->getId(),
-            $usageFile,
-            $rowId
-        );
-        if (count($outputs) === 0) {
+            $jobDefinitionParser = new JobDefinitionParser();
+
+            $component = $this->getComponent($params["component"]);
+            if (!empty($params['tag'])) {
+                $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
+                $component['data']['definition']['tag'] = $params['tag'];
+            }
+
+            if (!$this->storageApi->getRunId()) {
+                $this->storageApi->setRunId($this->storageApi->generateRunId());
+            }
+
+            // Manual config from request
+            if (isset($params["configData"]) && is_array($params["configData"])) {
+                $configId = null;
+                if (isset($params["config"])) {
+                    $configId = $params["config"];
+                }
+                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
+            } else {
+                // Read config from storage
+                try {
+                    $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+                    $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+                } catch (ClientException $e) {
+                    throw new \Keboola\Syrup\Exception\UserException(
+                        "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
+                        $e
+                    );
+                }
+            }
+
+            $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
+            $usageFile = new UsageFile();
+            $usageFile->setJobMapper($this->jobMapper);
+            $outputs = $this->runner->run(
+                $jobDefinitions,
+                'run',
+                $params['mode'],
+                $job->getId(),
+                $usageFile,
+                $rowId
+            );
+            if (count($outputs) === 0) {
+                return [
+                    "message" => "No configurations executed.",
+                    "images" => [],
+                    "configVersion" => null,
+                ];
+            }
             return [
-                "message" => "No configurations executed.",
-                "images" => [],
-                "configVersion" => null,
+                "message" => "Component processing finished.",
+                "images" => array_map(function (Output $output) {
+                    return $output->getImages();
+                }, $outputs),
+                "configVersion" => $outputs[0]->getConfigVersion(),
             ];
+        } catch (\Keboola\DockerBundle\Exception\UserException $e) {
+            throw new \Keboola\Syrup\Exception\UserException($e->getMessage(), $e);
+        } catch (\Keboola\DockerBundle\Exception\InitializationException $e) {
+            throw new \Keboola\Syrup\Job\Exception\InitializationException($e->getMessage(), $e);
         }
-        return [
-            "message" => "Component processing finished.",
-            "images" => array_map(function (Output $output) {
-                return $output->getImages();
-            }, $outputs),
-            "configVersion" => $outputs[0]->getConfigVersion(),
-        ];
     }
 
     /**
@@ -199,7 +202,7 @@ class Executor extends BaseExecutor
             }
             $this->logger->info("Job {$job->getId()} terminated");
         } catch (\Exception $e) {
-            throw new ApplicationException("Job {$job->getId()} termination failed: " . $e->getMessage(), $e);
+            throw new \Keboola\Syrup\Exception\ApplicationException("Job {$job->getId()} termination failed: " . $e->getMessage(), $e);
         }
     }
 }

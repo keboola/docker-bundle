@@ -82,11 +82,15 @@ class ActionController extends BaseApiController
         $component['data']['process_timeout'] = 45;
 
         /** @var Runner $runner */
-        $runner = $this->container->get('docker_bundle.runner');
-        $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
-        $jobDefinition = new JobDefinition($configData, new Component($component));
-        $usageFile = new NullUsageFile();
-        $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0, $usageFile);
+        try {
+            $runner = $this->container->get('docker_bundle.runner');
+            $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
+            $jobDefinition = new JobDefinition($configData, new Component($component));
+            $usageFile = new NullUsageFile();
+            $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0, $usageFile);
+        } catch (\Keboola\DockerBundle\Exception\UserException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
 
         $message = $outputs[0]->getProcessOutput();
         if ($message == '' || !$message) {
