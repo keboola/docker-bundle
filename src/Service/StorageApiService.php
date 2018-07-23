@@ -9,7 +9,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class StorageApiService
+class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
     /**
      * @var RequestStack
