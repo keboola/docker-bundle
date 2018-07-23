@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-class NoRequestException extends \Keboola\Syrup\Exception\UserException
+use Keboola\StorageApi\Exception;
+
+class NoRequestException extends Exception
 {
 }

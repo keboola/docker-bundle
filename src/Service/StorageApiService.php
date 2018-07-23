@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Exception\NoRequestException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
@@ -105,7 +106,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
             }
 
             if (!$request->headers->has('X-StorageApi-Token')) {
-                throw new \Keboola\Syrup\Exception\UserException('Missing StorageAPI token');
+                throw new Exception('Missing StorageAPI token');
             }
 
             $this->setClient(
