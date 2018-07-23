@@ -105,7 +105,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
             }
 
             if (!$request->headers->has('X-StorageApi-Token')) {
-                throw new UserException('Missing StorageAPI token');
+                throw new \Keboola\Syrup\Exception\UserException('Missing StorageAPI token');
             }
 
             $this->setClient(
