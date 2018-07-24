@@ -113,11 +113,6 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function setUsageFile($usageFile)
-    {
-        $this->usageFile = $usageFile;
-    }
-
     protected function getStorageService()
     {
         return $this->storageServiceStub;
@@ -132,9 +127,7 @@ abstract class BaseRunnerTest extends TestCase
         } else {
             $storageClientStub = $this->client;
         }
-        if (!$this->usageFile) {
-            $this->usageFile = new NullUsageFile();
-        }
+        $this->usageFile = new NullUsageFile();
 
         $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
