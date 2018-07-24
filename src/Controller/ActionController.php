@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Component\HttpFoundation\Request;
-use Keboola\Syrup\Exception\UserException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ActionController extends BaseApiController
@@ -71,7 +70,7 @@ class ActionController extends BaseApiController
             $configData = $encryptorFactory->getEncryptor()->encrypt($configData);
             $configData = $encryptorFactory->getEncryptor()->decrypt($configData);
         } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
-            throw new UserException($e->getMessage(), $e);
+            throw new \Keboola\Syrup\Exception\UserException($e->getMessage(), $e);
         }
 
         if (!$this->storageApi->getRunId()) {
@@ -89,17 +88,17 @@ class ActionController extends BaseApiController
             $usageFile = new NullUsageFile();
             $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0, $usageFile);
         } catch (\Keboola\DockerBundle\Exception\UserException $e) {
-            throw new UserException($e->getMessage(), $e);
+            throw new \Keboola\Syrup\Exception\UserException($e->getMessage(), $e);
         }
 
         $message = $outputs[0]->getProcessOutput();
         if ($message == '' || !$message) {
-            throw new UserException("No response from component.");
+            throw new \Keboola\Syrup\Exception\UserException("No response from component.");
         }
 
         $jsonData = json_decode($message);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new UserException("Decoding JSON response from component failed: " . json_last_error_msg(), null, ['message' => $message]);
+            throw new \Keboola\Syrup\Exception\UserException("Decoding JSON response from component failed: " . json_last_error_msg(), null, ['message' => $message]);
         }
         return $this->createJsonResponse($jsonData);
     }
