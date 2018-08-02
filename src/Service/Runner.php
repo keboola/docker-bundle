@@ -85,7 +85,7 @@ class Runner
     /**
      * Runner constructor.
      * @param ObjectEncryptorFactory $encryptorFactory
-     * @param StorageApiService $storageApi
+     * @param Client $storageApi
      * @param LoggersService $loggersService
      * @param string $oauthApiUrl
      * @param array $instanceLimits
@@ -95,7 +95,7 @@ class Runner
      */
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
-        StorageApiService $storageApi,
+        Client $storageApi,
         LoggersService $loggersService,
         $oauthApiUrl,
         array $instanceLimits,
@@ -106,7 +106,7 @@ class Runner
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
-        $this->storageClient = $storageApi->getClient();
+        $this->storageClient = $storageApi;
         $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
             'url' => $oauthApiUrl
         ]);

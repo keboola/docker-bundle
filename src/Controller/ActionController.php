@@ -82,7 +82,14 @@ class ActionController extends BaseApiController
 
         /** @var Runner $runner */
         try {
-            $runner = $this->container->get('docker_bundle.runner');
+
+            $runner = new Runner(
+                $encryptorFactory,
+                $this->storageApi,
+                $this->container->get('docker_bundle.loggers'),
+                $this->container->getParameter('oauth_api.url'),
+                $this->container->getParameter('instance_limits')
+            );
             $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
             $jobDefinition = new JobDefinition($configData, new Component($component));
             $usageFile = new NullUsageFile();

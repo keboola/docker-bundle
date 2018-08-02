@@ -129,16 +129,6 @@ abstract class BaseRunnerTest extends TestCase
         }
         $this->usageFile = new NullUsageFile();
 
-        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storageServiceStub->expects(self::any())
-            ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
-        $this->storageServiceStub->expects(self::any())
-            ->method("getTokenData")
-            ->will(self::returnValue($storageClientStub->verifyToken()));
-
         $log = new Logger("test-logger", [$this->runnerHandler]);
         $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
         $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
@@ -154,7 +144,7 @@ abstract class BaseRunnerTest extends TestCase
         /** @var StorageApiService $storageServiceStub */
         return new Runner(
             $this->encryptorFactory,
-            $this->storageServiceStub,
+            $storageClientStub,
             $this->loggersServiceStub,
             "dummy",
             ['cpu_count' => 2],
