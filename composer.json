@@ -13,9 +13,9 @@
 		"keboola/syrup": "^10.0",    	
         "keboola/php-utils": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
-        "keboola/gelf-server": "dev-odin-symfony-forward@dev",
-        "keboola/input-mapping": "dev-odin-symfony-forward@dev",
-        "keboola/output-mapping": "dev-odin-symfony-forward@dev",
+        "keboola/gelf-server": "^2.0",
+        "keboola/input-mapping": "^6.0",
+        "keboola/output-mapping": "^6.0",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "^0.1"
