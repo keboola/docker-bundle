@@ -82,7 +82,6 @@ class ActionController extends BaseApiController
 
         /** @var Runner $runner */
         try {
-
             $runner = new Runner(
                 $encryptorFactory,
                 $this->storageApi,
