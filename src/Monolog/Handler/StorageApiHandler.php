@@ -103,6 +103,8 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
             // Ignore when no SAPI client setup
         } catch (UserException $e) {
             // Ignore when no SAPI client setup
+        } catch (\Keboola\Syrup\Exception\UserException $e) {
+            // Ignore when no SAPI client setup
         } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
             // Ignore when no SAPI client setup
         } catch (Exception $e) {
