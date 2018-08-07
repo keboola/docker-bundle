@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Job;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
-use Keboola\DockerBundle\Docker\Runner\UsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -16,7 +16,6 @@ use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
-use Monolog\Logger;
 use Symfony\Component\Process\Process;
 
 class Executor extends BaseExecutor

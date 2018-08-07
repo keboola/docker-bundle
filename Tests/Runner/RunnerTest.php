@@ -6,6 +6,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
@@ -1734,8 +1735,6 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreUsage()
     {
-        //TODO
-        self::markTestSkipped('TODO');
         $this->clearConfigurations();
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
         $jobMapperStub = self::getMockBuilder(JobMapper::class)
@@ -1746,7 +1745,8 @@ class RunnerTest extends BaseRunnerTest
             ->method('get')
             ->with('987654')
             ->willReturn($job);
-        $this->setJobMapperMock($jobMapperStub);
+        $usageFile = new UsageFile();
+        $usageFile->setJobMapper($jobMapperStub);
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -1772,7 +1772,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
-        $runner->run([$jobDefinition], 'run', 'run', '987654', new NullUsageFile());
+        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
         self::assertEquals([
             [
                 'metric' => 'kB',
@@ -1783,8 +1783,6 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreRowsUsage()
     {
-        //TODO
-        self::markTestSkipped('TODO');
         $this->clearConfigurations();
         $job = new Job($this->getEncryptorFactory()->getEncryptor());
         $jobMapperStub = self::getMockBuilder(JobMapper::class)
@@ -1795,7 +1793,8 @@ class RunnerTest extends BaseRunnerTest
             ->method('get')
             ->with('987654')
             ->willReturn($job);
-        $this->setJobMapperMock($jobMapperStub);
+        $usageFile = new UsageFile();
+        $usageFile->setJobMapper($jobMapperStub);
 
         $component = new Components($this->getClient());
         $configuration = new Configuration();
@@ -1835,7 +1834,7 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
-        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', new NullUsageFile());
+        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', $usageFile);
         self::assertEquals([
             [
                 'metric' => 'kB',

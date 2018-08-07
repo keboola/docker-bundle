@@ -1,9 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker\Runner;
+namespace Keboola\DockerBundle\Docker\Runner\UsageFile;
 
 use Keboola\DockerBundle\Docker\Configuration\Usage\Adapter;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Symfony\Component\Filesystem\Filesystem;
