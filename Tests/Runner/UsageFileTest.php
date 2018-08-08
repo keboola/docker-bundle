@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\UsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\Syrup\Job\Metadata\Job;

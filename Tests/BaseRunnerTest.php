@@ -7,7 +7,6 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\Runner;
-use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Monolog\Handler\TestHandler;
@@ -34,22 +33,17 @@ abstract class BaseRunnerTest extends TestCase
     /**
      * @var Client
      */
-    private $client;
+    protected $client;
 
     /**
      * @var Client
      */
-    private $clientMock;
+    protected $clientMock;
 
     /**
      * @var UsageFileInterface
      */
     private $usageFile;
-
-    /**
-     * @var StorageApiService
-     */
-    private $storageServiceStub;
 
     /**
      * @var LoggersService
@@ -80,7 +74,20 @@ abstract class BaseRunnerTest extends TestCase
             ]
         );
         $this->usageFile = null;
-        $this->storageServiceStub = null;
+
+        $this->containerHandler = new TestHandler();
+        $this->runnerHandler = new TestHandler();
+        $log = new Logger("test-logger", [$this->runnerHandler]);
+        $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
+        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->loggersServiceStub->expects(self::any())
+            ->method("getLog")
+            ->will($this->returnValue($log));
+        $this->loggersServiceStub->expects(self::any())
+            ->method("getContainerLog")
+            ->will($this->returnValue($containerLogger));
     }
 
     protected function getEncryptorFactory()
@@ -113,15 +120,8 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function getStorageService()
-    {
-        return $this->storageServiceStub;
-    }
-
     protected function getRunner()
     {
-        $this->containerHandler = new TestHandler();
-        $this->runnerHandler = new TestHandler();
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
         } else {
@@ -129,19 +129,6 @@ abstract class BaseRunnerTest extends TestCase
         }
         $this->usageFile = new NullUsageFile();
 
-        $log = new Logger("test-logger", [$this->runnerHandler]);
-        $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
-        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->loggersServiceStub->expects(self::any())
-            ->method("getLog")
-            ->will($this->returnValue($log));
-        $this->loggersServiceStub->expects(self::any())
-            ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger));
-
-        /** @var StorageApiService $storageServiceStub */
         return new Runner(
             $this->encryptorFactory,
             $storageClientStub,

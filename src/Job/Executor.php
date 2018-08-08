@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Service\Runner;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -66,10 +67,16 @@ class Executor extends BaseExecutor
     private $instanceLimits;
 
     /**
+     * @var Runner
+     */
+    private $runner;
+
+    /**
      * @param LoggersService $loggersService
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param ComponentsService $components
      * @param $storageApiUrl
+     * @param StorageApiService $storageApiService
      * @param JobMapper $jobMapper
      * @param string $oauthApiUrl
      * @param array $instanceLimits
@@ -80,6 +87,7 @@ class Executor extends BaseExecutor
         ObjectEncryptorFactory $encryptorFactory,
         ComponentsService $components,
         $storageApiUrl,
+        StorageApiService $storageApiService,
         JobMapper $jobMapper,
         $oauthApiUrl,
         array $instanceLimits
@@ -90,8 +98,16 @@ class Executor extends BaseExecutor
         $this->loggerService = $loggersService;
         $this->jobMapper = $jobMapper;
         $this->encryptorFactory->setStackId(parse_url($storageApiUrl, PHP_URL_HOST));
+        $this->storageApi = $storageApiService->getClient();
         $this->oauthApiUrl = $oauthApiUrl;
         $this->instanceLimits = $instanceLimits;
+        $this->runner = new Runner(
+            $this->encryptorFactory,
+            $this->storageApi,
+            $this->loggerService,
+            $this->oauthApiUrl,
+            $this->instanceLimits
+        );
     }
 
     /**
@@ -172,14 +188,7 @@ class Executor extends BaseExecutor
             $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
             $usageFile = new UsageFile();
             $usageFile->setJobMapper($this->jobMapper);
-            $runner = new Runner(
-                $this->encryptorFactory,
-                $this->storageApi,
-                $this->loggerService,
-                $this->oauthApiUrl,
-                $this->instanceLimits
-            );
-            $outputs = $runner->run(
+            $outputs = $this->runner->run(
                 $jobDefinitions,
                 'run',
                 $params['mode'],
