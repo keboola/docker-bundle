@@ -6,7 +6,7 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Monolog\Handler\TestHandler;

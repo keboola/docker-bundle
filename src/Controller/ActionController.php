@@ -5,7 +5,7 @@ namespace Keboola\DockerBundle\Controller;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;

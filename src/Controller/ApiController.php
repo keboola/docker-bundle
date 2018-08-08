@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
-use Keboola\DockerBundle\Service\Runner;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;

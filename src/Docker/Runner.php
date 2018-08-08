@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Service;
+namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
@@ -24,6 +24,7 @@ use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
