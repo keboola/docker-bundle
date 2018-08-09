@@ -12,14 +12,6 @@ class NullUsageFile implements UsageFileInterface
     {
     }
 
-    public function setFormat($format)
-    {
-    }
-
-    public function setJobId($jobId)
-    {
-    }
-
     public function storeUsage()
     {
     }

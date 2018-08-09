@@ -215,10 +215,7 @@ class Runner
         $temp = new Temp("docker");
         $temp->initRunFolder();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
-
-        $usageFile->setFormat($component->getConfigurationFormat());
         $usageFile->setDataDir($workingDirectory->getDataDir());
-        $usageFile->setJobId($jobId);
 
         $configData = $jobDefinition->getConfiguration();
         $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());

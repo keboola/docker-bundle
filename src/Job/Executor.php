@@ -164,19 +164,19 @@ class Executor extends BaseExecutor
             if (!$this->storageApi->getRunId()) {
                 $this->storageApi->setRunId($this->storageApi->generateRunId());
             }
-
+            $componentClass = new Component($component);
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
                 $configId = null;
                 if (isset($params["config"])) {
                     $configId = $params["config"];
                 }
-                $jobDefinitionParser->parseConfigData(new Component($component), $params["configData"], $configId);
+                $jobDefinitionParser->parseConfigData($componentClass, $params["configData"], $configId);
             } else {
                 // Read config from storage
                 try {
                     $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
-                    $jobDefinitionParser->parseConfig(new Component($component), $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+                    $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
                 } catch (ClientException $e) {
                     throw new \Keboola\Syrup\Exception\UserException(
                         "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
@@ -188,6 +188,8 @@ class Executor extends BaseExecutor
             $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
             $usageFile = new UsageFile();
             $usageFile->setJobMapper($this->jobMapper);
+            $usageFile->setFormat($componentClass->getConfigurationFormat());
+            $usageFile->setJobId($job->getId());
             $outputs = $this->runner->run(
                 $jobDefinitions,
                 'run',

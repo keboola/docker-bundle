@@ -8,9 +8,5 @@ interface UsageFileInterface
 
     public function setDataDir($dataDir);
 
-    public function setFormat($format);
-
-    public function setJobId($jobId);
-
     public function storeUsage();
 }
