@@ -1747,6 +1747,8 @@ class RunnerTest extends BaseRunnerTest
             ->willReturn($job);
         $usageFile = new UsageFile();
         $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setFormat('json');
+        $usageFile->setJobId('987654');
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -1794,6 +1796,8 @@ class RunnerTest extends BaseRunnerTest
             ->with('987654')
             ->willReturn($job);
         $usageFile = new UsageFile();
+        $usageFile->setFormat('json');
+        $usageFile->setJobId('987654');
         $usageFile->setJobMapper($jobMapperStub);
 
         $component = new Components($this->getClient());
