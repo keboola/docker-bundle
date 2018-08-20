@@ -149,6 +149,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new OutputFilter()
         );
         $dataLoader->storeDataArchive('data', ['docker-demo-test']);
+        sleep(1);
         $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test']));
         self::assertCount(1, $files);
 

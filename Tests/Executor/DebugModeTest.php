@@ -104,6 +104,7 @@ class DebugModeTest extends BaseExecutorTest
             }
         }
 
+        sleep(1);
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
         $files = $this->getClient()->listFiles($listOptions);
@@ -323,6 +324,7 @@ class DebugModeTest extends BaseExecutorTest
         self::assertEquals('not-secret', $config['parameters']['plain']);
 
         // check that the files were stored
+        sleep(1);
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
         $files = $this->getClient()->listFiles($listOptions);
@@ -375,6 +377,7 @@ class DebugModeTest extends BaseExecutorTest
             }
         }
 
+        sleep(1);
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
         $files = $this->getClient()->listFiles($listOptions);
