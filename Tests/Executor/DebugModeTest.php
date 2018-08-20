@@ -530,6 +530,7 @@ class DebugModeTest extends BaseExecutorTest
             }
         }
 
+        sleep(1);
         $listOptions = new ListFilesOptions();
         $listOptions->setTags(['debug']);
         $files = $this->getClient()->listFiles($listOptions);
