@@ -179,6 +179,7 @@ class RunnerTest extends BaseRunnerTest
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
         );
+        sleep(1);
 
         $configurationData = [
             'storage' => [
