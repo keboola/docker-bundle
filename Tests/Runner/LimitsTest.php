@@ -6,7 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\Runner\Limits;
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;

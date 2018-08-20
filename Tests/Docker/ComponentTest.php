@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use PHPUnit\Framework\TestCase;
 
 class ComponentTest extends TestCase

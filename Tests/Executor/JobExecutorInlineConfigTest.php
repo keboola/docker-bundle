@@ -169,8 +169,12 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $prop = new \ReflectionProperty($runner, 'oauthClient');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
-        $this->setRunnerMock($runner);
+
         $jobExecutor = $this->getJobExecutor([], []);
+        $prop = new \ReflectionProperty($jobExecutor, 'runner');
+        $prop->setAccessible(true);
+        $prop->setValue($jobExecutor, $runner);
+
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);
@@ -238,8 +242,12 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $prop = new \ReflectionProperty($runner, 'oauthClient');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
-        $this->setRunnerMock($runner);
+
         $jobExecutor = $this->getJobExecutor([], []);
+        $prop = new \ReflectionProperty($jobExecutor, 'runner');
+        $prop->setAccessible(true);
+        $prop->setValue($jobExecutor, $runner);
+
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
         $job->setId(123456);
         $jobExecutor->execute($job);

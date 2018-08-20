@@ -5,11 +5,11 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
+use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\RequestException;
-use Keboola\Syrup\Exception\ApplicationException;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 
 class AuthorizationTest extends BaseRunnerTest

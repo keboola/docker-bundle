@@ -2,13 +2,13 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\Runner;
-use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Elasticsearch\JobMapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -33,27 +33,23 @@ abstract class BaseRunnerTest extends TestCase
     /**
      * @var Client
      */
-    private $client;
+    protected $client;
 
     /**
      * @var Client
      */
-    private $clientMock;
+    protected $clientMock;
 
     /**
-     * @var JobMapper
+     * @var UsageFileInterface
      */
-    private $jobMapperStub;
-
-    /**
-     * @var StorageApiService
-     */
-    private $storageServiceStub;
+    private $usageFile;
 
     /**
      * @var LoggersService
      */
     private $loggersServiceStub;
+
 
     public function setUp()
     {
@@ -77,8 +73,21 @@ abstract class BaseRunnerTest extends TestCase
                 'token' => STORAGE_API_TOKEN,
             ]
         );
-        $this->jobMapperStub = null;
-        $this->storageServiceStub = null;
+        $this->usageFile = null;
+
+        $this->containerHandler = new TestHandler();
+        $this->runnerHandler = new TestHandler();
+        $log = new Logger("test-logger", [$this->runnerHandler]);
+        $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
+        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->loggersServiceStub->expects(self::any())
+            ->method("getLog")
+            ->will($this->returnValue($log));
+        $this->loggersServiceStub->expects(self::any())
+            ->method("getContainerLog")
+            ->will($this->returnValue($containerLogger));
     }
 
     protected function getEncryptorFactory()
@@ -111,59 +120,19 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function setJobMapperMock($jobMapperMock)
-    {
-        $this->jobMapperStub = $jobMapperMock;
-    }
-
-    protected function getStorageService()
-    {
-        return $this->storageServiceStub;
-    }
-
     protected function getRunner()
     {
-        $this->containerHandler = new TestHandler();
-        $this->runnerHandler = new TestHandler();
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
         } else {
             $storageClientStub = $this->client;
         }
-        if (!$this->jobMapperStub) {
-            $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
-                ->disableOriginalConstructor()
-                ->getMock();
-        }
+        $this->usageFile = new NullUsageFile();
 
-        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storageServiceStub->expects(self::any())
-            ->method("getClient")
-            ->will(self::returnValue($storageClientStub));
-        $this->storageServiceStub->expects(self::any())
-            ->method("getTokenData")
-            ->will(self::returnValue($storageClientStub->verifyToken()));
-
-        $log = new Logger("test-logger", [$this->runnerHandler]);
-        $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
-        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->loggersServiceStub->expects(self::any())
-            ->method("getLog")
-            ->will($this->returnValue($log));
-        $this->loggersServiceStub->expects(self::any())
-            ->method("getContainerLog")
-            ->will($this->returnValue($containerLogger));
-
-        /** @var StorageApiService $storageServiceStub */
         return new Runner(
             $this->encryptorFactory,
-            $this->storageServiceStub,
+            $storageClientStub,
             $this->loggersServiceStub,
-            $this->jobMapperStub,
             "dummy",
             ['cpu_count' => 2],
             RUNNER_COMMAND_TO_GET_HOST_IP,

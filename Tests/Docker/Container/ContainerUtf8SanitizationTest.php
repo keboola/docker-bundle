@@ -2,8 +2,8 @@
 
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
-use Keboola\Syrup\Exception\UserException;
 
 class ContainerUtf8SanitizationTest extends BaseContainerTest
 {

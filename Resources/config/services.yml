@@ -6,11 +6,14 @@ services:
     syrup.job_executor:
         class: Keboola\DockerBundle\Job\Executor
         arguments:
-          - "@logger"
-          - "@docker_bundle.runner"
+          - "@docker_bundle.loggers"
           - "@docker_bundle.object_encryptor_factory"
           - "@syrup.components"
           - "%storage_api.url%"
+          - "@syrup.storage_api"
+          - "@syrup.elasticsearch.current_component_job_mapper"
+          - "%oauth_api.url%"
+          - "%instance_limits%"
 
     docker_bundle.loggers:
         class: Keboola\DockerBundle\Service\LoggersService
@@ -29,16 +32,6 @@ services:
     docker_bundle.monolog.sapi_handler:
         class: Keboola\DockerBundle\Monolog\Handler\StorageApiHandler
         arguments: ["%app_name%", "@syrup.storage_api"]
-
-    docker_bundle.runner:
-        class: Keboola\DockerBundle\Service\Runner
-        arguments:
-          - "@docker_bundle.object_encryptor_factory"
-          - "@syrup.storage_api"
-          - "@docker_bundle.loggers"
-          - "@syrup.elasticsearch.current_component_job_mapper"
-          - "%oauth_api.url%"
-          - "%instance_limits%"
 
     docker_bundle.object_encryptor_factory:
         class: Keboola\ObjectEncryptor\ObjectEncryptorFactory

@@ -4,12 +4,14 @@ namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\ComponentsService;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Temp\Temp;
 
 abstract class BaseExecutorTest extends BaseRunnerTest
@@ -20,9 +22,14 @@ abstract class BaseExecutorTest extends BaseRunnerTest
     private $temp;
 
     /**
-     * @var Runner\
+     * @var JobMapper
      */
-    private $runnerStub;
+    private $jobMapperStub;
+
+    /**
+     * @var StorageApiService
+     */
+    private $storageServiceStub;
 
     public function setUp()
     {
@@ -32,7 +39,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $tokenData = $this->getClient()->verifyToken();
         $this->getEncryptorFactory()->setProjectId($tokenData['owner']['id']);
         $this->getEncryptorFactory()->setComponentId('keboola.python-transformation');
-        $this->runnerStub = null;
+        $this->storageServiceStub = null;
     }
 
     protected function getTemp()
@@ -83,19 +90,35 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         }
     }
 
-    protected function setRunnerMock($runnerMock)
+
+    protected function getStorageService()
     {
-        $this->runnerStub = $runnerMock;
+        return $this->storageServiceStub;
     }
 
     protected function getJobExecutor(array $configuration, array $rows, array $state = [])
     {
         $this->clearConfigurations();
-        if ($this->runnerStub) {
-            $runner = $this->runnerStub;
-        } else {
-            $runner = $this->getRunner();
+        if (!$this->jobMapperStub) {
+            $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
+                ->disableOriginalConstructor()
+                ->getMock();
         }
+        if ($this->clientMock) {
+            $storageClientStub = $this->clientMock;
+        } else {
+            $storageClientStub = $this->client;
+        }
+        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $this->storageServiceStub->expects(self::any())
+            ->method("getClient")
+            ->will(self::returnValue($storageClientStub));
+        $this->storageServiceStub->expects(self::any())
+            ->method("getTokenData")
+            ->will(self::returnValue($storageClientStub->verifyToken()));
+
         $componentService = new ComponentsService($this->getStorageService());
         $cmp = new Components($this->getClient());
         $cfg = new Configuration();
@@ -114,11 +137,14 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         }
 
         $jobExecutor = new Executor(
-            $this->getLoggersService()->getLog(),
-            $runner,
+            $this->getLoggersService(),
             $this->getEncryptorFactory(),
             $componentService,
-            STORAGE_API_URL
+            STORAGE_API_URL,
+            $this->storageServiceStub,
+            $this->jobMapperStub,
+            'dummy',
+            ['cpu_count' => 2]
         );
         $jobExecutor->setStorageApi($this->getStorageService()->getClient());
 

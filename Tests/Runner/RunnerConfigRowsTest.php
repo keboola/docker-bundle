@@ -4,6 +4,8 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -12,7 +14,6 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Exception\UserException;
 
 class RunnerConfigRowsTest extends BaseRunnerTest
 {
@@ -147,7 +148,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             $jobDefinitions,
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -205,7 +207,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             $jobDefinitions,
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -258,6 +261,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
+            new NullUsageFile(),
             'row-2'
         );
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
@@ -288,6 +292,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
+            new NullUsageFile(),
             'row-2'
         );
     }
@@ -299,7 +304,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             [],
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
     }
 
@@ -349,7 +355,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             $jobDefinitions,
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
@@ -416,6 +423,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
+            new NullUsageFile(),
             'disabled-row'
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
@@ -472,7 +480,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             $jobDefinitions,
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
         $metadata = new Metadata($this->getClient());
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable'));
@@ -529,7 +538,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             [$jobDefinition1, $jobDefinition2],
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -605,7 +615,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             [$jobDefinition1, $jobDefinition2],
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
 
         $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
@@ -667,7 +678,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             $jobDefinitions,
             'run',
             'run',
-            '1234567'
+            '1234567',
+            new NullUsageFile()
         );
         self::assertCount(2, $outputs);
         self::assertCount(1, $outputs[0]->getImages());
