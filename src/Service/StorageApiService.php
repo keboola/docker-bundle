@@ -6,7 +6,7 @@ use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
+class StorageApiService
 {
     /**
      * @var Client
