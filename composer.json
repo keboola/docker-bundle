@@ -24,7 +24,7 @@
         "mustache/mustache": "^2.13",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
-        "keboola/object-encryptor": "^0.1"
+        "keboola/object-encryptor": "dev-odin-72support@dev"
         "symfony/validator": "^v2.8.52|^v4.4.11",
         "vkartaviy/retry": "^v0.2.2",
         "ext-zip": "*"
