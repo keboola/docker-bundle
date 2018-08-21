@@ -1,8 +1,7 @@
 {
     "name": "keboola/dockerbundle",
-    "type": "symfony-bundle",
+    "type": "library",
     "description": "Component for running Docker images in KBC",
-    "keywords": [],
     "authors": [
         {
             "name": "Keboola",
@@ -10,44 +9,31 @@
         }
     ],
     "require": {
-        "ext-json": "*",
-        "ext-zip": "*",
+        "keboola/php-utils": "^2.0",
+        "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "^12.8",
+        "keboola/input-mapping": "^6.0",
+        "keboola/output-mapping": "^6.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/object-encryptor": "^0.3",
-        "keboola/output-mapping": "^14.9",
-        "keboola/php-utils": "^2.0",
         "keboola/staging-provider": "^2.0",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
+        "keboola/output-mapping": "^14.0",
+        "keboola/input-mapping": "^12.2",
+        "keboola/php-utils": "^2.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",
+        "symfony/validator": "^2.8|^4.1",
+        "vkartaviy/retry": "^0.2",
+        "keboola/object-encryptor": "^0.1"
         "symfony/validator": "^v2.8.52|^v4.4.11",
-        "vkartaviy/retry": "^v0.2.2"
+        "vkartaviy/retry": "^v0.2.2",
+        "ext-zip": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7.27",
         "codeclimate/php-test-reporter": "^0.4.4",
         "squizlabs/php_codesniffer": "^3.5.8"
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
-            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ],
-        "post-update-cmd": [
-            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getParameters",
-            "Keboola\\Syrup\\DeploymentHandler\\ScriptHandler::getSharedParameters",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ],
-        "build-bootstrap": [
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
-            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ],
-        "phpcs": "phpcs --standard=psr2 --ignore=vendor -n ."
     },
     "minimum-stability": "stable",
     "autoload": {
@@ -58,17 +44,6 @@
     "autoload-dev": {
         "psr-4": {
             "Keboola\\DockerBundle\\Tests\\": "Tests/"
-        }
-    },
-    "extra": {
-        "symfony-app-dir": "vendor/keboola/syrup/app",
-        "symfony-web-dir": "vendor/keboola/syrup/web",
-        "syrup-app-name": "docker"
-    },
-    "config": {
-        "sort-packages": true,
-        "platform": {
-            "php": "5.6"
         }
     }
 }
