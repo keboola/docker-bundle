@@ -23,6 +23,7 @@
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",
         "symfony/validator": "^2.8|^4.1",
+        "symfony/http-foundation": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "dev-odin-72support@dev"
         "symfony/validator": "^v2.8.52|^v4.4.11",
