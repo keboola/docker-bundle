@@ -2,13 +2,13 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-class ApplicationException extends \Exception
+class ApplicationException extends \Keboola\Syrup\Exception\ApplicationException
 {
     protected $data = array();
 
     public function __construct($message, $previous = null, array $data = [])
     {
-        parent::__construct('Application error: ' . $message, 0, $previous);
+        parent::__construct('Application error: ' . $message, $previous, $data);
         $this->data = $data;
     }
 
