@@ -337,6 +337,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             $root . '/upload',
             (new FileUploadOptions())->setTags(['executor-test', 'incremental-test'])
         );
+        sleep(1);
 
         $data = $this->getJobParameters();
         $data['params']['configData']['storage'] = [
@@ -371,6 +372,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $job->setId(123456);
         $jobExecutor->execute($job);
 
+        sleep(1);
         $listFileOptions = new ListFilesOptions();
         $listFileOptions->setTags(['downloaded']);
         $files = $this->getClient()->listFiles($listFileOptions);
