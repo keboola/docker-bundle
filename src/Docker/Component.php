@@ -122,6 +122,14 @@ class Component
     }
 
     /**
+     * @return bool
+     */
+    public function hasNoSwap()
+    {
+        return in_array('no-swap', $this->features);
+    }
+
+    /**
      * Change type of component image
      * @param $type
      * @return Component

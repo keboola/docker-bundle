@@ -194,4 +194,38 @@ class ComponentTest extends TestCase
             self::assertContains('Invalid repository_type', $e->getMessage());
         }
     }
+
+
+    public function testHasSwap()
+    {
+        $componentData = [
+            'id' => 'keboola.ex-generic',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+            ],
+        ];
+        $component = new Component($componentData);
+        self::assertFalse($component->hasNoSwap());
+    }
+
+    public function testHasNoSwap()
+    {
+        $componentData = [
+            'id' => 'keboola.ex-generic',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+            ],
+            'features' => [
+                'no-swap'
+            ]
+        ];
+        $component = new Component($componentData);
+        self::assertTrue($component->hasNoSwap());
+    }
 }
