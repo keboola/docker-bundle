@@ -38,7 +38,6 @@ class ContainerTest extends BaseContainerTest
             . " --volume '" . $this->getTempDir() . "/data:/data'"
             . " --volume '" . $this->getTempDir() . "/tmp:/tmp'"
             . " --memory '256m'"
-            . " --memory-swap '256m'"
             . " --net 'bridge'"
             . " --cpus '2'"
             . $deviceLimits
@@ -56,6 +55,14 @@ class ContainerTest extends BaseContainerTest
     {
         $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
         self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
+    }
+
+    public function testRunCommandContainerWithoutSwap()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['no-swap'];
+        $container = $this->getContainer($imageConfiguration, [], [], false);
+        self::assertContains(" --memory-swap '256m'", $container->getRunCommand("name"));
     }
 
     public function testInspectCommand()

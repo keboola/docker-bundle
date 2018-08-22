@@ -416,7 +416,7 @@ class Container
         $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
             . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
             . " --memory " . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
-            . " --memory-swap " . escapeshellarg($this->limits->getMemorySwapLimit($this->getImage()))
+            . ($this->getImage()->getSourceComponent()->hasNoSwap() ? " --memory-swap " . escapeshellarg($this->limits->getMemorySwapLimit($this->getImage())) : "")
             . " --net " . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
             . " --cpus " . escapeshellarg($this->limits->getCpuLimit($this->getImage()))
             . $this->getDeviceLimits()
