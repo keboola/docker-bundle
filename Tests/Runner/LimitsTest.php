@@ -97,18 +97,6 @@ class LimitsTest extends TestCase
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
 
-    public function testDeviceIOLimits()
-    {
-        $limits = new Limits(
-            new NullLogger(),
-            [],
-            [],
-            [],
-            []
-        );
-        self::assertEquals("50m", $limits->getDeviceIOLimits($this->getImageMock()));
-    }
-
     /**
      * @return Image
      */

@@ -21,18 +21,6 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, $runCommandOptions, [], false);
 
-        // block devices
-        $process = new Process('lsblk --nodeps --output NAME --noheadings 2>/dev/null');
-        $process->mustRun();
-        $devices = array_filter(explode("\n", $process->getOutput()), function ($device) {
-            return !empty($device);
-        });
-        $deviceLimits = '';
-        foreach ($devices as $device) {
-            $deviceLimits .= " --device-write-bps '/dev/{$device}:50m'";
-            $deviceLimits .= " --device-read-bps '/dev/{$device}:50m'";
-        }
-
         $expected = "sudo timeout --signal=SIGKILL 3600"
             . " docker run"
             . " --volume '" . $this->getTempDir() . "/data:/data'"
@@ -40,7 +28,6 @@ class ContainerTest extends BaseContainerTest
             . " --memory '256m'"
             . " --net 'bridge'"
             . " --cpus '2'"
-            . $deviceLimits
             . " --env \"var=val\""
             . " --env \"příliš=žluťoučký\""
             . " --env \"var2=weird = '\\\"value\""
