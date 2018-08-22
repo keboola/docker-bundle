@@ -1892,5 +1892,4 @@ class RunnerTest extends BaseRunnerTest
             [[]],
         ];
     }
-
 }
