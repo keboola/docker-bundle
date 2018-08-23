@@ -1577,7 +1577,7 @@ class RunnerTest extends BaseRunnerTest
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
-    
+
     public function testPermissionsFailedWithoutContainerRootUserFeature()
     {
         $componentData = [
@@ -1850,5 +1850,48 @@ class RunnerTest extends BaseRunnerTest
                 'value' => 150
             ]
         ], $job->getUsage());
+    }
+
+    /**
+     * @dataProvider swapFeatureProvider
+     */
+    public function testExecutorSwap($features)
+    {
+        $this->clearConfigurations();
+        $usageFile = new NullUsageFile();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+            'features' => $features
+        ];
+        $configData = [
+            'parameters' => [
+                'script' => [],
+            ],
+        ];
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
+        $runner = $this->getRunner();
+        $output = $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
+        self::assertCount(1, $output);
+        self::assertEquals("Script file /data/script.py\nScript finished", $output[0]->getProcessOutput());
+    }
+
+    public function swapFeatureProvider()
+    {
+        return [
+            [["no-swap"]],
+            [[]],
+        ];
     }
 }
