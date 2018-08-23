@@ -1882,7 +1882,9 @@ class RunnerTest extends BaseRunnerTest
         ];
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
-        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
+        $output = $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
+        self::assertCount(1, $output);
+        self::assertEquals("Script file /data/script.py\nScript finished", $output[0]->getProcessOutput());
     }
 
     public function swapFeatureProvider()
