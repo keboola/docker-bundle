@@ -8,7 +8,7 @@ class ApplicationException extends \Keboola\Syrup\Exception\ApplicationException
 
     public function __construct($message, $previous = null, array $data = [])
     {
-        parent::__construct('Application error: ' . $message, $previous, $data);
+        parent::__construct($message, $previous, $data);
         $this->data = $data;
     }
 
