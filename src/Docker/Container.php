@@ -324,9 +324,9 @@ class Container
             $message = "No error message.";
         }
 
-        // make the exception message very short
-        if (mb_strlen($message) > 255) {
-            $message = mb_substr($message, 0, 125) . " ... " . mb_substr($message, -125);
+        // make the exception message reasonably short
+        if (mb_strlen($message) > 4000) {
+            $message = mb_substr($message, 0, 2000) . " ... " . mb_substr($message, -2000);
         }
 
         // put the whole message to exception data, but make sure not use too much memory

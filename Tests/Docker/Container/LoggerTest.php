@@ -561,8 +561,8 @@ class LoggerTest extends BaseContainerTest
             $container->run();
         } catch (UserException $e) {
             self::assertContains('message to stderr', $e->getMessage());
-            self::assertGreaterThan(250, strlen($e->getMessage()));
-            self::assertLessThan(280, strlen($e->getMessage()));
+            self::assertGreaterThan(4000, strlen($e->getMessage()));
+            self::assertLessThan(4050, strlen($e->getMessage()));
             self::assertContains('message to stderr', $e->getData()['errorOutput']);
             self::assertContains('message to stdout', $e->getData()['output']);
         }
