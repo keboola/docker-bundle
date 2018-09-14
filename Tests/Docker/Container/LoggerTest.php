@@ -541,6 +541,35 @@ class LoggerTest extends BaseContainerTest
         self::assertNotContains('message to stderr', $contents);
     }
 
+    public function testLogUserError()
+    {
+        $script = [
+            'import sys',
+            'print("first message to stdout", file=sys.stdout)',
+            'print("first message to stderr" * 100000, file=sys.stderr)',
+            'sys.exit(1)'
+        ];
+        $contents = '';
+        $this->setCreateEventCallback(
+            function (Event $event) use (&$contents) {
+                $contents .= $event->getMessage();
+                return true;
+            }
+        );
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
+        try {
+            $container->run();
+        } catch (UserException $e) {
+            self::assertContains('message to stderr', $e->getMessage());
+            self::assertGreaterThan(250, strlen($e->getMessage()));
+            self::assertLessThan(280, strlen($e->getMessage()));
+            self::assertContains('message to stderr', $e->getData()['errorOutput']);
+            self::assertContains('message to stdout', $e->getData()['output']);
+        }
+        self::assertContains('message to stdout', $contents);
+        self::assertNotContains('message to stderr', $contents);
+    }
+
     public function testLogTimeout()
     {
         $contents = '';
