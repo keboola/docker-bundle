@@ -163,4 +163,39 @@ YAML;
         self::expectExceptionMessage('Job not found');
         $usageFile->storeUsage();
     }
+
+
+    public function testDoNotStoreEmptyUsage()
+    {
+        $usage = \GuzzleHttp\json_encode([]);
+        $this->fs->dumpFile($this->dataDir . '/out/usage.json', $usage);
+
+        $jobMapperStub = self::getMockBuilder(JobMapper::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $encryptorFactory = new ObjectEncryptorFactory(
+            'alias/dummy-key',
+            'us-east-1',
+            hash('sha256', uniqid()),
+            hash('sha256', uniqid())
+        );
+
+        $jobMapperStub
+            ->expects(self::once())
+            ->method('get')
+            ->willReturn(new Job($encryptorFactory->getEncryptor()));
+
+        $jobMapperStub
+            ->expects(self::never())
+            ->method('update');
+
+        /** @var JobMapper $jobMapperStub */
+        $usageFile = new UsageFile();
+        $usageFile->setDataDir($this->dataDir);
+        $usageFile->setFormat('json');
+        $usageFile->setJobMapper($jobMapperStub);
+        $usageFile->setJobId(1);
+        $usageFile->storeUsage();
+    }
 }
