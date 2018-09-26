@@ -61,8 +61,10 @@ class UsageFile implements UsageFileInterface
                 foreach ($usage as $usageItem) {
                     $currentUsage[] = $usageItem;
                 }
-                $job = $job->setUsage($currentUsage);
-                $this->jobMapper->update($job);
+                if ($currentUsage) {
+                    $job = $job->setUsage($currentUsage);
+                    $this->jobMapper->update($job);
+                }
             } else {
                 throw new ApplicationException('Job not found', null, ['jobId' => $this->jobId]);
             }
