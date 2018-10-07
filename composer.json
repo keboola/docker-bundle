@@ -12,7 +12,6 @@
         "keboola/php-utils": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "^6.0",
         "keboola/output-mapping": "^6.0",
         "keboola/staging-provider": "^2.0",
         "symfony/validator": "^2.8|^4.1",
