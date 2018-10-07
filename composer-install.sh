@@ -11,7 +11,7 @@ then
     exit 1
 fi
 
-php composer-setup.php --install-dir=./ --filename=composer
+php composer-setup.php --install-dir=./ --filename=composer.phar
 RESULT=$?
 rm composer-setup.php
 exit $RESULT
