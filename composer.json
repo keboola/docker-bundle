@@ -15,6 +15,7 @@
         "keboola/output-mapping": "^6.0.0",
         "symfony/validator": "^2.8|^4.1",
         "symfony/http-foundation": "^2.8|^4.1",
+        "symfony/monolog-bridge": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "^0.1.3"
     },
