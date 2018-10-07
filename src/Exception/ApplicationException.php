@@ -8,7 +8,7 @@ class ApplicationException extends \Exception
 
     public function __construct($message, $previous = null, array $data = [])
     {
-        parent::__construct($message, $previous, $data);
+        parent::__construct($message, 0, $previous);
         $this->data = $data;
     }
 
