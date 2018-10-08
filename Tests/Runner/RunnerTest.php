@@ -2189,7 +2189,7 @@ class RunnerTest extends BaseRunnerTest
             }));
         $usageFile->expects(self::once())
             ->method('storeUsage')
-            ->will(self::returnCallback(function() use (&$dataDir, &$usage) {
+            ->will(self::returnCallback(function () use (&$dataDir, &$usage) {
                 $usageFileName = $dataDir . '/out/usage.json';
                 $usage = json_decode(file_get_contents($usageFileName), true);
             }));
@@ -2243,7 +2243,7 @@ class RunnerTest extends BaseRunnerTest
             }));
         $usageFile->expects(self::atLeastOnce())
             ->method('storeUsage')
-            ->will(self::returnCallback(function() use (&$dataDir, &$usage) {
+            ->will(self::returnCallback(function () use (&$dataDir, &$usage) {
                 $usageFileName = $dataDir . '/out/usage.json';
                 $usage[] = json_decode(file_get_contents($usageFileName), true);
             }));
