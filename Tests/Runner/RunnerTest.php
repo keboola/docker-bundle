@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
@@ -2180,19 +2181,16 @@ class RunnerTest extends BaseRunnerTest
     public function testExecutorStoreUsage()
     {
         $this->clearConfigurations();
-        $job = new Job($this->getEncryptorFactory()->getEncryptor());
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['get', 'update'])
+        $usageFile = self::getMockBuilder(NullUsageFile::class)
+            ->setMethods(['storeUsage'])
             ->getMock();
-        $jobMapperStub->expects(self::once())
-            ->method('get')
-            ->with('987654')
-            ->willReturn($job);
-        $usageFile = new UsageFile();
-        $usageFile->setJobMapper($jobMapperStub);
-        $usageFile->setFormat('json');
-        $usageFile->setJobId('987654');
+        $usageFile->expects(self::once())
+            ->method('storeUsage')
+            ->with([
+                'metric' => 'kB',
+                'value' => 150
+            ]);
+        /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -2219,31 +2217,27 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
-        self::assertEquals([
-            [
-                'metric' => 'kB',
-                'value' => 150
-            ]
-        ], $job->getUsage());
     }
 
     public function testExecutorStoreRowsUsage()
     {
         $this->clearConfigurations();
-        $job = new Job($this->getEncryptorFactory()->getEncryptor());
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['get', 'update'])
+        $usageFile = self::getMockBuilder(NullUsageFile::class)
+            ->setMethods(['storeUsage'])
             ->getMock();
-        $jobMapperStub->expects(self::atLeastOnce())
-            ->method('get')
-            ->with('987654')
-            ->willReturn($job);
-        $usageFile = new UsageFile();
-        $usageFile->setFormat('json');
-        $usageFile->setJobId('987654');
-        $usageFile->setJobMapper($jobMapperStub);
-
+        $usageFile->expects(self::once())
+            ->method('storeUsage')
+            ->with([
+                [
+                    'metric' => 'kB',
+                    'value' => 150
+                ],
+                [
+                    'metric' => 'kB',
+                    'value' => 150
+                ]
+            ]);
+        /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -2283,16 +2277,6 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', $usageFile);
-        self::assertEquals([
-            [
-                'metric' => 'kB',
-                'value' => 150
-            ],
-            [
-                'metric' => 'kB',
-                'value' => 150
-            ]
-        ], $job->getUsage());
     }
 
     /**
