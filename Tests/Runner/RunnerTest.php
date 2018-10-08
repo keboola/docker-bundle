@@ -2212,16 +2212,22 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreUsage()
     {
+        $dataDir = '';
+        $usage = [];
         $this->clearConfigurations();
         $usageFile = self::getMockBuilder(NullUsageFile::class)
-            ->setMethods(['storeUsage'])
+            ->setMethods(['storeUsage', 'setDataDir'])
             ->getMock();
+        $usageFile->method('setDataDir')
+            ->will(self::returnCallback(function ($arg) use (&$dataDir) {
+                $dataDir = $arg;
+            }));
         $usageFile->expects(self::once())
             ->method('storeUsage')
-            ->with([
-                'metric' => 'kB',
-                'value' => 150
-            ]);
+            ->will(self::returnCallback(function() use (&$dataDir, &$usage) {
+                $usageFileName = $dataDir . '/out/usage.json';
+                $usage = json_decode(file_get_contents($usageFileName), true);
+            }));
         /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
@@ -2249,26 +2255,33 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
+        self::assertEquals(
+            [[
+                'metric' => 'kB',
+                'value' => 150
+            ]],
+            $usage
+        );
     }
 
     public function testExecutorStoreRowsUsage()
     {
+        $dataDir = '';
+        $usage = [];
         $this->clearConfigurations();
         $usageFile = self::getMockBuilder(NullUsageFile::class)
-            ->setMethods(['storeUsage'])
+            ->setMethods(['storeUsage', 'setDataDir'])
             ->getMock();
-        $usageFile->expects(self::once())
+        $usageFile->method('setDataDir')
+            ->will(self::returnCallback(function ($arg) use (&$dataDir) {
+                $dataDir = $arg;
+            }));
+        $usageFile->expects(self::atLeastOnce())
             ->method('storeUsage')
-            ->with([
-                [
-                    'metric' => 'kB',
-                    'value' => 150
-                ],
-                [
-                    'metric' => 'kB',
-                    'value' => 150
-                ]
-            ]);
+            ->will(self::returnCallback(function() use (&$dataDir, &$usage) {
+                $usageFileName = $dataDir . '/out/usage.json';
+                $usage[] = json_decode(file_get_contents($usageFileName), true);
+            }));
         /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
@@ -2309,6 +2322,19 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
         $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', $usageFile);
+        self::assertEquals(
+            [
+                [[
+                    'metric' => 'kB',
+                    'value' => 150
+                ]],
+                [[
+                    'metric' => 'kB',
+                    'value' => 150
+                ]]
+            ],
+            $usage
+        );
     }
 
     /**
