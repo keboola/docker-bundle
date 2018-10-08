@@ -9,6 +9,7 @@
         }
     ],
     "require": {
+        "ext-json": "*",
         "keboola/php-utils": "^2.3.1",
         "keboola/oauth-v2-php-client": "^2.3.0",
         "keboola/gelf-server": "^2.0.0",
