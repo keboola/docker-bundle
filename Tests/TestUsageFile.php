@@ -16,7 +16,7 @@ class TestUsageFile implements UsageFileInterface
     public function storeUsage()
     {
         $usageFileName = $this->dataDir . '/out/usage.json';
-        $this->usage = json_decode(file_get_contents($usageFileName), true);
+        $this->usage[] = json_decode(file_get_contents($usageFileName), true);
     }
 
     public function getUsageData()

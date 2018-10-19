@@ -102,18 +102,6 @@
                 "DockerRunnerKMSKey"
             ]
         },
-        "AccessKey": {
-            "Type": "AWS::IAM::AccessKey",
-            "DeletionPolicy": "Delete",
-            "Properties": {
-                    "UserName": {
-                            "Ref": "DockerRunnerUser"
-                    }
-            },
-            "DependsOn": [
-                "DockerRunnerUser"
-            ]
-        },
         "DockerRunnerKMSKey": {
             "Type": "AWS::KMS::Key",
             "Properties": {
@@ -171,39 +159,34 @@
     },
     "Outputs": {
         "RepositoryUrl": {
-                "Value": {
-                        "Fn::Join": [
-                            "",
-                            [
-                                {
-                                    "Ref": "AWS::AccountId"
-                                },
-                                ".dkr.ecr.",
-                                {
-                                    "Ref": "AWS::Region"
-                                },
-                                ".amazonaws.com/",
-                                {
-                                    "Ref": "DockerRunnerRepository"
-                                }
-                        ]
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        {
+                            "Ref": "AWS::AccountId"
+                        },
+                        ".dkr.ecr.",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        ".amazonaws.com/",
+                        {
+                            "Ref": "DockerRunnerRepository"
+                        }
                     ]
-                }
+                ]
+            }
         },
         "Region": {
-                "Value": {
-                        "Ref": "AWS::Region"
-                }
+            "Value": {
+                "Ref": "AWS::Region"
+            }
         },
-        "AccessKeyId": {
-                "Value": {
-                        "Ref": "AccessKey"
-                }
-        },
-        "AccessKeySecret": {
-                "Value": {
-                        "Fn::GetAtt": ["AccessKey", "SecretAccessKey"]
-                }
-        }
+        "KMSKey": {
+            "Value": {
+                "Ref": "DockerRunnerKMSKeyAlias"
+            }
+        }        
     }
 }
