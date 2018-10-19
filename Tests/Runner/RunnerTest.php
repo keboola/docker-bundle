@@ -2208,10 +2208,10 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
         self::assertEquals(
-            [[
+            [[[
                 'metric' => 'kB',
                 'value' => 150
-            ]],
+            ]]],
             $usageFile->getUsageData()
         );
     }
