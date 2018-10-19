@@ -5,13 +5,15 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\InputMapping\Table\Options\InputTableOptions;
+use Keboola\DockerBundle\Tests\TestUsageFile;
+use Keboola\InputMapping\Reader\Options\InputTableOptions;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -2177,23 +2179,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreUsage()
     {
-        $dataDir = '';
-        $usage = [];
         $this->clearConfigurations();
-        $usageFile = self::getMockBuilder(NullUsageFile::class)
-            ->setMethods(['storeUsage', 'setDataDir'])
-            ->getMock();
-        $usageFile->method('setDataDir')
-            ->will(self::returnCallback(function ($arg) use (&$dataDir) {
-                $dataDir = $arg;
-            }));
-        $usageFile->expects(self::once())
-            ->method('storeUsage')
-            ->will(self::returnCallback(function () use (&$dataDir, &$usage) {
-                $usageFileName = $dataDir . '/out/usage.json';
-                $usage = json_decode(file_get_contents($usageFileName), true);
-            }));
-        /** @var UsageFileInterface $usageFile */
+        $usageFile = new TestUsageFile();
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -2225,28 +2212,14 @@ class RunnerTest extends BaseRunnerTest
                 'metric' => 'kB',
                 'value' => 150
             ]],
-            $usage
+            $usageFile->getUsageData()
         );
     }
 
     public function testExecutorStoreRowsUsage()
     {
-        $dataDir = '';
-        $usage = [];
         $this->clearConfigurations();
-        $usageFile = self::getMockBuilder(NullUsageFile::class)
-            ->setMethods(['storeUsage', 'setDataDir'])
-            ->getMock();
-        $usageFile->method('setDataDir')
-            ->will(self::returnCallback(function ($arg) use (&$dataDir) {
-                $dataDir = $arg;
-            }));
-        $usageFile->expects(self::atLeastOnce())
-            ->method('storeUsage')
-            ->will(self::returnCallback(function () use (&$dataDir, &$usage) {
-                $usageFileName = $dataDir . '/out/usage.json';
-                $usage[] = json_decode(file_get_contents($usageFileName), true);
-            }));
+        $usageFile = new TestUsageFile();
         /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
@@ -2298,7 +2271,7 @@ class RunnerTest extends BaseRunnerTest
                     'value' => 150
                 ]]
             ],
-            $usage
+            $usageFile->getUsageData()
         );
     }
 
