@@ -1,6 +1,7 @@
 <?php
 
 namespace Keboola\DockerBundle\Tests;
+
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 
 class TestUsageFile implements UsageFileInterface
