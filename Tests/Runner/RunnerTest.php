@@ -485,6 +485,202 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
     }
 
+    public function testExecutorDeferredLoad()
+    {
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test', 'test']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload2.csv');
+        $csv->writeRow(['id2', 'text2']);
+        $csv->writeRow(['test2', 'test2']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test2', $csv);
+
+        unset($csv);
+
+        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+                'default_bucket' => true,
+                'default_bucket_stage' => 'out',
+            ],
+        ];
+        $tokenInfo = $client->verifyToken();
+        $tokenInfo['owner']['features'] = ['deferred-om'];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['verifyToken'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('verifyToken')
+            ->will(self::returnValue($tokenInfo));
+        $this->setClientMock($clientMock);
+
+        $configData = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                            'destination' => 'source.csv',
+                        ],
+                        [
+                            'source' => 'in.c-runner-test.test2',
+                            'destination' => 'source2.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/table1.csv")',
+                    'copyfile("/data/in/tables/source2.csv", "/data/out/tables/table2.csv")',
+                ]
+            ]
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 1)'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 2 storage jobs, waiting for them to finish'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
+        $this->clearBuckets();
+    }
+
+    public function testExecutorDeferredLoadConfigRows()
+    {
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test', 'test']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload2.csv');
+        $csv->writeRow(['id2', 'text2']);
+        $csv->writeRow(['test2', 'test2']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'test2', $csv);
+
+        unset($csv);
+
+        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+                'default_bucket' => true,
+                'default_bucket_stage' => 'out',
+            ],
+        ];
+        $tokenInfo = $client->verifyToken();
+        $tokenInfo['owner']['features'] = ['deferred-om'];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['verifyToken'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('verifyToken')
+            ->will(self::returnValue($tokenInfo));
+        $this->setClientMock($clientMock);
+
+        $configData1 = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                            'destination' => 'source.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/table1.csv")',
+                ]
+            ]
+        ];
+        $configData2 = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test2',
+                            'destination' => 'source2.csv',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from shutil import copyfile',
+                    'copyfile("/data/in/tables/source2.csv", "/data/out/tables/table2.csv")',
+                ]
+            ]
+        ];;
+        $runner = $this->getRunner();
+        $runner->run(
+            array_merge(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration1',
+                    $configData1,
+                    []
+                ),
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration2',
+                    $configData2,
+                    []
+                )
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 2 storage jobs, waiting for them to finish'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
+        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
+        $this->clearBuckets();
+    }
+
     public function testExecutorStoreState()
     {
         $this->clearConfigurations();

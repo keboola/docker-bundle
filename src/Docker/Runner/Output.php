@@ -20,6 +20,11 @@ class Output
     private $configVersion;
 
     /**
+     * @var array
+     */
+    private $storageJobIds;
+
+    /**
      * Output constructor.
      *
      * @param array $images
@@ -55,5 +60,15 @@ class Output
     public function getConfigVersion()
     {
         return $this->configVersion;
+    }
+
+    public function setStorageJobIds(array $jobIds)
+    {
+        $this->storageJobIds = $jobIds;
+    }
+
+    public function getStorageJobIds()
+    {
+        return $this->storageJobIds;
     }
 }
