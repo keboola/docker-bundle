@@ -354,7 +354,6 @@ class Runner
                 throw new UserException('Failed to process output mapping, error: ' . $job['error']['message']);
             }
         }
-        $this->loggersService->getLog()->info('All storage jobs finished.');
     }
 
     /**

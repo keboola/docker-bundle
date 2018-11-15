@@ -483,7 +483,6 @@ class RunnerTest extends BaseRunnerTest
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 0 storage jobs, waiting for them to finish'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
         $this->clearBuckets();
     }
 
@@ -568,7 +567,6 @@ class RunnerTest extends BaseRunnerTest
 
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 1)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 2 storage jobs, waiting for them to finish'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
         $this->clearBuckets();
@@ -677,7 +675,6 @@ class RunnerTest extends BaseRunnerTest
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 2 storage jobs, waiting for them to finish'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
         $this->clearBuckets();
