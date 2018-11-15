@@ -649,7 +649,7 @@ class RunnerTest extends BaseRunnerTest
                     'copyfile("/data/in/tables/source2.csv", "/data/out/tables/table2.csv")',
                 ]
             ]
-        ];;
+        ];
         $runner = $this->getRunner();
         $runner->run(
             array_merge(
