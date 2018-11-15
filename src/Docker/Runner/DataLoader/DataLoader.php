@@ -137,7 +137,8 @@ class DataLoader implements DataLoaderInterface
 
         $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->component->getConfigurationFormat());
-        $features = $this->storageClient->verifyToken()['owner']['features'];
+
+        $features = empty($this->storageClient->verifyToken()['owner']['features']) ? [] : $this->storageClient->verifyToken()['owner']['features'];
         $deferred = in_array('deferred-om', $features);
 
         $outputTablesConfig = [];
