@@ -482,6 +482,8 @@ class RunnerTest extends BaseRunnerTest
         );
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Found 0 storage jobs, waiting for them to finish'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('All storage jobs finished'));
         $this->clearBuckets();
     }
 
