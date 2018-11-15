@@ -515,7 +515,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $tokenInfo = $client->verifyToken();
-        $tokenInfo['owner']['features'] = ['deferred-om'];
+        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
         $clientMock = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
@@ -601,7 +601,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $tokenInfo = $client->verifyToken();
-        $tokenInfo['owner']['features'] = ['deferred-om'];
+        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
         $clientMock = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,

@@ -139,7 +139,7 @@ class DataLoader implements DataLoaderInterface
         $writer->setFormat($this->component->getConfigurationFormat());
 
         $features = empty($this->storageClient->verifyToken()['owner']['features']) ? [] : $this->storageClient->verifyToken()['owner']['features'];
-        $deferred = in_array('deferred-om', $features);
+        $deferred = in_array('parallel-output-mapping-load', $features);
 
         $outputTablesConfig = [];
         $outputFilesConfig = [];
