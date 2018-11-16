@@ -347,8 +347,8 @@ class Runner
                 $jobIds = array_merge($jobIds, $output->getStorageJobIds());
             }
         }
-        $this->loggersService->getLog()->info(sprintf('Found %s storage jobs, waiting for them to finish.', count($jobIds)));
-        foreach ($jobIds as $index => $jobId) {
+        $this->loggersService->getLog()->info(sprintf('Waiting for %s storage jobs.', count($jobIds)));
+        foreach ($jobIds as $jobId) {
             $job = $this->storageClient->waitForJob($jobId);
             if ($job['status'] == 'error') {
                 throw new UserException('Failed to process output mapping, error: ' . $job['error']['message']);
