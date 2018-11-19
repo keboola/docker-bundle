@@ -89,7 +89,7 @@ abstract class BaseContainerTest extends TestCase
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
+                    'tag' => '1.1.12',
                 ],
                 'image_parameters' => [
                     '#secure' => 'secure',

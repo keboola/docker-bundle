@@ -34,7 +34,7 @@ class ContainerTest extends BaseContainerTest
             . " --label 'com.keboola.runner.jobId=12345678'"
             . " --label 'com.keboola.runner.runId=10.20.30'"
             . " --name 'name'"
-            . " '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:latest'";
+            . " '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:1.1.12'";
         self::assertEquals($expected, $container->getRunCommand('name'));
     }
 

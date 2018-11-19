@@ -334,7 +334,26 @@ class Runner
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
         }
+        $this->waitForStorageJobs($outputs);
         return $outputs;
+    }
+
+    private function waitForStorageJobs(array $outputs)
+    {
+        $jobIds = [];
+        foreach ($outputs as $output) {
+            /** @var Output $output */
+            if ($output->getStorageJobIds()) {
+                $jobIds = array_merge($jobIds, $output->getStorageJobIds());
+            }
+        }
+        $this->loggersService->getLog()->info(sprintf('Waiting for %s storage jobs.', count($jobIds)));
+        foreach ($jobIds as $jobId) {
+            $job = $this->storageClient->waitForJob($jobId);
+            if ($job['status'] == 'error') {
+                throw new UserException('Failed to process output mapping: ' . $job['error']['message']);
+            }
+        }
     }
 
     /**
@@ -365,7 +384,8 @@ class Runner
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
         } else {
-            $dataLoader->storeOutput();
+            $jobIds = $dataLoader->storeOutput();
+            $output->setStorageJobIds($jobIds);
         }
 
         // finalize
