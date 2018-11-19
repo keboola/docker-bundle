@@ -351,7 +351,7 @@ class Runner
         foreach ($jobIds as $jobId) {
             $job = $this->storageClient->waitForJob($jobId);
             if ($job['status'] == 'error') {
-                throw new UserException('Failed to process output mapping, error: ' . $job['error']['message']);
+                throw new UserException('Failed to process output mapping: ' . $job['error']['message']);
             }
         }
     }
