@@ -16,6 +16,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
@@ -796,6 +797,432 @@ class RunnerTest extends BaseRunnerTest
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateRows()
+    {
+        $this->clearBuckets();
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState(['foo' => 'bar']);
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configData1 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow1": "fooBar1"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData1);
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $configurationRow->setState(['fooRow2' => 'barRow2']);
+        $configData2 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData2);
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            [
+                new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
+                new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+            ],
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        $component = new Components($this->getClient());
+        $listOptions = new ListConfigurationRowsOptions();
+        $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        // configuration state should be unchanged
+        self::assertArrayHasKey('foo', $configuration['state']);
+        self::assertEquals('bar', $configuration['state']['foo']);
+        $rows = $component->listConfigurationRows($listOptions);
+        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        $row1 = $rows[0];
+        $row2 = $rows[1];
+        self::assertArrayHasKey('bazRow1', $row1['state']);
+        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayHasKey('bazRow2', $row2['state']);
+        self::assertEquals('fooBar2', $row2['state']['bazRow2']);
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateRowsOutputMappingError()
+    {
+        $this->clearBuckets();
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState(['foo' => 'bar']);
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configData1 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow1": "fooBar1"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
+                    '   print("foo,foo\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData1);
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $configurationRow->setState(['fooRow2' => 'barRow2']);
+        $configData2 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData2);
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        try {
+            $runner->run(
+                [
+                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
+                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+                ],
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile()
+            );
+        } catch (UserException $e) {
+            self::assertContains(
+                'Cannot upload file \'out.c-runner-test.my-table-1b.csv\' to table ' .
+                '\'out.c-runner-test.my-table-1b\' in Storage API: There are duplicate columns in CSV file: foo',
+                $e->getMessage()
+            );
+        }
+
+        $component = new Components($this->getClient());
+        $listOptions = new ListConfigurationRowsOptions();
+        $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        // configuration state should be unchanged
+        self::assertArrayHasKey('foo', $configuration['state']);
+        self::assertEquals('bar', $configuration['state']['foo']);
+        $rows = $component->listConfigurationRows($listOptions);
+        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        $row1 = $rows[0];
+        $row2 = $rows[1];
+        self::assertArrayHasKey('bazRow1', $row1['state']);
+        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayNotHasKey('bazRow2', $row2['state']);
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateRowsOutputMappingDeferredEarlyError()
+    {
+        $this->clearBuckets();
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState(['foo' => 'bar']);
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configData1 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow1": "fooBar1"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
+                    '   print("foo,foo\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData1);
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $configurationRow->setState(['fooRow2' => 'barRow2']);
+        $configData2 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData2);
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $tokenInfo = $this->client->verifyToken();
+        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['verifyToken'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('verifyToken')
+            ->will(self::returnValue($tokenInfo));
+        $this->setClientMock($clientMock);
+
+        $runner = $this->getRunner();
+        try {
+            $runner->run(
+                [
+                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
+                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+                ],
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile()
+            );
+        } catch (UserException $e) {
+            self::assertContains(
+                'Cannot upload file \'out.c-runner-test.my-table-1b.csv\' to table ' .
+                '\'out.c-runner-test.my-table-1b\' in Storage API: There are duplicate columns in CSV file: foo',
+                $e->getMessage()
+            );
+        }
+
+        $component = new Components($this->getClient());
+        $listOptions = new ListConfigurationRowsOptions();
+        $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        // configuration state should be unchanged
+        self::assertArrayHasKey('foo', $configuration['state']);
+        self::assertEquals('bar', $configuration['state']['foo']);
+        $rows = $component->listConfigurationRows($listOptions);
+        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        $row1 = $rows[0];
+        $row2 = $rows[1];
+        self::assertArrayHasKey('bazRow1', $row1['state']);
+        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayNotHasKey('bazRow2', $row2['state']);
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
+        self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 4 storage jobs'));
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateRowsOutputMappingDeferredLateError()
+    {
+        $this->clearBuckets();
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState(['foo' => 'bar']);
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configData1 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow1": "fooBar1"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2,3", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData1);
+        $component->addConfigurationRow($configurationRow);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-2');
+        $configurationRow->setName('Row 2');
+        $configurationRow->setState(['fooRow2' => 'barRow2']);
+        $configData2 = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
+                    '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+        ];
+        $configurationRow->setConfiguration($configData2);
+        $component->addConfigurationRow($configurationRow);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $tokenInfo = $this->client->verifyToken();
+        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['verifyToken'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('verifyToken')
+            ->will(self::returnValue($tokenInfo));
+        $this->setClientMock($clientMock);
+
+        $runner = $this->getRunner();
+        try {
+            $runner->run(
+                [
+                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
+                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+                ],
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile()
+            );
+        } catch (UserException $e) {
+            self::assertContains(
+                'Failed to process output mapping: Load error: odbc_execute(): ' .
+                'SQL error: Number of columns in file (3) does not match that of the corresponding table (2)',
+                $e->getMessage()
+            );
+        }
+
+        $component = new Components($this->getClient());
+        $listOptions = new ListConfigurationRowsOptions();
+        $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        // configuration state should be unchanged
+        self::assertArrayHasKey('foo', $configuration['state']);
+        self::assertEquals('bar', $configuration['state']['foo']);
+        $rows = $component->listConfigurationRows($listOptions);
+        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        $row1 = $rows[0];
+        $row2 = $rows[1];
+        self::assertArrayHasKey('bazRow1', $row1['state']);
+        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayHasKey('bazRow2', $row2['state']);
+        self::assertEquals('fooBar2', $row2['state']['bazRow2']);
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1b'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2a'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2b'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 4 storage jobs'));
         $this->clearConfigurations();
     }
 
