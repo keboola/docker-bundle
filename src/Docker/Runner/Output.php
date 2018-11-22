@@ -25,17 +25,23 @@ class Output
     private $storageJobIds;
 
     /**
+     * @var StateFile
+     */
+    private $stateFile;
+
+    /**
      * Output constructor.
      *
      * @param array $images
      * @param string $output
      * @param $configVersion
      */
-    public function __construct(array $images, $output, $configVersion)
+    public function __construct(array $images, $output, $configVersion, $stateFile)
     {
         $this->images = $images;
         $this->output = $output;
         $this->configVersion = $configVersion;
+        $this->stateFile  = $stateFile;
     }
 
     /**
@@ -70,5 +76,10 @@ class Output
     public function getStorageJobIds()
     {
         return $this->storageJobIds;
+    }
+
+    public function getStateFile()
+    {
+        return $this->stateFile;
     }
 }
