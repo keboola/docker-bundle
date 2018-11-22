@@ -125,6 +125,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->storeState($state);
+        $stateFile->persistState();
     }
 
     public function testUpdateStateChange()
@@ -146,6 +147,29 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
+
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['state' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->storeState(["state" => "fooBar", "#foo" => "bar"]);
+        $stateFile->persistState();
+    }
+
+    public function testUpdateStateChangeNoPersist()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::never())
+            ->method('apiPut');
 
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -185,6 +209,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->storeState(['state' => 'fooBar']);
+        $stateFile->persistState();
     }
 
     public function testUpdateStateChangeToEmptyArray()
@@ -211,6 +236,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->storeState([]);
+        $stateFile->persistState();
     }
 
     public function testUpdateStateChangeToEmptyObject()
@@ -237,6 +263,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->storeState(new \stdClass());
+        $stateFile->persistState();
     }
 
     public function testUpdateRowStateChange()
@@ -264,6 +291,7 @@ class StateFileTest extends TestCase
             'row-id'
         );
         $stateFile->storeState(['state' => 'fooBar']);
+        $stateFile->persistState();
     }
 
     public function testPickState()
