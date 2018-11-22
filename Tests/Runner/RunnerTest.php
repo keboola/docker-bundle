@@ -981,8 +981,7 @@ class RunnerTest extends BaseRunnerTest
         uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
         $row1 = $rows[0];
         $row2 = $rows[1];
-        self::assertArrayHasKey('bazRow1', $row1['state']);
-        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayNotHasKey('bazRow1', $row1['state']);
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
@@ -1097,8 +1096,7 @@ class RunnerTest extends BaseRunnerTest
         uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
         $row1 = $rows[0];
         $row2 = $rows[1];
-        self::assertArrayHasKey('bazRow1', $row1['state']);
-        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
+        self::assertArrayNotHasKey('bazRow1', $row1['state']);
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
@@ -1214,10 +1212,8 @@ class RunnerTest extends BaseRunnerTest
         uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
         $row1 = $rows[0];
         $row2 = $rows[1];
-        self::assertArrayHasKey('bazRow1', $row1['state']);
-        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
-        self::assertArrayHasKey('bazRow2', $row2['state']);
-        self::assertEquals('fooBar2', $row2['state']['bazRow2']);
+        self::assertArrayNotHasKey('bazRow1', $row1['state']);
+        self::assertArrayNotHasKey('bazRow2', $row2['state']);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1b'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2a'));
