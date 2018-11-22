@@ -877,7 +877,12 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('foo', $configuration['state']);
         self::assertEquals('bar', $configuration['state']['foo']);
         $rows = $component->listConfigurationRows($listOptions);
-        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        uasort(
+            $rows,
+            function ($a, $b) {
+                return strcasecmp($a['id'], $b['id']);
+            }
+        );
         $row1 = $rows[0];
         $row2 = $rows[1];
         self::assertArrayHasKey('bazRow1', $row1['state']);
@@ -978,7 +983,12 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('foo', $configuration['state']);
         self::assertEquals('bar', $configuration['state']['foo']);
         $rows = $component->listConfigurationRows($listOptions);
-        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        uasort(
+            $rows,
+            function ($a, $b) {
+                return strcasecmp($a['id'], $b['id']);
+            }
+        );
         $row1 = $rows[0];
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
@@ -1093,7 +1103,12 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('foo', $configuration['state']);
         self::assertEquals('bar', $configuration['state']['foo']);
         $rows = $component->listConfigurationRows($listOptions);
-        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        uasort(
+            $rows,
+            function ($a, $b) {
+                return strcasecmp($a['id'], $b['id']);
+            }
+        );
         $row1 = $rows[0];
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
@@ -1209,7 +1224,12 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('foo', $configuration['state']);
         self::assertEquals('bar', $configuration['state']['foo']);
         $rows = $component->listConfigurationRows($listOptions);
-        uasort($rows, function ($a, $b) { return strcasecmp($a['id'], $b['id']);});
+        uasort(
+            $rows,
+            function ($a, $b) {
+                return strcasecmp($a['id'], $b['id']);
+            }
+        );
         $row1 = $rows[0];
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
