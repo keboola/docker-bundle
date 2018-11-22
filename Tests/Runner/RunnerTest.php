@@ -993,7 +993,6 @@ class RunnerTest extends BaseRunnerTest
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
@@ -1113,7 +1112,6 @@ class RunnerTest extends BaseRunnerTest
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
