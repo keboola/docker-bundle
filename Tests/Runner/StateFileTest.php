@@ -124,7 +124,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState($state);
+        $stateFile->stashState($state);
         $stateFile->persistState();
     }
 
@@ -159,7 +159,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState(["state" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(["state" => "fooBar", "#foo" => "bar"]);
         $stateFile->persistState();
     }
 
@@ -182,7 +182,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState(["state" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(["state" => "fooBar", "#foo" => "bar"]);
     }
 
     public function testChangeFromEmpty()
@@ -208,7 +208,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState(['state' => 'fooBar']);
+        $stateFile->stashState(['state' => 'fooBar']);
         $stateFile->persistState();
     }
 
@@ -235,7 +235,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState([]);
+        $stateFile->stashState([]);
         $stateFile->persistState();
     }
 
@@ -262,7 +262,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->storeState(new \stdClass());
+        $stateFile->stashState(new \stdClass());
         $stateFile->persistState();
     }
 
@@ -290,7 +290,7 @@ class StateFileTest extends TestCase
             new NullFilter(),
             'row-id'
         );
-        $stateFile->storeState(['state' => 'fooBar']);
+        $stateFile->stashState(['state' => 'fooBar']);
         $stateFile->persistState();
     }
 

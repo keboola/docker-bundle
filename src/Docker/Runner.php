@@ -501,7 +501,7 @@ class Runner
             }
         }
         if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->storeState($newState);
+            $stateFile->stashState($newState);
         }
         return new Output($imageDigests, $outputMessage, $configVersion, $stateFile);
     }

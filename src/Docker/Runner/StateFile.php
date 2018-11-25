@@ -97,7 +97,7 @@ class StateFile
         $stateAdapter->writeToFile($stateFileName);
     }
 
-    public function storeState($currentState)
+    public function stashState($currentState)
     {
         $this->currentState = $currentState;
     }
