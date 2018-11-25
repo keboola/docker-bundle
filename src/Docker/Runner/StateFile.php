@@ -59,6 +59,11 @@ class StateFile
      */
     private $encryptorFactory;
 
+    /**
+     * @var mixed
+     */
+    private $currentState = null;
+
     public function __construct(
         $dataDirectory,
         Client $storageClient,
@@ -92,16 +97,24 @@ class StateFile
         $stateAdapter->writeToFile($stateFileName);
     }
 
-    public function storeState($currentState)
+    public function stashState($currentState)
     {
+        $this->currentState = $currentState;
+    }
+
+    public function persistState()
+    {
+        if ($this->currentState === null) {
+            return;
+        }
         $previousState = $this->state;
         // Store state
         if (!$previousState) {
             $previousState = new \stdClass();
         }
 
-        $this->outputFilter->collectValues((array)$currentState);
-        if (serialize($currentState) != serialize($previousState)) {
+        $this->outputFilter->collectValues((array)$this->currentState);
+        if (serialize($this->currentState) != serialize($previousState)) {
             $components = new Components($this->storageClient);
             $configuration = new Configuration();
             $configuration->setComponentId($this->componentId);
@@ -110,12 +123,12 @@ class StateFile
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
                 $configurationRow->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ProjectWrapper::class)
+                    $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
                 );
                 $components->updateConfigurationRow($configurationRow);
             } else {
                 $configuration->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($currentState, ProjectWrapper::class)
+                    $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
                 );
                 $components->updateConfiguration($configuration);
             }

@@ -335,6 +335,10 @@ class Runner
             );
         }
         $this->waitForStorageJobs($outputs);
+        /** @var Output $output */
+        foreach ($outputs as $output) {
+            $output->getStateFile()->persistState();
+        }
         return $outputs;
     }
 
@@ -497,8 +501,8 @@ class Runner
             }
         }
         if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->storeState($newState);
+            $stateFile->stashState($newState);
         }
-        return new Output($imageDigests, $outputMessage, $configVersion);
+        return new Output($imageDigests, $outputMessage, $configVersion, $stateFile);
     }
 }
