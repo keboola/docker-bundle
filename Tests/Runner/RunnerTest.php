@@ -894,112 +894,18 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingError()
+    public function outputMappingFeatureProvider()
     {
-        $this->clearBuckets();
-        $this->clearConfigurations();
-        $component = new Components($this->getClient());
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.docker-demo-sync');
-        $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
-        $component->addConfiguration($configuration);
-
-        $configurationRow = new ConfigurationRow($configuration);
-        $configurationRow->setRowId('row-1');
-        $configurationRow->setName('Row 1');
-        $configurationRow->setState(['fooRow1' => 'barRow1']);
-        $configData1 = [
-            'parameters' => [
-                'script' => [
-                    'import json',
-                    'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"bazRow1": "fooBar1"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
-                    '   print("foo,foo\n1,2", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                ],
-            ],
+        return [
+            [[]],
+            [['parallel-output-mapping-load']],
         ];
-        $configurationRow->setConfiguration($configData1);
-        $component->addConfigurationRow($configurationRow);
-
-        $configurationRow = new ConfigurationRow($configuration);
-        $configurationRow->setRowId('row-2');
-        $configurationRow->setName('Row 2');
-        $configurationRow->setState(['fooRow2' => 'barRow2']);
-        $configData2 = [
-            'parameters' => [
-                'script' => [
-                    'import json',
-                    'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                ],
-            ],
-        ];
-        $configurationRow->setConfiguration($configData2);
-        $component->addConfigurationRow($configurationRow);
-
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $runner = $this->getRunner();
-        try {
-            $runner->run(
-                [
-                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
-                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
-                ],
-                'run',
-                'run',
-                '1234567',
-                new NullUsageFile()
-            );
-        } catch (UserException $e) {
-            self::assertContains(
-                'Cannot upload file \'out.c-runner-test.my-table-1b.csv\' to table ' .
-                '\'out.c-runner-test.my-table-1b\' in Storage API: There are duplicate columns in CSV file: foo',
-                $e->getMessage()
-            );
-        }
-
-        $component = new Components($this->getClient());
-        $listOptions = new ListConfigurationRowsOptions();
-        $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        // configuration state should be unchanged
-        self::assertArrayHasKey('foo', $configuration['state']);
-        self::assertEquals('bar', $configuration['state']['foo']);
-        $rows = $component->listConfigurationRows($listOptions);
-        uasort(
-            $rows,
-            function ($a, $b) {
-                return strcasecmp($a['id'], $b['id']);
-            }
-        );
-        $row1 = $rows[0];
-        $row2 = $rows[1];
-        self::assertArrayNotHasKey('bazRow1', $row1['state']);
-        self::assertArrayNotHasKey('bazRow2', $row2['state']);
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
-        $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingDeferredEarlyError()
+    /**
+     * @dataProvider outputMappingFeatureProvider
+     */
+    public function testExecutorStoreStateRowsOutputMappingEarlyError(array $features)
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1021,34 +927,12 @@ class RunnerTest extends BaseRunnerTest
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
                     '   json.dump({"bazRow1": "fooBar1"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
                     '   print("foo,foo\n1,2", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
                 ],
             ],
         ];
         $configurationRow->setConfiguration($configData1);
-        $component->addConfigurationRow($configurationRow);
-
-        $configurationRow = new ConfigurationRow($configuration);
-        $configurationRow->setRowId('row-2');
-        $configurationRow->setName('Row 2');
-        $configurationRow->setState(['fooRow2' => 'barRow2']);
-        $configData2 = [
-            'parameters' => [
-                'script' => [
-                    'import json',
-                    'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"bazRow2": "fooBar2"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                ],
-            ],
-        ];
-        $configurationRow->setConfiguration($configData2);
         $component->addConfigurationRow($configurationRow);
 
         $componentData = [
@@ -1061,7 +945,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $tokenInfo = $this->client->verifyToken();
-        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
+        $tokenInfo['owner']['features'] = $features;
         $clientMock = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
@@ -1079,7 +963,6 @@ class RunnerTest extends BaseRunnerTest
             $runner->run(
                 [
                     new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
-                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
                 ],
                 'run',
                 'run',
@@ -1088,8 +971,8 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Cannot upload file \'out.c-runner-test.my-table-1b.csv\' to table ' .
-                '\'out.c-runner-test.my-table-1b\' in Storage API: There are duplicate columns in CSV file: foo',
+                'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
+                '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: foo',
                 $e->getMessage()
             );
         }
@@ -1101,21 +984,11 @@ class RunnerTest extends BaseRunnerTest
         // configuration state should be unchanged
         self::assertArrayHasKey('foo', $configuration['state']);
         self::assertEquals('bar', $configuration['state']['foo']);
-        $rows = $component->listConfigurationRows($listOptions);
-        uasort(
-            $rows,
-            function ($a, $b) {
-                return strcasecmp($a['id'], $b['id']);
-            }
-        );
-        $row1 = $rows[0];
-        $row2 = $rows[1];
-        self::assertArrayNotHasKey('bazRow1', $row1['state']);
-        self::assertArrayNotHasKey('bazRow2', $row2['state']);
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1b'));
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2a'));
-        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-2b'));
-        self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 4 storage jobs'));
+        $row = $component->listConfigurationRows($listOptions)[0];
+
+        self::assertArrayNotHasKey('bazRow1', $row['state']);
+        self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1'));
+        self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 storage jobs'));
         $this->clearConfigurations();
     }
 
@@ -1141,10 +1014,8 @@ class RunnerTest extends BaseRunnerTest
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
                     '   json.dump({"bazRow1": "fooBar1"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1b.csv", "w") as out_table:',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2,3", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-1a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
                 ],
             ],
         ];
@@ -1161,9 +1032,7 @@ class RunnerTest extends BaseRunnerTest
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
                     '   json.dump({"bazRow2": "fooBar2"}, state_file)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2a.csv", "w") as out_table:',
-                    '   print("foo,bar\n1,2", file=out_table)',
-                    'with open("/data/out/tables/out.c-runner-test.my-table-2b.csv", "w") as out_table:',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
                 ],
             ],
@@ -1232,11 +1101,9 @@ class RunnerTest extends BaseRunnerTest
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state']);
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1a'));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1b'));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2a'));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2b'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 4 storage jobs'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 storage jobs'));
         $this->clearConfigurations();
     }
 
