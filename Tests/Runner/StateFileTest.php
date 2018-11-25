@@ -60,7 +60,7 @@ class StateFileTest extends TestCase
         $this->encryptorFactory->setProjectId('123');
     }
 
-    public function testCreateStateFile()
+    public function testCreate()
     {
         $stateFile = new StateFile(
             $this->dataDir,
@@ -79,11 +79,11 @@ class StateFileTest extends TestCase
         $obj->lastUpdate = 'today';
         self::assertEquals(
             $obj,
-            json_decode(file_get_contents($fileName), false)
+            \GuzzleHttp\json_decode(file_get_contents($fileName), false)
         );
     }
 
-    public function testCreateEmptyStateFile()
+    public function testCreateEmpty()
     {
         $stateFile = new StateFile(
             $this->dataDir,
@@ -100,11 +100,11 @@ class StateFileTest extends TestCase
         self::assertTrue(file_exists($fileName));
         self::assertEquals(
             new \stdClass(),
-            json_decode(file_get_contents($fileName), false)
+            \GuzzleHttp\json_decode(file_get_contents($fileName), false)
         );
     }
 
-    public function testUpdateStateNoChange()
+    public function testNoChange()
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -128,7 +128,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testUpdateStateChange()
+    public function testChange()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -163,7 +163,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testUpdateStateChangeNoPersist()
+    public function testChangeNoPersist()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -185,7 +185,7 @@ class StateFileTest extends TestCase
         $stateFile->storeState(["state" => "fooBar", "#foo" => "bar"]);
     }
 
-    public function testUpdateStateChangeFromEmpty()
+    public function testChangeFromEmpty()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -212,7 +212,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testUpdateStateChangeToEmptyArray()
+    public function tesChangeToEmptyArray()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -239,7 +239,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testUpdateStateChangeToEmptyObject()
+    public function testChangeToEmptyObject()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -314,7 +314,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPickStateEmptyState()
+    public function testPickEmptyState()
     {
         $fs = new Filesystem();
         $data = [];
@@ -334,7 +334,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPickStateNoState()
+    public function testPickNoState()
     {
         $stateFile = new StateFile(
             $this->dataDir,
