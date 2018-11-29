@@ -1,10 +1,10 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d0b2672d8701da21aa6fd246b2bb37c",
+    "content-hash": "0489776609df831fd37797576b91b183",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1887,17 +1887,17 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "6.1.0",
+            "version": "dev-najlos-compress",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "728072b01c6ca3f9dd9ad5bd7d03d0e7d9325df6"
+                "reference": "fc6b91c457e345c9280399da300957fc1ca34b7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/728072b01c6ca3f9dd9ad5bd7d03d0e7d9325df6",
-                "reference": "728072b01c6ca3f9dd9ad5bd7d03d0e7d9325df6",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/fc6b91c457e345c9280399da300957fc1ca34b7f",
+                "reference": "fc6b91c457e345c9280399da300957fc1ca34b7f",
                 "shasum": ""
             },
             "require": {
@@ -1933,7 +1933,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2018-11-16T11:51:35+00:00"
+            "time": "2018-11-29T20:12:18+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -4870,7 +4870,7 @@
             ],
             "authors": [
                 {
-                    "name": "Pádraic Brady",
+                    "name": "Padraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "http://blog.astrumfutura.com"
                 }
@@ -6162,7 +6162,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/output-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
