@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "0489776609df831fd37797576b91b183",
+    "content-hash": "1dadeaf6e3e37f4d511000927bd67266",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2100,16 +2100,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.1.2",
+            "version": "dev-najlos-compress",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "8d658203a944623836a86b4247c5100c41365e4e"
+                "reference": "c98578e3b75bb0fe82a8ff9269bd86e28d4db994"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/8d658203a944623836a86b4247c5100c41365e4e",
-                "reference": "8d658203a944623836a86b4247c5100c41365e4e",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/c98578e3b75bb0fe82a8ff9269bd86e28d4db994",
+                "reference": "c98578e3b75bb0fe82a8ff9269bd86e28d4db994",
                 "shasum": ""
             },
             "require": {
@@ -2143,7 +2143,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2018-05-16T16:53:42+00:00"
+            "time": "2018-11-29T21:57:33+00:00"
         },
         {
             "name": "keboola/syrup",
@@ -6160,10 +6160,18 @@
             "time": "2018-01-29T19:49:41+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "10.3.0",
+            "alias_normalized": "10.3.0.0",
+            "version": "dev-najlos-compress",
+            "package": "keboola/storage-api-client"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "keboola/output-mapping": 20
+        "keboola/output-mapping": 20,
+        "keboola/storage-api-client": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
