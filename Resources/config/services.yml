@@ -39,4 +39,4 @@ services:
 
     syrup.storage_api:
         class: Keboola\DockerBundle\Service\StorageApiService
-        arguments: ["@request_stack", "%storage_api.url%"]
+        arguments: ["@request_stack", "%storage_api.url%", "@logger"]
