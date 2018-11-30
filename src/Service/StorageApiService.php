@@ -3,23 +3,10 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\StorageApi\Client;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
     private $fasterPollingClient = null;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
-    {
-        parent::__construct($requestStack, $storageApiUrl);
-        $this->logger = $logger;
-    }
 
     /**
      * @return \Closure
@@ -51,8 +38,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     'url' => $client->getApiUrl(),
                     'userAgent' => $client->getUserAgent(),
                     'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
-                    'logger' => $this->logger
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction()
                 ]
             );
             if ($client->getRunId()) {
