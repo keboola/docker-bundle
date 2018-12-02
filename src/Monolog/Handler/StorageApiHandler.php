@@ -4,10 +4,10 @@ namespace Keboola\DockerBundle\Monolog\Handler;
 
 use Keboola\DockerBundle\Exception\NoRequestException;
 use Keboola\DockerBundle\Exception\UserException;
-use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\StorageApi\Event;
 use Keboola\StorageApi\Exception;
 use Monolog\Logger;
+use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Class StorageApiHandler
@@ -41,11 +41,6 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
     private $verbosity;
 
     /**
-     * @var  StorageApiService
-     */
-    protected $storageApiService;
-
-    /**
      * @var string
      */
     protected $appName;
@@ -54,17 +49,20 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
      * @var \Keboola\StorageApi\Client
      */
     protected $storageApiClient;
+    /**
+     * @var Container
+     */
+    private $container;
 
     /**
      * StorageApiHandler constructor.
      * @param string $appName
-     * @param StorageApiService $storageApiService
+     * @param Container $container
      */
-    public function __construct($appName, StorageApiService $storageApiService)
+    public function __construct($appName, Container $container)
     {
         parent::__construct();
         $this->appName = $appName;
-        $this->storageApiService = $storageApiService;
         $this->verbosity[Logger::DEBUG] = self::VERBOSITY_NONE;
         $this->verbosity[Logger::INFO] = self::VERBOSITY_NORMAL;
         $this->verbosity[Logger::NOTICE] = self::VERBOSITY_NORMAL;
@@ -73,6 +71,7 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
         $this->verbosity[Logger::CRITICAL] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::ALERT] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::EMERGENCY] = self::VERBOSITY_CAMOUFLAGE;
+        $this->container = $container;
     }
 
     /**
@@ -98,7 +97,7 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
     protected function initStorageApiClient()
     {
         try {
-            $this->storageApiClient = $this->storageApiService->getClient();
+            $this->storageApiClient = $this->container->get('syrup.storage_api')->getClient();
         } catch (NoRequestException $e) {
             // Ignore when no SAPI client setup
         } catch (UserException $e) {
