@@ -124,6 +124,9 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
         if (!$this->storageApiClient) {
             $this->initStorageApiClient();
         }
+        if (!$this->storageApiClient) {
+            return false;
+        }
 
         $event = new Event();
         if (!empty($record['component'])) {
