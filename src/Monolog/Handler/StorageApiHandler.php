@@ -106,6 +106,8 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
                 'userAgent' => $client->getUserAgent(),
                 'backoffMaxTries' => $client->getBackoffMaxTries(),
             ]);
+        } catch (\InvalidArgumentException $e) {
+            // Ignore when SAPI client is not initialized properly (yet).
         } catch (\Keboola\Syrup\Exception\NoRequestException $e) {
             // Ignore when no SAPI client setup
         } catch (NoRequestException $e) {
