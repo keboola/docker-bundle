@@ -158,7 +158,7 @@ abstract class BaseContainerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->storageServiceStub->expects(self::any())
-            ->method("getClient")
+            ->method("getClientWithoutLogger")
             ->will(self::returnValue($storageClientStub));
         $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
             ->disableOriginalConstructor()

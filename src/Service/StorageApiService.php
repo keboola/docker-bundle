@@ -8,12 +8,20 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
+    /**
+     * @var Client
+     */
     private $fasterPollingClient = null;
 
     /**
      * @var LoggerInterface
      */
     private $logger;
+
+    /**
+     * @var Client
+     */
+    private $clientWithoutLogger = null;
 
     public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
     {
@@ -61,6 +69,27 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
             $this->setFasterPollingClient($clientWithFasterPolling);
         }
         return $this->fasterPollingClient;
+    }
+    
+    public function getClientWithoutLogger()
+    {
+        $client = parent::getClient();
+        if (!$this->fasterPollingClient) {
+            $clientWithoutLogger = new Client(
+                [
+                    'token' => $client->token,
+                    'url' => $client->getApiUrl(),
+                    'userAgent' => $client->getUserAgent(),
+                    'backoffMaxTries' => $client->getBackoffMaxTries(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                ]
+            );
+            if ($client->getRunId()) {
+                $clientWithoutLogger->setRunId($client->getRunId());
+            }
+            $this->setFasterPollingClient($clientWithoutLogger);
+        }
+        return $this->clientWithoutLogger;
     }
 
     public function setFasterPollingClient(Client $client)

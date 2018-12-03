@@ -98,14 +98,7 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
     protected function initStorageApiClient()
     {
         try {
-            /** @var Client $client */
-            $client = $this->container->get('syrup.storage_api')->getClient();
-            $this->storageApiClient = new Client([
-                'token' => $client->token,
-                'url' => $client->getApiUrl(),
-                'userAgent' => $client->getUserAgent(),
-                'backoffMaxTries' => $client->getBackoffMaxTries(),
-            ]);
+            $this->storageApiClient = $this->container->get('syrup.storage_api')->getClientWithoutLogger();
         } catch (\InvalidArgumentException $e) {
             // Ignore when SAPI client is not initialized properly (yet).
         } catch (\Keboola\Syrup\Exception\NoRequestException $e) {
