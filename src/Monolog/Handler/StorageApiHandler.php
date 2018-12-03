@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Monolog\Handler;
 
 use Keboola\DockerBundle\Exception\NoRequestException;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
 use Keboola\StorageApi\Exception;
 use Monolog\Logger;
@@ -97,7 +98,16 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
     protected function initStorageApiClient()
     {
         try {
-            $this->storageApiClient = $this->container->get('syrup.storage_api')->getClient();
+            /** @var Client $client */
+            $client = $this->container->get('syrup.storage_api')->getClient();
+            $this->storageApiClient = new Client([
+                'token' => $client->token,
+                'url' => $client->getApiUrl(),
+                'userAgent' => $client->getUserAgent(),
+                'backoffMaxTries' => $client->getBackoffMaxTries(),
+            ]);
+        } catch (\Keboola\Syrup\Exception\NoRequestException $e) {
+            // Ignore when no SAPI client setup
         } catch (NoRequestException $e) {
             // Ignore when no SAPI client setup
         } catch (UserException $e) {
