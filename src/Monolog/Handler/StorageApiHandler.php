@@ -116,12 +116,13 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler
      */
     public function handle(array $record)
     {
-        $this->initStorageApiClient();
 
-        if (!$this->storageApiClient || ($this->verbosity[$record['level']] == self::VERBOSITY_NONE) ||
-            empty($record['message'])
-        ) {
+        if (($this->verbosity[$record['level']] == self::VERBOSITY_NONE) || empty($record['message'])) {
             return false;
+        }
+
+        if (!$this->storageApiClient) {
+            $this->initStorageApiClient();
         }
 
         $event = new Event();
