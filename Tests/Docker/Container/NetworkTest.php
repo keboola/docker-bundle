@@ -15,14 +15,14 @@ class NetworkTest extends BaseContainerTest
                 'definition' => [
                     'type' => 'builder',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => '1.1.12',
+                    'tag' => 'latest',
                     'build_options' => [
                         'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app', // not used, can by anything
                             'type' => 'git',
                         ],
-                        'entry_point' => 'ping -W 10 -c 1 www.example.com',
+                        'entry_point' => 'if ping -W 10 -c 1 www.example.com; then return 0; else return 1; fi',
                         'parameters' => [
                             [
                                 'name' => 'network',
@@ -57,7 +57,8 @@ class NetworkTest extends BaseContainerTest
         $script = [
             'from subprocess import call',
             'import sys',
-            'sys.exit(call(["ping", "-W", "10", "-c", "1", "www.example.com"]))',
+            'ret = call(["ping", "-W", "10", "-c", "1", "www.example.com"])',
+            'sys.exit(ret >= 1 if 1 else 0)',
         ];
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['network'] = 'none';
@@ -66,7 +67,7 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertContains('ping: unknown host', $e->getMessage());
+            self::assertContains('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
         }
     }
 
@@ -78,7 +79,7 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertContains('ping: unknown host', $e->getMessage());
+            self::assertContains('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
         }
     }
 

@@ -1756,7 +1756,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
-            'Application error: 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/' .
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/' .
             'keboola.python-transformation:latest container \'1234567-norunid--0-keboola-docker-demo-sync\'' .
             ' failed: (2) Class 2 error'
         );
@@ -1863,7 +1863,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('Application error: Cannot pull image');
+        self::expectExceptionMessage('Cannot pull image');
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
