@@ -158,10 +158,16 @@ abstract class BaseContainerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $this->storageServiceStub->expects(self::any())
-            ->method("getClient")
+            ->method("getClientWithoutLogger")
             ->will(self::returnValue($storageClientStub));
-        /** @var StorageApiService $storageServiceStub */
-        $sapiHandler = new StorageApiHandler('runner-tests', $this->storageServiceStub);
+        $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $containerStub->expects(self::any())
+            ->method('get')
+            ->will(self::returnValue($this->storageServiceStub));
+        /** @var \Symfony\Component\DependencyInjection\Container $containerStub */
+        $sapiHandler = new StorageApiHandler('runner-tests', $containerStub);
         $log = new Logger('runner-tests', [$this->testHandler]);
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);

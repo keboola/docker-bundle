@@ -27,11 +27,11 @@ services:
 
     syrup.monolog.sapi_handler:
         class: Keboola\DockerBundle\Monolog\Handler\StorageApiHandler
-        arguments: ["%app_name%", "@syrup.storage_api"]
+        arguments: ["%app_name%", "@service_container"]
 
     docker_bundle.monolog.sapi_handler:
         class: Keboola\DockerBundle\Monolog\Handler\StorageApiHandler
-        arguments: ["%app_name%", "@syrup.storage_api"]
+        arguments: ["%app_name%", "@service_container"]
 
     docker_bundle.object_encryptor_factory:
         class: Keboola\ObjectEncryptor\ObjectEncryptorFactory
@@ -39,4 +39,4 @@ services:
 
     syrup.storage_api:
         class: Keboola\DockerBundle\Service\StorageApiService
-        arguments: ["@request_stack", "%storage_api.url%"]
+        arguments: ["@request_stack", "%storage_api.url%", "@logger"]
