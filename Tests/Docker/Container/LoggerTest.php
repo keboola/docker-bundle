@@ -623,14 +623,7 @@ class LoggerTest extends BaseContainerTest
         $this->getContainer($this->getImageConfiguration(), [], [], false);
         $testHandler = new TestHandler();
         $containerTestHandler = new TestHandler();
-        $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $containerStub->expects(self::any())
-            ->method('get')
-            ->will(self::returnValue($this->getStorageApiService()));
-        /** @var \Symfony\Component\DependencyInjection\Container $containerStub */
-        $sapiHandler = new StorageApiHandler('runner-tests', $containerStub);
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageApiService());
         $log = new Logger('runner-tests', [$testHandler, $sapiHandler]);
         $containerLog = new ContainerLogger('container-tests', [$containerTestHandler]);
         $logService = new LoggersService($log, $containerLog, $sapiHandler);
