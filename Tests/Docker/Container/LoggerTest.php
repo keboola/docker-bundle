@@ -450,7 +450,7 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            self::assertContains('Application error', $e->getMessage());
+            self::assertContains('failed: (2) Script file /data/script.py', $e->getMessage());
         }
 
         $records = $this->getContainerLogHandler()->getRecords();
