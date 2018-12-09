@@ -74,7 +74,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
     public function getClientWithoutLogger()
     {
         $client = parent::getClient();
-        if (!$this->fasterPollingClient) {
+        if (!$this->clientWithoutLogger) {
             $clientWithoutLogger = new Client(
                 [
                     'token' => $client->token,
@@ -87,7 +87,6 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
             if ($client->getRunId()) {
                 $clientWithoutLogger->setRunId($client->getRunId());
             }
-            $this->setFasterPollingClient($clientWithoutLogger);
         }
         return $this->clientWithoutLogger;
     }
