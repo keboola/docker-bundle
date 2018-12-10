@@ -3,10 +3,31 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\StorageApi\Client;
+use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
 {
+    /**
+     * @var Client
+     */
     private $fasterPollingClient = null;
+
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
+    /**
+     * @var Client
+     */
+    private $clientWithoutLogger = null;
+
+    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
+    {
+        parent::__construct($requestStack, $storageApiUrl);
+        $this->logger = $logger;
+    }
 
     /**
      * @return \Closure
@@ -38,7 +59,8 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     'url' => $client->getApiUrl(),
                     'userAgent' => $client->getUserAgent(),
                     'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction()
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'logger' => $this->logger
                 ]
             );
             if ($client->getRunId()) {
@@ -47,6 +69,26 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
             $this->setFasterPollingClient($clientWithFasterPolling);
         }
         return $this->fasterPollingClient;
+    }
+
+    public function getClientWithoutLogger()
+    {
+        $client = parent::getClient();
+        if (!$this->clientWithoutLogger) {
+            $clientWithoutLogger = new Client(
+                [
+                    'token' => $client->token,
+                    'url' => $client->getApiUrl(),
+                    'userAgent' => $client->getUserAgent(),
+                    'backoffMaxTries' => $client->getBackoffMaxTries(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                ]
+            );
+            if ($client->getRunId()) {
+                $clientWithoutLogger->setRunId($client->getRunId());
+            }
+        }
+        return $this->clientWithoutLogger;
     }
 
     public function setFasterPollingClient(Client $client)
