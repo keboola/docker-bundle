@@ -5,10 +5,12 @@ namespace Keboola\DockerBundle\Docker\Image;
 use Aws\Ecr\EcrClient;
 use Aws\Ecr\Exception\EcrException;
 use Aws\Exception\CredentialsException;
+use Aws\Result;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\DockerBundle\Exception\RetryableLoginException;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
@@ -50,13 +52,24 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21'
         ));
-        try {
-            $authorization = $ecrClient->getAuthorizationToken(["registryIds" => [$this->getAwsAccountId()]]);
-        } catch (CredentialsException $e) {
-            throw new LoginFailedException($e->getMessage());
-        } catch (EcrException $e) {
-            throw new LoginFailedException($e->getMessage());
-        }
+        $retryPolicy = new SimpleRetryPolicy(20, [RetryableLoginException::class]);
+        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        /** @var Result $authorization */
+        $authorization = null;
+        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy->call(function () use ($ecrClient, &$authorization) {
+            try {
+                $authorization = $ecrClient->getAuthorizationToken(["registryIds" => [$this->getAwsAccountId()]]);
+            } catch (CredentialsException $e) {
+                throw new LoginFailedException($e->getMessage(), $e);
+            } catch (EcrException $e) {
+                if ($e->getAwsErrorCode() == 'ThrottlingException') {
+                    $this->logger->notice('AWS Credentials throttling occurred. ' . $e->getMessage());
+                    throw new RetryableLoginException($e->getMessage(), $e);
+                }
+                throw new LoginFailedException($e->getMessage(), $e);
+            }
+        });
         // decode token and extract user
         list($user, $token) = explode(":", base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
 
