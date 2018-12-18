@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "51c7c8d9787077de92bedb38712f21ef",
+    "content-hash": "ce87433a2b8c1050b5cb4062d1c40292",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1810,22 +1810,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "6.0.0",
+            "version": "dev-najlos-parallel-exports",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "c6829ceeed2731285ba2d599976f61310c50230f"
+                "reference": "dc7fed87b6abb186f8f133afabbe491f8ba97b30"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/c6829ceeed2731285ba2d599976f61310c50230f",
-                "reference": "c6829ceeed2731285ba2d599976f61310c50230f",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/dc7fed87b6abb186f8f133afabbe491f8ba97b30",
+                "reference": "dc7fed87b6abb186f8f133afabbe491f8ba97b30",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^10.0",
+                "keboola/storage-api-client": "dev-najlos-queue-table-export",
                 "symfony/config": "^2.8|^4.1",
                 "symfony/finder": "^2.8|^4.1",
                 "symfony/serializer": "^2.8|^4.1",
@@ -1854,7 +1854,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2018-07-25T08:42:52+00:00"
+            "time": "2018-12-18T11:01:33+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2161,16 +2161,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.4.0",
+            "version": "dev-najlos-queue-table-export",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "54859baea3d39923b447fe408d2dbc3e40fe16f6"
+                "reference": "fa9aa011a5c894152758de96d51cf88e8e2303a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/54859baea3d39923b447fe408d2dbc3e40fe16f6",
-                "reference": "54859baea3d39923b447fe408d2dbc3e40fe16f6",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/fa9aa011a5c894152758de96d51cf88e8e2303a3",
+                "reference": "fa9aa011a5c894152758de96d51cf88e8e2303a3",
                 "shasum": ""
             },
             "require": {
@@ -2204,7 +2204,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2018-12-07T15:41:23+00:00"
+            "time": "2018-12-18T11:37:31+00:00"
         },
         {
             "name": "keboola/syrup",
@@ -5121,7 +5121,7 @@
             ],
             "authors": [
                 {
-                    "name": "Pádraic Brady",
+                    "name": "Padraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "http://blog.astrumfutura.com"
                 }
@@ -6411,9 +6411,25 @@
             "time": "2018-01-29T19:49:41+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "6.0.0",
+            "alias_normalized": "6.0.0.0",
+            "version": "dev-najlos-parallel-exports",
+            "package": "keboola/input-mapping"
+        },
+        {
+            "alias": "10.6.0",
+            "alias_normalized": "10.6.0.0",
+            "version": "dev-najlos-queue-table-export",
+            "package": "keboola/storage-api-client"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/input-mapping": 20,
+        "keboola/storage-api-client": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
