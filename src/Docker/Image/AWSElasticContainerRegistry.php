@@ -63,11 +63,8 @@ class AWSElasticContainerRegistry extends Image
             } catch (CredentialsException $e) {
                 throw new LoginFailedException($e->getMessage(), $e);
             } catch (EcrException $e) {
-                if ($e->getAwsErrorCode() == 'ThrottlingException') {
-                    $this->logger->notice('AWS Credentials throttling occurred. ' . $e->getMessage());
-                    throw new RetryableLoginException($e->getMessage(), $e);
-                }
-                throw new LoginFailedException($e->getMessage(), $e);
+                $this->logger->notice('AWS Credentials error occurred. ' . $e->getMessage());
+                throw new RetryableLoginException($e->getMessage(), $e);
             }
         });
         // decode token and extract user
