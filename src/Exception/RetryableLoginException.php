@@ -2,6 +2,6 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-class RetryableLoginException extends ApplicationException
+class RetryableLoginException extends LoginFailedException
 {
 }
