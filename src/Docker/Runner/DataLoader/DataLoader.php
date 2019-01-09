@@ -137,6 +137,10 @@ class DataLoader implements DataLoaderInterface
 
         $writer = new Writer($this->storageClient, $this->logger);
         $writer->setFormat($this->component->getConfigurationFormat());
+
+        $features = empty($this->storageClient->verifyToken()['owner']['features']) ? [] : $this->storageClient->verifyToken()['owner']['features'];
+        $deferred = in_array('parallel-output-mapping-load', $features);
+
         $outputTablesConfig = [];
         $outputFilesConfig = [];
 
@@ -170,7 +174,7 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $jobIds = $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
+            $jobIds = $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata, $deferred);
             $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
 
             if (isset($this->storageConfig["input"]["files"])) {
