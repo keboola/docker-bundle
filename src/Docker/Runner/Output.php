@@ -20,9 +20,9 @@ class Output
     private $configVersion;
 
     /**
-     * @var array
+     * @var Job
      */
-    private $storageJobIds;
+    private $storageJob;
 
     /**
      * @var StateFile
@@ -68,14 +68,14 @@ class Output
         return $this->configVersion;
     }
 
-    public function setStorageJobIds(array $jobIds)
+    public function setStorageJob(Job $job)
     {
-        $this->storageJobIds = $jobIds;
+        $this->storageJob = $job;
     }
 
-    public function getStorageJobIds()
+    public function getStorageJob()
     {
-        return $this->storageJobIds;
+        return $this->storageJob;
     }
 
     public function getStateFile()
