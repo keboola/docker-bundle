@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7b3df226cef96fce8824afe32fcfaa8b",
+    "content-hash": "f5cbd3c1ce0b7bfedca3a7155ddb6355",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1949,23 +1949,23 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "6.2.1",
+            "version": "7.0.2",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "32016b17b7abf075db3ca0026cbf0b2148952d6f"
+                "reference": "f850dc6474c8f1e51c55aa767e6b6470dc83ddd8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/32016b17b7abf075db3ca0026cbf0b2148952d6f",
-                "reference": "32016b17b7abf075db3ca0026cbf0b2148952d6f",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/f850dc6474c8f1e51c55aa767e6b6470dc83ddd8",
+                "reference": "f850dc6474c8f1e51c55aa767e6b6470dc83ddd8",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
                 "keboola/input-mapping": "^6.0",
-                "keboola/storage-api-client": "^10.0",
+                "keboola/sanitizer": "^0.1",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8|^4.1",
                 "symfony/finder": "^2.8|^4.1",
@@ -1995,7 +1995,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2018-12-03T15:31:30+00:00"
+            "time": "2019-01-18T09:57:45+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2158,6 +2158,47 @@
                 "utility"
             ],
             "time": "2018-04-11T14:40:53+00:00"
+        },
+        {
+            "name": "keboola/sanitizer",
+            "version": "0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/sanitizer.git",
+                "reference": "6edda00cd177409a33f180b8f12bdad89bf893c5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/sanitizer/zipball/6edda00cd177409a33f180b8f12bdad89bf893c5",
+                "reference": "6edda00cd177409a33f180b8f12bdad89bf893c5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "jakub-onderka/php-parallel-lint": "^1.0",
+                "phpunit/phpunit": "^5.7",
+                "squizlabs/php_codesniffer": "^3.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\Utils\\Sanitizer\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "description": "Column name sanitizer",
+            "time": "2019-01-11T10:21:17+00:00"
         },
         {
             "name": "keboola/storage-api-client",
