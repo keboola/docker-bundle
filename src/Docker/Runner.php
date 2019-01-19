@@ -351,7 +351,7 @@ class Runner
                 $jobIds = array_merge($jobIds, $output->getStorageJobIds());
             }
         }
-        $this->loggersService->getLog()->info(sprintf('Waiting for %s storage jobs.', count($jobIds)));
+        $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage jobs.', count($jobIds)));
         foreach ($jobIds as $jobId) {
             $job = $this->storageClient->waitForJob($jobId);
             if ($job['status'] == 'error') {
