@@ -345,15 +345,15 @@ class Runner
 
     private function waitForStorageJobs(array $outputs)
     {
-        $jobs = [];
+        $tableQueues = [];
         foreach ($outputs as $output) {
             /** @var Output $output */
-            if ($output->getStorageJob()) {
-                $jobs[] = $output->getStorageJob();
+            if ($output->getTableQueue()) {
+                $tableQueues[] = $output->getTableQueue();
             }
         }
-        $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage jobs.', count($jobs)));
-        foreach ($jobs as $job) {
+        $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage batches.', count($tableQueues)));
+        foreach ($tableQueues as $job) {
             try {
                 $job->waitForAll();
             } catch (InvalidOutputException $e) {
@@ -390,8 +390,8 @@ class Runner
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
         } else {
-            $job = $dataLoader->storeOutput();
-            $output->setStorageJob($job);
+            $tableQueue = $dataLoader->storeOutput();
+            $output->setTableQueue($tableQueue);
         }
 
         // finalize

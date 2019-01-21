@@ -29,7 +29,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $dataLoader = $this->getDataLoader([]);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
 
         $bucketMetadata = $this->metadata->listBucketMetadata('in.c-docker-demo-testConfig');
         $expectedBucketMetadata = [
@@ -51,7 +52,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
         // let's run the data loader again.
         // This time the tables should receive 'update' metadata
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.configuration.id'] = 'testConfig';
@@ -67,7 +69,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $dataLoader = $this->getDataLoader([], 'testRow');
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
 
         $bucketMetadata = $this->metadata->listBucketMetadata('in.c-docker-demo-testConfig');
         $expectedBucketMetadata = [
@@ -91,7 +94,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
         // let's run the data loader again.
         // This time the tables should receive 'update' metadata
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
@@ -158,7 +162,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             ],
         ];
         $dataLoader = $this->getDataLoader($config);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
             'system' => [
@@ -225,7 +230,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         ';
         $fs->dumpFile($this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
         $dataLoader = $this->getDataLoader([]);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
@@ -296,7 +302,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         ];
 
         $dataLoader = $this->getDataLoader($config);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
             'system' => [

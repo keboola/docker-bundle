@@ -170,14 +170,14 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $jobIds = $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
+            $tableQueue = $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
             $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
 
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
                 $writer->tagFiles($this->storageConfig["input"]["files"]);
             }
-            return $jobIds;
+            return $tableQueue;
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
         }
