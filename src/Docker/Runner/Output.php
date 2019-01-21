@@ -70,7 +70,10 @@ class Output
         return $this->configVersion;
     }
 
-    public function setTableQueue(LoadTableQueue $tableQueue)
+    /**
+     * @param LoadTableQueue|null $tableQueue
+     */
+    public function setTableQueue($tableQueue)
     {
         $this->tableQueue = $tableQueue;
     }
