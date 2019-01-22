@@ -27,6 +27,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -352,10 +353,11 @@ class Runner
                 $tableQueues[] = $output->getTableQueue();
             }
         }
-        $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage batches.', count($tableQueues)));
-        foreach ($tableQueues as $job) {
+        $this->loggersService->getLog()->info('Waiting for Storage jobs to finish.');
+        /** @var LoadTableQueue $tableQueue */
+        foreach ($tableQueues as $tableQueue) {
             try {
-                $job->waitForAll();
+                $tableQueue->waitForAll();
             } catch (InvalidOutputException $e) {
                 throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
             }

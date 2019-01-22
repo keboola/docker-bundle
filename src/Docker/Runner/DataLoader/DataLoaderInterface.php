@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
 
@@ -13,6 +14,9 @@ interface DataLoaderInterface
 
     public function loadInputData();
 
+    /**
+     * @return LoadTableQueue|null
+     */
     public function storeOutput();
 
     public function storeDataArchive($fileName, array $tags);
