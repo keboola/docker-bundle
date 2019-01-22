@@ -483,7 +483,7 @@ class RunnerTest extends BaseRunnerTest
         );
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 Storage batches'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         $this->clearBuckets();
     }
 
@@ -697,7 +697,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('fooBar2', $row2['state']['bazRow2']);
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 Storage batches'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
         $this->clearConfigurations();
@@ -876,7 +876,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 Storage batches'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         $this->clearConfigurations();
     }
 
