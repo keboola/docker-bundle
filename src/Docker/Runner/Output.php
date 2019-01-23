@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
+
 class Output
 {
     /**
@@ -20,9 +22,9 @@ class Output
     private $configVersion;
 
     /**
-     * @var array
+     * @var ?LoadTableQueue
      */
-    private $storageJobIds;
+    private $tableQueue;
 
     /**
      * @var StateFile
@@ -68,14 +70,17 @@ class Output
         return $this->configVersion;
     }
 
-    public function setStorageJobIds(array $jobIds)
+    /**
+     * @param LoadTableQueue|null $tableQueue
+     */
+    public function setTableQueue($tableQueue)
     {
-        $this->storageJobIds = $jobIds;
+        $this->tableQueue = $tableQueue;
     }
 
-    public function getStorageJobIds()
+    public function getTableQueue()
     {
-        return $this->storageJobIds;
+        return $this->tableQueue;
     }
 
     public function getStateFile()

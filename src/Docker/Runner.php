@@ -27,6 +27,8 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
+use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -344,18 +346,20 @@ class Runner
 
     private function waitForStorageJobs(array $outputs)
     {
-        $jobIds = [];
+        $tableQueues = [];
         foreach ($outputs as $output) {
             /** @var Output $output */
-            if ($output->getStorageJobIds()) {
-                $jobIds = array_merge($jobIds, $output->getStorageJobIds());
+            if ($output->getTableQueue()) {
+                $tableQueues[] = $output->getTableQueue();
             }
         }
-        $this->loggersService->getLog()->info(sprintf('Waiting for %s storage jobs.', count($jobIds)));
-        foreach ($jobIds as $jobId) {
-            $job = $this->storageClient->waitForJob($jobId);
-            if ($job['status'] == 'error') {
-                throw new UserException('Failed to process output mapping: ' . $job['error']['message']);
+        $this->loggersService->getLog()->info('Waiting for Storage jobs to finish.');
+        /** @var LoadTableQueue $tableQueue */
+        foreach ($tableQueues as $tableQueue) {
+            try {
+                $tableQueue->waitForAll();
+            } catch (InvalidOutputException $e) {
+                throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
             }
         }
     }
@@ -388,8 +392,8 @@ class Runner
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
         } else {
-            $jobIds = $dataLoader->storeOutput();
-            $output->setStorageJobIds($jobIds);
+            $tableQueue = $dataLoader->storeOutput();
+            $output->setTableQueue($tableQueue);
         }
 
         // finalize

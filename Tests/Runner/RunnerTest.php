@@ -483,201 +483,7 @@ class RunnerTest extends BaseRunnerTest
         );
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 0 storage jobs'));
-        $this->clearBuckets();
-    }
-
-    public function testExecutorDeferredLoad()
-    {
-        $this->createBuckets();
-        $temp = new Temp();
-        $temp->initRunFolder();
-        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
-        $csv->writeRow(['id', 'text']);
-        $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
-        $csv = new CsvFile($temp->getTmpFolder() . '/upload2.csv');
-        $csv->writeRow(['id2', 'text2']);
-        $csv->writeRow(['test2', 'test2']);
-        $this->getClient()->createTableAsync('in.c-runner-test', 'test2', $csv);
-
-        unset($csv);
-
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-                'default_bucket' => true,
-                'default_bucket_stage' => 'out',
-            ],
-        ];
-        $tokenInfo = $client->verifyToken();
-        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
-            ->setMethods(['verifyToken'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('verifyToken')
-            ->will(self::returnValue($tokenInfo));
-        $this->setClientMock($clientMock);
-
-        $configData = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-runner-test.test',
-                            'destination' => 'source.csv',
-                        ],
-                        [
-                            'source' => 'in.c-runner-test.test2',
-                            'destination' => 'source2.csv',
-                        ],
-                    ],
-                ],
-            ],
-            'parameters' => [
-                'script' => [
-                    'from shutil import copyfile',
-                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/table1.csv")',
-                    'copyfile("/data/in/tables/source2.csv", "/data/out/tables/table2.csv")',
-                ]
-            ]
-        ];
-        $runner = $this->getRunner();
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                $configData,
-                []
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 1)'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 storage jobs'));
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
-        $this->clearBuckets();
-    }
-
-    public function testExecutorDeferredLoadConfigRows()
-    {
-        $this->createBuckets();
-        $temp = new Temp();
-        $temp->initRunFolder();
-        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
-        $csv->writeRow(['id', 'text']);
-        $csv->writeRow(['test', 'test']);
-        $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
-        $csv = new CsvFile($temp->getTmpFolder() . '/upload2.csv');
-        $csv->writeRow(['id2', 'text2']);
-        $csv->writeRow(['test2', 'test2']);
-        $this->getClient()->createTableAsync('in.c-runner-test', 'test2', $csv);
-
-        unset($csv);
-
-        $client = new Client(['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]);
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-                'default_bucket' => true,
-                'default_bucket_stage' => 'out',
-            ],
-        ];
-        $tokenInfo = $client->verifyToken();
-        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
-            ->setMethods(['verifyToken'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('verifyToken')
-            ->will(self::returnValue($tokenInfo));
-        $this->setClientMock($clientMock);
-
-        $configData1 = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-runner-test.test',
-                            'destination' => 'source.csv',
-                        ],
-                    ],
-                ],
-            ],
-            'parameters' => [
-                'script' => [
-                    'from shutil import copyfile',
-                    'copyfile("/data/in/tables/source.csv", "/data/out/tables/table1.csv")',
-                ]
-            ]
-        ];
-        $configData2 = [
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-runner-test.test2',
-                            'destination' => 'source2.csv',
-                        ],
-                    ],
-                ],
-            ],
-            'parameters' => [
-                'script' => [
-                    'from shutil import copyfile',
-                    'copyfile("/data/in/tables/source2.csv", "/data/out/tables/table2.csv")',
-                ]
-            ]
-        ];
-        $runner = $this->getRunner();
-        $runner->run(
-            array_merge(
-                $this->prepareJobDefinitions(
-                    $componentData,
-                    'runner-configuration1',
-                    $configData1,
-                    []
-                ),
-                $this->prepareJobDefinitions(
-                    $componentData,
-                    'runner-configuration2',
-                    $configData2,
-                    []
-                )
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 storage jobs'));
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table1'));
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.table2'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         $this->clearBuckets();
     }
 
@@ -889,23 +695,15 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('fooBar1', $row1['state']['bazRow1']);
         self::assertArrayHasKey('bazRow2', $row2['state']);
         self::assertEquals('fooBar2', $row2['state']['bazRow2']);
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
         $this->clearConfigurations();
     }
 
-    public function outputMappingFeatureProvider()
-    {
-        return [
-            [[]],
-            [['parallel-output-mapping-load']],
-        ];
-    }
-
-    /**
-     * @dataProvider outputMappingFeatureProvider
-     */
-    public function testExecutorStoreStateRowsOutputMappingEarlyError(array $features)
+    public function testExecutorStoreStateRowsOutputMappingEarlyError()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -944,19 +742,6 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $tokenInfo = $this->client->verifyToken();
-        $tokenInfo['owner']['features'] = $features;
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
-            ->setMethods(['verifyToken'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('verifyToken')
-            ->will(self::returnValue($tokenInfo));
-        $this->setClientMock($clientMock);
 
         $runner = $this->getRunner();
         try {
@@ -992,7 +777,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingDeferredLateError()
+    public function testExecutorStoreStateRowsOutputMappingLateError()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1049,19 +834,6 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $tokenInfo = $this->client->verifyToken();
-        $tokenInfo['owner']['features'] = ['parallel-output-mapping-load'];
-        $clientMock = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]])
-            ->setMethods(['verifyToken'])
-            ->getMock();
-        $clientMock->expects(self::any())
-            ->method('verifyToken')
-            ->will(self::returnValue($tokenInfo));
-        $this->setClientMock($clientMock);
 
         $runner = $this->getRunner();
         try {
@@ -1077,8 +849,9 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Failed to process output mapping: Load error: odbc_execute(): ' .
-                'SQL error: Number of columns in file (3) does not match that of the corresponding table (2)',
+                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": ' .
+                'Load error: odbc_execute(): SQL error: Number of columns in file (3) does not match that of the ' .
+                'corresponding table (2)',
                 $e->getMessage()
             );
         }
@@ -1103,7 +876,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayNotHasKey('bazRow2', $row2['state']);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 storage jobs'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
         $this->clearConfigurations();
     }
 
