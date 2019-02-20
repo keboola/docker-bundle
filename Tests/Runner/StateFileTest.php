@@ -4,8 +4,10 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -348,5 +350,67 @@ class StateFileTest extends TestCase
         );
         self::assertEquals([], $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
+    }
+
+    public function testParse404()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
+            )
+            ->willThrowException(new ClientException("Test", 404));
+
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['state' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
+        $stateFile->stashState(['state' => 'fooBar']);
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage("Failed to store state: Test");
+        $stateFile->persistState();
+    }
+
+    public function testPassOtherExceptions()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo(['state' => '{"state":"fooBar"}'])
+            )
+            ->willThrowException(new ClientException("Test", 888));
+
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['state' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
+        $stateFile->stashState(['state' => 'fooBar']);
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage("Test");
+        $stateFile->persistState();
     }
 }

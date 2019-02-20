@@ -4,9 +4,11 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
@@ -119,18 +121,25 @@ class StateFile
             $configuration = new Configuration();
             $configuration->setComponentId($this->componentId);
             $configuration->setConfigurationId($this->configurationId);
-            if ($this->configurationRowId) {
-                $configurationRow = new ConfigurationRow($configuration);
-                $configurationRow->setRowId($this->configurationRowId);
-                $configurationRow->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                );
-                $components->updateConfigurationRow($configurationRow);
-            } else {
-                $configuration->setState(
-                    $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                );
-                $components->updateConfiguration($configuration);
+            try {
+                if ($this->configurationRowId) {
+                    $configurationRow = new ConfigurationRow($configuration);
+                    $configurationRow->setRowId($this->configurationRowId);
+                    $configurationRow->setState(
+                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
+                    );
+                    $components->updateConfigurationRow($configurationRow);
+                } else {
+                    $configuration->setState(
+                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
+                    );
+                    $components->updateConfiguration($configuration);
+                }
+            } catch (ClientException $e) {
+                if ($e->getCode() === 404) {
+                    throw new UserException("Failed to store state: " . $e->getMessage(), $e);
+                }
+                throw $e;
             }
         }
     }
