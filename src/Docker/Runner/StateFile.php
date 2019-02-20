@@ -139,6 +139,7 @@ class StateFile
                 if ($e->getCode() === 404) {
                     throw new UserException("Failed to store state: " . $e->getMessage(), $e);
                 }
+                throw $e;
             }
         }
     }
