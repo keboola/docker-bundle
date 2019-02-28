@@ -214,7 +214,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function tesChangeToEmptyArray()
+    public function testChangeToEmptyArray()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
