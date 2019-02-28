@@ -83,7 +83,11 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        $this->state = $state;
+        if (isset($state['component'])) {
+            $this->state = $state['component'];
+        } else {
+            $this->state = $state;
+        }
         $this->format = $format;
         $this->outputFilter = $outputFilter;
         $this->outputFilter->collectValues($state);
@@ -122,17 +126,30 @@ class StateFile
             $configuration->setComponentId($this->componentId);
             $configuration->setConfigurationId($this->configurationId);
             try {
+                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
                 if ($this->configurationRowId) {
+                    $storedState = $components->getConfigurationRow($this->componentId, $this->configurationId, $this->configurationRowId)['state'];
+
+                    if (!isset($storedState['component'])) {
+                        $storedState = ['component' => $encryptedStateData];
+                    } else {
+                        $storedState['component'] = $encryptedStateData;
+                    }
+
                     $configurationRow = new ConfigurationRow($configuration);
                     $configurationRow->setRowId($this->configurationRowId);
-                    $configurationRow->setState(
-                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                    );
+                    $configurationRow->setState($storedState);
                     $components->updateConfigurationRow($configurationRow);
                 } else {
-                    $configuration->setState(
-                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                    );
+                    $storedState = $components->getConfiguration($this->componentId, $this->configurationId)['state'];
+
+                    if (!isset($storedState['component'])) {
+                        $storedState = ['component' => $encryptedStateData];
+                    } else {
+                        $storedState['component'] = $encryptedStateData;
+                    }
+
+                    $configuration->setState($storedState);
                     $components->updateConfiguration($configuration);
                 }
             } catch (ClientException $e) {
