@@ -328,10 +328,10 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey('key', $data);
-                    self::assertEquals('fooBar', $data['key']);
-                    self::assertArrayHasKey('#foo', $data);
-                    self::assertStringStartsWith('KBC::ProjectSecure::', $data['#foo']);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::NAMESPACE_PREFIX]['#foo']);
                     return true;
                 })
             );
