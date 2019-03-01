@@ -310,6 +310,18 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id")
+            )
+            ->willReturn([
+                'state' => [
+                    'component' => [
+                        'key' => 'fooBarBaz'
+                    ]
+                ]
+            ]);
+        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
@@ -329,7 +341,7 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
+            ['key' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
