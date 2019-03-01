@@ -62,7 +62,33 @@ class StateFileTest extends TestCase
         $this->encryptorFactory->setProjectId('123');
     }
 
-    public function testCreate()
+    public function testCreateStateFileFromStateWithNamespace()
+    {
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $this->client,
+            $this->encryptorFactory,
+            [
+                'otherNamespace' => 'value',
+                'component' => ['lastUpdate' => 'today']
+            ],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->createStateFile();
+        $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
+        self::assertTrue(file_exists($fileName));
+        $obj = new \stdClass();
+        $obj->lastUpdate = 'today';
+        self::assertEquals(
+            $obj,
+            \GuzzleHttp\json_decode(file_get_contents($fileName), false)
+        );
+    }
+
+    public function testCreateStateFileFromStateWithoutNamespace()
     {
         $stateFile = new StateFile(
             $this->dataDir,
@@ -85,7 +111,7 @@ class StateFileTest extends TestCase
         );
     }
 
-    public function testCreateEmpty()
+    public function testCreateStateFileWithEmptyState()
     {
         $stateFile = new StateFile(
             $this->dataDir,
@@ -106,7 +132,7 @@ class StateFileTest extends TestCase
         );
     }
 
-    public function testNoChange()
+    public function testPersistStateWithoutStateChange()
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -114,7 +140,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects($this->never())
             ->method('apiPut');
 
-        $state = ['state' => 'fooBar'];
+        $state = ['key' => 'fooBar'];
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
@@ -130,7 +156,155 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testChange()
+    public function testPersistStateConvertsLegacyToNamespace()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id")
+            )
+            ->willReturn(['state' => ['key' => 'fooBarBaz']]);
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id"),
+                ['state' => '{"component":{"key":"fooBar","foo":"bar"}}']
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->persistState();
+    }
+
+
+    public function testRowPersistStateConvertsLegacyToNamespace()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id")
+            )
+            ->willReturn(['state' => ['key' => 'fooBarBaz']]);
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
+                ['state' => '{"component":{"key":"fooBar","foo":"bar"}}']
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
+        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->persistState();
+    }
+
+
+    public function testPersistStateKeepsOtherNamespace()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id")
+            )
+            ->willReturn([
+                'state' => [
+                    'otherNamespace' => 'value',
+                    'component' => [
+                        'key' => 'fooBarBaz'
+                    ]
+                ]
+            ]);
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id"),
+                ['state' => '{"otherNamespace":"value","component":{"key":"fooBar","foo":"bar"}}']
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->persistState();
+    }
+
+
+    public function testRowPersistStateKeepsOtherNamespace()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id")
+            )
+            ->willReturn([
+                'state' => [
+                    'otherNamespace' => 'value',
+                    'component' => [
+                        'key' => 'fooBarBaz'
+                    ]
+                ]
+            ]);
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
+                ['state' => '{"otherNamespace":"value","component":{"key":"fooBar","foo":"bar"}}']
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['state' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
+        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->persistState();
+    }
+
+
+    public function testPersistStateEncrypts()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -142,8 +316,8 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey('state', $data);
-                    self::assertEquals('fooBar', $data['state']);
+                    self::assertArrayHasKey('key', $data);
+                    self::assertEquals('fooBar', $data['key']);
                     self::assertArrayHasKey('#foo', $data);
                     self::assertStringStartsWith('KBC::ProjectSecure::', $data['#foo']);
                     return true;
@@ -161,11 +335,11 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->stashState(["state" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
         $stateFile->persistState();
     }
 
-    public function testChangeNoPersist()
+    public function testStashStateDoesNotUpdate()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -187,7 +361,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(["state" => "fooBar", "#foo" => "bar"]);
     }
 
-    public function testChangeFromEmpty()
+    public function testPersistsStateUpdatesFromEmpty()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -196,7 +370,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"state":"fooBar"}'])
+                self::equalTo(['state' => '{"component":{"key":"fooBar"}}'])
             );
 
         /** @var Client $sapiStub */
@@ -210,11 +384,11 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter()
         );
-        $stateFile->stashState(['state' => 'fooBar']);
+        $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState();
     }
 
-    public function testChangeToEmptyArray()
+    public function testPersistsStateUpdatesToEmptyArray()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -223,7 +397,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '[]'])
+                self::equalTo(['state' => '{"component":[]}'])
             );
 
         /** @var Client $sapiStub */
@@ -241,7 +415,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testChangeToEmptyObject()
+    public function testPersistsStateUpdatesToEmptyObject()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -250,7 +424,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{}'])
+                self::equalTo(['state' => '{"component":{}}'])
             );
 
         /** @var Client $sapiStub */
@@ -268,35 +442,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testUpdateRowStateChange()
-    {
-        $sapiStub = self::getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects(self::once())
-            ->method('apiPut')
-            ->with(
-                self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"state":"fooBar"}'])
-            );
-
-        /** @var Client $sapiStub */
-        $stateFile = new StateFile(
-            $this->dataDir,
-            $sapiStub,
-            $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
-            'json',
-            'docker-demo',
-            'config-id',
-            new NullFilter(),
-            'row-id'
-        );
-        $stateFile->stashState(['state' => 'fooBar']);
-        $stateFile->persistState();
-    }
-
-    public function testPickState()
+    public function testLoadStateFromFile()
     {
         $fs = new Filesystem();
         $data = ['time' => ['previousStart' => 1495580620]];
@@ -316,7 +462,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPickEmptyState()
+    public function testLoadStateFromFileEmptyState()
     {
         $fs = new Filesystem();
         $data = [];
@@ -336,7 +482,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPickNoState()
+    public function testLoadStateFromFileMissingStateFile()
     {
         $stateFile = new StateFile(
             $this->dataDir,
@@ -352,7 +498,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testParse404()
+    public function testPersistStateThrowsAnExceptionOn404()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -361,7 +507,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"state":"fooBar"}'])
+                self::equalTo(['state' => '{"component":{"state":"fooBar"}}'])
             )
             ->willThrowException(new ClientException("Test", 404));
 
@@ -383,7 +529,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-    public function testPassOtherExceptions()
+    public function testPersisStatePassOtherExceptions()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -392,7 +538,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"state":"fooBar"}'])
+                self::equalTo(['state' => '{"component":{"state":"fooBar"}}'])
             )
             ->willThrowException(new ClientException("Test", 888));
 
