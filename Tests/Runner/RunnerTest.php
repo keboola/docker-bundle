@@ -817,7 +817,7 @@ class RunnerTest extends BaseRunnerTest
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow1' => 'barRow1']]);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -870,7 +870,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('bar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['foo']);
         $row = $component->listConfigurationRows($listOptions)[0];
 
-        self::assertArrayNotHasKey('bazRow1', $row['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertArrayNotHasKey('component', $row['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 storage jobs'));
         $this->clearConfigurations();
