@@ -16,6 +16,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
+    const NAMESPACE_PREFIX = 'component';
+
     /**
      * @var string
      */
@@ -83,8 +85,8 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        if (isset($state['component'])) {
-            $this->state = $state['component'];
+        if (isset($state[self::NAMESPACE_PREFIX])) {
+            $this->state = $state[self::NAMESPACE_PREFIX];
         } else {
             $this->state = $state;
         }
@@ -130,10 +132,10 @@ class StateFile
                 if ($this->configurationRowId) {
                     $storedState = $components->getConfigurationRow($this->componentId, $this->configurationId, $this->configurationRowId)['state'];
 
-                    if (!isset($storedState['component'])) {
-                        $storedState = ['component' => $encryptedStateData];
+                    if (!isset($storedState[self::NAMESPACE_PREFIX])) {
+                        $storedState = [self::NAMESPACE_PREFIX => $encryptedStateData];
                     } else {
-                        $storedState['component'] = $encryptedStateData;
+                        $storedState[self::NAMESPACE_PREFIX] = $encryptedStateData;
                     }
 
                     $configurationRow = new ConfigurationRow($configuration);
@@ -143,10 +145,10 @@ class StateFile
                 } else {
                     $storedState = $components->getConfiguration($this->componentId, $this->configurationId)['state'];
 
-                    if (!isset($storedState['component'])) {
-                        $storedState = ['component' => $encryptedStateData];
+                    if (!isset($storedState[self::NAMESPACE_PREFIX])) {
+                        $storedState = [self::NAMESPACE_PREFIX => $encryptedStateData];
                     } else {
-                        $storedState['component'] = $encryptedStateData;
+                        $storedState[self::NAMESPACE_PREFIX] = $encryptedStateData;
                     }
 
                     $configuration->setState($storedState);

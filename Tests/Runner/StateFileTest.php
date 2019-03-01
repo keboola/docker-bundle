@@ -70,7 +70,7 @@ class StateFileTest extends TestCase
             $this->encryptorFactory,
             [
                 'otherNamespace' => 'value',
-                'component' => ['lastUpdate' => 'today']
+                StateFile::NAMESPACE_PREFIX => ['lastUpdate' => 'today']
             ],
             'json',
             'docker-demo',
@@ -171,7 +171,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                ['state' => '{"component":{"key":"fooBar","foo":"bar"}}']
+                ['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -204,7 +204,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
-                ['state' => '{"component":{"key":"fooBar","foo":"bar"}}']
+                ['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -236,7 +236,7 @@ class StateFileTest extends TestCase
             ->willReturn([
                 'state' => [
                     'otherNamespace' => 'value',
-                    'component' => [
+                    StateFile::NAMESPACE_PREFIX => [
                         'key' => 'fooBarBaz'
                     ]
                 ]
@@ -245,7 +245,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                ['state' => '{"otherNamespace":"value","component":{"key":"fooBar","foo":"bar"}}']
+                ['state' => '{"otherNamespace":"value","' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -276,7 +276,7 @@ class StateFileTest extends TestCase
             ->willReturn([
                 'state' => [
                     'otherNamespace' => 'value',
-                    'component' => [
+                    StateFile::NAMESPACE_PREFIX => [
                         'key' => 'fooBarBaz'
                     ]
                 ]
@@ -285,7 +285,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
-                ['state' => '{"otherNamespace":"value","component":{"key":"fooBar","foo":"bar"}}']
+                ['state' => '{"otherNamespace":"value","' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -316,7 +316,7 @@ class StateFileTest extends TestCase
             )
             ->willReturn([
                 'state' => [
-                    'component' => [
+                    StateFile::NAMESPACE_PREFIX => [
                         'key' => 'fooBarBaz'
                     ]
                 ]
@@ -382,7 +382,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"component":{"key":"fooBar"}}'])
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
             );
 
         /** @var Client $sapiStub */
@@ -409,7 +409,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"component":[]}'])
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":[]}'])
             );
 
         /** @var Client $sapiStub */
@@ -436,7 +436,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"component":{}}'])
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{}}'])
             );
 
         /** @var Client $sapiStub */
@@ -519,7 +519,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"component":{"state":"fooBar"}}'])
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"state":"fooBar"}}'])
             )
             ->willThrowException(new ClientException("Test", 404));
 
@@ -550,7 +550,7 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"component":{"state":"fooBar"}}'])
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"state":"fooBar"}}'])
             )
             ->willThrowException(new ClientException("Test", 888));
 
