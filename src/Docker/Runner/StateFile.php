@@ -130,28 +130,12 @@ class StateFile
             try {
                 $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
                 if ($this->configurationRowId) {
-                    $storedState = $components->getConfigurationRow($this->componentId, $this->configurationId, $this->configurationRowId)['state'];
-
-                    if (!isset($storedState[self::NAMESPACE_PREFIX])) {
-                        $storedState = [self::NAMESPACE_PREFIX => $encryptedStateData];
-                    } else {
-                        $storedState[self::NAMESPACE_PREFIX] = $encryptedStateData;
-                    }
-
                     $configurationRow = new ConfigurationRow($configuration);
                     $configurationRow->setRowId($this->configurationRowId);
-                    $configurationRow->setState($storedState);
+                    $configurationRow->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
                     $components->updateConfigurationRow($configurationRow);
                 } else {
-                    $storedState = $components->getConfiguration($this->componentId, $this->configurationId)['state'];
-
-                    if (!isset($storedState[self::NAMESPACE_PREFIX])) {
-                        $storedState = [self::NAMESPACE_PREFIX => $encryptedStateData];
-                    } else {
-                        $storedState[self::NAMESPACE_PREFIX] = $encryptedStateData;
-                    }
-
-                    $configuration->setState($storedState);
+                    $configuration->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
                     $components->updateConfiguration($configuration);
                 }
             } catch (ClientException $e) {

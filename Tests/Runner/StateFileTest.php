@@ -162,12 +162,6 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiGet')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id")
-            )
-            ->willReturn(['state' => ['key' => 'fooBarBaz']]);
-        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
@@ -195,12 +189,6 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiGet')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id")
-            )
-            ->willReturn(['state' => ['key' => 'fooBarBaz']]);
-        $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
@@ -222,105 +210,11 @@ class StateFileTest extends TestCase
         $stateFile->persistState();
     }
 
-
-    public function testPersistStateKeepsOtherNamespace()
-    {
-        $sapiStub = self::getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects(self::once())
-            ->method('apiGet')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id")
-            )
-            ->willReturn([
-                'state' => [
-                    'otherNamespace' => 'value',
-                    StateFile::NAMESPACE_PREFIX => [
-                        'key' => 'fooBarBaz'
-                    ]
-                ]
-            ]);
-        $sapiStub->expects(self::once())
-            ->method('apiPut')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                ['state' => '{"otherNamespace":"value","' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
-            );
-        /** @var Client $sapiStub */
-        $stateFile = new StateFile(
-            $this->dataDir,
-            $sapiStub,
-            $this->encryptorFactory,
-            ['key' => 'fooBarBaz'],
-            'json',
-            'docker-demo',
-            'config-id',
-            new NullFilter()
-        );
-        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
-        $stateFile->persistState();
-    }
-
-
-    public function testRowPersistStateKeepsOtherNamespace()
-    {
-        $sapiStub = self::getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $sapiStub->expects(self::once())
-            ->method('apiGet')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id")
-            )
-            ->willReturn([
-                'state' => [
-                    'otherNamespace' => 'value',
-                    StateFile::NAMESPACE_PREFIX => [
-                        'key' => 'fooBarBaz'
-                    ]
-                ]
-            ]);
-        $sapiStub->expects(self::once())
-            ->method('apiPut')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
-                ['state' => '{"otherNamespace":"value","' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
-            );
-        /** @var Client $sapiStub */
-        $stateFile = new StateFile(
-            $this->dataDir,
-            $sapiStub,
-            $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
-            'json',
-            'docker-demo',
-            'config-id',
-            new NullFilter(),
-            'row-id'
-        );
-        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
-        $stateFile->persistState();
-    }
-
-
     public function testPersistStateEncrypts()
     {
         $sapiStub = self::getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects(self::once())
-            ->method('apiGet')
-            ->with(
-                $this->equalTo("storage/components/docker-demo/configs/config-id")
-            )
-            ->willReturn([
-                'state' => [
-                    StateFile::NAMESPACE_PREFIX => [
-                        'key' => 'fooBarBaz'
-                    ]
-                ]
-            ]);
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
