@@ -531,17 +531,21 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreStateFromLegacyState()
     {
+        $state = ['foo' => 'bar'];
         $this->clearConfigurations();
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
+        $configuration->setState($state);
         $configData = [
             'parameters' => [
                 'script' => [
                     'import json',
+                    'with open("/data/in/state.json", "r") as state_file_read:',
+                    '   data = json.load(state_file_read)',
+                    '   assert data["foo"] == "bar", json.dumps(data)',
                     'with open("/data/out/state.json", "w") as state_file:',
                     '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)'
                 ],
@@ -565,7 +569,7 @@ class RunnerTest extends BaseRunnerTest
                 $componentData,
                 'runner-configuration',
                 $configData,
-                []
+                $state
             ),
             'run',
             'run',
@@ -588,17 +592,21 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorStoreStateWithNamespace()
     {
+        $state = [StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']];
         $this->clearConfigurations();
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
+        $configuration->setState($state);
         $configData = [
             'parameters' => [
                 'script' => [
                     'import json',
+                    'with open("/data/in/state.json", "r") as state_file_read:',
+                    '   data = json.load(state_file_read)',
+                    '   assert data["foo"] == "bar"',
                     'with open("/data/out/state.json", "w") as state_file:',
                     '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)'
                 ],
@@ -622,7 +630,7 @@ class RunnerTest extends BaseRunnerTest
                 $componentData,
                 'runner-configuration',
                 $configData,
-                []
+                $state
             ),
             'run',
             'run',
