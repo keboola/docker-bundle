@@ -165,7 +165,16 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id"),
-                ['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertEquals('bar', $data[StateFile::NAMESPACE_PREFIX]['foo']);
+                    return true;
+                })
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -192,7 +201,16 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
-                ['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar","foo":"bar"}}']
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertEquals('bar', $data[StateFile::NAMESPACE_PREFIX]['foo']);
+                    return true;
+                })
             );
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
@@ -276,7 +294,14 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    return true;
+                })
             );
 
         /** @var Client $sapiStub */
@@ -413,7 +438,14 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"state":"fooBar"}}'])
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    return true;
+                })
             )
             ->willThrowException(new ClientException("Test", 404));
 
@@ -422,14 +454,14 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
+            ['key' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter(),
             'row-id'
         );
-        $stateFile->stashState(['state' => 'fooBar']);
+        $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage("Failed to store state: Test");
         $stateFile->persistState();
@@ -444,7 +476,14 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id/rows/row-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"state":"fooBar"}}'])
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    return true;
+                })
             )
             ->willThrowException(new ClientException("Test", 888));
 
@@ -453,14 +492,14 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
+            ['key' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter(),
             'row-id'
         );
-        $stateFile->stashState(['state' => 'fooBar']);
+        $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage("Test");
         $stateFile->persistState();
