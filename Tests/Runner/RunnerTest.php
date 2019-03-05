@@ -659,7 +659,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
         $configData = [
             'parameters' => [
                 'script' => [
@@ -722,13 +721,12 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow1' => 'barRow1']]);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -746,7 +744,6 @@ class RunnerTest extends BaseRunnerTest
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-2');
         $configurationRow->setName('Row 2');
-        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow2' => 'barRow2']]);
         $configData2 = [
             'parameters' => [
                 'script' => [
@@ -819,13 +816,12 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow1' => 'barRow1']]);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -878,7 +874,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('bar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['foo']);
         $row = $component->listConfigurationRows($listOptions)[0];
 
-        self::assertArrayNotHasKey('component', $row['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertArrayNotHasKey('component', $row['state']);
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 storage jobs'));
         $this->clearConfigurations();
@@ -893,7 +889,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -1048,7 +1044,7 @@ class RunnerTest extends BaseRunnerTest
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['foo' => 'bar'], $configuration['state'][StateFile::NAMESPACE_PREFIX], 'State must not be changed');
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']], $configuration['state'], 'State must not be changed');
         $this->clearConfigurations();
     }
 
@@ -1125,7 +1121,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
         $runner = $this->getRunner();
@@ -1229,7 +1224,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
         $runner = $this->getRunner();
