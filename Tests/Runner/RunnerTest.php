@@ -582,7 +582,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorReadStateFromLegacyState()
+    public function testExecutorReadLegacyState()
     {
         $state = ['foo' => 'bar'];
         $this->clearConfigurations();
@@ -630,7 +630,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorReadStateWithNamespace()
+    public function testExecutorReadNamespacedState()
     {
         $state = [StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']];
         $this->clearConfigurations();
