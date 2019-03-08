@@ -276,13 +276,13 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBarBaz'],
+            ['key' => 'fooBarBaz'],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter()
         );
-        $stateFile->stashState(["state" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
     }
 
     public function testPersistsStateUpdatesFromEmpty()
@@ -336,7 +336,7 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBar'],
+            ['key' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
@@ -363,7 +363,7 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            ['state' => 'fooBar'],
+            ['key' => 'fooBar'],
             'json',
             'docker-demo',
             'config-id',
