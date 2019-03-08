@@ -615,7 +615,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $runner->run(
+        $output = $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
                 'runner-configuration',
@@ -628,6 +628,7 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
         $this->clearConfigurations();
+        $this->assertNotEmpty($output);
     }
 
     public function testExecutorReadNamespacedState()
@@ -663,7 +664,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $runner->run(
+        $output = $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
                 'runner-configuration',
@@ -675,6 +676,7 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
+        $this->assertNotEmpty($output);
     }
 
     public function testExecutorStoreStateWithProcessor()
