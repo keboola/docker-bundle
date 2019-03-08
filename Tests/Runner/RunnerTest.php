@@ -541,7 +541,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)'
                 ],
             ],
         ];
@@ -571,14 +571,113 @@ class RunnerTest extends BaseRunnerTest
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        self::assertCount(1, $configuration['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertArrayHasKey('baz', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertEquals('fooBar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['baz']);
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateEncryptsValue()
+    {
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"#encrypted": "secret"}, state_file)'
+                ],
+            ],
+        ];
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $component = new Components($this->getClient());
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        self::assertCount(1, $configuration['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertArrayHasKey('#encrypted', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state'][StateFile::NAMESPACE_PREFIX]['#encrypted']);
         self::assertEquals(
             'secret',
             $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state'][StateFile::NAMESPACE_PREFIX]['#encrypted'])
         );
+        $this->clearConfigurations();
+    }
+
+
+    public function testExecutorStoreStateOverwritesExistingState()
+    {
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState(json_encode(['foo' => 'bar']));
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"baz": "fooBar"}, state_file)'
+                ],
+            ],
+        ];
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $component = new Components($this->getClient());
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        self::assertCount(1, $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertArrayHasKey('baz', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('fooBar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['baz']);
         $this->clearConfigurations();
     }
 
