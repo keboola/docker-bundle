@@ -122,28 +122,26 @@ class StateFile
         }
 
         $this->outputFilter->collectValues((array)$this->currentState);
-        if (serialize($this->currentState) != serialize($previousState)) {
-            $components = new Components($this->storageClient);
-            $configuration = new Configuration();
-            $configuration->setComponentId($this->componentId);
-            $configuration->setConfigurationId($this->configurationId);
-            try {
-                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
-                if ($this->configurationRowId) {
-                    $configurationRow = new ConfigurationRow($configuration);
-                    $configurationRow->setRowId($this->configurationRowId);
-                    $configurationRow->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
-                    $components->updateConfigurationRow($configurationRow);
-                } else {
-                    $configuration->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
-                    $components->updateConfiguration($configuration);
-                }
-            } catch (ClientException $e) {
-                if ($e->getCode() === 404) {
-                    throw new UserException("Failed to store state: " . $e->getMessage(), $e);
-                }
-                throw $e;
+        $components = new Components($this->storageClient);
+        $configuration = new Configuration();
+        $configuration->setComponentId($this->componentId);
+        $configuration->setConfigurationId($this->configurationId);
+        try {
+            $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
+            if ($this->configurationRowId) {
+                $configurationRow = new ConfigurationRow($configuration);
+                $configurationRow->setRowId($this->configurationRowId);
+                $configurationRow->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $components->updateConfigurationRow($configurationRow);
+            } else {
+                $configuration->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $components->updateConfiguration($configuration);
             }
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                throw new UserException("Failed to store state: " . $e->getMessage(), $e);
+            }
+            throw $e;
         }
     }
 

@@ -681,58 +681,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateDoesNotMigrateUnchangedState()
-    {
-        $this->clearConfigurations();
-        $component = new Components($this->getClient());
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.docker-demo-sync');
-        $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
-        $configData = [
-            'parameters' => [
-                'script' => [
-                    'import json',
-                    'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"foo": "bar"}, state_file)'
-                ],
-            ],
-        ];
-        $configuration->setConfiguration($configData);
-        $component->addConfiguration($configuration);
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $runner = $this->getRunner();
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                $configData,
-                ['foo' => 'bar']
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-        $component = new Components($this->getClient());
-        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertCount(1, $configuration['state']);
-        self::assertArrayHasKey('foo', $configuration['state']);
-        self::assertArrayNotHasKey(StateFile::NAMESPACE_PREFIX, $configuration['state']);
-        self::assertEquals('bar', $configuration['state']['foo']);
-        $this->clearConfigurations();
-    }
-
-
     public function testExecutorReadLegacyState()
     {
         $state = ['foo' => 'bar'];

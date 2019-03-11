@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
@@ -372,6 +373,61 @@ class StateFileTest extends TestCase
         $stateFile->stashState(new \stdClass());
         $stateFile->persistState();
     }
+
+    public function testPersistsStateSavesUnchangedState()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+            );
+
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            [StateFile::NAMESPACE_PREFIX => ['key' => 'fooBar']],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->stashState(['key' => 'fooBar']);
+        $stateFile->persistState();
+    }
+
+    public function testPersistsStateSavesUnchangedLegacyState()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+            );
+
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBar'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->stashState(['key' => 'fooBar']);
+        $stateFile->persistState();
+    }
+
 
     public function testLoadStateFromFile()
     {
