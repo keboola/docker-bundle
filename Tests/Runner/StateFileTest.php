@@ -138,8 +138,13 @@ class StateFileTest extends TestCase
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $sapiStub->expects($this->never())
-            ->method('apiPut');
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                self::equalTo('storage/components/docker-demo/configs/config-id'),
+                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+            );
+
 
         $state = ['key' => 'fooBar'];
         /** @var Client $sapiStub */
