@@ -45,6 +45,7 @@ jobs:
         - ./cc-test-reporter format-coverage --output "coverage/codeclimate.3.json"
         - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
     - stage: after-tests
+      if: (branch = master)
       script:
         - docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER" /data/
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
@@ -55,7 +56,3 @@ notifications:
   email: false
   slack:
     secure: doRb1zL09mK/dGUFgXAz3TqSAkCASbYMQYrGbOtfolIiBHwDHpO8J7QDXo2OHCUvYd4bOMv2HAluooz4nYn50RskUdYDkqUTgDRLVmRwdsH3KiBdQ5awnxfbZTvXPPGKSAbbOaH4AF+ig++I9oBJqzF5pBvcp2sfOiQkIrsjKr8=
-
-branches:
-  only:
-  - master
