@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "084d5154fb486bbfe5d30b99b7136cde",
+    "content-hash": "a5b9a60ad1451e19f97f4d9da1be4fea",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1809,17 +1809,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "6.1.0",
+            "version": "dev-master",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "5eae49f3121a57cbd1712c6a05293cb82047f201"
+                "reference": "856d4c768f93d1c76bd4b0cdcfb766991c517ed0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/5eae49f3121a57cbd1712c6a05293cb82047f201",
-                "reference": "5eae49f3121a57cbd1712c6a05293cb82047f201",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/856d4c768f93d1c76bd4b0cdcfb766991c517ed0",
+                "reference": "856d4c768f93d1c76bd4b0cdcfb766991c517ed0",
                 "shasum": ""
             },
             "require": {
@@ -1853,7 +1853,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2018-12-18T19:17:53+00:00"
+            "time": "2019-03-12T08:20:55+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1948,22 +1948,22 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "8.1.0",
+            "version": "dev-najlos-update-input-mapping",
             "target-dir": "Keboola/OutputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "7040f82f1bca7d1fadaa4633f7e4d79917abf414"
+                "reference": "5086eaa92440d835f58ef1ea694298216785cdc2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/7040f82f1bca7d1fadaa4633f7e4d79917abf414",
-                "reference": "7040f82f1bca7d1fadaa4633f7e4d79917abf414",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/5086eaa92440d835f58ef1ea694298216785cdc2",
+                "reference": "5086eaa92440d835f58ef1ea694298216785cdc2",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "^6.0",
+                "keboola/input-mapping": "dev-master",
                 "keboola/sanitizer": "^0.1",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8|^4.1",
@@ -1972,7 +1972,6 @@
                 "symfony/yaml": "^2.8|^4.1"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "^0.4",
                 "keboola/php-temp": "^1.0",
                 "phpunit/phpunit": "^5.4",
                 "squizlabs/php_codesniffer": "^3.2"
@@ -1994,7 +1993,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2019-02-09T09:18:21+00:00"
+            "time": "2019-03-12T08:45:26+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -5162,7 +5161,7 @@
             ],
             "authors": [
                 {
-                    "name": "Pádraic Brady",
+                    "name": "Padraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "http://blog.astrumfutura.com"
                 }
@@ -6455,9 +6454,15 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/input-mapping": 20,
+        "keboola/output-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
-    "platform-dev": []
+    "platform-dev": [],
+    "platform-overrides": {
+        "php": "5.6"
+    }
 }

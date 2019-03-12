@@ -14,8 +14,8 @@
         "keboola/php-utils": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "^6.1",
-        "keboola/output-mapping": "^8.0",
+        "keboola/input-mapping": "dev-master",
+        "keboola/output-mapping": "dev-najlos-update-input-mapping",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "^0.1"
