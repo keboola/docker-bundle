@@ -58,5 +58,10 @@
         "symfony-app-dir": "vendor/keboola/syrup/app",
         "symfony-web-dir": "vendor/keboola/syrup/web",
         "syrup-app-name": "docker"
+    },
+    "config": {
+        "platform": {
+            "php": "5.6"
+        }
     }
 }
