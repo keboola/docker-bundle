@@ -111,9 +111,7 @@ class DataLoader implements DataLoaderInterface
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
                 $reader->downloadTables(
-                    new InputTablesOptions(
-                        $this->storageConfig['input']['tables']
-                    ),
+                    new InputTablesOptions($this->storageConfig['input']['tables']),
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
                     $this->getStagingStorageInput()
                 );
