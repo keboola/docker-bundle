@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -387,7 +388,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testClearState()
+    public function testClearStateWithoutNamespace()
     {
         $this->clearConfigurations();
         $state = ['key' => 'value'];
@@ -423,7 +424,47 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
         $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([], $cfg['state']);
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => []], $cfg['state']);
+        $this->clearConfigurations();
+    }
+
+    public function testClearStateWithNamespace()
+    {
+        $this->clearConfigurations();
+        $state = [StateFile::NAMESPACE_PREFIX => ['key' => 'value']];
+        $cmp = new Components($this->getClient());
+        $cfg = new Configuration();
+        $cfg->setComponentId('keboola.docker-demo-sync');
+        $cfg->setConfigurationId('runner-configuration');
+        $cfg->setConfiguration([]);
+        $cfg->setName('Test configuration');
+        $cfg->setState($state);
+        $cmp->addConfiguration($cfg);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                ['parameters' => ['script' => ['import os']]],
+                $state
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => []], $cfg['state']);
         $this->clearConfigurations();
     }
 
@@ -495,17 +536,15 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
         $configData = [
             'parameters' => [
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar", "#encrypted": "secret"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)'
                 ],
             ],
         ];
-
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
         $componentData = [
@@ -530,18 +569,160 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
-
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertArrayHasKey('baz', $configuration['state']);
-        self::assertEquals('fooBar', $configuration['state']['baz']);
-        self::assertArrayHasKey('#encrypted', $configuration['state']);
-        self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state']['#encrypted']);
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => ['baz' => 'fooBar']], $configuration['state']);
+        $this->clearConfigurations();
+    }
+
+    public function testExecutorStoreStateEncryptsValue()
+    {
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/out/state.json", "w") as state_file:',
+                    '   json.dump({"#encrypted": "secret"}, state_file)'
+                ],
+            ],
+        ];
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $component = new Components($this->getClient());
+        $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
+        self::assertCount(1, $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertArrayHasKey('#encrypted', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state'][StateFile::NAMESPACE_PREFIX]['#encrypted']);
         self::assertEquals(
             'secret',
-            $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state']['#encrypted'])
+            $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state'][StateFile::NAMESPACE_PREFIX]['#encrypted'])
         );
         $this->clearConfigurations();
+    }
+
+    public function testExecutorReadLegacyState()
+    {
+        $state = ['foo' => 'bar'];
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState($state);
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/in/state.json", "r") as state_file_read:',
+                    '   data = json.load(state_file_read)',
+                    '   assert data["foo"] == "bar", json.dumps(data)'
+                ],
+            ],
+        ];
+
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $output = $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                $state
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $this->clearConfigurations();
+        $this->assertNotEmpty($output);
+    }
+
+    public function testExecutorReadNamespacedState()
+    {
+        $state = [StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']];
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $configuration->setState($state);
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'import json',
+                    'with open("/data/in/state.json", "r") as state_file_read:',
+                    '   data = json.load(state_file_read)',
+                    '   assert data["foo"] == "bar"',
+                ],
+            ],
+        ];
+
+        $configuration->setConfiguration($configData);
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $output = $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $configData,
+                $state
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        $this->assertNotEmpty($output);
     }
 
     public function testExecutorStoreStateWithProcessor()
@@ -552,7 +733,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
         $configData = [
             'parameters' => [
                 'script' => [
@@ -602,7 +782,7 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['baz' => 'fooBar'], $configuration['state']);
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => ['baz' => 'fooBar']], $configuration['state']);
         $this->clearConfigurations();
     }
 
@@ -615,13 +795,12 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState(['fooRow1' => 'barRow1']);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -639,7 +818,6 @@ class RunnerTest extends BaseRunnerTest
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-2');
         $configurationRow->setName('Row 2');
-        $configurationRow->setState(['fooRow2' => 'barRow2']);
         $configData2 = [
             'parameters' => [
                 'script' => [
@@ -680,8 +858,8 @@ class RunnerTest extends BaseRunnerTest
         $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         // configuration state should be unchanged
-        self::assertArrayHasKey('foo', $configuration['state']);
-        self::assertEquals('bar', $configuration['state']['foo']);
+        self::assertArrayHasKey('foo', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('bar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['foo']);
         $rows = $component->listConfigurationRows($listOptions);
         uasort(
             $rows,
@@ -691,10 +869,10 @@ class RunnerTest extends BaseRunnerTest
         );
         $row1 = $rows[0];
         $row2 = $rows[1];
-        self::assertArrayHasKey('bazRow1', $row1['state']);
-        self::assertEquals('fooBar1', $row1['state']['bazRow1']);
-        self::assertArrayHasKey('bazRow2', $row2['state']);
-        self::assertEquals('fooBar2', $row2['state']['bazRow2']);
+        self::assertArrayHasKey('bazRow1', $row1['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('fooBar1', $row1['state'][StateFile::NAMESPACE_PREFIX]['bazRow1']);
+        self::assertArrayHasKey('bazRow2', $row2['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('fooBar2', $row2['state'][StateFile::NAMESPACE_PREFIX]['bazRow2']);
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
@@ -712,13 +890,12 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState(['fooRow1' => 'barRow1']);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -767,11 +944,11 @@ class RunnerTest extends BaseRunnerTest
         $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         // configuration state should be unchanged
-        self::assertArrayHasKey('foo', $configuration['state']);
-        self::assertEquals('bar', $configuration['state']['foo']);
+        self::assertArrayHasKey('foo', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('bar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['foo']);
         $row = $component->listConfigurationRows($listOptions)[0];
 
-        self::assertArrayNotHasKey('bazRow1', $row['state']);
+        self::assertArrayNotHasKey('component', $row['state']);
         self::assertFalse($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertFalse($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 storage jobs'));
         $this->clearConfigurations();
@@ -786,13 +963,13 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ["foo" => "bar"]]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-1');
         $configurationRow->setName('Row 1');
-        $configurationRow->setState(['fooRow1' => 'barRow1']);
+        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow1' => 'barRow1']]);
         $configData1 = [
             'parameters' => [
                 'script' => [
@@ -810,7 +987,7 @@ class RunnerTest extends BaseRunnerTest
         $configurationRow = new ConfigurationRow($configuration);
         $configurationRow->setRowId('row-2');
         $configurationRow->setName('Row 2');
-        $configurationRow->setState(['fooRow2' => 'barRow2']);
+        $configurationRow->setState([StateFile::NAMESPACE_PREFIX => ['fooRow2' => 'barRow2']]);
         $configData2 = [
             'parameters' => [
                 'script' => [
@@ -861,8 +1038,8 @@ class RunnerTest extends BaseRunnerTest
         $listOptions->setComponentId('keboola.docker-demo-sync')->setConfigurationId('runner-configuration');
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         // configuration state should be unchanged
-        self::assertArrayHasKey('foo', $configuration['state']);
-        self::assertEquals('bar', $configuration['state']['foo']);
+        self::assertArrayHasKey('foo', $configuration['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals('bar', $configuration['state'][StateFile::NAMESPACE_PREFIX]['foo']);
         $rows = $component->listConfigurationRows($listOptions);
         uasort(
             $rows,
@@ -872,8 +1049,8 @@ class RunnerTest extends BaseRunnerTest
         );
         $row1 = $rows[0];
         $row2 = $rows[1];
-        self::assertArrayNotHasKey('bazRow1', $row1['state']);
-        self::assertArrayNotHasKey('bazRow2', $row2['state']);
+        self::assertArrayNotHasKey('bazRow1', $row1['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertArrayNotHasKey('bazRow2', $row2['state'][StateFile::NAMESPACE_PREFIX]);
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for Storage jobs'));
@@ -889,7 +1066,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(['foo' => 'bar']);
+        $configuration->setState([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']]);
         $configData = [
             'parameters' => [
                 'script' => [
@@ -941,7 +1118,7 @@ class RunnerTest extends BaseRunnerTest
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['foo' => 'bar'], $configuration['state'], 'State must not be changed');
+        self::assertEquals([StateFile::NAMESPACE_PREFIX => ['foo' => 'bar']], $configuration['state'], 'State must not be changed');
         $this->clearConfigurations();
     }
 
@@ -1018,7 +1195,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
         $runner = $this->getRunner();
@@ -1046,7 +1222,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_PREFIX], 'State must be changed');
     }
 
     public function testExecutorBeforeProcessorNoState()
@@ -1122,7 +1298,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState(json_encode(['foo' => 'bar']));
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
         $runner = $this->getRunner();
@@ -1150,7 +1325,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertNotContains('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'], 'State must be changed');
+        self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_PREFIX], 'State must be changed');
     }
 
     public function testExecutorNoStoreState()

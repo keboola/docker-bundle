@@ -16,6 +16,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
+    const NAMESPACE_PREFIX = 'component';
+
     /**
      * @var string
      */
@@ -83,7 +85,11 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        $this->state = $state;
+        if (isset($state[self::NAMESPACE_PREFIX])) {
+            $this->state = $state[self::NAMESPACE_PREFIX];
+        } else {
+            $this->state = $state;
+        }
         $this->format = $format;
         $this->outputFilter = $outputFilter;
         $this->outputFilter->collectValues($state);
@@ -116,31 +122,26 @@ class StateFile
         }
 
         $this->outputFilter->collectValues((array)$this->currentState);
-        if (serialize($this->currentState) != serialize($previousState)) {
-            $components = new Components($this->storageClient);
-            $configuration = new Configuration();
-            $configuration->setComponentId($this->componentId);
-            $configuration->setConfigurationId($this->configurationId);
-            try {
-                if ($this->configurationRowId) {
-                    $configurationRow = new ConfigurationRow($configuration);
-                    $configurationRow->setRowId($this->configurationRowId);
-                    $configurationRow->setState(
-                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                    );
-                    $components->updateConfigurationRow($configurationRow);
-                } else {
-                    $configuration->setState(
-                        $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class)
-                    );
-                    $components->updateConfiguration($configuration);
-                }
-            } catch (ClientException $e) {
-                if ($e->getCode() === 404) {
-                    throw new UserException("Failed to store state: " . $e->getMessage(), $e);
-                }
-                throw $e;
+        $components = new Components($this->storageClient);
+        $configuration = new Configuration();
+        $configuration->setComponentId($this->componentId);
+        $configuration->setConfigurationId($this->configurationId);
+        try {
+            $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
+            if ($this->configurationRowId) {
+                $configurationRow = new ConfigurationRow($configuration);
+                $configurationRow->setRowId($this->configurationRowId);
+                $configurationRow->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $components->updateConfigurationRow($configurationRow);
+            } else {
+                $configuration->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $components->updateConfiguration($configuration);
             }
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                throw new UserException("Failed to store state: " . $e->getMessage(), $e);
+            }
+            throw $e;
         }
     }
 
