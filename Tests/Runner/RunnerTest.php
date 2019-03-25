@@ -2338,7 +2338,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $output);
         self::assertEquals("Script file /data/script.py\nScript finished", $output[0]->getProcessOutput());
     }
-    
+
     public function testRunAdaptiveInputMapping()
     {
         $this->createBuckets();

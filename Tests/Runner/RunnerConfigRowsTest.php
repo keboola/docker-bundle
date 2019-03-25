@@ -692,7 +692,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertCount(1, $outputs[1]->getImages());
     }
 
-
     public function testRunRowAdaptiveInputMapping()
     {
         $temp = new Temp();
