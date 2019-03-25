@@ -7,7 +7,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader\Options\InputTablesOptions;
+use Keboola\InputMapping\Reader\Options\InputTableOptionsList;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
@@ -113,7 +113,7 @@ class DataLoader implements DataLoaderInterface
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
                 $inputTablesState = $reader->downloadTables(
-                    new InputTablesOptions($this->storageConfig['input']['tables']),
+                    new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
                     $this->getStagingStorageInput()
                 );
