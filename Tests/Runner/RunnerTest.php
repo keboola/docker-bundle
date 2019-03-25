@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
+use Keboola\InputMapping\Reader\Options\InputTableOptions;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -2336,6 +2337,117 @@ class RunnerTest extends BaseRunnerTest
         $output = $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
         self::assertCount(1, $output);
         self::assertEquals("Script file /data/script.py\nScript finished", $output[0]->getProcessOutput());
+    }
+    
+    public function testRunAdaptiveInputMapping()
+    {
+        $this->createBuckets();
+        $this->clearConfigurations();
+
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $tableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
+
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test2', 'test2']);
+        $this->getClient()->writeTableAsync('in.c-runner-test.mytable', $csv, ['incremental' => true]);
+        unset($csv);
+
+        $updatedTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
+
+        self::assertNotEquals($tableInfo['lastImportDate'], $updatedTableInfo['lastImportDate']);
+
+        $componentDefinition = new Component([
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+            'features' => [
+                'container-root-user'
+            ],
+        ]);
+
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentDefinition->getId());
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $component->addConfiguration($configuration);
+
+        $jobDefinition1 = new JobDefinition(
+            [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
+                            [
+                                'source' => 'in.c-runner-test.mytable',
+                                'destination' => 'mytable',
+                                'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
+                            ],
+                        ],
+                    ],
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable-2',
+                            ]
+                        ]
+                    ]
+                ],
+                'parameters' => [
+                    'script' => [
+                        'from shutil import copyfile',
+                        'copyfile("/data/in/tables/mytable", "/data/out/tables/mytable")',
+                    ],
+                ],
+            ],
+            $componentDefinition,
+            'runner-configuration',
+            null,
+            [
+                StateFile::STORAGE_NAMESPACE_PREFIX => [
+                    StateFile::INPUT_NAMESPACE_PREFIX => [
+                        StateFile::TABLES_NAMESPACE_PREFIX => [
+                            [
+                                'source' => 'in.c-runner-test.mytable',
+                                'lastImportDate' => $tableInfo['lastImportDate'],
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        );
+
+        $jobDefinitions = [$jobDefinition1];
+        $runner = $this->getRunner();
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
+        $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');
+        self::assertEquals(1, $outputTableInfo['rowsCount']);
+
+        $configuration = $component->getConfiguration($componentDefinition->getId(), 'runner-configuration');
+        self::assertEquals(
+            ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
+            $configuration['state'][StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX][0]
+        );
     }
 
     public function swapFeatureProvider()

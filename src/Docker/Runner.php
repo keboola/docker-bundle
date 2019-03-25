@@ -25,6 +25,7 @@ use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
@@ -276,7 +277,15 @@ class Runner
             $configData
         );
 
-        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode);
+        if (isset($jobDefinition->getState()[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX])) {
+            $inputTableStateList = new InputTableStateList(
+                $jobDefinition->getState()[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX]
+            );
+        } else {
+            $inputTableStateList = new InputTableStateList([]);
+        }
+
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode, $inputTableStateList);
         return $output;
     }
 
@@ -378,17 +387,18 @@ class Runner
      * @param OutputFilterInterface $outputFilter
      * @param string $configVersion
      * @param string $mode
+     * @param InputTableStateList $inputTableStateList
      * @return Output
      * @throws ClientException
      */
-    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
+    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode, InputTableStateList $inputTableStateList)
     {
         // initialize
         $workingDirectory->createWorkingDir();
-        $inputTablesState = $dataLoader->loadInputData();
+        $resultInputTablesState = $dataLoader->loadInputData($inputTableStateList);
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
-        $output->setInputTableStateList($inputTablesState);
+        $output->setInputTableStateList($resultInputTablesState);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);

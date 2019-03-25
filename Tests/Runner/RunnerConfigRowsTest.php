@@ -2,12 +2,16 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
+use Keboola\InputMapping\Reader\Options\InputTableOptions;
+use Keboola\InputMapping\Reader\Reader;
+use Keboola\InputMapping\Reader\State\InputTableState;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -15,6 +19,7 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\Temp\Temp;
 
 class RunnerConfigRowsTest extends BaseRunnerTest
 {
@@ -685,5 +690,113 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertCount(2, $outputs);
         self::assertCount(1, $outputs[0]->getImages());
         self::assertCount(1, $outputs[1]->getImages());
+    }
+
+
+    public function testRunRowAdaptiveInputMapping()
+    {
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $tableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
+
+
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test2', 'test2']);
+        $this->getClient()->writeTableAsync('in.c-runner-test.mytable', $csv, ['incremental' => true]);
+        unset($csv);
+
+        $updatedTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
+
+        self::assertNotEquals($tableInfo['lastImportDate'], $updatedTableInfo['lastImportDate']);
+
+        $componentDefinition = $this->getComponent();
+
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentDefinition->getId());
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $component->addConfiguration($configuration);
+
+        $configurationRow = new ConfigurationRow($configuration);
+        $configurationRow->setRowId('row-1');
+        $configurationRow->setName('Row 1');
+        $component->addConfigurationRow($configurationRow);
+
+        $jobDefinition1 = new JobDefinition(
+            [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
+                            [
+                                'source' => 'in.c-runner-test.mytable',
+                                'destination' => 'mytable',
+                                'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
+                            ],
+                        ],
+                    ],
+                    'output' => [
+                        'tables' => [
+                            [
+                                'source' => 'mytable',
+                                'destination' => 'in.c-runner-test.mytable-2',
+                            ]
+                        ]
+                    ]
+                ],
+                'parameters' => [
+                    'script' => [
+                        'from shutil import copyfile',
+                        'copyfile("/data/in/tables/mytable", "/data/out/tables/mytable")',
+                    ],
+                ],
+            ],
+            $componentDefinition,
+            'runner-configuration',
+            null,
+            [
+                StateFile::STORAGE_NAMESPACE_PREFIX => [
+                    StateFile::INPUT_NAMESPACE_PREFIX => [
+                        StateFile::TABLES_NAMESPACE_PREFIX => [
+                            [
+                                'source' => 'in.c-runner-test.mytable',
+                                'lastImportDate' => $tableInfo['lastImportDate'],
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            'row-1'
+        );
+
+        $jobDefinitions = [$jobDefinition1];
+        $runner = $this->getRunner();
+        $runner->run(
+            $jobDefinitions,
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            'row-1'
+        );
+
+        self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
+        $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');
+        self::assertEquals(1, $outputTableInfo['rowsCount']);
+
+        $configuration = $component->getConfiguration($componentDefinition->getId(), 'runner-configuration');
+        self::assertEquals([], $configuration['state']);
+        self::assertEquals(
+            ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
+            $configuration['rows'][0]['state'][StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX][0]
+        );
     }
 }
