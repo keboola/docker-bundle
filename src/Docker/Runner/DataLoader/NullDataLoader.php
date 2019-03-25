@@ -13,7 +13,7 @@ class NullDataLoader implements DataLoaderInterface
     {
     }
 
-    public function loadInputData()
+    public function loadInputData(InputTableStateList $inputTableStateList)
     {
     }
 

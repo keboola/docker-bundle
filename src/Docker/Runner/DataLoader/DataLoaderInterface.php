@@ -16,7 +16,7 @@ interface DataLoaderInterface
     /**
      * @return InputTableStateList
      */
-    public function loadInputData();
+    public function loadInputData(InputTableStateList $inputTableStateList);
 
     /**
      * @return LoadTableQueue|null

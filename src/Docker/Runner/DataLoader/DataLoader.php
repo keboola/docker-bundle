@@ -102,18 +102,21 @@ class DataLoader implements DataLoaderInterface
 
     /**
      * Download source files
+     * @param InputTableStateList $inputTableStateList
+     * @return InputTableStateList
+     * @throws \Keboola\StorageApi\Exception
      */
-    public function loadInputData()
+    public function loadInputData(InputTableStateList $inputTableStateList)
     {
         $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
-        $inputTablesState = new InputTableStateList([]);
 
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
-                $inputTablesState = $reader->downloadTables(
+                $resultInputTablesStateList = $reader->downloadTables(
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
+                    $inputTableStateList,
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
                     $this->getStagingStorageInput()
                 );
@@ -132,7 +135,7 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
-        return $inputTablesState;
+        return $resultInputTablesStateList;
     }
 
     public function storeOutput()
