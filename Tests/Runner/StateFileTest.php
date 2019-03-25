@@ -154,8 +154,8 @@ class StateFileTest extends TestCase
                             ]
                         ],
 
-                    ])
-                ])
+                    ])]
+                )
             );
 
 
@@ -356,8 +356,8 @@ class StateFileTest extends TestCase
                             ]
                         ],
 
-                    ])
-                ])
+                    ])]
+                )
             );
 
         /** @var Client $sapiStub */
@@ -393,8 +393,8 @@ class StateFileTest extends TestCase
                             ]
                         ],
 
-                    ])
-                ])
+                    ])]
+                )
             );
 
         /** @var Client $sapiStub */
@@ -432,8 +432,8 @@ class StateFileTest extends TestCase
                             ]
                         ],
 
-                    ])
-                ])
+                    ])]
+                )
             );
 
         /** @var Client $sapiStub */
@@ -471,8 +471,8 @@ class StateFileTest extends TestCase
                             ]
                         ],
 
-                    ])
-                ])
+                    ])]
+                )
             );
 
         /** @var Client $sapiStub */
