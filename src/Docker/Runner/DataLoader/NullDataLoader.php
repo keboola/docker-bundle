@@ -16,6 +16,7 @@ class NullDataLoader implements DataLoaderInterface
 
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
+        return new InputTableStateList([]);
     }
 
     public function storeOutput()
