@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader\Options\InputTablesOptions;
 use Keboola\InputMapping\Reader\Reader;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
@@ -106,11 +107,12 @@ class DataLoader implements DataLoaderInterface
     {
         $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
+        $inputTablesState = new InputTableStateList([]);
 
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
-                $reader->downloadTables(
+                $inputTablesState = $reader->downloadTables(
                     new InputTablesOptions($this->storageConfig['input']['tables']),
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
                     $this->getStagingStorageInput()
@@ -130,6 +132,7 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
+        return $inputTablesState;
     }
 
     public function storeOutput()

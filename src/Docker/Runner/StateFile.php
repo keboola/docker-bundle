@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Configuration\State\Adapter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\Client;
@@ -16,7 +17,13 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
-    const NAMESPACE_PREFIX = 'component';
+    const COMPONENT_NAMESPACE_PREFIX = 'component';
+
+    const STORAGE_NAMESPACE_PREFIX = 'storage';
+
+    const INPUT_NAMESPACE_PREFIX = 'input';
+
+    const TABLES_NAMESPACE_PREFIX = 'tables';
 
     /**
      * @var string
@@ -85,8 +92,8 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        if (isset($state[self::NAMESPACE_PREFIX])) {
-            $this->state = $state[self::NAMESPACE_PREFIX];
+        if (isset($state[self::COMPONENT_NAMESPACE_PREFIX])) {
+            $this->state = $state[self::COMPONENT_NAMESPACE_PREFIX];
         } else {
             $this->state = $state;
         }
@@ -110,11 +117,8 @@ class StateFile
         $this->currentState = $currentState;
     }
 
-    public function persistState()
+    public function persistState(InputTableStateList $inputTableStateList)
     {
-        if ($this->currentState === null) {
-            return;
-        }
         $previousState = $this->state;
         // Store state
         if (!$previousState) {
@@ -131,10 +135,24 @@ class StateFile
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
-                $configurationRow->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $configurationRow->setState([
+                    self::COMPONENT_NAMESPACE_PREFIX => $encryptedStateData,
+                    self::STORAGE_NAMESPACE_PREFIX => [
+                        self::INPUT_NAMESPACE_PREFIX => [
+                            self::TABLES_NAMESPACE_PREFIX => $inputTableStateList->jsonSerialize()
+                        ]
+                    ]
+                ]);
                 $components->updateConfigurationRow($configurationRow);
             } else {
-                $configuration->setState([self::NAMESPACE_PREFIX => $encryptedStateData]);
+                $configuration->setState([
+                    self::COMPONENT_NAMESPACE_PREFIX => $encryptedStateData,
+                    self::STORAGE_NAMESPACE_PREFIX => [
+                        self::INPUT_NAMESPACE_PREFIX => [
+                            self::TABLES_NAMESPACE_PREFIX => $inputTableStateList->jsonSerialize()
+                        ]
+                    ]
+                ]);
                 $components->updateConfiguration($configuration);
             }
         } catch (ClientException $e) {

@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -71,7 +72,7 @@ class StateFileTest extends TestCase
             $this->encryptorFactory,
             [
                 'otherNamespace' => 'value',
-                StateFile::NAMESPACE_PREFIX => ['lastUpdate' => 'today']
+                StateFile::COMPONENT_NAMESPACE_PREFIX => ['lastUpdate' => 'today']
             ],
             'json',
             'docker-demo',
@@ -142,7 +143,19 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+                self::equalTo(
+                    ['state' => json_encode([
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [
+                            'key' => 'fooBar'
+                        ],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => []
+                            ]
+                        ],
+
+                    ])
+                ])
             );
 
 
@@ -159,7 +172,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState($state);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistStateConvertsLegacyToNamespace()
@@ -174,11 +187,11 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
-                    self::assertEquals('bar', $data[StateFile::NAMESPACE_PREFIX]['foo']);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey('foo', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
+                    self::assertEquals('bar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['foo']);
                     return true;
                 })
             );
@@ -194,7 +207,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
 
@@ -210,11 +223,11 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
-                    self::assertEquals('bar', $data[StateFile::NAMESPACE_PREFIX]['foo']);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey('foo', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
+                    self::assertEquals('bar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['foo']);
                     return true;
                 })
             );
@@ -231,7 +244,7 @@ class StateFileTest extends TestCase
             'row-id'
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistStateEncrypts()
@@ -246,10 +259,10 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
-                    self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::NAMESPACE_PREFIX]['#foo']);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
+                    self::assertArrayHasKey('#foo', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['#foo']);
                     return true;
                 })
             );
@@ -266,7 +279,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testStashStateDoesNotUpdate()
@@ -303,9 +316,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
                     return true;
                 })
             );
@@ -322,7 +335,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistsStateUpdatesToEmptyArray()
@@ -334,7 +347,17 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":[]}'])
+                self::equalTo(
+                    ['state' => json_encode([
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => []
+                            ]
+                        ],
+
+                    ])
+                ])
             );
 
         /** @var Client $sapiStub */
@@ -349,7 +372,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState([]);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistsStateUpdatesToEmptyObject()
@@ -361,7 +384,17 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{}}'])
+                self::equalTo(
+                    ['state' => json_encode([
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => new \stdClass(),
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => []
+                            ]
+                        ],
+
+                    ])
+                ])
             );
 
         /** @var Client $sapiStub */
@@ -376,7 +409,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState(new \stdClass());
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistsStateSavesUnchangedState()
@@ -388,7 +421,19 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+                self::equalTo(
+                    ['state' => json_encode([
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [
+                            'key' => 'fooBar'
+                        ],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => []
+                            ]
+                        ],
+
+                    ])
+                ])
             );
 
         /** @var Client $sapiStub */
@@ -396,14 +441,14 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            [StateFile::NAMESPACE_PREFIX => ['key' => 'fooBar']],
+            [StateFile::COMPONENT_NAMESPACE_PREFIX => ['key' => 'fooBar']],
             'json',
             'docker-demo',
             'config-id',
             new NullFilter()
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersistsStateSavesUnchangedLegacyState()
@@ -415,7 +460,19 @@ class StateFileTest extends TestCase
             ->method('apiPut')
             ->with(
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
-                self::equalTo(['state' => '{"' . StateFile::NAMESPACE_PREFIX . '":{"key":"fooBar"}}'])
+                self::equalTo(
+                    ['state' => json_encode([
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [
+                            'key' => 'fooBar'
+                        ],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => []
+                            ]
+                        ],
+
+                    ])
+                ])
             );
 
         /** @var Client $sapiStub */
@@ -430,7 +487,7 @@ class StateFileTest extends TestCase
             new NullFilter()
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
 
@@ -502,9 +559,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
                     return true;
                 })
             )
@@ -525,7 +582,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage("Failed to store state: Test");
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
     }
 
     public function testPersisStatePassOtherExceptions()
@@ -540,9 +597,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_PREFIX]);
-                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_PREFIX]['key']);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]);
+                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE_PREFIX]['key']);
                     return true;
                 })
             )
@@ -563,6 +620,101 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage("Test");
-        $stateFile->persistState();
+        $stateFile->persistState(new InputTableStateList([]));
+    }
+
+
+    public function testPersistStateStoresInputTablesState()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id"),
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey(StateFile::STORAGE_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey(StateFile::INPUT_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey(StateFile::TABLES_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX]);
+                    $storedState = $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX];
+                    self::assertCount(1, $storedState);
+                    self::assertEquals([
+                        'source' => 'in.c-main.test',
+                        'lastImportDate' => 'today'
+                    ], $storedState[0]);
+                    return true;
+                })
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter()
+        );
+        $stateFile->stashState([]);
+        $inputTablesState = new InputTableStateList([
+            [
+                'source' => 'in.c-main.test',
+                'lastImportDate' => 'today'
+            ]
+        ]);
+        $stateFile->persistState($inputTablesState);
+    }
+
+
+    public function testRowPersistStateStoresInputTablesState()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut')
+            ->with(
+                $this->equalTo("storage/components/docker-demo/configs/config-id/rows/row-id"),
+                $this->callback(function ($argument) {
+                    self::assertArrayHasKey('state', $argument);
+                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey(StateFile::STORAGE_NAMESPACE_PREFIX, $data);
+                    self::assertArrayHasKey(StateFile::INPUT_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX]);
+                    self::assertArrayHasKey(StateFile::TABLES_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX]);
+                    $storedState = $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX];
+                    self::assertCount(1, $storedState);
+                    self::assertEquals([
+                        'source' => 'in.c-main.test',
+                        'lastImportDate' => 'today'
+                    ], $storedState[0]);
+                    return true;
+                })
+            );
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            'row-id'
+        );
+        $stateFile->stashState([]);
+        $inputTablesState = new InputTableStateList([
+            [
+                'source' => 'in.c-main.test',
+                'lastImportDate' => 'today'
+            ]
+        ]);
+        $stateFile->persistState($inputTablesState);
     }
 }

@@ -546,8 +546,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::NAMESPACE_PREFIX]);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::COMPONENT_NAMESPACE_PREFIX]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::COMPONENT_NAMESPACE_PREFIX]);
     }
 
     public function testExecutorStoreRowStateWithProcessor()
@@ -623,8 +623,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::NAMESPACE_PREFIX]);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_PREFIX]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::COMPONENT_NAMESPACE_PREFIX]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::COMPONENT_NAMESPACE_PREFIX]);
     }
 
     public function testOutput()

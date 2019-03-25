@@ -339,7 +339,7 @@ class Runner
         $this->waitForStorageJobs($outputs);
         /** @var Output $output */
         foreach ($outputs as $output) {
-            $output->getStateFile()->persistState();
+            $output->getStateFile()->persistState($output->getInputTableStateList());
         }
         return $outputs;
     }
@@ -385,9 +385,10 @@ class Runner
     {
         // initialize
         $workingDirectory->createWorkingDir();
-        $dataLoader->loadInputData();
+        $inputTablesState = $dataLoader->loadInputData();
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
+        $output->setInputTableStateList($inputTablesState);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);

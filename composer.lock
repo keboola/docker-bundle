@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ddcc298aad59019ededf25581aac9ea7",
+    "content-hash": "219da094b7cb3adfefe6eb9436f61eb9",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1809,17 +1809,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "7.0.0",
+            "version": "dev-najlos-input-table-state",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "856d4c768f93d1c76bd4b0cdcfb766991c517ed0"
+                "reference": "c882d6ae03ba9f9a6eae55f88b88c863c7f79bb8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/856d4c768f93d1c76bd4b0cdcfb766991c517ed0",
-                "reference": "856d4c768f93d1c76bd4b0cdcfb766991c517ed0",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/c882d6ae03ba9f9a6eae55f88b88c863c7f79bb8",
+                "reference": "c882d6ae03ba9f9a6eae55f88b88c863c7f79bb8",
                 "shasum": ""
             },
             "require": {
@@ -1853,7 +1853,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2019-03-12T08:20:55+00:00"
+            "time": "2019-03-25T13:53:33+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -6453,9 +6453,18 @@
             "time": "2018-12-25T11:19:39+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "alias": "7.1",
+            "alias_normalized": "7.1.0.0",
+            "version": "dev-najlos-input-table-state",
+            "package": "keboola/input-mapping"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/input-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],
