@@ -348,7 +348,9 @@ class Runner
         $this->waitForStorageJobs($outputs);
         /** @var Output $output */
         foreach ($outputs as $output) {
-            $output->getStateFile()->persistState($output->getInputTableStateList());
+            if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($jobDefinition->getComponentId(), $jobDefinition->getConfigId())) {
+                $output->getStateFile()->persistState($output->getInputTableStateList());
+            }
         }
         return $outputs;
     }
@@ -515,9 +517,7 @@ class Runner
                 $workingDirectory->moveOutputToInput();
             }
         }
-        if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->stashState($newState);
-        }
+        $stateFile->stashState($newState);
         return new Output($imageDigests, $outputMessage, $configVersion, $stateFile);
     }
 }
