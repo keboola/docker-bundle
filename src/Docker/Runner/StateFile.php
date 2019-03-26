@@ -131,7 +131,11 @@ class StateFile
         $configuration->setComponentId($this->componentId);
         $configuration->setConfigurationId($this->configurationId);
         try {
-            $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
+            if ($this->currentState !== null) {
+                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
+            } else {
+                $encryptedStateData = [];
+            }
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
