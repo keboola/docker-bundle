@@ -425,7 +425,15 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
         $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([StateFile::COMPONENT_NAMESPACE_PREFIX => []], $cfg['state']);
+        self::assertEquals([
+            StateFile::COMPONENT_NAMESPACE_PREFIX => [],
+            StateFile::STORAGE_NAMESPACE_PREFIX => [
+                StateFile::INPUT_NAMESPACE_PREFIX => [
+                    StateFile::TABLES_NAMESPACE_PREFIX => []
+                ]
+            ]
+
+        ], $cfg['state']);
         $this->clearConfigurations();
     }
 
@@ -465,7 +473,15 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
         $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([StateFile::COMPONENT_NAMESPACE_PREFIX => []], $cfg['state']);
+        self::assertEquals([
+            StateFile::COMPONENT_NAMESPACE_PREFIX => [],
+            StateFile::STORAGE_NAMESPACE_PREFIX => [
+                StateFile::INPUT_NAMESPACE_PREFIX => [
+                    StateFile::TABLES_NAMESPACE_PREFIX => []
+                ]
+            ]
+
+        ], $cfg['state']);
         $this->clearConfigurations();
     }
 
@@ -572,7 +588,15 @@ class RunnerTest extends BaseRunnerTest
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([StateFile::COMPONENT_NAMESPACE_PREFIX => ['baz' => 'fooBar']], $configuration['state']);
+        self::assertEquals([
+            StateFile::COMPONENT_NAMESPACE_PREFIX => ['baz' => 'fooBar'],
+            StateFile::STORAGE_NAMESPACE_PREFIX => [
+                StateFile::INPUT_NAMESPACE_PREFIX => [
+                    StateFile::TABLES_NAMESPACE_PREFIX => []
+                ]
+            ]
+
+        ], $configuration['state']);
         $this->clearConfigurations();
     }
 
@@ -783,7 +807,15 @@ class RunnerTest extends BaseRunnerTest
 
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([StateFile::COMPONENT_NAMESPACE_PREFIX => ['baz' => 'fooBar']], $configuration['state']);
+        self::assertEquals([
+            StateFile::COMPONENT_NAMESPACE_PREFIX => ['baz' => 'fooBar'],
+            StateFile::STORAGE_NAMESPACE_PREFIX => [
+                StateFile::INPUT_NAMESPACE_PREFIX => [
+                    StateFile::TABLES_NAMESPACE_PREFIX => []
+                ]
+            ]
+
+        ], $configuration['state']);
         $this->clearConfigurations();
     }
 
