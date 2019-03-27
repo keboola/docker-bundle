@@ -636,16 +636,19 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey(StateFile::STORAGE_NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey(StateFile::INPUT_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX]);
-                    self::assertArrayHasKey(StateFile::TABLES_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX]);
-                    $storedState = $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX];
-                    self::assertCount(1, $storedState);
                     self::assertEquals([
-                        'source' => 'in.c-main.test',
-                        'lastImportDate' => 'today'
-                    ], $storedState[0]);
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => [
+                                    [
+                                        'source' => 'in.c-main.test',
+                                        'lastImportDate' => 'today'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ], $data);
                     return true;
                 })
             );
@@ -683,16 +686,19 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey(StateFile::STORAGE_NAMESPACE_PREFIX, $data);
-                    self::assertArrayHasKey(StateFile::INPUT_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX]);
-                    self::assertArrayHasKey(StateFile::TABLES_NAMESPACE_PREFIX, $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX]);
-                    $storedState = $data[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX];
-                    self::assertCount(1, $storedState);
                     self::assertEquals([
-                        'source' => 'in.c-main.test',
-                        'lastImportDate' => 'today'
-                    ], $storedState[0]);
+                        StateFile::COMPONENT_NAMESPACE_PREFIX => [],
+                        StateFile::STORAGE_NAMESPACE_PREFIX => [
+                            StateFile::INPUT_NAMESPACE_PREFIX => [
+                                StateFile::TABLES_NAMESPACE_PREFIX => [
+                                    [
+                                        'source' => 'in.c-main.test',
+                                        'lastImportDate' => 'today'
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ], $data);
                     return true;
                 })
             );
