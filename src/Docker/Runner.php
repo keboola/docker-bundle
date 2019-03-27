@@ -277,9 +277,9 @@ class Runner
             $configData
         );
 
-        if (isset($jobDefinition->getState()[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX])) {
+        if (isset($jobDefinition->getState()[StateFile::STORAGE_NAMESPACE][StateFile::INPUT_NAMESPACE][StateFile::TABLES_NAMESPACE])) {
             $inputTableStateList = new InputTableStateList(
-                $jobDefinition->getState()[StateFile::STORAGE_NAMESPACE_PREFIX][StateFile::INPUT_NAMESPACE_PREFIX][StateFile::TABLES_NAMESPACE_PREFIX]
+                $jobDefinition->getState()[StateFile::STORAGE_NAMESPACE][StateFile::INPUT_NAMESPACE][StateFile::TABLES_NAMESPACE]
             );
         } else {
             $inputTableStateList = new InputTableStateList([]);
