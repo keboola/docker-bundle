@@ -551,8 +551,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::COMPONENT_NAMESPACE]);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::COMPONENT_NAMESPACE]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::NAMESPACE_COMPONENT]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_COMPONENT]);
     }
 
     public function testExecutorStoreRowStateWithProcessor()
@@ -628,8 +628,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::COMPONENT_NAMESPACE]);
-        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::COMPONENT_NAMESPACE]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::NAMESPACE_COMPONENT]);
+        self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_COMPONENT]);
     }
 
     public function testOutput()
@@ -762,9 +762,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'runner-configuration',
             null,
             [
-                StateFile::STORAGE_NAMESPACE => [
-                    StateFile::INPUT_NAMESPACE => [
-                        StateFile::TABLES_NAMESPACE => [
+                StateFile::NAMESPACE_STORAGE => [
+                    StateFile::NAMESPACE_INPUT => [
+                        StateFile::NAMESPACE_TABLES => [
                             [
                                 'source' => 'in.c-runner-test.mytable',
                                 'lastImportDate' => $tableInfo['lastImportDate'],
@@ -795,7 +795,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals([], $configuration['state']);
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
-            $configuration['rows'][0]['state'][StateFile::STORAGE_NAMESPACE][StateFile::INPUT_NAMESPACE][StateFile::TABLES_NAMESPACE][0]
+            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
         );
     }
 }

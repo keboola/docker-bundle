@@ -17,13 +17,13 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
-    const COMPONENT_NAMESPACE = 'component';
+    const NAMESPACE_COMPONENT = 'component';
 
-    const STORAGE_NAMESPACE = 'storage';
+    const NAMESPACE_STORAGE = 'storage';
 
-    const INPUT_NAMESPACE = 'input';
+    const NAMESPACE_INPUT = 'input';
 
-    const TABLES_NAMESPACE = 'tables';
+    const NAMESPACE_TABLES = 'tables';
 
     /**
      * @var string
@@ -92,8 +92,8 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        if (isset($state[self::COMPONENT_NAMESPACE])) {
-            $this->state = $state[self::COMPONENT_NAMESPACE];
+        if (isset($state[self::NAMESPACE_COMPONENT])) {
+            $this->state = $state[self::NAMESPACE_COMPONENT];
         } else {
             $this->state = $state;
         }
@@ -140,20 +140,20 @@ class StateFile
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
                 $configurationRow->setState([
-                    self::COMPONENT_NAMESPACE => $encryptedStateData,
-                    self::STORAGE_NAMESPACE => [
-                        self::INPUT_NAMESPACE => [
-                            self::TABLES_NAMESPACE => $inputTableStateList->jsonSerialize()
+                    self::NAMESPACE_COMPONENT => $encryptedStateData,
+                    self::NAMESPACE_STORAGE => [
+                        self::NAMESPACE_INPUT => [
+                            self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
                         ]
                     ]
                 ]);
                 $components->updateConfigurationRow($configurationRow);
             } else {
                 $configuration->setState([
-                    self::COMPONENT_NAMESPACE => $encryptedStateData,
-                    self::STORAGE_NAMESPACE => [
-                        self::INPUT_NAMESPACE => [
-                            self::TABLES_NAMESPACE => $inputTableStateList->jsonSerialize()
+                    self::NAMESPACE_COMPONENT => $encryptedStateData,
+                    self::NAMESPACE_STORAGE => [
+                        self::NAMESPACE_INPUT => [
+                            self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
                         ]
                     ]
                 ]);

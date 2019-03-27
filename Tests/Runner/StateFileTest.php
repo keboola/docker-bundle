@@ -72,7 +72,7 @@ class StateFileTest extends TestCase
             $this->encryptorFactory,
             [
                 'otherNamespace' => 'value',
-                StateFile::COMPONENT_NAMESPACE => ['lastUpdate' => 'today']
+                StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today']
             ],
             'json',
             'docker-demo',
@@ -145,12 +145,12 @@ class StateFileTest extends TestCase
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::COMPONENT_NAMESPACE => [
+                        StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar'
                         ],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => []
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => []
                             ]
                         ],
 
@@ -187,11 +187,11 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertArrayHasKey('foo', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
-                    self::assertEquals('bar', $data[StateFile::COMPONENT_NAMESPACE]['foo']);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
+                    self::assertEquals('bar', $data[StateFile::NAMESPACE_COMPONENT]['foo']);
                     return true;
                 })
             );
@@ -223,11 +223,11 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertArrayHasKey('foo', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
-                    self::assertEquals('bar', $data[StateFile::COMPONENT_NAMESPACE]['foo']);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertArrayHasKey('foo', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
+                    self::assertEquals('bar', $data[StateFile::NAMESPACE_COMPONENT]['foo']);
                     return true;
                 })
             );
@@ -259,10 +259,10 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
-                    self::assertArrayHasKey('#foo', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::COMPONENT_NAMESPACE]['#foo']);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
+                    self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::NAMESPACE_COMPONENT]['#foo']);
                     return true;
                 })
             );
@@ -316,9 +316,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
                 })
             );
@@ -349,10 +349,10 @@ class StateFileTest extends TestCase
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::COMPONENT_NAMESPACE => [],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => []
+                        StateFile::NAMESPACE_COMPONENT => [],
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => []
                             ]
                         ],
 
@@ -386,10 +386,10 @@ class StateFileTest extends TestCase
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::COMPONENT_NAMESPACE => new \stdClass(),
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => []
+                        StateFile::NAMESPACE_COMPONENT => new \stdClass(),
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => []
                             ]
                         ],
 
@@ -423,12 +423,12 @@ class StateFileTest extends TestCase
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::COMPONENT_NAMESPACE => [
+                        StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar'
                         ],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => []
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => []
                             ]
                         ],
 
@@ -441,7 +441,7 @@ class StateFileTest extends TestCase
             $this->dataDir,
             $sapiStub,
             $this->encryptorFactory,
-            [StateFile::COMPONENT_NAMESPACE => ['key' => 'fooBar']],
+            [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
             'docker-demo',
             'config-id',
@@ -462,12 +462,12 @@ class StateFileTest extends TestCase
                 self::equalTo('storage/components/docker-demo/configs/config-id'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::COMPONENT_NAMESPACE => [
+                        StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar'
                         ],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => []
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => []
                             ]
                         ],
 
@@ -559,9 +559,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
                 })
             )
@@ -597,9 +597,9 @@ class StateFileTest extends TestCase
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
-                    self::assertArrayHasKey(StateFile::COMPONENT_NAMESPACE, $data);
-                    self::assertArrayHasKey('key', $data[StateFile::COMPONENT_NAMESPACE]);
-                    self::assertEquals('fooBar', $data[StateFile::COMPONENT_NAMESPACE]['key']);
+                    self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
+                    self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
+                    self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
                 })
             )
@@ -637,10 +637,10 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
                     self::assertEquals([
-                        StateFile::COMPONENT_NAMESPACE => [],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => [
+                        StateFile::NAMESPACE_COMPONENT => [],
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => [
                                     [
                                         'source' => 'in.c-main.test',
                                         'lastImportDate' => 'today'
@@ -687,10 +687,10 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
                     self::assertEquals([
-                        StateFile::COMPONENT_NAMESPACE => [],
-                        StateFile::STORAGE_NAMESPACE => [
-                            StateFile::INPUT_NAMESPACE => [
-                                StateFile::TABLES_NAMESPACE => [
+                        StateFile::NAMESPACE_COMPONENT => [],
+                        StateFile::NAMESPACE_STORAGE => [
+                            StateFile::NAMESPACE_INPUT => [
+                                StateFile::NAMESPACE_TABLES => [
                                     [
                                         'source' => 'in.c-main.test',
                                         'lastImportDate' => 'today'
