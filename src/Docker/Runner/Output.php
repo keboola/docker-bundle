@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 
 class Output
@@ -10,26 +11,26 @@ class Output
      * @var array
      */
     private $images = [];
-
     /**
      * @var string
      */
     private $output;
-
     /**
      * @var string
      */
     private $configVersion;
-
     /**
      * @var ?LoadTableQueue
      */
     private $tableQueue;
-
     /**
      * @var StateFile
      */
     private $stateFile;
+    /**
+     * @var InputTableStateList
+     */
+    private $inputTableStateList;
 
     /**
      * Output constructor.
@@ -43,7 +44,7 @@ class Output
         $this->images = $images;
         $this->output = $output;
         $this->configVersion = $configVersion;
-        $this->stateFile  = $stateFile;
+        $this->stateFile = $stateFile;
     }
 
     /**
@@ -76,6 +77,22 @@ class Output
     public function setTableQueue($tableQueue)
     {
         $this->tableQueue = $tableQueue;
+    }
+
+    /**
+     * @param InputTableStateList $inputTableStateList
+     */
+    public function setInputTableStateList(InputTableStateList $inputTableStateList)
+    {
+        $this->inputTableStateList = $inputTableStateList;
+    }
+
+    /**
+     * @return InputTableStateList
+     */
+    public function getInputTableStateList()
+    {
+        return $this->inputTableStateList;
     }
 
     public function getTableQueue()

@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
@@ -204,7 +205,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->getS3StagingComponent(),
             new OutputFilter()
         );
-        $dataLoader->loadInputData();
+        $dataLoader->loadInputData(new InputTableStateList([]));
 
         $manifest = json_decode(
             file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig.test.manifest'),

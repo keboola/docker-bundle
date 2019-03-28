@@ -25,6 +25,7 @@ use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
@@ -276,7 +277,15 @@ class Runner
             $configData
         );
 
-        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode);
+        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES])) {
+            $inputTableStateList = new InputTableStateList(
+                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES]
+            );
+        } else {
+            $inputTableStateList = new InputTableStateList([]);
+        }
+
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode, $inputTableStateList);
         return $output;
     }
 
@@ -339,7 +348,9 @@ class Runner
         $this->waitForStorageJobs($outputs);
         /** @var Output $output */
         foreach ($outputs as $output) {
-            $output->getStateFile()->persistState();
+            if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($jobDefinition->getComponentId(), $jobDefinition->getConfigId())) {
+                $output->getStateFile()->persistState($output->getInputTableStateList());
+            }
         }
         return $outputs;
     }
@@ -378,16 +389,18 @@ class Runner
      * @param OutputFilterInterface $outputFilter
      * @param string $configVersion
      * @param string $mode
+     * @param InputTableStateList $inputTableStateList
      * @return Output
      * @throws ClientException
      */
-    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode)
+    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode, InputTableStateList $inputTableStateList)
     {
         // initialize
         $workingDirectory->createWorkingDir();
-        $dataLoader->loadInputData();
+        $resultInputTablesState = $dataLoader->loadInputData($inputTableStateList);
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
+        $output->setInputTableStateList($resultInputTablesState);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
@@ -504,9 +517,7 @@ class Runner
                 $workingDirectory->moveOutputToInput();
             }
         }
-        if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($component->getId(), $configId)) {
-            $stateFile->stashState($newState);
-        }
+        $stateFile->stashState($newState);
         return new Output($imageDigests, $outputMessage, $configVersion, $stateFile);
     }
 }

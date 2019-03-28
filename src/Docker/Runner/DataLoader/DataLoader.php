@@ -7,8 +7,9 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader\Options\InputTablesOptions;
+use Keboola\InputMapping\Reader\Options\InputTableOptionsList;
 use Keboola\InputMapping\Reader\Reader;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\Writer;
 use Keboola\StorageApi\Client;
@@ -101,17 +102,23 @@ class DataLoader implements DataLoaderInterface
 
     /**
      * Download source files
+     * @param InputTableStateList $inputTableStateList
+     * @return InputTableStateList
+     * @throws \Keboola\StorageApi\Exception
      */
-    public function loadInputData()
+    public function loadInputData(InputTableStateList $inputTableStateList)
     {
         $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
 
+        $resultInputTablesStateList = new InputTableStateList([]);
+        
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
-                $reader->downloadTables(
-                    new InputTablesOptions($this->storageConfig['input']['tables']),
+                $resultInputTablesStateList = $reader->downloadTables(
+                    new InputTableOptionsList($this->storageConfig['input']['tables']),
+                    $inputTableStateList,
                     $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
                     $this->getStagingStorageInput()
                 );
@@ -130,6 +137,7 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
+        return $resultInputTablesStateList;
     }
 
     public function storeOutput()

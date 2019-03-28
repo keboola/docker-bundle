@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
 
@@ -13,8 +14,9 @@ class NullDataLoader implements DataLoaderInterface
     {
     }
 
-    public function loadInputData()
+    public function loadInputData(InputTableStateList $inputTableStateList)
     {
+        return new InputTableStateList([]);
     }
 
     public function storeOutput()
