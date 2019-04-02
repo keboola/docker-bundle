@@ -13,6 +13,7 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
@@ -64,6 +65,10 @@ class StateFile
      * @var OutputFilterInterface
      */
     private $outputFilter;
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
 
     /**
      * @var ObjectEncryptorFactory
@@ -84,6 +89,7 @@ class StateFile
         $componentId,
         $configurationId,
         OutputFilterInterface $outputFilter,
+        LoggerInterface $logger,
         $configurationRowId = null
     ) {
         $this->dataDirectory = $dataDirectory;
@@ -100,6 +106,7 @@ class StateFile
         $this->format = $format;
         $this->outputFilter = $outputFilter;
         $this->outputFilter->collectValues($state);
+        $this->logger = $logger;
     }
 
     public function createStateFile()
@@ -136,27 +143,22 @@ class StateFile
             } else {
                 $encryptedStateData = [];
             }
+            $state = [
+                self::NAMESPACE_COMPONENT => $encryptedStateData,
+                self::NAMESPACE_STORAGE => [
+                    self::NAMESPACE_INPUT => [
+                        self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
+                    ]
+                ]
+            ];
+            $this->logger->notice("Storing state: " . json_encode($state));
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
-                $configurationRow->setState([
-                    self::NAMESPACE_COMPONENT => $encryptedStateData,
-                    self::NAMESPACE_STORAGE => [
-                        self::NAMESPACE_INPUT => [
-                            self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
-                        ]
-                    ]
-                ]);
+                $configurationRow->setState($state);
                 $components->updateConfigurationRow($configurationRow);
             } else {
-                $configuration->setState([
-                    self::NAMESPACE_COMPONENT => $encryptedStateData,
-                    self::NAMESPACE_STORAGE => [
-                        self::NAMESPACE_INPUT => [
-                            self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
-                        ]
-                    ]
-                ]);
+                $configuration->setState($state);
                 $components->updateConfiguration($configuration);
             }
         } catch (ClientException $e) {

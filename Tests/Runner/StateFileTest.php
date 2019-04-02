@@ -12,6 +12,9 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends TestCase
@@ -77,7 +80,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
@@ -100,7 +104,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
@@ -123,7 +128,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
@@ -160,6 +166,7 @@ class StateFileTest extends TestCase
 
 
         $state = ['key' => 'fooBar'];
+        $testLogger = new TestLogger();
         /** @var Client $sapiStub */
         $stateFile = new StateFile(
             $this->dataDir,
@@ -169,10 +176,38 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            $testLogger
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]));
+        self::assertFalse($testLogger->hasRecords(LogLevel::NOTICE));
+    }
+
+
+    public function testPersistStateLogsSavingState()
+    {
+        $sapiStub = self::getMockBuilder(Client::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $sapiStub->expects(self::once())
+            ->method('apiPut');
+        $testLogger = new TestLogger();
+        /** @var Client $sapiStub */
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $sapiStub,
+            $this->encryptorFactory,
+            ['key' => 'fooBarBaz'],
+            'json',
+            'docker-demo',
+            'config-id',
+            new NullFilter(),
+            $testLogger
+        );
+        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->persistState(new InputTableStateList([]));
+        self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[]}}}', LogLevel::NOTICE));
     }
 
     public function testPersistStateConvertsLegacyToNamespace()
@@ -204,7 +239,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
         $stateFile->persistState(new InputTableStateList([]));
@@ -241,6 +277,7 @@ class StateFileTest extends TestCase
             'docker-demo',
             'config-id',
             new NullFilter(),
+            new NullLogger(),
             'row-id'
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
@@ -276,7 +313,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
         $stateFile->persistState(new InputTableStateList([]));
@@ -299,7 +337,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
     }
@@ -332,7 +371,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState(new InputTableStateList([]));
@@ -369,7 +409,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState([]);
         $stateFile->persistState(new InputTableStateList([]));
@@ -406,7 +447,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(new \stdClass());
         $stateFile->persistState(new InputTableStateList([]));
@@ -445,7 +487,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState(new InputTableStateList([]));
@@ -484,7 +527,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState(new InputTableStateList([]));
@@ -505,7 +549,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         self::assertEquals($data, $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -525,7 +570,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         self::assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -541,7 +587,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         self::assertEquals([], $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -577,6 +624,7 @@ class StateFileTest extends TestCase
             'docker-demo',
             'config-id',
             new NullFilter(),
+            new NullLogger(),
             'row-id'
         );
         $stateFile->stashState(['key' => 'fooBar']);
@@ -615,6 +663,7 @@ class StateFileTest extends TestCase
             'docker-demo',
             'config-id',
             new NullFilter(),
+            new NullLogger(),
             'row-id'
         );
         $stateFile->stashState(['key' => 'fooBar']);
@@ -661,7 +710,8 @@ class StateFileTest extends TestCase
             'json',
             'docker-demo',
             'config-id',
-            new NullFilter()
+            new NullFilter(),
+            new NullLogger()
         );
         $stateFile->stashState([]);
         $inputTablesState = new InputTableStateList([
@@ -712,6 +762,7 @@ class StateFileTest extends TestCase
             'docker-demo',
             'config-id',
             new NullFilter(),
+            new NullLogger(),
             'row-id'
         );
         $stateFile->stashState([]);
