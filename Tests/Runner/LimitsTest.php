@@ -11,10 +11,11 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Symfony\Component\Validator\Constraints\Null;
 
 class LimitsTest extends TestCase
 {
-    public function testInstanceLimitsInvalid()
+    public function testInstanceCpuLimitsInvalid()
     {
         $handler = new TestHandler();
         $logger = new Logger('test', [$handler]);
@@ -30,7 +31,7 @@ class LimitsTest extends TestCase
         $limits->getCpuLimit($this->getImageMock());
     }
 
-    public function testProjectLimitsInvalid()
+    public function testProjectCpuLimitsInvalid()
     {
         $handler = new TestHandler();
         $logger = new Logger('test', [$handler]);
@@ -46,7 +47,7 @@ class LimitsTest extends TestCase
         $limits->getCpuLimit($this->getImageMock());
     }
 
-    public function testLimitsInstance()
+    public function testCpuLimitsInstance()
     {
         $handler = new TestHandler();
         $logger = new Logger('test', [$handler]);
@@ -61,7 +62,7 @@ class LimitsTest extends TestCase
         self::assertContains('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
     }
 
-    public function testLimitsDefault()
+    public function testCpuLimitsDefault()
     {
         $limits = new Limits(
             new NullLogger(),
@@ -73,7 +74,7 @@ class LimitsTest extends TestCase
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
 
-    public function testLimitsProject()
+    public function testCpuLimitsProject()
     {
         $limits = new Limits(
             new NullLogger(),
@@ -85,7 +86,7 @@ class LimitsTest extends TestCase
         self::assertEquals(10, $limits->getCpuLimit($this->getImageMock()));
     }
 
-    public function testLimitsProjectInstance()
+    public function testCpuLimitsProjectInstance()
     {
         $limits = new Limits(
             new NullLogger(),
@@ -97,20 +98,116 @@ class LimitsTest extends TestCase
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
 
+    public function testProjectMemoryLimitsInvalid()
+    {
+        $handler = new TestHandler();
+        $logger = new Logger('test', [$handler]);
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2],
+            ['runner.keboola.r-transformation.memoryLimitMBs' =>
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000]
+            ],
+            [],
+            []
+        );
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage(
+            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: This value should be 64000 or less."
+        );
+        $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation'));
+    }
+
+    public function testProjectMemorySwapLimitsInvalid()
+    {
+        $handler = new TestHandler();
+        $logger = new Logger('test', [$handler]);
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2],
+            ['runner.keboola.r-transformation.memoryLimitMBs' =>
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000]
+            ],
+            [],
+            []
+        );
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage(
+            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: This value should be 64000 or less."
+        );
+        $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation'));
+    }
+
+    public function testProjectMemoryLimitsDefault()
+    {
+        $limits = new Limits(
+            new NullLogger(),
+            ['cpu_count' => 2],
+            [],
+            [],
+            []
+        );
+        self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
+        self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
+    }
+
+    public function testProjectMemoryLimitsOverride()
+    {
+        $handler = new TestHandler();
+        $logger = new Logger('test', [$handler]);
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2],
+            ['runner.keboola.r-transformation.memoryLimitMBs' =>
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000]
+            ],
+            [],
+            []
+        );
+        self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
+        self::assertContains("Memory limits - component: '256m' project: '60000M'", $handler->getRecords()[0]['message']);
+        self::assertEquals('60000M', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
+    }
+
+    public function testProjectMemoryLimitsNoEffect()
+    {
+        $handler = new TestHandler();
+        $logger = new Logger('test', [$handler]);
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2],
+            ['runner.keboola.r-transformation.memoryLimitMBs' =>
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000]
+            ],
+            [],
+            []
+        );
+        self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
+        self::assertContains("Memory limits - component: '256m' project: NULL", $handler->getRecords()[0]['message']);
+        self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.python-transformation')));
+    }
+
     /**
+     * @param string $id
      * @return Image
      */
-    private function getImageMock()
+    private function getImageMock($id = 'my-component')
     {
-        $componentMock = self::getMockBuilder(Component::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $component = new Component([
+            'id' => $id,
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+            ],
+        ]);
         $image = self::getMockBuilder(AWSElasticContainerRegistry::class)
             ->disableOriginalConstructor()
             ->setMethods(['getSourceComponent'])
             ->getMock();
         $image->method('getSourceComponent')
-            ->will(self::returnValue($componentMock));
+            ->will(self::returnValue($component));
         /** @var Image $image */
         return $image;
     }
