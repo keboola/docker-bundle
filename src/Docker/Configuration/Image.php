@@ -28,6 +28,7 @@ class Image extends Configuration
                 ->end()
             ->scalarNode('uri')->isRequired()->end()
             ->scalarNode('tag')->defaultValue('latest')->end()
+            ->scalarNode('digest')->defaultValue('')->end()
             ->arrayNode('repository')
                 ->children()
                     ->scalarNode('region')->end()

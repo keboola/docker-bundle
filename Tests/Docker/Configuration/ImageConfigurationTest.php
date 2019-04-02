@@ -29,7 +29,8 @@ class ImageConfigurationTest extends TestCase
             "definition" => [
                 "type" => "dockerhub",
                 "uri" => "keboola/docker-demo",
-                "tag" => "latest"
+                "tag" => "latest",
+                "digest" => "",
             ],
             "memory" => "64m",
             "configuration_format" => "json",
@@ -70,6 +71,7 @@ class ImageConfigurationTest extends TestCase
                 'type' => 'dockerhub',
                 'uri' => 'keboola/docker-demo',
                 'tag' => 'latest',
+                'digest' => '',
             ],
             'memory' => '256m',
             'configuration_format' => 'json',
@@ -195,6 +197,7 @@ class ImageConfigurationTest extends TestCase
                 "type" => "builder",
                 "uri" => "keboola/docker-base-r",
                 "tag" => "somebranch",
+                "digest" => "",
                 "build_options" => [
                     "parent_type" => "dockerhub",
                     "repository" => [
