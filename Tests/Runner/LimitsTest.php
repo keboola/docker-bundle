@@ -182,7 +182,7 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 2],
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
-                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000]
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
             []
