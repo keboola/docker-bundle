@@ -106,14 +106,15 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 2],
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
-                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000]
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
             []
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
-            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: This value should be 64000 or less."
+            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: " .
+            "This value should be 64000 or less."
         );
         $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation'));
     }
@@ -126,14 +127,15 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 2],
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
-                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000]
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
             []
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
-            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: This value should be 64000 or less."
+            "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: " .
+            "This value should be 64000 or less."
         );
         $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation'));
     }
@@ -159,13 +161,16 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 2],
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
-                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000]
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
             []
         );
         self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
-        self::assertContains("Memory limits - component: '256m' project: '60000M'", $handler->getRecords()[0]['message']);
+        self::assertContains(
+            "Memory limits - component: '256m' project: '60000M'",
+            $handler->getRecords()[0]['message']
+        );
         self::assertEquals('60000M', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
     }
 
