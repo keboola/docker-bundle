@@ -181,7 +181,7 @@ class StateFileTest extends TestCase
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]));
-        self::assertFalse($testLogger->hasRecords(LogLevel::NOTICE));
+        self::assertTrue($testLogger->hasRecords(LogLevel::NOTICE));
     }
 
 
