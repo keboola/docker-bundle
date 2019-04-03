@@ -72,25 +72,25 @@ class Limits
 
     public function getMemoryLimit(Image $image)
     {
-        $project = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
+        $projectLimit = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
         $this->logger->notice(
             sprintf(
                 "Memory limits - component: '%s' project: %s",
                 $image->getSourceComponent()->getMemory(),
-                var_export($project, true)
+                var_export($projectLimit, true)
             )
         );
-        if ($project) {
-            return $project;
+        if ($projectLimit) {
+            return $projectLimit;
         }
         return $image->getSourceComponent()->getMemory();
     }
 
     public function getMemorySwapLimit(Image $image)
     {
-        $project = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
-        if ($project) {
-            return $project;
+        $projectLimit = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
+        if ($projectLimit) {
+            return $projectLimit;
         }
         return $image->getSourceComponent()->getMemory();
     }
@@ -103,9 +103,9 @@ class Limits
     public function getCpuLimit(Image $image)
     {
         $instance = $this->getInstanceCpuLimit();
-        $project = $this->getProjectCpuLimit();
-        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $project);
-        return min($instance, $project);
+        $projectLimit = $this->getProjectCpuLimit();
+        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $projectLimit);
+        return min($instance, $projectLimit);
     }
 
     /**
