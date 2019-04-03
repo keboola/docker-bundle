@@ -210,7 +210,7 @@ class Runner
     {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
-            . ", row id: " . $jobDefinition->getRowId()
+            . ", row id: " . $jobDefinition->getRowId() . ", state: " . json_encode($jobDefinition->getState())
         );
         $component = $jobDefinition->getComponent();
         $this->loggersService->setComponentId($component->getId());
@@ -266,6 +266,7 @@ class Runner
             $component->getId(),
             $jobDefinition->getConfigId(),
             $outputFilter,
+            $this->loggersService->getLog(),
             $jobDefinition->getRowId()
         );
 
