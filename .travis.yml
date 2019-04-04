@@ -59,4 +59,4 @@ notifications:
 branches:
   only:
   - master
-  - stable
+  - production
