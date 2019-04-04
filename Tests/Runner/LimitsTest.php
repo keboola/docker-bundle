@@ -11,7 +11,6 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use Symfony\Component\Validator\Constraints\Null;
 
 class LimitsTest extends TestCase
 {
@@ -27,7 +26,9 @@ class LimitsTest extends TestCase
             []
         );
         self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('cpu_count is set incorrectly in parameters.yml: This value should be a valid number.');
+        self::expectExceptionMessage(
+            'cpu_count is set incorrectly in parameters.yml: This value should be a valid number.'
+        );
         $limits->getCpuLimit($this->getImageMock());
     }
 
@@ -43,7 +44,9 @@ class LimitsTest extends TestCase
             []
         );
         self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('runner.cpuParallelism limit is set incorrectly: This value should be 96 or less.');
+        self::expectExceptionMessage(
+            'runner.cpuParallelism limit is set incorrectly: This value should be 96 or less.'
+        );
         $limits->getCpuLimit($this->getImageMock());
     }
 
