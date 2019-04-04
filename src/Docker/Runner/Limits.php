@@ -15,6 +15,8 @@ class Limits
 
     const DEFAULT_CPU_LIMIT = 2;
 
+    const MAX_MEMORY_LIMIT = 64000;
+
     /**
      * @var array
      */
@@ -70,11 +72,26 @@ class Limits
 
     public function getMemoryLimit(Image $image)
     {
+        $projectLimit = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
+        $this->logger->notice(
+            sprintf(
+                "Memory limits - component: '%s' project: %s",
+                $image->getSourceComponent()->getMemory(),
+                var_export($projectLimit, true)
+            )
+        );
+        if ($projectLimit) {
+            return $projectLimit;
+        }
         return $image->getSourceComponent()->getMemory();
     }
 
     public function getMemorySwapLimit(Image $image)
     {
+        $projectLimit = $this->getProjectMemoryLimit($image->getSourceComponent()->getId());
+        if ($projectLimit) {
+            return $projectLimit;
+        }
         return $image->getSourceComponent()->getMemory();
     }
 
@@ -86,9 +103,9 @@ class Limits
     public function getCpuLimit(Image $image)
     {
         $instance = $this->getInstanceCpuLimit();
-        $project = $this->getProjectCpuLimit();
-        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $project);
-        return min($instance, $project);
+        $projectLimit = $this->getProjectCpuLimit();
+        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $projectLimit);
+        return min($instance, $projectLimit);
     }
 
     /**
@@ -98,6 +115,16 @@ class Limits
     {
         return [
             new Range(['min' => 1, 'max' => self::MAX_CPU_LIMIT])
+        ];
+    }
+
+    /**
+     * @return Range[]
+     */
+    private function getMemoryValidatorConstraints()
+    {
+        return [
+            new Range(['min' => 1, 'max' => self::MAX_MEMORY_LIMIT])
         ];
     }
 
@@ -133,5 +160,24 @@ class Limits
             );
         }
         return self::DEFAULT_CPU_LIMIT;
+    }
+
+    private function getProjectMemoryLimit($componentId)
+    {
+        $limitName = 'runner.' . $componentId . '.memoryLimitMBs';
+        if (isset($this->projectLimits[$limitName]['value'])) {
+            $errors = $this->validator->validate(
+                $this->projectLimits[$limitName]['value'],
+                $this->getMemoryValidatorConstraints()
+            );
+            if ($errors->count() === 0) {
+                // limit is just number of megabytes
+                return $this->projectLimits[$limitName]['value'] . 'M';
+            }
+            throw new ApplicationException(
+                sprintf("'%s' limit is set incorrectly: %s", $limitName, $errors[0]->getMessage())
+            );
+        }
+        return null;
     }
 }
