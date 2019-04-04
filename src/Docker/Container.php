@@ -483,7 +483,7 @@ class Container
                 ]
             ];
             throw new OutOfMemoryException(
-                "Component out of memory (exceeded {$this->getImage()->getSourceComponent()->getMemory()})",
+                "Component out of memory (exceeded {$this->limits->getMemoryLimit($this->getImage())})",
                 null,
                 $data
             );
