@@ -24,7 +24,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
     {
         $script = ['import sys', 'print("application error")', 'sys.exit(2)'];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
-        
+
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('application error');
         $container->run();
@@ -34,7 +34,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
     {
         $script = ['import sys', 'print("user error")', 'sys.exit(1)'];
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
-        
+
         self::expectException(UserException::class);
         self::expectExceptionMessage('user error');
         $container->run();
@@ -111,13 +111,30 @@ class ContainerErrorHandlingTest extends BaseContainerTest
 
     public function testOutOfMemory()
     {
-        $this->expectException(OutOfMemoryException::class);
-        $this->expectExceptionMessage('Component out of memory');
-
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['memory'] = '32m';
         $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
+        $this->expectException(OutOfMemoryException::class);
+        $this->expectExceptionMessage('Component out of memory (exceeded 32m)');
+        $container->run();
+    }
+
+    public function testOutOfMemoryOverride()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['data']['memory'] = '32m';
+        $imageConfiguration['id'] = 'dummy.component';
+        $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
+        $container = $this->getContainer(
+            $imageConfiguration,
+            [],
+            $script,
+            true,
+            ['runner.dummy.component.memoryLimitMBs' => ['value' => 10]]
+        );
+        $this->expectException(OutOfMemoryException::class);
+        $this->expectExceptionMessage('Component out of memory (exceeded 10M)');
         $container->run();
     }
 
