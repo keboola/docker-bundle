@@ -669,7 +669,7 @@ class RunnerTest extends BaseRunnerTest
                     'import json',
                     'with open("/data/in/state.json", "r") as state_file_read:',
                     '   data = json.load(state_file_read)',
-                    '   assert data["foo"] == "bar", json.dumps(data)'
+                    '   assert data == {}, json.dumps(data)'
                 ],
             ],
         ];

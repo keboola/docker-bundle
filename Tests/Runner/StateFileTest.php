@@ -111,7 +111,6 @@ class StateFileTest extends TestCase
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
         $obj = new \stdClass();
-        $obj->lastUpdate = 'today';
         self::assertEquals(
             $obj,
             \GuzzleHttp\json_decode(file_get_contents($fileName), false)

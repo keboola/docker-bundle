@@ -101,7 +101,7 @@ class StateFile
         if (isset($state[self::NAMESPACE_COMPONENT])) {
             $this->state = $state[self::NAMESPACE_COMPONENT];
         } else {
-            $this->state = $state;
+            $this->state = [];
         }
         $this->format = $format;
         $this->outputFilter = $outputFilter;
