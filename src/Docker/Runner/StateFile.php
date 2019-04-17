@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\ComponentState\Adapter;
+use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
@@ -14,6 +15,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
@@ -98,8 +100,13 @@ class StateFile
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
-        if (isset($state[self::NAMESPACE_COMPONENT])) {
-            $this->state = $state[self::NAMESPACE_COMPONENT];
+        try {
+            $parsedState = (new State())->parse(['state' => $state]);
+        } catch (InvalidConfigurationException $e) {
+            throw new UserException("Invalid state: " . $e->getMessage(), $e, $state);
+        }
+        if (isset($parsedState[self::NAMESPACE_COMPONENT])) {
+            $this->state = $parsedState[self::NAMESPACE_COMPONENT];
         } else {
             $this->state = [];
         }
