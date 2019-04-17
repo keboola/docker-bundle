@@ -653,55 +653,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorReadLegacyState()
-    {
-        $state = ['foo' => 'bar'];
-        $this->clearConfigurations();
-        $component = new Components($this->getClient());
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.docker-demo-sync');
-        $configuration->setName('Test configuration');
-        $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState($state);
-        $configData = [
-            'parameters' => [
-                'script' => [
-                    'import json',
-                    'with open("/data/in/state.json", "r") as state_file_read:',
-                    '   data = json.load(state_file_read)',
-                    '   assert data == {}, json.dumps(data)'
-                ],
-            ],
-        ];
-
-        $configuration->setConfiguration($configData);
-        $component->addConfiguration($configuration);
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $runner = $this->getRunner();
-        $output = $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                $configData,
-                $state
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-        $this->clearConfigurations();
-        $this->assertNotEmpty($output);
-    }
-
     public function testExecutorReadNamespacedState()
     {
         $state = [StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']];
