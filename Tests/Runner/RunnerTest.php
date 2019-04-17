@@ -389,54 +389,6 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testClearStateWithoutNamespace()
-    {
-        $this->clearConfigurations();
-        $state = ['key' => 'value'];
-        $cmp = new Components($this->getClient());
-        $cfg = new Configuration();
-        $cfg->setComponentId('keboola.docker-demo-sync');
-        $cfg->setConfigurationId('runner-configuration');
-        $cfg->setConfiguration([]);
-        $cfg->setName('Test configuration');
-        $cfg->setState($state);
-        $cmp->addConfiguration($cfg);
-
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $runner = $this->getRunner();
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                ['parameters' => ['script' => ['import os']]],
-                $state
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-        $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([
-            StateFile::NAMESPACE_COMPONENT => [],
-            StateFile::NAMESPACE_STORAGE => [
-                StateFile::NAMESPACE_INPUT => [
-                    StateFile::NAMESPACE_TABLES => []
-                ]
-            ]
-
-        ], $cfg['state']);
-        $this->clearConfigurations();
-    }
-
     public function testClearStateWithNamespace()
     {
         $this->clearConfigurations();
