@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-class State
+class ComponentState
 {
     /**
      * Mocked parsing method
