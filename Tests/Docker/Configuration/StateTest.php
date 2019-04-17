@@ -37,8 +37,10 @@ class StateTest extends TestCase
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
                     StateFile::NAMESPACE_TABLES => [
-                        "source" => "sourceTable",
-                        "lastImportDate" => "someDate"
+                        [
+                            "source" => "sourceTable",
+                            "lastImportDate" => "someDate"
+                        ]
                     ]
                 ]
             ]
@@ -48,8 +50,10 @@ class StateTest extends TestCase
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
                     StateFile::NAMESPACE_TABLES => [
-                        "source" => "sourceTable",
-                        "lastImportDate" => "someDate"
+                        [
+                            "source" => "sourceTable",
+                            "lastImportDate" => "someDate"
+                        ]
                     ]
                 ]
             ]
@@ -58,25 +62,46 @@ class StateTest extends TestCase
         self::assertEquals($expected, $processed);
     }
 
-    public function testInvalidStorageInputTablesState()
+    public function testStorageInputTablesStateExtraKey()
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
                     StateFile::NAMESPACE_TABLES => [
-                        "source" => "sourceTable",
-                        "lastImportDate" => "someDate",
-                        "invalidKey" => "invalidValue"
+                        [
+                            "source" => "sourceTable",
+                            "lastImportDate" => "someDate",
+                            "invalidKey" => "invalidValue"
+                        ]
                     ]
                 ]
             ]
         ];
 
         self::expectException(InvalidConfigurationException::class);
-        self::expectExceptionMessage('Unrecognized option "invalidKey" under "state.storage.input.tables"');
+        self::expectExceptionMessage('Unrecognized option "invalidKey" under "state.storage.input.tables.0"');
         (new Configuration\State())->parse(["state" => $state]);
     }
-    
+
+    public function testStorageInputTablesStateMissingKey()
+    {
+        $state = [
+            StateFile::NAMESPACE_STORAGE => [
+                StateFile::NAMESPACE_INPUT => [
+                    StateFile::NAMESPACE_TABLES => [
+                        [
+                            "source" => "sourceTable"
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('The child node "lastImportDate" at path "state.storage.input.tables.0" must be configured');
+        (new Configuration\State())->parse(["state" => $state]);
+    }
+
     public function testInvalidRootKey()
     {
         $state = [
