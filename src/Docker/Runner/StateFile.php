@@ -133,12 +133,6 @@ class StateFile
 
     public function persistState(InputTableStateList $inputTableStateList)
     {
-        $previousState = $this->state;
-        // Store state
-        if (!$previousState) {
-            $previousState = new \stdClass();
-        }
-
         $this->outputFilter->collectValues((array)$this->currentState);
         $components = new Components($this->storageClient);
         $configuration = new Configuration();
