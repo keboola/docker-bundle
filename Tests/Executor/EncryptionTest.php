@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\JobExecutorTest;
 
+use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper;
@@ -137,8 +138,11 @@ class EncryptionTest extends BaseExecutorTest
             ],
         ];
         $state = [
-            '#key5' => $this->getEncryptorFactory()->getEncryptor()->encrypt('fifth'),
-            'key6' => 'sixth',
+            StateFile::NAMESPACE_COMPONENT =>
+                [
+                    '#key5' => $this->getEncryptorFactory()->getEncryptor()->encrypt('fifth'),
+                    'key6' => 'sixth',
+                ]
         ];
         $data = [
             'params' => [
