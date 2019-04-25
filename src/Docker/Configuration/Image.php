@@ -3,6 +3,7 @@ namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\NodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -18,7 +19,9 @@ class Image extends Configuration
 
     public static function configureNode(NodeDefinition $node)
     {
-        $node->children()
+        /** @var ArrayNodeDefinition $node */
+        $node
+            ->children()
             ->scalarNode('type')
                 ->isRequired()
                 ->validate()
@@ -26,7 +29,7 @@ class Image extends Configuration
                         ->thenInvalid('Invalid image type %s.')
                     ->end()
                 ->end()
-            ->scalarNode('uri')->isRequired()->end()
+            ->scalarNode('uri')->isRequired()->cannotBeEmpty()->end()
             ->scalarNode('tag')->defaultValue('latest')->end()
             ->scalarNode('digest')->defaultValue('')->end()
             ->arrayNode('repository')
