@@ -86,7 +86,6 @@ class ImageCreator
     {
         foreach ($this->before as $processor) {
             $componentId = $processor['definition']['component'];
-            $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
             $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
@@ -99,7 +98,6 @@ class ImageCreator
 
         foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
-            $this->logger->debug("Running processor $componentId");
             $component = $this->getComponent($componentId);
             $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
