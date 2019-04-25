@@ -1728,7 +1728,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/non-existent',
+                    'uri' => '',
                 ],
                 'logging' => [
                     'no_application_errors' => true,
@@ -1747,7 +1747,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('Cannot pull image');
+        self::expectExceptionMessage('Component definition is invalid');
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
             'run',
