@@ -52,8 +52,8 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21'
         ));
-        $retryPolicy = new SimpleRetryPolicy($this->retry_max_attempts);
-        $backOffPolicy = new ExponentialBackOffPolicy($this->retry_min_interval, 2, $this->retry_max_interval);
+        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
         /** @var Result $authorization */
         $authorization = null;
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
@@ -98,8 +98,8 @@ class AWSElasticContainerRegistry extends Image
      */
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy($this->retry_max_attempts);
-        $backOffPolicy = new ExponentialBackOffPolicy($this->retry_min_interval, 2, $this->retry_max_interval);
+        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
 
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .

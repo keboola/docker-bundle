@@ -61,17 +61,17 @@ abstract class Image
     /**
      * @var int
      */
-    protected $retry_min_interval = 100;
+    protected $retryMinInterval = 100;
 
     /**
      * @var int
      */
-    protected $retry_max_interval = 60000;
+    protected $retryMaxInterval = 60000;
 
     /**
      * @var int
      */
-    protected $retry_max_attempts = 20;
+    protected $retryMaxAttempts = 20;
 
     abstract protected function pullImage();
 
@@ -90,6 +90,18 @@ abstract class Image
         if (!empty($component->getImageDefinition()['tag'])) {
             $this->tag = $component->getImageDefinition()['tag'];
         }
+    }
+
+    /**
+     * @param int $minInterval
+     * @param int $maxInterval
+     * @param int $maxAttempts
+     */
+    public function setRetryLimits($minInterval, $maxInterval, $maxAttempts)
+    {
+        $this->retryMinInterval = $minInterval;
+        $this->retryMaxInterval = $maxInterval;
+        $this->retryMaxAttempts = $maxAttempts;
     }
 
     /**

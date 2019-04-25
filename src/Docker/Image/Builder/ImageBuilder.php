@@ -378,6 +378,7 @@ class ImageBuilder extends Image
         try {
             $component = $this->getSourceComponent()->changeType($this->parentType);
             $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
+            $image->setRetryLimits($this->retryMinInterval, $this->retryMaxInterval, $this->retryMaxAttempts);
             $image->prepare($this->configData);
             $this->parentImage = $image->getFullImageId();
         } catch (\Exception $e) {

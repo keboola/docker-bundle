@@ -32,9 +32,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
-        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
-        $reflection->setAccessible(true);
-        $reflection->setValue($image, 1);
+        $image->setRetryLimits(100, 100, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('Error retrieving credentials from the instance profile metadata server');
         $image->prepare([]);
@@ -57,9 +55,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         ]);
         $logger = new TestLogger();
         $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
-        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
-        $reflection->setAccessible(true);
-        $reflection->setValue($image, 1);
+        $image->setRetryLimits(100, 100, 1);
         try {
             $image->prepare([]);
             self::fail('Must raise an exception');

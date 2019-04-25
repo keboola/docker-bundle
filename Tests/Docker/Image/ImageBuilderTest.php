@@ -232,6 +232,7 @@ class ImageBuilderTest extends BaseImageTest
         ]);
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image->setRetryLimits(100, 100, 1);
         try {
             $image->prepare([]);
             $this->fail('Building from private image without login should fail');
