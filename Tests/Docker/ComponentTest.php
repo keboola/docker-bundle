@@ -83,11 +83,44 @@ class ComponentTest extends TestCase
         self::assertEquals(false, $component->hasDefaultBucket());
     }
 
-    public function testInvalidDefinition()
+    public function testInvalidComponentNoDefinition()
     {
         self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('definition is empty');
+        self::expectExceptionMessage(
+            'Component definition is invalid. Verify the deployment setup and the repository settings in ' .
+            'the Developer Portal. Detail: The child node "definition" at path "component" must be configured.'
+        );
         new Component([]);
+    }
+
+    public function testInvalidComponentEmptyDefinition()
+    {
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage(
+            'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
+            'Developer Portal. Detail: The child node "definition" at path "component" must be configured'
+        );
+        new Component([
+            'data' => [
+            ],
+        ]);
+    }
+
+    public function testInvalidComponentEmptyUri()
+    {
+        self::expectException(ApplicationException::class);
+        self::expectExceptionMessage(
+            'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
+            'Developer Portal. Detail: The path "component.definition.uri" cannot contain an empty value, but got "".'
+        );
+        new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '',
+                ],
+            ],
+        ]);
     }
 
     public function testGetSanitizedBucketNameDot()
@@ -194,7 +227,6 @@ class ComponentTest extends TestCase
             self::assertContains('Invalid repository_type', $e->getMessage());
         }
     }
-
 
     public function testHasSwap()
     {

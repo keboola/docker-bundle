@@ -44,7 +44,12 @@ class Component
         try {
             $this->data = (new Configuration\Component())->parse(['config' => $data]);
         } catch (InvalidConfigurationException $e) {
-            throw new ApplicationException("Image definition is empty or invalid: " . $e->getMessage(), $e, $data);
+            throw new ApplicationException(
+                'Component definition is invalid. Verify the deployment setup and the repository settings ' .
+                'in the Developer Portal. Detail: ' . $e->getMessage(),
+                $e,
+                $data
+            );
         }
         $this->networkType = $this->data['network'];
     }
