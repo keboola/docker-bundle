@@ -52,28 +52,35 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21'
         ));
-        $retryPolicy = new SimpleRetryPolicy(20, [RetryableLoginException::class]);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $retryPolicy = new SimpleRetryPolicy($this->retry_max_attempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retry_min_interval, 2, $this->retry_max_interval);
         /** @var Result $authorization */
         $authorization = null;
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-        $proxy->call(function () use ($ecrClient, &$authorization) {
-            try {
-                $authorization = $ecrClient->getAuthorizationToken(["registryIds" => [$this->getAwsAccountId()]]);
-            } catch (CredentialsException $e) {
-                throw new LoginFailedException($e->getMessage(), $e);
-            } catch (EcrException $e) {
-                $this->logger->notice('AWS Credentials error occurred. ' . $e->getMessage());
-                throw new RetryableLoginException($e->getMessage(), $e);
-            }
-        });
+        try {
+            $proxy->call(function () use ($ecrClient, &$authorization) {
+                try {
+                    $authorization = $ecrClient->getAuthorizationToken(['registryIds' => [$this->getAwsAccountId()]]);
+                    // \Exception because "Before PHP 7, Exception did not implement the Throwable interface."
+                    // https://www.php.net/manual/en/class.exception.php
+                } catch (\Exception $e) {
+                    $this->logger->notice('Retrying AWS GetCredentials. error: ' . $e->getMessage());
+                    throw $e;
+                }
+            });
+        } catch (CredentialsException $e) {
+            throw new LoginFailedException($e->getMessage(), $e);
+        } catch (EcrException $e) {
+            throw new LoginFailedException($e->getMessage(), $e);
+        }
         // decode token and extract user
-        list($user, $token) = explode(":", base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
+        list($user, $token) =
+            explode(':', base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
 
-        $loginParams[] = "--username=" . escapeshellarg($user);
-        $loginParams[] = "--password=" . escapeshellarg($token);
+        $loginParams[] = '--username=' . escapeshellarg($user);
+        $loginParams[] = '--password=' . escapeshellarg($token);
         $loginParams[] = escapeshellarg($authorization->get('authorizationData')[0]['proxyEndpoint']);
-        return join(" ", $loginParams);
+        return join(' ', $loginParams);
     }
 
     /**
@@ -91,8 +98,8 @@ class AWSElasticContainerRegistry extends Image
      */
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $retryPolicy = new SimpleRetryPolicy($this->retry_max_attempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retry_min_interval, 2, $this->retry_max_interval);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
 
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .

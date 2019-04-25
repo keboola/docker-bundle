@@ -58,6 +58,21 @@ abstract class Image
      */
     private $imageDigests;
 
+    /**
+     * @var int
+     */
+    protected $retry_min_interval = 100;
+
+    /**
+     * @var int
+     */
+    protected $retry_max_interval = 60000;
+
+    /**
+     * @var int
+     */
+    protected $retry_max_attempts = 20;
+
     abstract protected function pullImage();
 
     /**

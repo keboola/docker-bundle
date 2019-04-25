@@ -11,6 +11,7 @@ use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistryTest extends BaseImageTest
@@ -31,6 +32,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('Error retrieving credentials from the instance profile metadata server');
         $image->prepare([]);
@@ -51,10 +55,18 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
-        self::expectException(LoginFailedException::class);
-        self::expectExceptionMessage('Error executing "GetAuthorizationToken"');
-        $image->prepare([]);
+        $logger = new TestLogger();
+        $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
+        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
+        $reflection->setAccessible(true);
+        $reflection->setValue($image, 1);
+        try {
+            $image->prepare([]);
+            self::fail('Must raise an exception');
+        } catch (LoginFailedException $e) {
+            self::assertContains('Error executing "GetAuthorizationToken"', $e->getMessage());
+            self::assertTrue($logger->hasNoticeThatContains('Retrying AWS GetCredentials'));
+        }
     }
 
     public function testDownloadedImage()

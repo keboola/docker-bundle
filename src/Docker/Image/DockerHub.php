@@ -13,8 +13,8 @@ class DockerHub extends Image
 {
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
+        $retryPolicy = new SimpleRetryPolicy($this->retry_max_attempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retry_min_interval, 2, $this->retry_max_interval);
         $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
         $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
         $process->setTimeout(3600);
