@@ -61,7 +61,7 @@ abstract class Image
     /**
      * @var int
      */
-    protected $retryMinInterval = 100;
+    protected $retryMinInterval = 500;
 
     /**
      * @var int
