@@ -4,9 +4,6 @@ namespace Keboola\DockerBundle\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class QuayIO extends Image
@@ -21,9 +18,7 @@ class QuayIO extends Image
 
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
-        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy = $this->getRetryProxy();
         $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
         $process->setTimeout(3600);
 

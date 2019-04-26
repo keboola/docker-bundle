@@ -219,4 +219,14 @@ abstract class Image
         }
         return $this->imageDigests;
     }
+
+    /**
+     * @return RetryProxy
+     */
+    protected function getRetryProxy()
+    {
+        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
+        return new RetryProxy($retryPolicy, $backOffPolicy);
+    }
 }

@@ -10,12 +10,8 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
-use Keboola\DockerBundle\Exception\RetryableLoginException;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Psr\Log\LoggerInterface;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistry extends Image
@@ -52,11 +48,9 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21'
         ));
-        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
-        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
         /** @var Result $authorization */
         $authorization = null;
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy = $this->getRetryProxy();
         try {
             $proxy->call(function () use ($ecrClient, &$authorization) {
                 try {
@@ -98,9 +92,7 @@ class AWSElasticContainerRegistry extends Image
      */
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
-        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy = $this->getRetryProxy();
 
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
             "docker:1.11 sh -c " .
