@@ -23,9 +23,7 @@ class QuayIOPrivateRepositoryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
-        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
-        $reflection->setAccessible(true);
-        $reflection->setValue($image, 1);
+        $image->setRetryLimits(100, 100, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('Username: EOF');
         $image->prepare([]);
@@ -47,9 +45,7 @@ class QuayIOPrivateRepositoryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
-        $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
-        $reflection->setAccessible(true);
-        $reflection->setValue($image, 1);
+        $image->setRetryLimits(100, 100, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('incorrect username or password');
         $image->prepare([]);

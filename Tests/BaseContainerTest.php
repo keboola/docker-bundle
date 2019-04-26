@@ -179,9 +179,7 @@ abstract class BaseContainerTest extends TestCase
             true
         );
         if ($prepare) {
-            $reflection = new \ReflectionProperty($image, 'retry_max_attempts');
-            $reflection->setAccessible(true);
-            $reflection->setValue($image, 1);
+            $image->setRetryLimits(100, 100, 1);
             $image->prepare($this->componentConfig);
         }
         $this->logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());
