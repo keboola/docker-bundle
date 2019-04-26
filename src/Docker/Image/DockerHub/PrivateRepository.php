@@ -8,9 +8,6 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Psr\Log\LoggerInterface;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class PrivateRepository extends Image\DockerHub
@@ -96,9 +93,7 @@ class PrivateRepository extends Image\DockerHub
      */
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy = $this->getRetryProxy();
         $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
             "docker:1.11 sh -c " .
             escapeshellarg(

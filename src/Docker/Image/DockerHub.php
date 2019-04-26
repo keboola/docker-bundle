@@ -4,18 +4,13 @@ namespace Keboola\DockerBundle\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\Syrup\Exception\ApplicationException;
-use Retry\BackOff\ExponentialBackOffPolicy;
-use Retry\Policy\SimpleRetryPolicy;
-use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
 
 class DockerHub extends Image
 {
     protected function pullImage()
     {
-        $retryPolicy = new SimpleRetryPolicy(3);
-        $backOffPolicy = new ExponentialBackOffPolicy(10000);
-        $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+        $proxy = $this->getRetryProxy();
         $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
         $process->setTimeout(3600);
         try {

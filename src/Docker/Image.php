@@ -58,6 +58,21 @@ abstract class Image
      */
     private $imageDigests;
 
+    /**
+     * @var int
+     */
+    protected $retryMinInterval = 500;
+
+    /**
+     * @var int
+     */
+    protected $retryMaxInterval = 60000;
+
+    /**
+     * @var int
+     */
+    protected $retryMaxAttempts = 20;
+
     abstract protected function pullImage();
 
     /**
@@ -75,6 +90,18 @@ abstract class Image
         if (!empty($component->getImageDefinition()['tag'])) {
             $this->tag = $component->getImageDefinition()['tag'];
         }
+    }
+
+    /**
+     * @param int $minInterval
+     * @param int $maxInterval
+     * @param int $maxAttempts
+     */
+    public function setRetryLimits($minInterval, $maxInterval, $maxAttempts)
+    {
+        $this->retryMinInterval = $minInterval;
+        $this->retryMaxInterval = $maxInterval;
+        $this->retryMaxAttempts = $maxAttempts;
     }
 
     /**
@@ -191,5 +218,15 @@ abstract class Image
             }
         }
         return $this->imageDigests;
+    }
+
+    /**
+     * @return RetryProxy
+     */
+    protected function getRetryProxy()
+    {
+        $retryPolicy = new SimpleRetryPolicy($this->retryMaxAttempts);
+        $backOffPolicy = new ExponentialBackOffPolicy($this->retryMinInterval, 2, $this->retryMaxInterval);
+        return new RetryProxy($retryPolicy, $backOffPolicy);
     }
 }

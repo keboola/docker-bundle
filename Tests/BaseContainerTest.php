@@ -179,6 +179,7 @@ abstract class BaseContainerTest extends TestCase
             true
         );
         if ($prepare) {
+            $image->setRetryLimits(100, 100, 1);
             $image->prepare($this->componentConfig);
         }
         $this->logService->setVerbosity($image->getSourceComponent()->getLoggerVerbosity());

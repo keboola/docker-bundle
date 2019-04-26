@@ -23,6 +23,7 @@ class DockerHubPrivateRepositoryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image->setRetryLimits(100, 100, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('Login with your Docker ID to push');
         $image->prepare([]);
@@ -44,6 +45,7 @@ class DockerHubPrivateRepositoryTest extends BaseImageTest
             ],
         ]);
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image->setRetryLimits(100, 100, 1);
         self::expectException(LoginFailedException::class);
         self::expectExceptionMessage('incorrect username or password');
         $image->prepare([]);
