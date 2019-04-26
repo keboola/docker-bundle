@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
+use Keboola\DockerBundle\Tests\Docker\ImageTest;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -16,6 +17,7 @@ use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistryTest extends BaseImageTest
 {
+
     public function testMissingCredentials()
     {
         putenv('AWS_ACCESS_KEY_ID=');
@@ -133,10 +135,11 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':test-hash', $image->getFullImageId());
         self::assertTrue($testHandler->hasNotice(
             'Using image ' . AWS_ECR_REGISTRY_URI .
-            ':test-hash with repo-digest 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a'
+            ':test-hash with repo-digest 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:' .
+            ImageTest::TEST_HASH_DIGEST
         ));
         self::assertEquals(
-            ['061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a'],
+            ['061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getImageDigests()
         );
 
