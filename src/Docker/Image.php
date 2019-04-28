@@ -212,7 +212,9 @@ abstract class Image
             }
         });
         if (!in_array($this->digest, $digests)) {
-            $this->logger->notice(sprintf('Image "%s" is not current, pulling new copy.', $this->getFullImageId()));
+            $this->logger->notice(
+                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId())
+            );
             $this->pullImage();
         }
     }

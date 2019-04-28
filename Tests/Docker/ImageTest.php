@@ -121,8 +121,8 @@ class ImageTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
-            'Image "061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" ' .
-            'is not current, pulling new copy.'
+            'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
+            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
         ));
     }
 
@@ -145,8 +145,8 @@ class ImageTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertFalse($logger->hasNoticeThatContains(
-            'Image "061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" ' .
-            'is not current, pulling new copy.'
+            'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
+            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
         ));
     }
 
@@ -179,8 +179,8 @@ class ImageTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
-            'Image "061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" ' .
-            'is not current, pulling new copy.'
+            'Digest "' . $matches[1] . '" for image ' .
+            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
         ));
     }
 }
