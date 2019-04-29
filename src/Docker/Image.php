@@ -198,7 +198,7 @@ abstract class Image
          * `docker image inspect someImage:someTag -f '{{.RepoDigests}}'`
          * which returns a list of digests associated to a given tag. Which is what image->getDigests() does.
          */
-//        $this->configData = $configData;
+         $this->configData = $configData;
 //        $digests = $this->getImageDigests();
 //        array_walk($digests, function (&$value) {
 //            // the value looks like:
