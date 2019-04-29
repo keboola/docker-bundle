@@ -37,4 +37,7 @@
         </whitelist>
     </filter>
 
+    <listeners>
+        <listener class="SimpleTestListener" file="Tests/SimpleTestListener.php" />
+    </listeners>
 </phpunit>
