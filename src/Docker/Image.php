@@ -29,6 +29,11 @@ abstract class Image
     protected $tag = "latest";
 
     /**
+     * @var string
+     */
+    protected $digest;
+
+    /**
      * @var ObjectEncryptor
      */
     protected $encryptor;
@@ -86,10 +91,11 @@ abstract class Image
         $this->encryptor = $encryptor;
         $this->component = $component;
         $this->logger = $logger;
-        $this->imageId = $component->getImageDefinition()["uri"];
+        $this->imageId = $component->getImageDefinition()['uri'];
         if (!empty($component->getImageDefinition()['tag'])) {
             $this->tag = $component->getImageDefinition()['tag'];
         }
+        $this->digest = $component->getImageDefinition()['digest'];
     }
 
     /**
@@ -170,8 +176,47 @@ abstract class Image
      */
     public function prepare(array $configData)
     {
+        /**
+         * Because we still run images by tag, we need to check that the tag matches the digest.
+         * One way to do this can be to docker list images with tag and check their digest. Unfortunately this
+         * does not work because of bug https://github.com/docker/cli/issues/728
+         *
+         * I.e. running
+         * `docker images --digests someImage@sha256:someDigest`
+         * returns the image digest and no tags, and running
+         * `docker images --digests someImage:someTag`
+         * return the image tag and no digests. This is also probably in a way intentional as suggested here
+         * https://success.docker.com/article/images-tagging-vs-digests
+         *
+         * Therefor, one would be to do
+         * `docker images someImage:someTag --no-trunc --format "{{.ID}}"`
+         * and
+         * `docker images someImage@sha:someDigest --no-trunc --format "{{.ID}}"`
+         * and verify that the IDs match.
+         *
+         * This requires 2 docker lists which take time, to do it with one command, we can use:
+         * `docker image inspect someImage:someTag -f '{{.RepoDigests}}'`
+         * which returns a list of digests associated to a given tag. Which is what image->getDigests() does.
+         */
         $this->configData = $configData;
-        $this->pullImage();
+        $digests = $this->getImageDigests();
+        array_walk($digests, function (&$value) {
+            // the value looks like:
+            // 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:abcdefghxxxxxxxxxxxxxxxxxxxx
+            if (preg_match('#@sha256:(.*)$#', $value, $matches)) {
+                $value = $matches[1];
+            } else {
+                // whatever it is, ignore it silently and download new image copy
+                // (this is the case when image does not exist at all)
+                $value = '';
+            }
+        });
+        if (!in_array($this->digest, $digests)) {
+            $this->logger->notice(
+                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId())
+            );
+            $this->pullImage();
+        }
     }
 
     public function getSourceComponent()
@@ -213,8 +258,8 @@ abstract class Image
                 }
                 $this->imageDigests = $inspect[0]['RepoDigests'];
             } catch (\Exception $e) {
-                $this->logger->error("Failed to get hash for image " . $this->getFullImageId());
-                $this->imageDigests = ['err'];
+                $this->logger->notice("Failed to get hash for image " . $this->getFullImageId());
+                $this->imageDigests = [];
             }
         }
         return $this->imageDigests;
