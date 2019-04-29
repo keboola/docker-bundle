@@ -198,25 +198,25 @@ abstract class Image
          * `docker image inspect someImage:someTag -f '{{.RepoDigests}}'`
          * which returns a list of digests associated to a given tag. Which is what image->getDigests() does.
          */
-        $this->configData = $configData;
-        $digests = $this->getImageDigests();
-        array_walk($digests, function (&$value) {
-            // the value looks like:
-            // 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:abcdefghxxxxxxxxxxxxxxxxxxxx
-            if (preg_match('#@sha256:(.*)$#', $value, $matches)) {
-                $value = $matches[1];
-            } else {
-                // whatever it is, ignore it silently and download new image copy
-                // (this is the case when image does not exist at all)
-                $value = '';
-            }
-        });
-        if (!in_array($this->digest, $digests)) {
-            $this->logger->notice(
-                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId())
-            );
+//        $this->configData = $configData;
+//        $digests = $this->getImageDigests();
+//        array_walk($digests, function (&$value) {
+//            // the value looks like:
+//            // 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:abcdefghxxxxxxxxxxxxxxxxxxxx
+//            if (preg_match('#@sha256:(.*)$#', $value, $matches)) {
+//                $value = $matches[1];
+//            } else {
+//                // whatever it is, ignore it silently and download new image copy
+//                // (this is the case when image does not exist at all)
+//                $value = '';
+//            }
+//        });
+//        if (!in_array($this->digest, $digests)) {
+//            $this->logger->notice(
+//                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId())
+//            );
             $this->pullImage();
-        }
+//        }
     }
 
     public function getSourceComponent()
