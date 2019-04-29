@@ -1,5 +1,7 @@
 <?php
 
+namespace Keboola\DockerBundle\Tests;
+
 class SimpleTestListener extends PHPUnit_Framework_BaseTestListener
 {
     public function endTest(PHPUnit_Framework_Test $test, $time)
