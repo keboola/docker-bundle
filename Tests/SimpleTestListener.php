@@ -2,6 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use PHPUnit_Framework_BaseTestListener;
+use PHPUnit_Framework_Test;
+
 class SimpleTestListener extends PHPUnit_Framework_BaseTestListener
 {
     public function endTest(PHPUnit_Framework_Test $test, $time)
