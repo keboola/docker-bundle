@@ -246,12 +246,7 @@ abstract class Image
             $process = new Process($command);
             $process->setTimeout(3600);
             try {
-                $retryPolicy = new SimpleRetryPolicy(3);
-                $backOffPolicy = new ExponentialBackOffPolicy(10000);
-                $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
-                $proxy->call(function () use ($process) {
-                    $process->mustRun();
-                });
+                $process->mustRun();
                 $inspect = json_decode($process->getOutput(), true);
                 if ((json_last_error() != JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
                     throw new \InvalidArgumentException("Inspect error " . json_last_error_msg());
