@@ -241,6 +241,7 @@ abstract class Image
      */
     public function getImageDigests()
     {
+        $start = microtime();
         if (empty($this->imageDigests)) {
             $command = "sudo docker inspect " . escapeshellarg($this->getFullImageId());
             $process = new Process($command);
@@ -250,7 +251,10 @@ abstract class Image
                 $backOffPolicy = new ExponentialBackOffPolicy(10000);
                 $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
                 $proxy->call(function () use ($process) {
+                    $start = microtime();
                     $process->mustRun();
+                    $end = microtime();
+                    var_dump(sprintf('inner: %s', $end - $start));
                 });
                 $inspect = json_decode($process->getOutput(), true);
                 if ((json_last_error() != JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
@@ -262,6 +266,8 @@ abstract class Image
                 $this->imageDigests = [];
             }
         }
+        $end = microtime();
+        var_dump(sprintf('outer: %s', $end - $start));
         return $this->imageDigests;
     }
 
