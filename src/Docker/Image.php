@@ -241,7 +241,8 @@ abstract class Image
      */
     public function getImageDigests()
     {
-        $start = microtime();
+        $start = microtime(true);
+        var_dump('outer start: ' . microtime(true) . ' ' . $this->getFullImageId());
         if (empty($this->imageDigests)) {
             $command = "sudo docker inspect " . escapeshellarg($this->getFullImageId());
             $process = new Process($command);
@@ -250,23 +251,33 @@ abstract class Image
                 $retryPolicy = new SimpleRetryPolicy(3);
                 $backOffPolicy = new ExponentialBackOffPolicy(10000);
                 $proxy = new RetryProxy($retryPolicy, $backOffPolicy);
+                var_dump('proxy start: ' . microtime(true));
                 $proxy->call(function () use ($process) {
-                    $start = microtime();
-                    $process->mustRun();
-                    $end = microtime();
-                    var_dump(sprintf('inner: %s', $end - $start));
+                    try {
+                        $start = microtime(true);
+                        var_dump('inner start: ' . microtime(true));
+                        $process->mustRun();
+                        var_dump('inner end: ' . microtime(true));
+                        $end = microtime(true);
+                        var_dump(sprintf('inner: %s', $end - $start));
+                    } catch (\Exception $e) {
+                        var_dump('exception ' . $e->getMessage());
+                        throw $e;
+                    }
                 });
                 $inspect = json_decode($process->getOutput(), true);
                 if ((json_last_error() != JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
                     throw new \InvalidArgumentException("Inspect error " . json_last_error_msg());
                 }
+                var_dump('proxy end: ' . microtime(true));
                 $this->imageDigests = $inspect[0]['RepoDigests'];
             } catch (\Exception $e) {
                 $this->logger->notice("Failed to get hash for image " . $this->getFullImageId());
                 $this->imageDigests = [];
             }
         }
-        $end = microtime();
+        var_dump('outer end: ' . microtime(true) . ' ' . $this->getFullImageId());
+        $end = microtime(true);
         var_dump(sprintf('outer: %s', $end - $start));
         return $this->imageDigests;
     }

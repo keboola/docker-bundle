@@ -22,7 +22,10 @@
         <exclude>Tests/Executor</exclude>
     </testsuite>
     <testsuite name="runner-tests">
+        <!--
         <directory>Tests/Runner</directory>
+        -->
+        <file>Tests/Runner/RunnerTest.php</file>
     </testsuite>
     <testsuite name="executor-tests">
         <directory>Tests/Executor</directory>

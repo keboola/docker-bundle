@@ -13,7 +13,7 @@ class SimpleTestListener extends PHPUnit_Framework_BaseTestListener
             "Test '%s' ended in %s m %s s.\n",
             $test->getName(),
             round(floor($time / 60)),
-            round($time - floor($time / 60))
+            $time
         );
     }
 }
