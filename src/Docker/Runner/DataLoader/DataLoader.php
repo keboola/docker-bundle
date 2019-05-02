@@ -11,7 +11,8 @@ use Keboola\InputMapping\Reader\Options\InputTableOptionsList;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\OutputMapping\Writer\Writer;
+use Keboola\OutputMapping\Writer\FileWriter;
+use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -144,8 +145,6 @@ class DataLoader implements DataLoaderInterface
     {
         $this->logger->debug("Storing results.");
 
-        $writer = new Writer($this->storageClient, $this->logger);
-        $writer->setFormat($this->component->getConfigurationFormat());
         $outputTablesConfig = [];
         $outputFilesConfig = [];
 
@@ -179,12 +178,16 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $tableQueue = $writer->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
-            $writer->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
+            $fileWriter = new FileWriter($this->storageClient, $this->logger);
+            $fileWriter->setFormat($this->component->getConfigurationFormat());
+            $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
+            $tableWriter = new TableWriter($this->storageClient, $this->logger);
+            $tableWriter->setFormat($this->component->getConfigurationFormat());
+            $tableQueue = $tableWriter->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
 
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
-                $writer->tagFiles($this->storageConfig["input"]["files"]);
+                $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
             }
             return $tableQueue;
         } catch (InvalidOutputException $ex) {
