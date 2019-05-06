@@ -20,12 +20,15 @@ stages:
         variables:
           phpVersion: 5.6
         steps:
-          - env:
+          - template: azure-pipelines-composer-steps.yml
+          - script: php -version
+          - script: ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
+            env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
               AWS_ECR_REGISTRY_REGION: $(AWS_ECR_REGISTRY_REGION)
               AWS_ECR_REGISTRY_URI: $(AWS_ECR_REGISTRY_URI)
-              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               AWS_KMS_TEST_KEY: $(AWS_KMS_TEST_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
               DOCKERHUB_PRIVATE_SERVER: $(DOCKERHUB_PRIVATE_SERVER)
@@ -35,15 +38,14 @@ stages:
               QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
               QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
               STORAGE_API_TOKEN: $(STORAGE_API_TOKEN)
-              STORAGE_API_URL: $(STORAGE_API_URL)          
-          - template: azure-pipelines-composer-steps.yml
-          - script: php -version
-          - script: ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
+              STORAGE_API_URL: $(STORAGE_API_URL)
           - script: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           - script: chmod +x ./cc-test-reporter        
           - script: ./cc-test-reporter format-coverage --output "coverage/codeclimate.1.json"
-          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
-            displayName: 'Tests 1'
+          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$(Build.BuildNumber)"
+            env:
+              AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
 
       - job: Tests2
         variables:
@@ -51,11 +53,29 @@ stages:
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite runner-tests --coverage-clover build/logs/clover.xml --debug
+            env:
+              AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
+              AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
+              AWS_ECR_REGISTRY_REGION: $(AWS_ECR_REGISTRY_REGION)
+              AWS_ECR_REGISTRY_URI: $(AWS_ECR_REGISTRY_URI)
+              AWS_KMS_TEST_KEY: $(AWS_KMS_TEST_KEY)
+              DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
+              DOCKERHUB_PRIVATE_SERVER: $(DOCKERHUB_PRIVATE_SERVER)
+              DOCKERHUB_PRIVATE_USERNAME: $(DOCKERHUB_PRIVATE_USERNAME)
+              GIT_PRIVATE_PASSWORD: $(GIT_PRIVATE_PASSWORD)
+              GIT_PRIVATE_USERNAME: $(GIT_PRIVATE_USERNAME)
+              QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN)
+              STORAGE_API_URL: $(STORAGE_API_URL)
           - script: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           - script: chmod +x ./cc-test-reporter        
           - script: ./cc-test-reporter format-coverage --output "coverage/codeclimate.2.json"
-          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
-            displayName: 'Tests 2'
+          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$(Build.BuildNumber)"
+            env:
+              AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
 
       - job: Test3
         variables:
@@ -63,11 +83,29 @@ stages:
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
+            env:
+              AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
+              AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
+              AWS_ECR_REGISTRY_REGION: $(AWS_ECR_REGISTRY_REGION)
+              AWS_ECR_REGISTRY_URI: $(AWS_ECR_REGISTRY_URI)
+              AWS_KMS_TEST_KEY: $(AWS_KMS_TEST_KEY)
+              DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
+              DOCKERHUB_PRIVATE_SERVER: $(DOCKERHUB_PRIVATE_SERVER)
+              DOCKERHUB_PRIVATE_USERNAME: $(DOCKERHUB_PRIVATE_USERNAME)
+              GIT_PRIVATE_PASSWORD: $(GIT_PRIVATE_PASSWORD)
+              GIT_PRIVATE_USERNAME: $(GIT_PRIVATE_USERNAME)
+              QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN)
+              STORAGE_API_URL: $(STORAGE_API_URL)
           - script: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
           - script: chmod +x ./cc-test-reporter        
           - script: ./cc-test-reporter format-coverage --output "coverage/codeclimate.3.json"
-          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
-            displayName: 'Tests 3'
+          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$(Build.BuildNumber)"
+            env:
+              AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
 
   - stage: AfterTests
     jobs:
