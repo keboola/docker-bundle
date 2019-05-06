@@ -40,7 +40,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfUdpHandler',
             'import os',
@@ -84,7 +84,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfTcpHandler',
             'import os',
@@ -128,7 +128,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfHttpHandler',
             'import os',
@@ -174,7 +174,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf==0.3.1"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf==0.3.1"])',
             'import logging',
             'import pygelf',
             'import os',
@@ -202,7 +202,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "logging_gelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "logging_gelf"])',
             'import logging',
             'import logging_gelf.handlers',
             'import logging_gelf.formatters',
@@ -242,7 +242,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfTcpHandler',
             'import os',
@@ -295,7 +295,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfTcpHandler',
             'import os',
@@ -385,7 +385,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfTcpHandler',
             'import os',
@@ -430,7 +430,7 @@ class LoggerTest extends BaseContainerTest
         $script = [
             'import subprocess',
             'import sys',
-            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "pygelf"])',
+            'subprocess.call([sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--default-timeout=100", "pygelf"])',
             'import logging',
             'from pygelf import GelfTcpHandler',
             'import os',
