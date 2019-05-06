@@ -20,13 +20,13 @@ stages:
         variables:
           phpVersion: 5.6
         steps:
-          - script: |
-              php -version
-              ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
-              curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-              chmod +x ./cc-test-reporter        
-              ./cc-test-reporter format-coverage --output "coverage/codeclimate.1.json"
-              sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
+          - template: azure-pipelines-composer-steps.yml
+          - script: php -version
+          - script: ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
+          - script: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          - script: chmod +x ./cc-test-reporter        
+          - script: ./cc-test-reporter format-coverage --output "coverage/codeclimate.1.json"
+          - script: sudo docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync /data/ "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER"
             displayName: 'Tests 1'
 
       - job: Tests2
