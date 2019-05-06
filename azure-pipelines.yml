@@ -5,6 +5,8 @@ stages:
   - stage: BeforeTests
     jobs:
       - job: Prepare
+        pool:
+          vmImage: 'ubuntu-16.04'
         steps:
           - script: |
               ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
@@ -59,6 +61,7 @@ stages:
         variables:
           phpVersion: 5.6
         steps:
+          - script: sudo docker info
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite runner-tests --coverage-clover build/logs/clover.xml --debug
             env:
@@ -89,8 +92,9 @@ stages:
         variables:
           phpVersion: 5.6
         pool:
-          vmImage: 'macOS-10.14'          
+          vmImage: 'macOS-10.14'
         steps:
+          - script: sudo docker info
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
             env:
