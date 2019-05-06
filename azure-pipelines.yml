@@ -89,7 +89,7 @@ stages:
         variables:
           phpVersion: 5.6
         pool:
-          vmImage: 'ubuntu-16.04'          
+          vmImage: 'macOS-10.14'          
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
