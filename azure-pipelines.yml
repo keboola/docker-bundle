@@ -1,13 +1,14 @@
-pool:
-  vmImage: 'ubuntu-latest'
-
-variables:
-  phpVersion: 5.6
+trigger:
+  - odin-azure-pipelines
 
 stages: 
   - stage: BeforeTests
     jobs:
       - job: ConfigurePHP
+        pool:
+          vmImage: 'ubuntu-latest'
+        variables:
+          phpVersion: 5.6          
         steps:
           - script: |
               sudo update-alternatives --set php /usr/bin/php$(phpVersion)
@@ -34,6 +35,7 @@ stages:
       - job: Tests1
         steps:
           - script: |
+              php -version
               ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
               curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
               chmod +x ./cc-test-reporter        
