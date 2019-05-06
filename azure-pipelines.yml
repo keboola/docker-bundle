@@ -12,9 +12,13 @@ stages:
               chmod +x ./cc-test-reporter
               ./cc-test-reporter before-build
               sudo docker info
+              echo ${AGENT_ID} -- ${AGENT_MNAME} -- ${AGENT_NAME}
             displayName: 'Setup CC'
             env:
               TEST_VAR: B
+              AGENT_ID: $(Agent.Id)
+              AGENT_MNAME: $(Agent.MachineName)
+              AGENT_NAME: $(Agent.Name)
 
   - stage: Tests
     jobs:
@@ -84,6 +88,8 @@ stages:
       - job: Test3
         variables:
           phpVersion: 5.6
+        pool:
+          vmImage: 'ubuntu-16.04'          
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
