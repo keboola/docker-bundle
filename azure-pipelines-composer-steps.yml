@@ -6,7 +6,7 @@ steps:
   - script: sudo update-alternatives --set phar.phar /usr/bin/phar.phar$(phpVersion)
   - script: php -version
   - script: composer install --no-scripts
-  - env:
+    env:
       AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
       AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
       AWS_ECR_REGISTRY_REGION: $(AWS_ECR_REGISTRY_REGION)

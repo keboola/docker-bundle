@@ -13,6 +13,8 @@ stages:
               ./cc-test-reporter before-build
               sudo docker info
             displayName: 'Setup CC'
+            env:
+              TEST_VAR: B
 
   - stage: Tests
     jobs:
@@ -22,6 +24,8 @@ stages:
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: php -version
+          - script: echo $AWS_ECR_REGISTRY_URI
+          - script: echo $TEST_VAR
           - script: ./vendor/bin/phpunit --testsuite base-tests --coverage-clover build/logs/clover.xml --debug 
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
