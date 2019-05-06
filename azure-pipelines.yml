@@ -18,6 +18,8 @@ stages:
   - stage: Tests
     jobs:
       - job: Tests1
+        variables:
+          phpVersion: 5.6
         steps:
           - script: |
               php -version
@@ -29,6 +31,8 @@ stages:
             displayName: 'Tests 1'
 
       - job: Tests2
+        variables:
+          phpVersion: 5.6
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite runner-tests --coverage-clover build/logs/clover.xml --debug
@@ -39,6 +43,8 @@ stages:
             displayName: 'Tests 2'
 
       - job: Test3
+        variables:
+          phpVersion: 5.6
         steps:
           - template: azure-pipelines-composer-steps.yml
           - script: ./vendor/bin/phpunit --testsuite executor-tests --coverage-clover build/logs/clover.xml --debug
