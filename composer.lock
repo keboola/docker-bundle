@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80696ccadb07188f055fe8fcedda9648",
+    "content-hash": "6fb722acae1c4404594776209272fc7b",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.93.2",
+            "version": "3.93.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f0e3e528bb96c6602d7076d51dba312396cd2cc9"
+                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f0e3e528bb96c6602d7076d51dba312396cd2cc9",
-                "reference": "f0e3e528bb96c6602d7076d51dba312396cd2cc9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
+                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
                 "shasum": ""
             },
             "require": {
@@ -87,7 +87,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2019-05-02T19:45:02+00:00"
+            "time": "2019-05-06T18:08:54+00:00"
         },
         {
             "name": "composer/ca-bundle",
