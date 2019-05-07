@@ -20,7 +20,7 @@ class Output
      */
     private $configVersion;
     /**
-     * @var ?LoadTableQueue
+     * @var LoadTableQueue|null
      */
     private $tableQueue;
     /**
@@ -95,6 +95,9 @@ class Output
         return $this->inputTableStateList;
     }
 
+    /**
+     * @return LoadTableQueue|null
+     */
     public function getTableQueue()
     {
         return $this->tableQueue;

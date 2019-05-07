@@ -359,13 +359,15 @@ class Runner
     private function waitForStorageJobs(array $outputs)
     {
         $tableQueues = [];
+        $taskCount = 0;
         foreach ($outputs as $output) {
             /** @var Output $output */
             if ($output->getTableQueue()) {
                 $tableQueues[] = $output->getTableQueue();
+                $taskCount += $output->getTableQueue()->getTaskCount();
             }
         }
-        $this->loggersService->getLog()->info('Waiting for Storage jobs to finish.');
+        $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage jobs to finish.', $taskCount));
         /** @var LoadTableQueue $tableQueue */
         foreach ($tableQueues as $tableQueue) {
             try {
@@ -374,6 +376,7 @@ class Runner
                 throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
             }
         }
+        $this->loggersService->getLog()->info('Output mapping done.');
     }
 
     /**

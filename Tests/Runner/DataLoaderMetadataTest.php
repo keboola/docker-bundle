@@ -36,17 +36,20 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $expectedBucketMetadata = [
             'system' => [
                 'KBC.createdBy.component.id' => 'docker-demo',
-                'KBC.createdBy.configuration.id' => 'testConfig'
-            ]
+                'KBC.createdBy.configuration.id' => 'testConfig',
+            ],
         ];
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
-            'system' => [
+            'system'
+            => [
                 'KBC.createdBy.component.id' => 'docker-demo',
-                'KBC.createdBy.configuration.id' => 'testConfig'
-            ]
+                'KBC.createdBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+            ],
         ];
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
@@ -77,8 +80,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'system' => [
                 'KBC.createdBy.component.id' => 'docker-demo',
                 'KBC.createdBy.configuration.id' => 'testConfig',
-                'KBC.createdBy.configurationRow.id' => 'testRow'
-            ]
+                'KBC.createdBy.configurationRow.id' => 'testRow',
+            ],
         ];
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
 
@@ -87,8 +90,11 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'system' => [
                 'KBC.createdBy.component.id' => 'docker-demo',
                 'KBC.createdBy.configuration.id' => 'testConfig',
-                'KBC.createdBy.configurationRow.id' => 'testRow'
-            ]
+                'KBC.createdBy.configurationRow.id' => 'testRow',
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.configurationRow.id' => 'testRow',
+            ],
         ];
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
@@ -169,6 +175,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'system' => [
                 'KBC.createdBy.configuration.id' => 'testConfig',
                 'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
             ],
             'docker-demo' => [
                 'table.key.one' => 'table value one',
@@ -238,6 +246,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'system' => [
                 'KBC.createdBy.configuration.id' => 'testConfig',
                 'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
             ],
             'docker-demo' => [
                 'table.key.one' => 'table value one',
@@ -309,6 +319,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'system' => [
                 'KBC.createdBy.configuration.id' => 'testConfig',
                 'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
             ],
             'docker-demo' => [
                 'table.key.one' => 'table value three',
