@@ -74,34 +74,6 @@ class ImageCreatorTest extends BaseRunnerTest
         self::assertEquals('keboola/docker-demo-app:1.1.6', $images[0]->getFullImageId());
     }
 
-    public function testCreateImageDockerHubPrivate()
-    {
-        $image = new Component([
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub-private',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
-                    'repository' => [
-                        '#password' => $this->getEncryptorFactory()->getEncryptor()->encrypt(DOCKERHUB_PRIVATE_PASSWORD),
-                        'username' => DOCKERHUB_PRIVATE_USERNAME,
-                    ],
-                ],
-            ],
-        ]);
-
-        $config = [
-            'storage' => [],
-            'parameters' => [
-                'foo' => 'bar',
-            ],
-        ];
-        $imageCreator = new ImageCreator($this->getEncryptorFactory()->getEncryptor(), new NullLogger(), $this->client, $image, $config);
-        $images = $imageCreator->prepareImages();
-        self::assertCount(1, $images);
-        self::assertTrue($images[0]->isMain());
-        self::assertEquals('keboolaprivatetest/docker-demo-docker:latest', $images[0]->getFullImageId());
-    }
-
     public function testCreateImageQuay()
     {
         $image = new Component([
@@ -117,30 +89,6 @@ class ImageCreatorTest extends BaseRunnerTest
             'storage' => [],
             'parameters' => [
                 'foo' => 'bar'
-            ],
-        ];
-        $imageCreator = new ImageCreator($this->getEncryptorFactory()->getEncryptor(), new NullLogger(), $this->client, $image, $config);
-        $images = $imageCreator->prepareImages();
-        self::assertCount(1, $images);
-        self::assertTrue($images[0]->isMain());
-        self::assertEquals('quay.io/keboola/docker-demo-app:latest', $images[0]->getFullImageId());
-    }
-
-    public function testCreateImageQuayPrivate()
-    {
-        $image = new Component([
-            'data' => [
-                'definition' => [
-                    'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app'
-                ],
-            ],
-        ]);
-
-        $config = [
-            'storage' => [],
-            'parameters' => [
-                'foo' => 'bar',
             ],
         ];
         $imageCreator = new ImageCreator($this->getEncryptorFactory()->getEncryptor(), new NullLogger(), $this->client, $image, $config);

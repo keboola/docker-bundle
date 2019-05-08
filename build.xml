@@ -39,14 +39,8 @@
         <exec executable="${basedir}/vendor/bin/phpunit" failonerror="true">
             <env key="STORAGE_API_URL" value="${storage-api-url}"/>
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
-            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
-            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
-            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
-            <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
             <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
-            <env key="QUAYIO_PRIVATE_USERNAME" value="${quayio-private-username}"/>
-            <env key="QUAYIO_PRIVATE_PASSWORD" value="${quayio-private-password}"/>
             <env key="AWS_ECR_ACCESS_KEY_ID" value="${aws-ecr-access-key-id}"/>
             <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
             <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>
@@ -63,14 +57,8 @@
         <exec executable="${basedir}/vendor/bin/phpunit" failonerror="true">
             <env key="STORAGE_API_URL" value="${storage-api-url}"/>
             <env key="STORAGE_API_TOKEN" value="${storage-api-token}"/>
-            <env key="DOCKERHUB_PRIVATE_USERNAME" value="${dockerhub-private-username}"/>
-            <env key="DOCKERHUB_PRIVATE_EMAIL" value="${dockerhub-private-email}"/>
-            <env key="DOCKERHUB_PRIVATE_PASSWORD" value="${dockerhub-private-password}"/>
-            <env key="DOCKERHUB_PRIVATE_SERVER" value="${dockerhub-private-server}"/>
             <env key="GIT_PRIVATE_USERNAME" value="${git-private-username}"/>
             <env key="GIT_PRIVATE_PASSWORD" value="${git-private-password}"/>
-            <env key="QUAYIO_PRIVATE_USERNAME" value="${quayio-private-username}"/>
-            <env key="QUAYIO_PRIVATE_PASSWORD" value="${quayio-private-password}"/>
             <env key="AWS_ECR_ACCESS_KEY_ID" value="${aws-ecr-access-key-id}"/>
             <env key="AWS_ECR_SECRET_ACCESS_KEY" value="${aws-ecr-secret-access-key}"/>
             <env key="AWS_ECR_REGISTRY_URI" value="${aws-ecr-registry-uri}"/>

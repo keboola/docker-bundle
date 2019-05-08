@@ -18,26 +18,11 @@ defined('STORAGE_API_URL')
 defined('STORAGE_API_TOKEN')
     || define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ?: 'your_token');
 
-defined('DOCKERHUB_PRIVATE_USERNAME')
-    || define('DOCKERHUB_PRIVATE_USERNAME', getenv('DOCKERHUB_PRIVATE_USERNAME') ?: 'username');
-
-defined('DOCKERHUB_PRIVATE_PASSWORD')
-    || define('DOCKERHUB_PRIVATE_PASSWORD', getenv('DOCKERHUB_PRIVATE_PASSWORD') ?: 'password');
-
-defined('DOCKERHUB_PRIVATE_SERVER')
-    || define('DOCKERHUB_PRIVATE_SERVER', getenv('DOCKERHUB_PRIVATE_SERVER') ?: 'server');
-
 defined('GIT_PRIVATE_USERNAME')
     || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ?: 'username');
 
 defined('GIT_PRIVATE_PASSWORD')
     || define('GIT_PRIVATE_PASSWORD', getenv('GIT_PRIVATE_PASSWORD') ?: 'password');
-
-defined('QUAYIO_PRIVATE_USERNAME')
-    || define('QUAYIO_PRIVATE_USERNAME', getenv('QUAYIO_PRIVATE_USERNAME') ?: 'username');
-
-defined('QUAYIO_PRIVATE_PASSWORD')
-    || define('QUAYIO_PRIVATE_PASSWORD', getenv('QUAYIO_PRIVATE_PASSWORD') ?: 'password');
 
 defined('AWS_ECR_REGISTRY_URI')
 || define('AWS_ECR_REGISTRY_URI', getenv('AWS_ECR_REGISTRY_URI') ?: 'foobar.amazon.com');
