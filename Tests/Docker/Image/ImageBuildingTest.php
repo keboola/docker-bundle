@@ -18,9 +18,9 @@ class ImageBuildingTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -41,7 +41,10 @@ class ImageBuildingTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
-        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
+        $reflection->setValue(
+            $image,
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest'
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -52,7 +55,7 @@ class ImageBuildingTest extends BaseImageTest
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile = <<<DOCKERFILE
-FROM keboolaprivatetest/docker-demo-docker:latest
+FROM 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest
 LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
@@ -72,9 +75,9 @@ DOCKERFILE;
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -96,7 +99,10 @@ DOCKERFILE;
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
-        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
+        $reflection->setValue(
+            $image,
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest'
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -107,7 +113,7 @@ DOCKERFILE;
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
-            'FROM keboolaprivatetest/docker-demo-docker:latest
+            'FROM 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest
 LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
@@ -127,9 +133,9 @@ ENTRYPOINT php /home/run.php --data=/data';
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -165,7 +171,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
-        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
+        $reflection->setValue(
+            $image,
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest'
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
@@ -176,7 +185,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         self::assertFileNotExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $expectedFile =
-            'FROM keboolaprivatetest/docker-demo-docker:latest
+            'FROM 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest
 LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
@@ -195,9 +204,9 @@ ENTRYPOINT php /home/run.php --data=/data';
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -262,9 +271,9 @@ ENTRYPOINT php /home/run.php --data=/data';
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -305,9 +314,9 @@ ENTRYPOINT php /home/run.php --data=/data';
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -349,9 +358,9 @@ ENTRYPOINT php /home/run.php --data=/data';
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -374,7 +383,10 @@ ENTRYPOINT php /home/run.php --data=/data';
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
-        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
+        $reflection->setValue(
+            $image,
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest'
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, []);
@@ -385,7 +397,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         self::assertFileExists($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . '.git-credentials');
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
-FROM keboolaprivatetest/docker-demo-docker:latest
+FROM 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest
 LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 
@@ -415,9 +427,9 @@ DOCKERFILE;
             'data' => [
                 'definition' => [
                     'type' => 'builder',
-                    'uri' => 'keboolaprivatetest/docker-demo-docker',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                     'build_options' => [
-                        'parent_type' => 'dockerhub-private',
+                        'parent_type' => 'aws-ecr',
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
@@ -455,7 +467,7 @@ DOCKERFILE;
         $config = [
             'parameters' => [
                 'somewhere' => 'quick',
-                'over' => 'brown'
+                'over' => 'brown',
             ],
             'runtime' => [
                 'the' => 'fox',
@@ -473,7 +485,10 @@ DOCKERFILE;
 
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
-        $reflection->setValue($image, 'keboolaprivatetest/docker-demo-docker:latest');
+        $reflection->setValue(
+            $image,
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest'
+        );
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, $config);
@@ -486,7 +501,7 @@ DOCKERFILE;
 
         $dockerFile = file_get_contents($tempDir->getTmpFolder() . DIRECTORY_SEPARATOR . 'Dockerfile');
         $expectedFile = <<<DOCKERFILE
-FROM keboolaprivatetest/docker-demo-docker:latest
+FROM 147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo:latest
 LABEL com.keboola.docker.runner.origin=builder
 WORKDIR /home
 

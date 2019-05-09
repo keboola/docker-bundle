@@ -10,7 +10,7 @@ use Psr\Log\LoggerInterface;
 
 abstract class ImageFactory
 {
-    const KNOWN_IMAGE_TYPES = ['dockerhub', 'dockerhub-private', 'builder', 'quayio', 'quayio-private', 'aws-ecr', 'legacy'];
+    const KNOWN_IMAGE_TYPES = ['dockerhub', 'builder', 'quayio', 'aws-ecr'];
 
     /**
      * @param ObjectEncryptor $encryptor Encryptor for image definition.
@@ -23,27 +23,21 @@ abstract class ImageFactory
     public static function getImage(ObjectEncryptor $encryptor, LoggerInterface $logger, Component $component, Temp $temp, $isMain)
     {
         switch ($component->getType()) {
-            case "dockerhub":
+            case 'dockerhub':
                 $instance = new Image\DockerHub($encryptor, $component, $logger);
                 break;
-            case "quayio":
+            case 'quayio':
                 $instance = new Image\QuayIO($encryptor, $component, $logger);
                 break;
-            case "dockerhub-private":
-                $instance = new Image\DockerHub\PrivateRepository($encryptor, $component, $logger);
-                break;
-            case "quayio-private":
-                $instance = new Image\QuayIO\PrivateRepository($encryptor, $component, $logger);
-                break;
-            case "aws-ecr":
+            case 'aws-ecr':
                 $instance = new Image\AWSElasticContainerRegistry($encryptor, $component, $logger);
                 break;
-            case "builder":
+            case 'builder':
                 $instance = new Image\Builder\ImageBuilder($encryptor, $component, $logger);
                 $instance->setTemp($temp);
                 break;
             default:
-                throw new ApplicationException("Unknown image type: " . $component->getType());
+                throw new ApplicationException('Unknown image type: ' . $component->getType());
         }
         $instance->setIsMain($isMain);
         return $instance;
