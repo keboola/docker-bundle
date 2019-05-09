@@ -208,18 +208,18 @@ class ComponentTest extends TestCase
                 'data' => [
                     'definition' => [
                         'type' => 'builder',
-                        'uri' => 'keboolaprivatetest/docker-demo-docker',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
                         'build_options' => [
-                            'parent_type' => 'dockerhub-private',
+                            'parent_type' => 'aws-ecr',
                             'repository' => [
                                 'uri' => 'https://github.com/keboola/docker-demo-app',
                                 'type' => 'fooBar',
                             ],
                             'commands' => [
-                                'composer install'
+                                'composer install',
                             ],
                             'entry_point' => 'php /home/run.php --data=/data',
-                        ]
+                        ],
                     ],
                 ],
             ]);
