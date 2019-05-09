@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.93.4",
+            "version": "3.93.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1"
+                "reference": "75d6b1ec57f3438ac960d74e08366be43d52eca7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
-                "reference": "ae3f4eb786b1560d07bc4f01536f48835bebf3d1",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/75d6b1ec57f3438ac960d74e08366be43d52eca7",
+                "reference": "75d6b1ec57f3438ac960d74e08366be43d52eca7",
                 "shasum": ""
             },
             "require": {
@@ -87,7 +87,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2019-05-06T18:08:54+00:00"
+            "time": "2019-05-08T18:16:33+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1810,17 +1810,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "8.0.0",
+            "version": "8.0.2",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "54af99d3952999f56377d912cacbb9c0f9e6325c"
+                "reference": "5813b47f2948efec289a6ee2b8ef801e78d5b818"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/54af99d3952999f56377d912cacbb9c0f9e6325c",
-                "reference": "54af99d3952999f56377d912cacbb9c0f9e6325c",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/5813b47f2948efec289a6ee2b8ef801e78d5b818",
+                "reference": "5813b47f2948efec289a6ee2b8ef801e78d5b818",
                 "shasum": ""
             },
             "require": {
@@ -1854,7 +1854,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2019-03-27T16:55:37+00:00"
+            "time": "2019-05-09T14:23:14+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1949,17 +1949,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "9.1.0",
-            "target-dir": "Keboola/OutputMapping",
+            "version": "9.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "424d018ecea9929feb0abc1726dacfae5d593174"
+                "reference": "da52965f7ae3bc821d8bbec4de5c5743c1bb099c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/424d018ecea9929feb0abc1726dacfae5d593174",
-                "reference": "424d018ecea9929feb0abc1726dacfae5d593174",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/da52965f7ae3bc821d8bbec4de5c5743c1bb099c",
+                "reference": "da52965f7ae3bc821d8bbec4de5c5743c1bb099c",
                 "shasum": ""
             },
             "require": {
@@ -1979,8 +1978,8 @@
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Keboola\\OutputMapping": ""
+                "psr-4": {
+                    "Keboola\\OutputMapping\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1994,7 +1993,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2019-05-03T12:36:15+00:00"
+            "time": "2019-05-07T15:23:36+00:00"
         },
         {
             "name": "keboola/php-encryption",
