@@ -13,7 +13,7 @@
         "keboola/php-utils": "^2.3.1",
         "keboola/oauth-v2-php-client": "^2.3.0",
         "keboola/gelf-server": "^2.0.0",
-        "keboola/output-mapping": "^6.0.0",
+        "keboola/output-mapping": "^9.0.0",
         "symfony/validator": "^2.8|^4.1",
         "symfony/http-foundation": "^2.8|^4.1",
         "symfony/monolog-bridge": "^2.8|^4.1",
