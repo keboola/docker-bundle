@@ -472,16 +472,19 @@ class Runner
             ];
             $configFile->createConfigFile($image->getConfigData(), $outputFilter);
 
-            $containerIdParts[] = $jobId;
-            $containerIdParts[] = $this->storageClient->getRunId() ?: 'norunid';
-            $containerIdParts[] = $rowId;
-            $containerIdParts[] = $priority;
-            $containerIdParts[] = $image->getSourceComponent()->getSanitizedComponentId();
-
-            $containerNameParts[] = $image->getSourceComponent()->getSanitizedComponentId();
-            $containerNameParts[] = $jobId;
-            $containerNameParts[] = $this->storageClient->getRunId() ?: 'norunid';
-            $containerNameParts[] = $priority;
+            $containerIdParts = [
+                $jobId,
+                $this->storageClient->getRunId() ?: 'norunid',
+                $rowId,
+                $priority,
+                $image->getSourceComponent()->getSanitizedComponentId()
+            ];
+            $containerNameParts = [
+                $image->getSourceComponent()->getSanitizedComponentId(),
+                $jobId,
+                $this->storageClient->getRunId() ?: 'norunid',
+                $priority,
+            ];
 
             $container = $this->createContainerFromImage(
                 $image,
