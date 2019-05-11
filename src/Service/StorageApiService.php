@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Client;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -20,14 +21,23 @@ class StorageApiService
     /** @var Client */
     protected $client;
 
+    /** @var LoggerInterface */
+    private $logger;
+
+    /** @var string */
     protected $storageApiUrl;
 
+    /** @var array */
     protected $tokenData;
 
-    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com')
+    /** @var Client */
+    private $clientWithoutLogger;
+
+    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
     {
         $this->storageApiUrl = $storageApiUrl;
         $this->requestStack = $requestStack;
+        $this->logger = $logger;
     }
 
     protected function verifyClient(Client $client)
@@ -78,7 +88,8 @@ class StorageApiService
                     'url' => $this->storageApiUrl,
                     'userAgent' => explode('/', $request->getPathInfo())[1],
                     'backoffMaxTries' => $this->getBackoffTries(gethostname()),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction()
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'logger' => $this->logger,
                 ]
             ));
             if ($request->headers->has('X-KBC-RunId')) {
@@ -111,6 +122,26 @@ class StorageApiService
                     return 5;
             }
         };
+    }
+
+    public function getClientWithoutLogger()
+    {
+        $client = $this->getClient();
+        if (!$this->clientWithoutLogger) {
+            $this->clientWithoutLogger = new Client(
+                [
+                    'token' => $client->token,
+                    'url' => $client->getApiUrl(),
+                    'userAgent' => $client->getUserAgent(),
+                    'backoffMaxTries' => $client->getBackoffMaxTries(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                ]
+            );
+            if ($client->getRunId()) {
+                $this->clientWithoutLogger->setRunId($client->getRunId());
+            }
+        }
+        return $this->clientWithoutLogger;
     }
 
     public function setFasterPollingClient(Client $client)
