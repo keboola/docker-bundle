@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\StorageApi\Event;
@@ -328,14 +329,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::INFO => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::NOTICE => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::WARNING => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::ERROR => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::CRITICAL => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
         ];
 
         $error = [];
@@ -412,14 +413,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
-            Logger::INFO => StorageApiHandler::VERBOSITY_NONE,
-            Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE,
-            Logger::WARNING => StorageApiHandler::VERBOSITY_NONE,
-            Logger::ERROR => StorageApiHandler::VERBOSITY_NONE,
-            Logger::CRITICAL => StorageApiHandler::VERBOSITY_NONE,
-            Logger::ALERT => StorageApiHandler::VERBOSITY_NONE,
-            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
+            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_NONE,
         ];
         $records = [];
         $this->setCreateEventCallback(
