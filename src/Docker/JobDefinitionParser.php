@@ -14,7 +14,7 @@ class JobDefinitionParser
     /**
      * @param Component $component
      * @param array $configData
-     * @param null $configId
+     * @param string $configId
      */
     public function parseConfigData(Component $component, array $configData, $configId = null)
     {
@@ -24,7 +24,7 @@ class JobDefinitionParser
 
     /**
      * @param Component $component
-     * @param $config
+     * @param array $config
      */
     public function parseConfig(Component $component, $config)
     {
