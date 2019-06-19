@@ -24,8 +24,10 @@
         <mkdir dir="${basedir}/build/results/logs"/>
         <mkdir dir="${basedir}/build/results/pdepend"/>
         <mkdir dir="${basedir}/build/results/apigen"/>
-        <exec executable="/usr/local/bin/composer">
-            <arg value="install" />
+        <exec executable="/usr/local/bin/composer" failonerror="true">
+            <arg value="install"/>
+            <env key="KEBOOLA_SYRUP_CONFIGS_BUCKET" value="${syrup-configs-bucket}"/>
+            <env key="AWS_REGION" value="${aws-region}"/>
         </exec>
     </target>
 
