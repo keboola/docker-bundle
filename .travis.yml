@@ -17,6 +17,7 @@ jobs:
   include:
     - stage: prepare
       script:
+        - ip addr show
         - composer install --no-scripts
         - ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -n .
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
