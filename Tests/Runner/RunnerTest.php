@@ -870,7 +870,7 @@ class RunnerTest extends BaseRunnerTest
         } catch (UserException $e) {
             self::assertContains(
                 'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
-                '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: foo',
+                '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
             );
         }
