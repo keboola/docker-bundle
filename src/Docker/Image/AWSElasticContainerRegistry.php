@@ -62,9 +62,7 @@ class AWSElasticContainerRegistry extends Image
                     throw $e;
                 }
             });
-        } catch (CredentialsException $e) {
-            throw new LoginFailedException($e->getMessage(), $e);
-        } catch (EcrException $e) {
+        } catch (\Exception $e) {
             throw new LoginFailedException($e->getMessage(), $e);
         }
         // decode token and extract user
