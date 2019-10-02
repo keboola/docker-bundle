@@ -167,7 +167,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
         $runner = $this->getRunner();
         // inject mock OAuth client inside Runner
-        $prop = new \ReflectionProperty($runner, 'oauthClient');
+        $prop = new \ReflectionProperty($runner, 'oauthClient3');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
 
@@ -241,7 +241,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
         // inject mock OAuth client inside Runner
         $runner = $this->getRunner();
-        $prop = new \ReflectionProperty($runner, 'oauthClient');
+        $prop = new \ReflectionProperty($runner, 'oauthClient3');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
 
