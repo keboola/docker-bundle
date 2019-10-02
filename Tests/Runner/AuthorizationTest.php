@@ -39,7 +39,10 @@ class AuthorizationTest extends BaseRunnerTest
             ->method('getDetail')
             ->with('keboola.docker-demo', 'whatever')
             ->will(self::returnValue($oauthResponse));
-        $config = ['oauth_api' => ['id' => 'whatever']];
+        $config = ['oauth_api' => [
+            'id' => 'whatever',
+            'version' => 3
+        ]];
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
@@ -56,17 +59,6 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub2 = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $credentials2 = [
-            'id' => 'test-credential-1',
-            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
-            'oauthVersion' => '2.0',
-            '#appSecret' => '654321',
-        ];
-        $oauthResponse2 = $encryptorFactory->getEncryptor()->encrypt($credentials2);
-        $oauthClientStub2->expects(self::once())
-            ->method('getDetail')
-            ->with('keboola.docker-demo', 'whatever')
-            ->will(self::returnValue($oauthResponse2));
         $oauthClientStub3 = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -89,12 +81,6 @@ class AuthorizationTest extends BaseRunnerTest
         $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
             $credentials3,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
-        );
-        $config = ['oauth_api' => ['id' => 'whatever', 'version' => '2']];
-        $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
-        self::assertEquals(
-            $credentials2,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
     }
@@ -124,7 +110,10 @@ class AuthorizationTest extends BaseRunnerTest
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::returnValue($oauthResponse));
-        $config = ['authorization' => ['oauth_api' => ['id' => 'test-credentials-45']]];
+        $config = ['authorization' => ['oauth_api' => [
+            'id' => 'test-credentials-45',
+            'version' => 3
+        ]]];
 
         $temp = new Temp();
         /** @var Credentials $oauthClientStub */
@@ -178,7 +167,10 @@ class AuthorizationTest extends BaseRunnerTest
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ['oauth_api' => ['credentials' => $credentials]];
+        $config = ['oauth_api' => [
+            'credentials' => $credentials,
+            'version' => 3
+        ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -195,7 +187,10 @@ class AuthorizationTest extends BaseRunnerTest
     {
         $encryptorFactory = $this->getEncryptorFactory();
         $encryptorFactory->setComponentId('keboola.docker-demo');
-        $config = ['oauth_api' => ['id' => 'test-credentials-45']];
+        $config = ['oauth_api' => [
+            'id' => 'test-credentials-45',
+            'version' => 3
+        ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -215,7 +210,10 @@ class AuthorizationTest extends BaseRunnerTest
     {
         $encryptorFactory = $this->getEncryptorFactory();
         $encryptorFactory->setComponentId('keboola.docker-demo');
-        $config = ['oauth_api' => ['id' => 'test-credentials-45']];
+        $config = ['oauth_api' => [
+            'id' => 'test-credentials-45',
+            'version' => 3
+        ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -248,7 +246,12 @@ class AuthorizationTest extends BaseRunnerTest
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ['oauth_api' => ['credentials' => $encryptorFactory->getEncryptor()->encrypt($credentials)]];
+        $config = ['oauth_api' => [
+            'credentials' => $encryptorFactory->getEncryptor()->encrypt($credentials),
+            'version' => 3
+        ]];
+        $expectedConfig = $config;
+        unset($expectedConfig['oauth_api']['version']);
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -256,7 +259,7 @@ class AuthorizationTest extends BaseRunnerTest
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
-            $config,
+            $expectedConfig,
             $auth->getAuthorization($config)
         );
     }
@@ -279,7 +282,10 @@ class AuthorizationTest extends BaseRunnerTest
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $config = ['authorization' => ['oauth_api' => ['credentials' => $credentials]]];
+        $config = ['authorization' => ['oauth_api' => [
+            'credentials' => $credentials,
+            'version' => 3
+        ]]];
 
         $temp = new Temp();
         $oauthClientStub = self::getMockBuilder(Credentials::class)
