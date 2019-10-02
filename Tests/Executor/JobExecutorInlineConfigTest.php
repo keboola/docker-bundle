@@ -142,6 +142,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     {
         $data = $this->getJobParameters();
         $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
+        $data['params']['configData']['authorization']['oauth_api']['version'] = 3;
         $data['params']['configData']['storage'] = [];
         $data['params']['configData']['parameters']['script'] = [
             'from pathlib import Path',
@@ -214,6 +215,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $data = $this->getJobParameters();
         $data['params']['component'] = 'keboola.python-transformation';
         $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
+        $data['params']['configData']['authorization']['oauth_api']['version'] = 3;
         $data['params']['configData']['storage'] = [];
         $data['params']['configData']['parameters']['script'] = [
             'from pathlib import Path',

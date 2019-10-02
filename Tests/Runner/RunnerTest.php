@@ -2046,7 +2046,8 @@ class RunnerTest extends BaseRunnerTest
                     'credentials' => [
                         '#three' => 'foo',
                         'four' => 'anotherFoo'
-                    ]
+                    ],
+                    'version' => 3
                 ]
             ]
         ];
