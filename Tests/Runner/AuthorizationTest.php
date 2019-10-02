@@ -52,39 +52,6 @@ class AuthorizationTest extends BaseRunnerTest
         );
     }
 
-    public function testOauthDecryptVersions()
-    {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
-        $oauthClientStub2 = self::getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $oauthClientStub3 = self::getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $credentials3 = [
-            'id' => 'test-credentials-2',
-            'created' => '2016-02-09 09:47:16',
-            '#data' => '{"access_token":"xyz"}',
-            'appKey' => '123456',
-            '#appSecret' => 'abcdef',
-        ];
-        $oauthResponse3 = $encryptorFactory->getEncryptor()->encrypt($credentials3);
-        $oauthClientStub3->expects(self::once())
-            ->method('getDetail')
-            ->with('keboola.docker-demo', 'whatever')
-            ->will(self::returnValue($oauthResponse3));
-
-        /** @var Credentials $oauthClientStub2 */
-        /** @var Credentials $oauthClientStub3 */
-        $config = ['oauth_api' => ['id' => 'whatever', 'version' => '3']];
-        $auth = new Authorization($oauthClientStub2, $oauthClientStub3, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
-        self::assertEquals(
-            $credentials3,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
-        );
-    }
-
     public function testOauthConfigDecrypt()
     {
         $encryptorFactory = $this->getEncryptorFactory();
