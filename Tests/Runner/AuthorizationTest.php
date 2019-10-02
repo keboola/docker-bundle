@@ -324,4 +324,26 @@ class AuthorizationTest extends BaseRunnerTest
         ];
         self::assertEquals($sampleData, $data);
     }
+
+    public function testOauthV2DeprecationMessage()
+    {
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
+
+        $encryptorFactory = $this->getEncryptorFactory();
+        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $config = [
+            'oauth_api' => [
+                'id' => 'test-deprecated-credentials',
+                'version' => 2
+            ]
+        ];
+
+        $oauthClientStub = self::getMockBuilder(Credentials::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        /** @var Credentials $oauthClientStub */
+        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth->getAuthorization($config);
+    }
 }

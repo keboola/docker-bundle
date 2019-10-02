@@ -49,7 +49,7 @@ class Authorization
         if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
             $client = $this->oauthClientV3;
         } else {
-            $client = $this->oauthClient;
+            throw new UserException('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
         }
         if (isset($configData['oauth_api']['id'])) {
             // read authorization from API
