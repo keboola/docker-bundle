@@ -142,6 +142,8 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub = self::getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+        $oauthClientStub->expects(self::never())
+            ->method('getDetail');
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
