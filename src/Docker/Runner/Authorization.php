@@ -45,26 +45,27 @@ class Authorization
         $data = [];
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
-        }
-        if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
-            $client = $this->oauthClientV3;
         } else {
-            $client = $this->oauthClient;
-        }
-        if (isset($configData['oauth_api']['id'])) {
-            // read authorization from API
-            try {
-                $credentials = $client->getDetail(
-                    $this->componentId,
-                    $configData['oauth_api']['id']
-                );
-                $decrypted = $this->encryptor->decrypt($credentials);
-                $data['oauth_api']['credentials'] = $decrypted;
-            } catch (RequestException $e) {
-                if (($e->getCode() >= 400) && ($e->getCode() < 500)) {
-                    throw new UserException($e->getMessage(), $e);
-                } else {
-                    throw new ApplicationException($e->getMessage(), $e);
+            if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
+                $client = $this->oauthClientV3;
+            } else {
+                throw new UserException('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
+            }
+            if (isset($configData['oauth_api']['id'])) {
+                // read authorization from API
+                try {
+                    $credentials = $client->getDetail(
+                        $this->componentId,
+                        $configData['oauth_api']['id']
+                    );
+                    $decrypted = $this->encryptor->decrypt($credentials);
+                    $data['oauth_api']['credentials'] = $decrypted;
+                } catch (RequestException $e) {
+                    if (($e->getCode() >= 400) && ($e->getCode() < 500)) {
+                        throw new UserException($e->getMessage(), $e);
+                    } else {
+                        throw new ApplicationException($e->getMessage(), $e);
+                    }
                 }
             }
         }
