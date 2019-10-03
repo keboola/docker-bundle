@@ -142,7 +142,6 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     {
         $data = $this->getJobParameters();
         $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
-        $data['params']['configData']['authorization']['oauth_api']['version'] = 3;
         $data['params']['configData']['storage'] = [];
         $data['params']['configData']['parameters']['script'] = [
             'from pathlib import Path',
@@ -167,7 +166,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
         $runner = $this->getRunner();
         // inject mock OAuth client inside Runner
-        $prop = new \ReflectionProperty($runner, 'oauthClient3');
+        $prop = new \ReflectionProperty($runner, 'oauthClient');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
 
@@ -215,7 +214,6 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $data = $this->getJobParameters();
         $data['params']['component'] = 'keboola.python-transformation';
         $data['params']['configData']['authorization']['oauth_api']['id'] = '12345';
-        $data['params']['configData']['authorization']['oauth_api']['version'] = 3;
         $data['params']['configData']['storage'] = [];
         $data['params']['configData']['parameters']['script'] = [
             'from pathlib import Path',
@@ -241,7 +239,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $oauthStub->method('getDetail')->willReturn($credentialsEncrypted);
         // inject mock OAuth client inside Runner
         $runner = $this->getRunner();
-        $prop = new \ReflectionProperty($runner, 'oauthClient3');
+        $prop = new \ReflectionProperty($runner, 'oauthClient');
         $prop->setAccessible(true);
         $prop->setValue($runner, $oauthStub);
 
