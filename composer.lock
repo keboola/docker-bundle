@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6fb722acae1c4404594776209272fc7b",
+    "content-hash": "5f082520a161da607d91f55a58c15136",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.112.12",
+            "version": "3.112.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "b8c1e71eaefe44342283ef7240efabcc87197dd4"
+                "reference": "491960b26d7c02d8d9c9c998646d25a99e10fd16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b8c1e71eaefe44342283ef7240efabcc87197dd4",
-                "reference": "b8c1e71eaefe44342283ef7240efabcc87197dd4",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/491960b26d7c02d8d9c9c998646d25a99e10fd16",
+                "reference": "491960b26d7c02d8d9c9c998646d25a99e10fd16",
                 "shasum": ""
             },
             "require": {
@@ -87,7 +87,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2019-10-01T18:07:57+00:00"
+            "time": "2019-10-03T18:12:08+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1820,22 +1820,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "8.0.4",
+            "version": "8.1.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "f4f8317fc22b88401e969d7b2c4fb507539a58f0"
+                "reference": "046d83271be2c835b8bee51d37487eb89411a1de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/f4f8317fc22b88401e969d7b2c4fb507539a58f0",
-                "reference": "f4f8317fc22b88401e969d7b2c4fb507539a58f0",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/046d83271be2c835b8bee51d37487eb89411a1de",
+                "reference": "046d83271be2c835b8bee51d37487eb89411a1de",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^10.6",
+                "keboola/storage-api-client": "^10.0",
                 "symfony/config": "^2.8|^4.1",
                 "symfony/finder": "^2.8|^4.1",
                 "symfony/serializer": "^2.8|^4.1",
@@ -1864,7 +1864,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2019-10-01T22:07:46+00:00"
+            "time": "2019-10-04T09:29:30+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -5427,22 +5427,22 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "1.8.1",
+            "version": "1.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "1927e75f4ed19131ec9bcc3b002e07fb1173ee76"
+                "reference": "f6811d96d97bdf400077a0cc100ae56aa32b9203"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/1927e75f4ed19131ec9bcc3b002e07fb1173ee76",
-                "reference": "1927e75f4ed19131ec9bcc3b002e07fb1173ee76",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/f6811d96d97bdf400077a0cc100ae56aa32b9203",
+                "reference": "f6811d96d97bdf400077a0cc100ae56aa32b9203",
                 "shasum": ""
             },
             "require": {
                 "doctrine/instantiator": "^1.0.2",
                 "php": "^5.3|^7.0",
-                "phpdocumentor/reflection-docblock": "^2.0|^3.0.2|^4.0",
+                "phpdocumentor/reflection-docblock": "^2.0|^3.0.2|^4.0|^5.0",
                 "sebastian/comparator": "^1.1|^2.0|^3.0",
                 "sebastian/recursion-context": "^1.0|^2.0|^3.0"
             },
@@ -5486,7 +5486,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2019-06-13T12:50:23+00:00"
+            "time": "2019-10-03T11:07:50+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
