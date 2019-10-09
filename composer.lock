@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f082520a161da607d91f55a58c15136",
+    "content-hash": "968eae1137e3c4832750fb710cc06746",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2260,16 +2260,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "10.0.2",
+            "version": "11.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "41551251afdd7e6e67d6f7b101ceade7bd7cf9ba"
+                "reference": "1712aec05bc096261617e399ebef8d5c83f85193"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/41551251afdd7e6e67d6f7b101ceade7bd7cf9ba",
-                "reference": "41551251afdd7e6e67d6f7b101ceade7bd7cf9ba",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/1712aec05bc096261617e399ebef8d5c83f85193",
+                "reference": "1712aec05bc096261617e399ebef8d5c83f85193",
                 "shasum": ""
             },
             "require": {
@@ -2324,7 +2324,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2018-09-28T08:10:05+00:00"
+            "time": "2019-09-02T11:15:12+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
