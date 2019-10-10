@@ -52,7 +52,7 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestNotPulled()
     {
-        $command = new Process('docker rmi 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash');
+        $command = new Process('sudo docker rmi 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash');
         $command->run();
         $imageConfig = new Component([
             'data' => [
