@@ -318,6 +318,115 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
     }
 
+    public function testRunnerProcessorsSyncAction()
+    {
+        $this->clearBuckets();
+        $this->clearFiles();
+        $components = [
+            [
+                'id' => 'keboola.processor-decompress',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress',
+                        'tag' => 'v4.1.0',
+                    ],
+                ],
+            ],
+        ];
+        $clientMock = self::getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['indexAction'])
+            ->getMock();
+        $clientMock->expects(self::any())
+            ->method('indexAction')
+            ->will(self::returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+
+        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $this->getClient()->uploadFile(
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
+        );
+        sleep(1);
+
+        $configurationData = [
+            'storage' => [
+                'input' => [
+                    'files' => [
+                        [
+                            'tags' => ['texty.csv.gz'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'from os import listdir',
+                    'from os.path import isfile, join',
+                    'mypath = \'/data/in/files\'',
+                    'onlyfiles = [f for f in listdir(mypath)]',
+                    'print(onlyfiles)',
+                ],
+            ],
+            'processors' => [
+                'before' => [
+                    [
+                        'definition' => [
+                            'component' => 'keboola.processor-decompress',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'tag' => '1.1.22',
+                ],
+            ],
+        ];
+        $this->setClientMock($clientMock);
+        $runner = $this->getRunner();
+        $outputs = $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'test-action',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        self::assertEquals(
+            [
+                // the processor is not executed
+                0 => [
+                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:1.1.22',
+                    'digests' => [
+                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation@sha256:34d3a0a9a10cdc9a48b4ab51e057eae85682cf2768d05e9f5344832312ad9f52'
+                    ],
+                ]
+            ],
+            $outputs[0]->getImages()
+        );
+        $lines = explode("\n", $outputs[0]->getProcessOutput());
+        self::assertEquals([
+            0 => 'Script file /data/script.py',
+            1 => '[]', // there are no files in input directory
+            2 => 'Script finished',
+        ], $lines);
+        self::assertEquals('v123', $outputs[0]->getConfigVersion());
+        $this->clearFiles();
+    }
+
     public function testImageParametersDecrypt()
     {
         $configurationData = [

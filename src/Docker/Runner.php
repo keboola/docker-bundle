@@ -457,6 +457,10 @@ class Runner
                 $stateFile->createStateFile();
             } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
+                if ($dataLoader instanceof NullDataLoader) {
+                    // there is nothing reasonable a processor can do because there's no data
+                    continue;
+                }
             }
             $environment = new Environment(
                 $configId,
