@@ -66,6 +66,7 @@ class RunnerTest extends BaseRunnerTest
         // remove uploaded files
         $options = new ListFilesOptions();
         $options->setTags(['docker-runner-test']);
+        sleep(1);
         $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
             $this->getClient()->deleteFile($file['id']);
