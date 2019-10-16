@@ -93,7 +93,6 @@ class Runner
      * @param LoggersService $loggersService
      * @param string $oauthApiUrl
      * @param array $instanceLimits
-     * @param string $commandToGetHostIp
      * @param int $minLogPort
      * @param int $maxLogPort
      */
@@ -103,7 +102,6 @@ class Runner
         LoggersService $loggersService,
         $oauthApiUrl,
         array $instanceLimits,
-        $commandToGetHostIp = 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'',
         $minLogPort = 12202,
         $maxLogPort = 13202
     ) {
@@ -119,9 +117,18 @@ class Runner
         ]);
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
-        $this->commandToGetHostIp = $commandToGetHostIp;
+        $this->commandToGetHostIp = $this->getCommandToGetHostIp();
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+    }
+
+    private function getCommandToGetHostIp()
+    {
+        if (getenv('RUNNER_COMMAND_TO_GET_HOST_IP')) {
+            return getenv('RUNNER_COMMAND_TO_GET_HOST_IP');
+        }
+
+        return 'ip -4 addr show docker0 | grep -Po \'inet \K[\d.]+\'';
     }
 
     /**
