@@ -5,13 +5,20 @@
         "KeboolaStack": {
             "Type": "String",
             "Description": "All resources will be tagged by this value."
+        },
+        "RepositoryName": {
+            "Type": "String",
+            "Default": "docker-testing",
+            "Description": "Tests ECR repository name"
         }
     },
     "Resources": {
         "DockerRunnerRepository": {
             "Type": "AWS::ECR::Repository",
             "Properties": {
-                "RepositoryName": "docker-testing",
+                "RepositoryName": {
+                    "Ref": "RepositoryName"
+                },
                 "RepositoryPolicyText": {
                     "Version": "2008-10-17",
                     "Statement": [
