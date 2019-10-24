@@ -505,7 +505,8 @@ class Runner
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
                         'com.keboola.docker-runner.rowId=' . $rowId,
-                        'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts)
+                        'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts),
+                        'com.keboola.docker-runner.projectId=' . $tokenInfo['owner']['id']
                     ],
                     $environment->getEnvironmentVariables($outputFilter)
                 ),
