@@ -134,11 +134,11 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':test-hash', $image->getFullImageId());
         self::assertTrue($testHandler->hasNotice(
             'Using image ' . AWS_ECR_REGISTRY_URI .
-            ':test-hash with repo-digest 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:' .
+            ':test-hash with repo-digest ' . AWS_ECR_REGISTRY_URI . '@sha256:' .
             ImageTest::TEST_HASH_DIGEST
         ));
         self::assertEquals(
-            ['061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing@sha256:' . ImageTest::TEST_HASH_DIGEST],
+            [AWS_ECR_REGISTRY_URI . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getImageDigests()
         );
 
