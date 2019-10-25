@@ -109,7 +109,7 @@ YAML;
 
         $encryptorFactory = new ObjectEncryptorFactory(
             'alias/dummy-key',
-            'us-east-1',
+            AWS_ECR_REGISTRY_REGION,
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
@@ -176,7 +176,7 @@ YAML;
 
         $encryptorFactory = new ObjectEncryptorFactory(
             'alias/dummy-key',
-            'us-east-1',
+            AWS_ECR_REGISTRY_REGION,
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );

@@ -57,7 +57,7 @@ class StateFileTest extends TestCase
         ]);
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
-            'us-east-1',
+            AWS_ECR_REGISTRY_REGION,
             hash('sha256', uniqid()),
             hash('sha256', uniqid())
         );
