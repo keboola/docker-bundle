@@ -340,7 +340,7 @@ class Container
         ];
 
         // killed containers
-        if ($process->getExitCode() == 137) {
+        if (in_array($process->getExitCode(), [137, 125])) {
             // this catches the timeout from `sudo timeout`
             if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
                 throw new UserException(
