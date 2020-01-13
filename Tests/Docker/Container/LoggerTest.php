@@ -5,10 +5,10 @@ namespace Keboola\DockerBundle\Tests\Docker\Container;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
+use Keboola\DockerBundle\Tests\StorageApiHandler;
 use Keboola\StorageApi\Event;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -272,6 +272,7 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info) {
+                var_dump($event);
                 if ($event->getType() == 'error') {
                     $error[] = $event->getMessage();
                 }
@@ -287,6 +288,7 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
 
+        var_dump($warn);
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
         self::assertCount(2, $info);
@@ -632,14 +634,7 @@ class LoggerTest extends BaseContainerTest
         $this->getContainer($this->getImageConfiguration(), [], [], false);
         $testHandler = new TestHandler();
         $containerTestHandler = new TestHandler();
-        $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $containerStub->expects(self::any())
-            ->method('get')
-            ->will(self::returnValue($this->getStorageApiService()));
-        /** @var \Symfony\Component\DependencyInjection\Container $containerStub */
-        $sapiHandler = new StorageApiHandler('runner-tests', $containerStub);
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
         $log = new Logger('runner-tests', [$testHandler, $sapiHandler]);
         $containerLog = new ContainerLogger('container-tests', [$containerTestHandler]);
         $logService = new LoggersService($log, $containerLog, $sapiHandler);
