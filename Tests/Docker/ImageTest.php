@@ -52,13 +52,13 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestNotPulled()
     {
-        $command = new Process('sudo docker rmi 061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash');
+        $command = new Process('sudo docker rmi ' . AWS_ECR_REGISTRY_URI . ':test-hash');
         $command->run();
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing',
+                    'uri' => AWS_ECR_REGISTRY_URI,
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'test-hash',
                 ],
@@ -69,7 +69,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
+            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
         ));
     }
 
@@ -80,7 +80,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing',
+                    'uri' => AWS_ECR_REGISTRY_URI,
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'test-hash',
                 ],
@@ -93,7 +93,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertFalse($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
+            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
         ));
     }
 
@@ -103,7 +103,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing',
+                    'uri' => AWS_ECR_REGISTRY_URI,
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'latest',
                 ],
@@ -116,7 +116,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing',
+                    'uri' => AWS_ECR_REGISTRY_URI,
                     'digest' => $matches[1],
                     'tag' => 'test-hash',
                 ],
@@ -127,7 +127,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
-            '"061240556736.dkr.ecr.us-east-1.amazonaws.com/docker-testing:test-hash" not found.'
+            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
         ));
     }
 }
