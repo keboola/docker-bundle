@@ -8,13 +8,11 @@ monolog:
             type: console
             verbosity_levels:
                 VERBOSITY_NORMAL: EMERGENCY
-        syrup_syslog:
-            type: syslog
-            ident: %app_name%
-            level: info
-            # Disable syslog handler, because S3 uploader does not work yet
-            #channels: ["!request", "!event", "!doctrine"]
-            channels: ["fooBar"]
+        syrup_stdout:
+            type: stream
+            path: "php://stdout"
+            level: debug
+            channels: ["!request", "!event", "!doctrine"]
             formatter: syrup.monolog.formatter
         storage_api:
             type: service
