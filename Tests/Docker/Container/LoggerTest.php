@@ -233,8 +233,12 @@ class LoggerTest extends BaseContainerTest
         $records = $this->getContainerLogHandler()->getRecords();
         self::assertEquals(3, count($records));
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
-        self::assertTrue($this->getContainerLogHandler()->hasError('Invalid message: A sample info message (invalid)'));
-        self::assertTrue($this->getContainerLogHandler()->hasError('Invalid message: A sample warning message (invalid)'));
+        self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains(
+            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample info message (invalid)".'
+        ));
+        self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains(
+            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample warning message (invalid)".'
+        ));
     }
 
     public function testVerbosityDefault()
