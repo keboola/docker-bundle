@@ -50,7 +50,8 @@ class ImageConfigurationTest extends TestCase
                 "no_application_errors" => true,
             ],
             "staging_storage" => [
-                "input" => "local"
+                "input" => "local",
+                "output" => "local",
             ],
         ];
         $processedConfiguration = (new Configuration\Component())->parse(["config" => $config]);
@@ -82,7 +83,8 @@ class ImageConfigurationTest extends TestCase
             'synchronous_actions' => [],
             'default_bucket_stage' => 'in',
             'staging_storage' => [
-                'input' => 'local'
+                'input' => 'local',
+                'output' => 'local',
             ],
             'image_parameters' => [],
             'network' => 'bridge',
@@ -171,11 +173,12 @@ class ImageConfigurationTest extends TestCase
         (new Configuration\Component())->parse(["config" => $config]);
     }
 
-    public function testWrongStagingStorageType()
+    public function testWrongStagingInputStorageType()
     {
         $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
         $this->expectExceptionMessage(
-            'The value "whatever" is not allowed for path "component.staging_storage.input". Permissible values: "local", "s3"'
+            'The value "whatever" is not allowed for path "component.staging_storage.input". ' .
+            'Permissible values: "local", "s3", "none", "workspace-snowflake", "workspace-redshift"'
         );
         $config = [
             "definition" => [
@@ -184,7 +187,27 @@ class ImageConfigurationTest extends TestCase
             ],
             "memory" => "64m",
             "staging_storage" => [
-                "input" => "whatever"
+                "input" => "whatever",
+            ]
+        ];
+        (new Configuration\Component())->parse(["config" => $config]);
+    }
+
+    public function testWrongStagingOutputStorageType()
+    {
+        $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
+        $this->expectExceptionMessage(
+            'The value "whatever" is not allowed for path "component.staging_storage.output". ' .
+            'Permissible values: "local", "none", "workspace-snowflake", "workspace-redshift"'
+        );
+        $config = [
+            "definition" => [
+                "type" => "dockerhub",
+                "uri" => "keboola/docker-demo"
+            ],
+            "memory" => "64m",
+            "staging_storage" => [
+                "output" => "whatever"
             ]
         ];
         (new Configuration\Component())->parse(["config" => $config]);
@@ -223,7 +246,8 @@ class ImageConfigurationTest extends TestCase
             "default_bucket_stage" => "out",
             "synchronous_actions" => [],
             "staging_storage" => [
-                "input" => "local"
+                "input" => "local",
+                "output" => "local",
             ],
             "logging" => [
                 "type" => "standard",
