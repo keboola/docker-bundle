@@ -14,7 +14,7 @@
         "keboola/php-utils": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "^8.1",
+        "keboola/input-mapping": "^8.3",
         "keboola/output-mapping": "^9.1",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
@@ -60,6 +60,7 @@
         "syrup-app-name": "docker"
     },
     "config": {
+        "sort-packages": true,
         "platform": {
             "php": "5.6"
         }
