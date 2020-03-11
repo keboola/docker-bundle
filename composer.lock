@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.133.28",
+            "version": "3.133.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "5ef2118011e39504484d70ed738eb8ede7f69287"
+                "reference": "330a696c1f1de0267921f732602e55fb3ddfd550"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5ef2118011e39504484d70ed738eb8ede7f69287",
-                "reference": "5ef2118011e39504484d70ed738eb8ede7f69287",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/330a696c1f1de0267921f732602e55fb3ddfd550",
+                "reference": "330a696c1f1de0267921f732602e55fb3ddfd550",
                 "shasum": ""
             },
             "require": {
@@ -88,7 +88,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-03-03T19:11:21+00:00"
+            "time": "2020-03-06T19:16:46+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1829,12 +1829,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "0a4af3955a35b40de9520ff5fe9609e1031fc59c"
+                "reference": "cf8e2acf2addd13f662347c3c9371b691ac369c3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/0a4af3955a35b40de9520ff5fe9609e1031fc59c",
-                "reference": "0a4af3955a35b40de9520ff5fe9609e1031fc59c",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/cf8e2acf2addd13f662347c3c9371b691ac369c3",
+                "reference": "cf8e2acf2addd13f662347c3c9371b691ac369c3",
                 "shasum": ""
             },
             "require": {
@@ -1868,7 +1868,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-03-02T12:46:59+00:00"
+            "time": "2020-03-05T11:11:35+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1967,12 +1967,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "4aa212a29202e464a8c24acd61aeb32b38f4bae0"
+                "reference": "bb98bd598a7a8fec4585cd70dfc01e2961676402"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/4aa212a29202e464a8c24acd61aeb32b38f4bae0",
-                "reference": "4aa212a29202e464a8c24acd61aeb32b38f4bae0",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/bb98bd598a7a8fec4585cd70dfc01e2961676402",
+                "reference": "bb98bd598a7a8fec4585cd70dfc01e2961676402",
                 "shasum": ""
             },
             "require": {
@@ -1986,6 +1986,7 @@
                 "symfony/yaml": "^2.8|^4.1"
             },
             "require-dev": {
+                "ext-json": "*",
                 "keboola/php-temp": "^1.0",
                 "phpunit/phpunit": "^5.4",
                 "squizlabs/php_codesniffer": "^3.2"
@@ -2007,7 +2008,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-03-04T13:53:13+00:00"
+            "time": "2020-03-06T09:03:36+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -5435,16 +5436,16 @@
         },
         {
             "name": "phpspec/prophecy",
-            "version": "v1.10.2",
+            "version": "v1.10.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/prophecy.git",
-                "reference": "b4400efc9d206e83138e2bb97ed7f5b14b831cd9"
+                "reference": "451c3cd1418cf640de218914901e51b064abb093"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/b4400efc9d206e83138e2bb97ed7f5b14b831cd9",
-                "reference": "b4400efc9d206e83138e2bb97ed7f5b14b831cd9",
+                "url": "https://api.github.com/repos/phpspec/prophecy/zipball/451c3cd1418cf640de218914901e51b064abb093",
+                "reference": "451c3cd1418cf640de218914901e51b064abb093",
                 "shasum": ""
             },
             "require": {
@@ -5494,7 +5495,7 @@
                 "spy",
                 "stub"
             ],
-            "time": "2020-01-20T15:57:02+00:00"
+            "time": "2020-03-05T15:02:03+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
