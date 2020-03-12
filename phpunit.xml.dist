@@ -27,6 +27,9 @@
     <testsuite name="executor-tests">
         <directory>Tests/Executor</directory>
     </testsuite>
+    <testsuite name="abs-tests">
+        <file>Tests/Runner/DataLoaderABSTest</file>
+    </testsuite>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
