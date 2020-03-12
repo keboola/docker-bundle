@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.133.31",
+            "version": "3.133.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "330a696c1f1de0267921f732602e55fb3ddfd550"
+                "reference": "02131fd17c9b62f36993bb2da88dd624ce058179"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/330a696c1f1de0267921f732602e55fb3ddfd550",
-                "reference": "330a696c1f1de0267921f732602e55fb3ddfd550",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/02131fd17c9b62f36993bb2da88dd624ce058179",
+                "reference": "02131fd17c9b62f36993bb2da88dd624ce058179",
                 "shasum": ""
             },
             "require": {
@@ -88,7 +88,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-03-06T19:16:46+00:00"
+            "time": "2020-03-11T18:17:17+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1829,17 +1829,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "cf8e2acf2addd13f662347c3c9371b691ac369c3"
+                "reference": "f95220404a5dbe1463772fd89a02a9fe276d5121"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/cf8e2acf2addd13f662347c3c9371b691ac369c3",
-                "reference": "cf8e2acf2addd13f662347c3c9371b691ac369c3",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/f95220404a5dbe1463772fd89a02a9fe276d5121",
+                "reference": "f95220404a5dbe1463772fd89a02a9fe276d5121",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/storage-api-client": "^10.0",
+                "keboola/storage-api-client": "^10.12",
                 "symfony/config": "^2.8|^4.1",
                 "symfony/finder": "^2.8|^4.1",
                 "symfony/serializer": "^2.8|^4.1",
@@ -1868,7 +1868,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-03-05T11:11:35+00:00"
+            "time": "2020-03-12T08:25:45+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1967,12 +1967,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "bb98bd598a7a8fec4585cd70dfc01e2961676402"
+                "reference": "209a4b1423fbec58ace742b32a38d0697c02c540"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/bb98bd598a7a8fec4585cd70dfc01e2961676402",
-                "reference": "bb98bd598a7a8fec4585cd70dfc01e2961676402",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/209a4b1423fbec58ace742b32a38d0697c02c540",
+                "reference": "209a4b1423fbec58ace742b32a38d0697c02c540",
                 "shasum": ""
             },
             "require": {
@@ -2008,7 +2008,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-03-06T09:03:36+00:00"
+            "time": "2020-03-12T09:05:42+00:00"
         },
         {
             "name": "keboola/php-encryption",
