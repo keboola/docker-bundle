@@ -10,11 +10,13 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
 
 class DataLoaderABSTest extends BaseDataLoaderTest
 {
@@ -109,16 +111,18 @@ class DataLoaderABSTest extends BaseDataLoaderTest
                         'source' => 'in.c-docker-demo-testConfig.test',
                     ],
                 ],
+                'files' => [['tags' => ['docker-bundle-test']]]
             ],
         ];
         $fs = new Filesystem();
-        $filePath = $this->workingDir->getDataDir() . '/in/tables/test.csv';
+        $filePath = $this->workingDir->getDataDir() . '/upload/tables/test.csv';
         $fs->dumpFile(
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $this->client->createBucket('docker-demo-testConfig', 'in');
         $this->client->createTable('in.c-docker-demo-testConfig', 'test', new CsvFile($filePath));
+        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(["docker-bundle-test"]));
 
         $dataLoader = new DataLoader(
             $this->client,
@@ -135,8 +139,28 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             true
         );
 
-        var_dump($manifest); die;
+        $finder = new Finder();
+        $finder->files()->in($this->workingDir->getDataDir() . '/in/files');
 
-//        $this->assertS3info($manifest);
+        /** @var \SplFileInfo $file */
+        foreach ($finder as $file) {
+            var_dump($file->getPathname());
+        }
+
+        $inFilePath = $this->workingDir->getDataDir() . '/in/files/test.csv';
+
+        $this->assertEquals("id,text,row_number\n1,test,1\n1,test,2\n1,test,3", file_get_contents($inFilePath));
+
+        $this->assertArrayHasKey('id', $manifest);
+        $this->assertArrayHasKey('name', $manifest);
+        $this->assertArrayHasKey('created', $manifest);
+        $this->assertArrayHasKey('is_public', $manifest);
+        $this->assertArrayHasKey('is_encrypted', $manifest);
+        $this->assertArrayHasKey('tags', $manifest);
+        $this->assertArrayHasKey('max_age_days', $manifest);
+        $this->assertArrayHasKey('size_bytes', $manifest);
+        $this->assertArrayHasKey('is_sliced', $manifest);
+        $this->assertEquals('in.c-docker-demo-testConfig.test', $manifest['id']);
+        $this->assertEquals('in.c-docker-demo-testConfig.test', $manifest['name']);
     }
 }
