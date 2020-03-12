@@ -141,10 +141,10 @@ class DataLoaderABSTest extends BaseDataLoaderTest
 
         $finder = new Finder();
         $finder->files()->in($this->workingDir->getDataDir() . '/in/files')->notName('*.manifest');
-        $this->assertEquals(1, $finder->count());
 
         /** @var \SplFileInfo $file */
         foreach ($finder as $file) {
+            var_dump($file);
             $this->assertEquals("id,text,row_number\n1,test,1\n1,test,2\n1,test,3", file_get_contents($file->getPathname()));
         }
 
