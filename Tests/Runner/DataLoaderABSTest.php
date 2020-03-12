@@ -125,7 +125,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,
-            $this->getDefaultBucketComponent(),
+            $this->getNoDefaultBucketComponent(),
             new OutputFilter()
         );
         $dataLoader->loadInputData(new InputTableStateList([]));
