@@ -388,7 +388,9 @@ class Runner
                 throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
             }
         }
-        $output->getDataLoader()->cleanWorkspace();
+        foreach ($outputs as $output) {
+            $output->getDataLoader()->cleanWorkspace();
+        }
         $this->loggersService->getLog()->info('Output mapping done.');
     }
 

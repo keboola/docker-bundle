@@ -1074,8 +1074,7 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": ' .
-                'Load error: Line 2 - Extra column(s) found  ',
+                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": Load error ',
                 $e->getMessage()
             );
         }
