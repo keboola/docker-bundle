@@ -28,7 +28,7 @@
         <directory>Tests/Executor</directory>
     </testsuite>
     <testsuite name="abs-tests">
-        <file>Tests/Runner/DataLoaderABSTest</file>
+        <file>Tests/Runner/DataLoaderABSTest.php</file>
     </testsuite>
 
     <filter>
