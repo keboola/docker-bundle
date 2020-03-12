@@ -76,7 +76,9 @@ class ContainerConfigurationTest extends TestCase
                             ]
                         ]
                     ]
-                ]
+                ],
+                "variables_id" => "12",
+                "variables_values_id" => "21",
             ]
         ]);
     }
