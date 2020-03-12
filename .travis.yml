@@ -17,7 +17,7 @@ jobs:
   include:
     - stage: tests
       script:
-        - ./vendor/bin/phpunit --testsuite abs-tests --coverage-clover build/logs/clover.xml --debug
+        - export STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS; ./vendor/bin/phpunit --testsuite abs-tests --coverage-clover build/logs/clover.xml --debug
         - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
         - chmod +x ./cc-test-reporter
         - ./cc-test-reporter format-coverage --output "coverage/codeclimate.3.json"
