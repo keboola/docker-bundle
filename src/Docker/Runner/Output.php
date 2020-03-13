@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 
@@ -32,11 +31,6 @@ class Output
      * @var InputTableStateList
      */
     private $inputTableStateList;
-
-    /**
-     * @var DataLoaderInterface
-     */
-    private $dataLoader;
 
     /**
      * Output constructor.
@@ -93,11 +87,6 @@ class Output
         $this->inputTableStateList = $inputTableStateList;
     }
 
-    public function setDataLoader(DataLoaderInterface $dataLoader)
-    {
-        return $this->dataLoader = $dataLoader;
-    }
-
     /**
      * @return InputTableStateList
      */
@@ -117,13 +106,5 @@ class Output
     public function getStateFile()
     {
         return $this->stateFile;
-    }
-
-    /**
-     * @return DataLoaderInterface
-     */
-    public function getDataLoader()
-    {
-        return $this->dataLoader;
     }
 }

@@ -7,7 +7,6 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
@@ -61,7 +60,6 @@ class DataLoaderTest extends BaseDataLoaderTest
         $dataLoader = $this->getDataLoader([]);
         $dataLoader->storeOutput();
         self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
-        self::assertEquals([], $dataLoader->getWorkspaceCredentials());
     }
 
     public function testNoConfigDefaultBucketException()
@@ -117,105 +115,6 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::expectException(UserException::class);
         self::expectExceptionMessage('Failed to write manifest for table sliced.csv');
         $dataLoader->storeOutput();
-    }
-
-    /**
-     * @dataProvider invalidStagingProvider
-     * @param string $input
-     * @param string $output
-     * @param string $error
-     */
-    public function testWorkspaceInvalid($input, $output, $error)
-    {
-        $component = new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
-                ],
-                'staging-storage' => [
-                    'input' => $input,
-                    'output' => $output,
-                ],
-            ],
-        ]);
-        self::expectException(ApplicationException::class);
-        self::expectExceptionMessage($error);
-        new DataLoader(
-            $this->client,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            [],
-            $component,
-            new OutputFilter()
-        );
-    }
-
-    public function invalidStagingProvider()
-    {
-        return [
-            'snowflake-redshift' => [
-                'workspace-snowflake',
-                'workspace-redshift',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-redshift".'
-            ],
-            'redshift-snowflake' => [
-                'workspace-redshift',
-                'workspace-snowflake',
-                'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-snowflake".'
-            ],
-            'redshift-local' => [
-                'workspace-redshift',
-                'local',
-                'Component staging setting mismatch - input: "workspace-redshift", output: "local".'
-            ],
-            'snowflake-local' => [
-                'workspace-snowflake',
-                'local',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "local".'
-            ],
-            'local-redshift' => [
-                'local',
-                'workspace-redshift',
-                'Component staging setting mismatch - input: "local", output: "workspace-redshift".'
-            ],
-            'local-snowflake' => [
-                'local',
-                'workspace-snowflake',
-                'Component staging setting mismatch - input: "local", output: "workspace-snowflake".'
-            ],
-        ];
-    }
-
-    public function testWorkspace()
-    {
-        $component = new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
-                ],
-            ],
-        ]);
-        $dataLoader = new DataLoader(
-            $this->client,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            [],
-            $component,
-            new OutputFilter()
-        );
-        $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
-        self::assertNotEmpty($credentials['user']);
     }
 
     public function testStoreArchive()
