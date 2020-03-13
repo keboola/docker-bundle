@@ -48,7 +48,7 @@ class ConfigFile
         $this->action = $action;
     }
 
-    public function createConfigFile($configData, OutputFilterInterface $outputFilter)
+    public function createConfigFile($configData, OutputFilterInterface $outputFilter, array $workspaceCredentials)
     {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
@@ -65,6 +65,9 @@ class ConfigFile
             }
             if (empty($configData['storage'])) {
                 unset($configData['storage']);
+            }
+            if ($workspaceCredentials) {
+                $configData['authorization']['workspace'] = $workspaceCredentials;
             }
 
             // action

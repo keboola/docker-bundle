@@ -27,7 +27,8 @@ class ConfigFileTest extends BaseRunnerTest
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile(
             ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
-            new OutputFilter()
+            new OutputFilter(),
+            []
         );
         $data = file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json');
         $sampleData = <<<SAMPLE
@@ -56,7 +57,7 @@ SAMPLE;
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
         self::expectException(UserException::class);
         self::expectExceptionMessage('Error in configuration: Unrecognized option');
-        $config->createConfigFile(['key1' => 'value1'], new OutputFilter());
+        $config->createConfigFile(['key1' => 'value1'], new OutputFilter(), []);
     }
 
     public function testDefinitionParameters()
@@ -85,7 +86,7 @@ SAMPLE;
 
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
-        $config->createConfigFile($configData, new OutputFilter());
+        $config->createConfigFile($configData, new OutputFilter(), []);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         self::assertEquals('id', $config['parameters']['primary_key_column']);
@@ -102,7 +103,7 @@ SAMPLE;
         $configData = [];
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
-        $config->createConfigFile($configData, new OutputFilter());
+        $config->createConfigFile($configData, new OutputFilter(), []);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         self::assertArrayHasKey('storage', $config);
@@ -111,5 +112,23 @@ SAMPLE;
         self::assertArrayHasKey('image_parameters', $config);
         self::assertArrayHasKey('action', $config);
         self::assertEquals('run', $config['action']);
+    }
+
+    public function testWorkspaceConfig()
+    {
+        $imageConfig = [];
+        $configData = [];
+        $temp = new Temp();
+        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
+        $config->createConfigFile($configData, new OutputFilter(), ['host' => 'foo', 'user' => 'bar']);
+        $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+
+        self::assertArrayHasKey('storage', $config);
+        self::assertArrayHasKey('authorization', $config);
+        self::assertArrayHasKey('parameters', $config);
+        self::assertArrayHasKey('image_parameters', $config);
+        self::assertArrayHasKey('action', $config);
+        self::assertEquals('run', $config['action']);
+        self::assertEquals(['host' => 'foo', 'user' => 'bar'], $config['authorization']['workspace']);
     }
 }
