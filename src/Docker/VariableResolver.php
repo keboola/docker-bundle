@@ -28,9 +28,9 @@ class VariableResolver
         $this->moustache = new Mustache_Engine();
     }
 
-    public function resolveVariables(array $jobDefinitions, $variableValuesId, $variableValuesData)
+    public function resolveVariables(array $jobDefinitions, $varaiableValuesId, $variableValuesData)
     {
-        if ($variableValuesId && $variableValuesData) {
+        if ($varaiableValuesId && $variableValuesData) {
             throw new UserException('Only one of variableValuesData and variableValuesId can be entered');
         }
         /** @var JobDefinition $jobDefinition */
@@ -42,7 +42,7 @@ class VariableResolver
                 $vConfiguration = (new Variables())->parse(array('config' => $vConfiguration));
                 if ($variableValuesData) {
                     $vRow = $variableValuesData;
-                } elseif ($variableValuesId) {
+                } elseif ($varaiableValuesId) {
                     $vRow = $components->getConfigurationRow(self::KEBOOLA_VARIABLES, $jobDefinition->getConfigId(), $jobDefinition->getConfiguration()['variables_values_id']);
                 } elseif ($jobDefinition->getConfiguration()['variables_values_id']) {
                     $vRow = $components->getConfigurationRow(self::KEBOOLA_VARIABLES, $jobDefinition->getConfigId(), $jobDefinition->getConfiguration()['variables_values_id']);
