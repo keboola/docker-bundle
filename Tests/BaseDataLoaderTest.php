@@ -99,4 +99,19 @@ abstract class BaseDataLoaderTest extends TestCase
             ]
         ]);
     }
+
+    protected function getNoDefaultBucketComponent()
+    {
+        return new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+
+            ]
+        ]);
+    }
 }

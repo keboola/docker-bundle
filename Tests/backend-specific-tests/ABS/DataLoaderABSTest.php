@@ -3,47 +3,17 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\ListFilesOptions;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
 class DataLoaderABSTest extends BaseDataLoaderTest
 {
-    public function setUp()
-    {
-        parent::setUp();
-
-        // Delete file uploads
-        $options = new ListFilesOptions();
-        $options->setTags(["docker-bundle-test"]);
-        $files = $this->client->listFiles($options);
-        foreach ($files as $file) {
-            $this->client->deleteFile($file["id"]);
-        }
-    }
-
-    private function getNoDefaultBucketComponent()
-    {
-        return new Component([
-            'id' => 'docker-demo',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
-                ],
-
-            ]
-        ]);
-    }
-
     public function testLoadInputData()
     {
         $config = [
@@ -53,7 +23,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
                         'source' => 'in.c-docker-demo-testConfig.test',
                     ],
                 ],
-                'files' => [['tags' => ['docker-bundle-test']]]
+                'files' => [['tags' => ['docker-demo-test']]]
             ],
         ];
         $fs = new Filesystem();
@@ -64,7 +34,8 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         );
         $this->client->createBucket('docker-demo-testConfig', 'in');
         $this->client->createTable('in.c-docker-demo-testConfig', 'test', new CsvFile($filePath));
-        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(["docker-bundle-test"]));
+        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test']));
+        sleep(1);
 
         $dataLoader = new DataLoader(
             $this->client,
