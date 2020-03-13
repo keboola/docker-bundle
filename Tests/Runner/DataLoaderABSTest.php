@@ -2,18 +2,14 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
