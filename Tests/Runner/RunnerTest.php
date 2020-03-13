@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
@@ -19,6 +20,7 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
+use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Syrup\Elasticsearch\JobMapper;
@@ -57,8 +59,8 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->clearBuckets();
         // Create buckets
-        $this->getClient()->createBucket('runner-test', Client::STAGE_IN, 'Docker TestSuite');
-        $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_IN, 'Docker TestSuite', 'snowflake');
+        $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'snowflake');
     }
 
     private function clearFiles()
@@ -1072,9 +1074,7 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": ' .
-                'Load error: odbc_execute(): SQL error: Number of columns in file (3) does not match that of the ' .
-                'corresponding table (2)',
+                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": Load error',
                 $e->getMessage()
             );
         }
@@ -2430,6 +2430,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
+        var_dump($tableInfo['lastImportDate']);
         $jobDefinition1 = new JobDefinition(
             [
                 'storage' => [
@@ -2502,5 +2503,160 @@ class RunnerTest extends BaseRunnerTest
             [["no-swap"]],
             [[]],
         ];
+    }
+
+    public function testWorkspaceMapping()
+    {
+        $this->clearBuckets();
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $componentData = [
+            'id' => 'keboola.runner-workspace-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'tag' => 'latest',
+                ],
+                'staging_storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-workspace-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        self::assertFalse($this->client->tableExists('out.c-runner-test.new-table'));
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-runner-test.mytable',
+                                    'destination' => 'local-table',
+                                ],
+                            ],
+                        ],
+                        'output' => [
+                            'tables' => [
+                                [
+                                    'source' => 'local-table',
+                                    'destination' => 'out.c-runner-test.new-table',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'copy',
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        $options = new ListConfigurationWorkspacesOptions();
+        $options->setComponentId('keboola.runner-workspace-test');
+        $options->setConfigurationId($configId);
+        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+        self::assertTrue($this->client->tableExists('out.c-runner-test.new-table'));
+        $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
+    }
+
+    public function testWorkspaceMappingCleanup()
+    {
+        $this->clearBuckets();
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $componentData = [
+            'id' => 'keboola.runner-workspace-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'tag' => 'latest',
+                ],
+                'staging_storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-workspace-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    $configId,
+                    [
+                        'storage' => [
+                            'input' => [
+                                'tables' => [
+                                    [
+                                        'source' => 'in.c-runner-test.mytable',
+                                        'destination' => 'local-table',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'parameters' => [
+                            'operation' => 'copy',
+                        ],
+                    ],
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile()
+            );
+            self::fail('Must fail');
+        } catch (UserException $e) {
+            self::assertContains('One input and output mapping is required.', $e->getMessage());
+            $options = new ListConfigurationWorkspacesOptions();
+            $options->setComponentId('keboola.runner-workspace-test');
+            $options->setConfigurationId($configId);
+            self::assertCount(0, $components->listConfigurationWorkspaces($options));
+            self::assertFalse($this->client->tableExists('out.c-runner-test.new-table'));
+            $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
+        }
     }
 }
