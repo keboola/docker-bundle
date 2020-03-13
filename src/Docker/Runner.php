@@ -293,12 +293,7 @@ class Runner
             $inputTableStateList = new InputTableStateList([]);
         }
 
-        try {
-            $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode, $inputTableStateList);
-        } catch (\Exception $e) {
-            $dataLoader->cleanWorkspace();
-            throw $e;
-        }
+        $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode, $inputTableStateList);
         return $output;
     }
 
@@ -388,9 +383,6 @@ class Runner
                 throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
             }
         }
-        foreach ($outputs as $output) {
-            $output->getDataLoader()->cleanWorkspace();
-        }
         $this->loggersService->getLog()->info('Output mapping done.');
     }
 
@@ -420,7 +412,6 @@ class Runner
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
         $output->setInputTableStateList($resultInputTablesState);
-        $output->setDataLoader($dataLoader);
 
         if ($mode === self::MODE_DEBUG) {
             $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
@@ -490,7 +481,7 @@ class Runner
                 'id' => $image->getFullImageId(),
                 'digests' => $image->getImageDigests()
             ];
-            $configFile->createConfigFile($image->getConfigData(), $outputFilter, $dataLoader->getWorkspaceCredentials());
+            $configFile->createConfigFile($image->getConfigData(), $outputFilter);
 
             $containerIdParts = [
                 $jobId,

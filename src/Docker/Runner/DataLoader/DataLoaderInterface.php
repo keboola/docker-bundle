@@ -24,11 +24,4 @@ interface DataLoaderInterface
     public function storeOutput();
 
     public function storeDataArchive($fileName, array $tags);
-
-    /**
-     * @return array
-     */
-    public function getWorkspaceCredentials();
-
-    public function cleanWorkspace();
 }

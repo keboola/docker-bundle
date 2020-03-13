@@ -7,11 +7,9 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader\NullWorkspaceProvider;
 use Keboola\InputMapping\Reader\Options\InputTableOptionsList;
 use Keboola\InputMapping\Reader\Reader;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
-use Keboola\InputMapping\Reader\WorkspaceProviderInterface;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
@@ -69,10 +67,6 @@ class DataLoader implements DataLoaderInterface
      * @var OutputFilterInterface
      */
     private $outputFilter;
-    /**
-     * @var WorkspaceProvider
-     */
-    private $workspaceProvider;
 
     /**
      * DataLoader constructor.
@@ -105,18 +99,6 @@ class DataLoader implements DataLoaderInterface
         $this->configId = $configId;
         $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
-        $this->validateStagingSetting();
-        if (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT)
-        ) {
-            $this->workspaceProvider = new WorkspaceProvider(
-                $this->storageClient,
-                $this->component->getId(),
-                $this->configId
-            );
-        } else {
-            $this->workspaceProvider = new NullWorkspaceProvider();
-        }
     }
 
     /**
@@ -127,7 +109,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
-        $reader = new Reader($this->storageClient, $this->logger, $this->workspaceProvider);
+        $reader = new Reader($this->storageClient, $this->logger);
         $reader->setFormat($this->component->getConfigurationFormat());
 
         $resultInputTablesStateList = new InputTableStateList([]);
@@ -199,14 +181,9 @@ class DataLoader implements DataLoaderInterface
             $fileWriter = new FileWriter($this->storageClient, $this->logger);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-            $tableWriter = new TableWriter($this->storageClient, $this->logger, $this->workspaceProvider);
+            $tableWriter = new TableWriter($this->storageClient, $this->logger);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
-            $tableQueue = $tableWriter->uploadTables(
-                $this->dataDirectory . '/out/tables',
-                $uploadTablesOptions,
-                $systemMetadata,
-                $this->getStagingStorageOutput()
-            );
+            $tableQueue = $tableWriter->uploadTables($this->dataDirectory . "/out/tables", $uploadTablesOptions, $systemMetadata);
 
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
@@ -215,17 +192,6 @@ class DataLoader implements DataLoaderInterface
             return $tableQueue;
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
-        }
-    }
-
-    public function getWorkspaceCredentials()
-    {
-        if ($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SNOWFLAKE);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_REDSHIFT);
-        } else {
-            return [];
         }
     }
 
@@ -291,40 +257,6 @@ class DataLoader implements DataLoaderInterface
                 return $stagingStorage['input'];
             }
         }
-        return Reader::STAGING_LOCAL;
-    }
-
-    private function getStagingStorageOutput()
-    {
-        if (($stagingStorage = $this->component->getStagingStorage()) !== null) {
-            if (isset($stagingStorage['output'])) {
-                return $stagingStorage['output'];
-            }
-        }
-        return Reader::STAGING_LOCAL;
-    }
-
-    private function validateStagingSetting()
-    {
-        if ((($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_SNOWFLAKE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SNOWFLAKE))
-        ) {
-            throw new ApplicationException(sprintf(
-                'Component staging setting mismatch - input: "%s", output: "%s".',
-                $this->getStagingStorageInput(),
-                $this->getStagingStorageOutput()
-            ));
-        }
-    }
-
-    public function cleanWorkspace()
-    {
-        $this->workspaceProvider->cleanup();
+        return 'local';
     }
 }

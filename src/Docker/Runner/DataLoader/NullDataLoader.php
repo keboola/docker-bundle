@@ -26,13 +26,4 @@ class NullDataLoader implements DataLoaderInterface
     public function storeDataArchive($fileName, array $tags)
     {
     }
-
-    public function getWorkspaceCredentials()
-    {
-        return [];
-    }
-
-    public function cleanWorkspace()
-    {
-    }
 }
