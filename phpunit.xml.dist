@@ -27,6 +27,12 @@
     <testsuite name="executor-tests">
         <directory>Tests/Executor</directory>
     </testsuite>
+    <testsuite name="s3-tests">
+        <directory>Tests/backend-specific-tests/S3</directory>
+    </testsuite>
+    <testsuite name="abs-tests">
+        <directory>Tests/backend-specific-tests/ABS</directory>
+    </testsuite>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
