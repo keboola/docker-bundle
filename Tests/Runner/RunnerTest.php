@@ -2430,7 +2430,6 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
-        var_dump($tableInfo['lastImportDate']);
         $jobDefinition1 = new JobDefinition(
             [
                 'storage' => [
