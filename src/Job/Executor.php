@@ -186,8 +186,12 @@ class Executor extends BaseExecutor
                 }
             }
 
-            $variableResolver = new VariableResolver($this->storageApi);
-            $jobDefinitions = $variableResolver->resolveVariables($jobDefinitionParser->getJobDefinitions());
+            $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+            $jobDefinitions = $variableResolver->resolveVariables(
+                $jobDefinitionParser->getJobDefinitions(),
+                empty($params['variableValuesId']) ? [] : $params['variableValuesId'],
+                empty($params['variableValuesData']) ? [] : $params['variableValuesData']
+            );
             $usageFile = new UsageFile();
             $usageFile->setJobMapper($this->jobMapper);
             $usageFile->setFormat($componentClass->getConfigurationFormat());

@@ -12,15 +12,7 @@ class VariableValues extends Configuration
         $treeBuilder = new TreeBuilder;
         $rootNode = $treeBuilder->root('configuration');
         $rootNode
-            ->arrayNode('variables')
-                ->arrayPrototype()
-                    ->children()
-                        ->scalarNode('id')->end()
-                        ->scalarNode('name')->end()
-                        ->arrayNode('configuration')->ignoreExtraKeys(false)->end()
-                    ->end()
-                ->end()
-            ->end();
+            ->ignoreExtraKeys(false)->end();
 
         return $treeBuilder;
     }
