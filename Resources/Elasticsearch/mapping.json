@@ -23,6 +23,13 @@
             },
             "format": {
                 "type": "string"
+            },
+            "variableValuesId": {
+                "type": "string"
+            },
+            "variableValuesData": {
+                "type": "object",
+                "enabled": "false"
             }
         }
     }
