@@ -76,6 +76,8 @@ class ConfigFile
             $fileName = $this->dataDirectory . DIRECTORY_SEPARATOR . 'config' . $adapter->getFileExtension();
             $outputFilter->collectValues($configData);
             $adapter->setConfig($configData);
+            unset($configData['variables_id']);
+            unset($configData['variables_values_id']);
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {
             throw new UserException("Error in configuration: " . $e->getMessage(), $e);

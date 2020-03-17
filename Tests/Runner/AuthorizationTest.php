@@ -113,6 +113,8 @@ class AuthorizationTest extends BaseRunnerTest
             'action' => 'run',
             'storage' => [],
             'parameters' => [],
+            'variables_id' => null,
+            'variables_values_id' => null,
         ];
         self::assertEquals($sampleData, $data);
     }
@@ -253,7 +255,7 @@ class AuthorizationTest extends BaseRunnerTest
         ];
         $config = ['authorization' => ['oauth_api' => [
             'credentials' => $credentials,
-            'version' => 3
+            'version' => 3,
         ]]];
 
         $temp = new Temp();
@@ -281,7 +283,7 @@ class AuthorizationTest extends BaseRunnerTest
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
-                    'version' => 2
+                    'version' => 2,
                 ],
             ],
             'image_parameters' => [
@@ -290,6 +292,8 @@ class AuthorizationTest extends BaseRunnerTest
             'action' => 'run',
             'storage' => [],
             'parameters' => [],
+            'variables_id' => null,
+            'variables_values_id' => null,
         ];
         self::assertEquals($sampleData, $data);
     }
@@ -304,7 +308,7 @@ class AuthorizationTest extends BaseRunnerTest
         $config = [
             'oauth_api' => [
                 'id' => 'test-deprecated-credentials',
-                'version' => 2
+                'version' => 2,
             ]
         ];
 

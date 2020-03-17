@@ -44,6 +44,8 @@ class ConfigFileTest extends BaseRunnerTest
         "fooBar": "baz"
     },
     "action": "run",
+    "variables_id": null,
+    "variables_values_id": null,
     "storage": {},
     "authorization": {}
 }

@@ -112,7 +112,11 @@ class VariableResolver
                         $variablesId
                     ));
                 }
-                $vRow = (new VariableValues())->parse(array('config' => $vRow));
+                try {
+                    $vRow = (new VariableValues())->parse(array('config' => $vRow));
+                } catch (InvalidConfigurationException $e) {
+                    throw new UserException('Variable values configuration is invalid: ' . $e->getMessage(), $e);
+                }
                 $context = new VariablesContext($vRow);
                 $variableNames = [];
                 foreach ($vConfiguration['variables'] as $variable) {

@@ -72,7 +72,7 @@ class VariableResolverTest extends TestCase
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->client,
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
-            ['foo' => 'bar']
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
         $configuration = [
             'variables_id' => $vConfigurationId,
@@ -117,7 +117,11 @@ class VariableResolverTest extends TestCase
         $variableResolver = new VariableResolver($this->client, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
-        $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], null, ['foo' => 'bar'])[0];
+        $newJobDefinition = $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
+        )[0];
         self::assertEquals(
             [
                 'parameters' => [
@@ -142,7 +146,7 @@ class VariableResolverTest extends TestCase
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->client,
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
-            ['foo' => 'bar']
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
         $configuration = [
             'variables_id' => $vConfigurationId,
@@ -178,7 +182,7 @@ class VariableResolverTest extends TestCase
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->client,
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
-            ['foo' => 'bar']
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
         $configuration = [
             'variables_id' => $vConfigurationId,
@@ -214,7 +218,7 @@ class VariableResolverTest extends TestCase
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->client,
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
-            ['foo' => 'bar']
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
         $configuration = [
             'variables_id' => $vConfigurationId,
@@ -225,7 +229,11 @@ class VariableResolverTest extends TestCase
         $variableResolver = new VariableResolver($this->client, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
-        $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], null, ['foo' => 'bazooka'])[0];
+        $newJobDefinition = $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'bazooka']]]
+        )[0];
         self::assertEquals(
             [
                 'parameters' => [
@@ -332,7 +340,11 @@ class VariableResolverTest extends TestCase
         self::expectExceptionMessage(
             'Only one of variables_id and variableValuesId can be entered'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', ['foo' => 'bar'])[0];
+        $variableResolver->resolveVariables(
+            [$jobDefinition],
+            'non-existent',
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
+        )[0];
     }
 
     public function testResolveVariablesNonExistentVariableConfiguration()
@@ -412,5 +424,24 @@ class VariableResolverTest extends TestCase
             $newJobDefinition->getConfiguration()
         );
         self::assertFalse($logger->hasInfoThatContains('Replacing variables using default values with ID:'));
+    }
+
+    public function testInvalidValuesConfiguration()
+    {
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $this->client,
+            ['variables' => [['name' => 'foo', 'type' => 'string']]],
+            ['invalid' => [['name' => 'foo', 'value' => 'bar']]]
+        );
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{ foo }} and {{ notreplaced }}.'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->client, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
+        $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
     }
 }
