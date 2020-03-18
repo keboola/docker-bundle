@@ -48,8 +48,6 @@ class ConfigurationAdapterTest extends TestCase
                 ],
             ],
             'image_parameters' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
         ];
     }
 
@@ -80,8 +78,6 @@ authorization:
                 key: val
         version: 2
 image_parameters: {  }
-variables_id: null
-variables_values_id: null
 
 EOT;
         return $data;
@@ -124,9 +120,7 @@ EOT;
             "version": 2
         }
     },
-    "image_parameters": {},
-    "variables_id": null,
-    "variables_values_id": null
+    "image_parameters": {}
 }
 EOT;
         return $data;
@@ -225,7 +219,7 @@ EOT;
             ]
         );
         self::assertEquals(
-            ['parameters' => [], 'image_parameters' => [], 'variables_id' => null, 'variables_values_id' => null],
+            ['parameters' => [], 'image_parameters' => []],
             $data
         );
         $adapter = new Adapter('json');

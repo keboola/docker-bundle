@@ -93,9 +93,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
+            'processors' => []
         ];
 
         $parser = new JobDefinitionParser();
@@ -187,9 +185,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
+            'processors' => []
         ];
 
         $parser = new JobDefinitionParser();
@@ -285,8 +281,6 @@ class JobDefinitionParserTest extends TestCase
                 'key' => 'val',
             ],
             'processors' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
         ];
 
         $expectedRow2 = [
@@ -303,8 +297,6 @@ class JobDefinitionParserTest extends TestCase
                 ],
             ],
             'processors' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
         ];
 
         $parser = new JobDefinitionParser();
@@ -396,9 +388,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
+            'processors' => []
         ];
 
         $parser = new JobDefinitionParser();

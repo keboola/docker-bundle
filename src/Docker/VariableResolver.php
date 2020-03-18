@@ -47,8 +47,16 @@ class VariableResolver
         /** @var JobDefinition $jobDefinition */
         $newJobDefinitions = [];
         foreach ($jobDefinitions as $jobDefinition) {
-            $variablesId = $jobDefinition->getConfiguration()['variables_id'];
-            $defaultValuesId = $jobDefinition->getConfiguration()['variables_values_id'];
+            if (!empty($jobDefinition->getConfiguration()['variables_id'])) {
+                $variablesId = $jobDefinition->getConfiguration()['variables_id'];
+            } else {
+                $variablesId = null;
+            }
+            if (!empty($jobDefinition->getConfiguration()['variables_values_id'])) {
+                $defaultValuesId = $jobDefinition->getConfiguration()['variables_values_id'];
+            } else {
+                $defaultValuesId = null;
+            }
             if ($variablesId) {
                 $components = new Components($this->client);
                 try {

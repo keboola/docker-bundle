@@ -89,7 +89,6 @@ class VariableResolverTest extends TestCase
                     'some_parameter' => 'foo is bar and .',
                 ],
                 'variables_id' => $vConfigurationId,
-                'variables_values_id' => null,
                 'storage' => [],
                 'processors' => [
                     'before' => [],
@@ -128,7 +127,6 @@ class VariableResolverTest extends TestCase
                     'some_parameter' => 'foo is bar',
                 ],
                 'variables_id' => $vConfigurationId,
-                'variables_values_id' => null,
                 'storage' => [],
                 'processors' => [
                     'before' => [],
@@ -416,8 +414,6 @@ class VariableResolverTest extends TestCase
                 'parameters' => [
                     'some_parameter' => 'foo is {{ foo }}',
                 ],
-                'variables_id' => null,
-                'variables_values_id' => null,
                 'storage' => [],
                 'processors' => [],
             ],

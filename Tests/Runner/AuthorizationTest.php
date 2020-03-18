@@ -112,9 +112,7 @@ class AuthorizationTest extends BaseRunnerTest
             ],
             'action' => 'run',
             'storage' => [],
-            'parameters' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
+            'parameters' => []
         ];
         self::assertEquals($sampleData, $data);
     }
@@ -292,8 +290,6 @@ class AuthorizationTest extends BaseRunnerTest
             'action' => 'run',
             'storage' => [],
             'parameters' => [],
-            'variables_id' => null,
-            'variables_values_id' => null,
         ];
         self::assertEquals($sampleData, $data);
     }
