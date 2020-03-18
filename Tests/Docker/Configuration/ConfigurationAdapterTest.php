@@ -228,8 +228,7 @@ EOT;
         $string = file_get_contents($temp->getTmpFolder() . '/config.json');
         self::assertEquals(
             "{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    " .
-            "\"variables_id\": null,\n    \"variables_values_id\": null,\n    \"storage\": {},\n    " .
-            "\"authorization\": {}\n}",
+            "\"storage\": {},\n    \"authorization\": {}\n}",
             $string
         );
     }
