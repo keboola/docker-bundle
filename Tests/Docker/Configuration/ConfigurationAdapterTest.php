@@ -126,7 +126,7 @@ EOT;
     },
     "image_parameters": {},
     "variables_id": null,
-    "variables_values_id": null,
+    "variables_values_id": null
 }
 EOT;
         return $data;
