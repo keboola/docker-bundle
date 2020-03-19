@@ -93,7 +93,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => []
+            'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
@@ -185,7 +185,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => []
+            'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
@@ -236,11 +236,11 @@ class JobDefinitionParserTest extends TestCase
                                 'username' => 'override user',
                             ],
                             'key' => 'val',
-                        ]
+                        ],
                     ],
                     'state' => [
                         'key1' => 'val1',
-                    ]
+                    ],
                 ],
                 [
                     'id' => 'row2',
@@ -388,7 +388,7 @@ class JobDefinitionParserTest extends TestCase
                     1 => 'tdata <- t(data[, !(names(data) %in% ("name"))])',
                 ],
             ],
-            'processors' => []
+            'processors' => [],
         ];
 
         $parser = new JobDefinitionParser();
