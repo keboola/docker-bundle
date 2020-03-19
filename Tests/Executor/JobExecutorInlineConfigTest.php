@@ -16,7 +16,7 @@ use Symfony\Bridge\Monolog\Logger;
 
 class JobExecutorInlineConfigTest extends BaseExecutorTest
 {
-    private function getJobParameters()J
+    private function getJobParameters()
     {
         $data = [
             'params' => [
