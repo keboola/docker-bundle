@@ -18,7 +18,8 @@
         "keboola/output-mapping": "^11.0",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2",
-        "keboola/object-encryptor": "^0.1"
+        "keboola/object-encryptor": "^0.1",
+        "ext-json": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "~5.2",

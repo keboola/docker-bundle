@@ -64,7 +64,7 @@ class AuthorizationTest extends BaseRunnerTest
             'authorizedFor' => '',
             'creator' => [
                 'id' => '3800',
-                'description' => 'ondrej.hlavacek@keboola.com'
+                'description' => 'ondrej.hlavacek@keboola.com',
             ],
             'created' => '2016-02-09 09:47:16',
             '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
@@ -79,7 +79,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->will(self::returnValue($oauthResponse));
         $config = ['authorization' => ['oauth_api' => [
             'id' => 'test-credentials-45',
-            'version' => 3
+            'version' => 3,
         ]]];
 
         $temp = new Temp();
@@ -136,7 +136,7 @@ class AuthorizationTest extends BaseRunnerTest
         ];
         $config = ['oauth_api' => [
             'credentials' => $credentials,
-            'version' => 3
+            'version' => 3,
         ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
@@ -158,7 +158,7 @@ class AuthorizationTest extends BaseRunnerTest
         $encryptorFactory->setComponentId('keboola.docker-demo');
         $config = ['oauth_api' => [
             'id' => 'test-credentials-45',
-            'version' => 3
+            'version' => 3,
         ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
@@ -181,7 +181,7 @@ class AuthorizationTest extends BaseRunnerTest
         $encryptorFactory->setComponentId('keboola.docker-demo');
         $config = ['oauth_api' => [
             'id' => 'test-credentials-45',
-            'version' => 3
+            'version' => 3,
         ]];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)
@@ -217,7 +217,7 @@ class AuthorizationTest extends BaseRunnerTest
         ];
         $config = ['oauth_api' => [
             'credentials' => $encryptorFactory->getEncryptor()->encrypt($credentials),
-            'version' => 3
+            'version' => 3,
         ]];
         $expectedConfig = $config;
         unset($expectedConfig['oauth_api']['version']);
@@ -253,7 +253,7 @@ class AuthorizationTest extends BaseRunnerTest
         ];
         $config = ['authorization' => ['oauth_api' => [
             'credentials' => $credentials,
-            'version' => 3
+            'version' => 3,
         ]]];
 
         $temp = new Temp();
@@ -281,7 +281,7 @@ class AuthorizationTest extends BaseRunnerTest
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
-                    'version' => 2
+                    'version' => 2,
                 ],
             ],
             'image_parameters' => [
@@ -304,8 +304,8 @@ class AuthorizationTest extends BaseRunnerTest
         $config = [
             'oauth_api' => [
                 'id' => 'test-deprecated-credentials',
-                'version' => 2
-            ]
+                'version' => 2,
+            ],
         ];
 
         $oauthClientStub = self::getMockBuilder(Credentials::class)

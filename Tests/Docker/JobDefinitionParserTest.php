@@ -210,7 +210,7 @@ class JobDefinitionParserTest extends TestCase
                 'parameters' => [
                     'credentials' => [
                         'username' => 'user',
-                        '#password' => 'password'
+                        '#password' => 'password',
                     ],
                 ],
             ],
@@ -235,12 +235,12 @@ class JobDefinitionParserTest extends TestCase
                             'credentials' => [
                                 'username' => 'override user',
                             ],
-                            'key' => 'val'
-                        ]
+                            'key' => 'val',
+                        ],
                     ],
                     'state' => [
-                        'key1' => 'val1'
-                    ]
+                        'key1' => 'val1',
+                    ],
                 ],
                 [
                     'id' => 'row2',
@@ -248,13 +248,12 @@ class JobDefinitionParserTest extends TestCase
                     'isDisabled' => false,
                     'configuration' => [
                         'storage' => [
-                            'input' => []
-                        ]
+                            'input' => [],
+                        ],
                     ],
                     'state' => [
-                        'key2' => 'val2'
-                    ]
-
+                        'key2' => 'val2',
+                    ],
                 ],
             ],
         ];
@@ -269,17 +268,17 @@ class JobDefinitionParserTest extends TestCase
                             'columns' => [],
                             'where_values' => [],
                             'where_operator' => 'eq',
-                        ]
+                        ],
                     ],
-                    'files' => []
+                    'files' => [],
                 ],
             ],
             'parameters' => [
                 'credentials' => [
                     'username' => 'override user',
-                    '#password' => 'password'
+                    '#password' => 'password',
                 ],
-                'key' => 'val'
+                'key' => 'val',
             ],
             'processors' => [],
         ];
@@ -294,7 +293,7 @@ class JobDefinitionParserTest extends TestCase
             'parameters' => [
                 'credentials' => [
                     'username' => 'user',
-                    '#password' => 'password'
+                    '#password' => 'password',
                 ],
             ],
             'processors' => [],
@@ -571,7 +570,7 @@ class JobDefinitionParserTest extends TestCase
                     'state' => [],
                     'configuration' => [
                         'parameters' => [
-                            'c' => 'd'
+                            'c' => 'd',
                         ],
                         'processors' => [
                             'before' => [
@@ -580,7 +579,7 @@ class JobDefinitionParserTest extends TestCase
                                         'component' => 'keboola.processor-iconv',
                                     ],
                                     'parameters' => [
-                                        'source_encoding' => 'WINDOWS-1250'
+                                        'source_encoding' => 'WINDOWS-1250',
                                     ],
                                 ],
                             ],

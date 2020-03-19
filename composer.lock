@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d58a927782e596252b5ad6e88444396b",
+    "content-hash": "e8a67a980b0f5284cca107ec1da73d6a",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.133.36",
+            "version": "3.133.34",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "59e824e235220730a8e1d276d036a9f085486512"
+                "reference": "02131fd17c9b62f36993bb2da88dd624ce058179"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/59e824e235220730a8e1d276d036a9f085486512",
-                "reference": "59e824e235220730a8e1d276d036a9f085486512",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/02131fd17c9b62f36993bb2da88dd624ce058179",
+                "reference": "02131fd17c9b62f36993bb2da88dd624ce058179",
                 "shasum": ""
             },
             "require": {
@@ -88,7 +88,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-03-13T18:09:32+00:00"
+            "time": "2020-03-11T18:17:17+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1824,17 +1824,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "9.0.0",
+            "version": "dev-odin-PS-284",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "1dda0899480ea280e7839852b76e1a3e920563fe"
+                "reference": "f95220404a5dbe1463772fd89a02a9fe276d5121"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/1dda0899480ea280e7839852b76e1a3e920563fe",
-                "reference": "1dda0899480ea280e7839852b76e1a3e920563fe",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/f95220404a5dbe1463772fd89a02a9fe276d5121",
+                "reference": "f95220404a5dbe1463772fd89a02a9fe276d5121",
                 "shasum": ""
             },
             "require": {
@@ -1868,7 +1868,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-03-13T10:00:24+00:00"
+            "time": "2020-03-12T08:25:45+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1963,21 +1963,21 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "11.0.0",
+            "version": "dev-odin-PS-285",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "550b57770dc73b2521a2443db50a76fa34ed18bd"
+                "reference": "209a4b1423fbec58ace742b32a38d0697c02c540"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/550b57770dc73b2521a2443db50a76fa34ed18bd",
-                "reference": "550b57770dc73b2521a2443db50a76fa34ed18bd",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/209a4b1423fbec58ace742b32a38d0697c02c540",
+                "reference": "209a4b1423fbec58ace742b32a38d0697c02c540",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "^9.0",
+                "keboola/input-mapping": "dev-odin-PS-284",
                 "keboola/sanitizer": "^0.1",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8|^4.1",
@@ -2008,7 +2008,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-03-13T15:16:46+00:00"
+            "time": "2020-03-12T09:05:42+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2630,6 +2630,52 @@
                 "jsonpath"
             ],
             "time": "2019-12-30T18:03:34+00:00"
+        },
+        {
+            "name": "mustache/mustache",
+            "version": "v2.13.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bobthecow/mustache.php.git",
+                "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/e95c5a008c23d3151d59ea72484d4f72049ab7f4",
+                "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.2.4"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "~1.11",
+                "phpunit/phpunit": "~3.7|~4.0|~5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Mustache": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Justin Hileman",
+                    "email": "justin@justinhileman.info",
+                    "homepage": "http://justinhileman.com"
+                }
+            ],
+            "description": "A Mustache implementation in PHP.",
+            "homepage": "https://github.com/bobthecow/mustache.php",
+            "keywords": [
+                "mustache",
+                "templating"
+            ],
+            "time": "2019-11-23T21:40:31+00:00"
         },
         {
             "name": "ocramius/proxy-manager",
@@ -6565,7 +6611,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/input-mapping": 20,
+        "keboola/output-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": [],

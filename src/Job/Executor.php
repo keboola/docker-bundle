@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\StorageApiService;
@@ -185,7 +186,12 @@ class Executor extends BaseExecutor
                 }
             }
 
-            $jobDefinitions = $jobDefinitionParser->getJobDefinitions();
+            $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+            $jobDefinitions = $variableResolver->resolveVariables(
+                $jobDefinitionParser->getJobDefinitions(),
+                empty($params['variableValuesId']) ? [] : $params['variableValuesId'],
+                empty($params['variableValuesData']) ? [] : $params['variableValuesData']
+            );
             $usageFile = new UsageFile();
             $usageFile->setJobMapper($this->jobMapper);
             $usageFile->setFormat($componentClass->getConfigurationFormat());

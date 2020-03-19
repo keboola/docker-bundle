@@ -182,7 +182,7 @@ EOT;
         $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.yml");
 
-        self::assertEquals(file_get_contents($root . "/config.yml"), $this->getYmlConfigFileTemplate());
+        self::assertEquals($this->getYmlConfigFileTemplate(), file_get_contents($root . "/config.yml"));
 
         $fs->remove($root . "/config.yml");
         $fs->remove($root);
@@ -210,12 +210,26 @@ EOT;
         $temp = new Temp();
         $temp->initRunFolder();
         $container = new Container();
-        $data = $container->parse(["config" => ['parameters' => [], 'image_parameters' => []]]);
-        self::assertEquals(['parameters' => [], 'image_parameters' => []], $data);
+        $data = $container->parse(
+            [
+                'config' => [
+                    'parameters' => [],
+                    'image_parameters' => [],
+                ],
+            ]
+        );
+        self::assertEquals(
+            ['parameters' => [], 'image_parameters' => []],
+            $data
+        );
         $adapter = new Adapter('json');
         $adapter->setConfig($data);
         $adapter->writeToFile($temp->getTmpFolder() . '/config.json');
         $string = file_get_contents($temp->getTmpFolder() . '/config.json');
-        self::assertEquals("{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    \"storage\": {},\n    \"authorization\": {}\n}", $string);
+        self::assertEquals(
+            "{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    " .
+            "\"storage\": {},\n    \"authorization\": {}\n}",
+            $string
+        );
     }
 }
