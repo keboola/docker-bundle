@@ -66,7 +66,18 @@ That means that it will execute a disabled configuration row.
 Create an execution job on a specified component.
 
 + Parameters
-    + component (string) ... KBC component Id
+    + component (string) ... Component ID
+
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
 
 ### Run job [POST]
 
@@ -152,6 +163,18 @@ Create an execution job on a specified component while using a specific image ta
 + Parameters
     + component (string) - KBC component Id
     + tag (string) - Docker image tag to be used
+
+
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
 
 ### Run job [POST]
 
@@ -248,6 +271,17 @@ mapping so that you don't end up with gigabyte size archives.
 + Parameters
     + componentId (string) ... KBC component Id
 
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
+
 ### Create a debug job [POST]
 
 + Request Stored configuration (application/json)
@@ -332,6 +366,9 @@ If you are using other stacks, you need to use the [correct URL](https://develop
 + Parameters
     + image (string) ... KBC component Id
     + action (string) ... Action name
+
++ Attributes
+    + configData (optional, object) - Arbitrary configuration data
 
 ### Process action [POST]
 
