@@ -336,7 +336,7 @@ class VariableResolverTest extends TestCase
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            'Only one of variables_id and variableValuesId can be entered'
+            'Only one of variableValuesId and variableValuesData can be entered.'
         );
         $variableResolver->resolveVariables(
             [$jobDefinition],

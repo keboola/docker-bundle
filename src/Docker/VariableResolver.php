@@ -42,7 +42,7 @@ class VariableResolver
     public function resolveVariables(array $jobDefinitions, $variableValuesId, $variableValuesData)
     {
         if ($variableValuesId && $variableValuesData) {
-            throw new UserException('Only one of variables_id and variableValuesId can be entered');
+            throw new UserException('Only one of variableValuesId and variableValuesData can be entered.');
         }
         /** @var JobDefinition $jobDefinition */
         $newJobDefinitions = [];
