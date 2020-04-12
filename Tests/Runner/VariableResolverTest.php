@@ -440,4 +440,80 @@ class VariableResolverTest extends TestCase
         self::expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
         $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
     }
+
+    public function testResolveVariablesSpecialCharacterReplacement()
+    {
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $this->client,
+            ['variables' => [['name' => 'foo', 'type' => 'string']]],
+            []
+        );
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->client, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        $newJobDefinition = $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
+        )[0];
+        self::assertEquals(
+            [
+                'parameters' => [
+                    'some_parameter' => 'foo is special &quot; \' { } characters',
+                ],
+                'variables_id' => $vConfigurationId,
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+            ],
+            $newJobDefinition->getConfiguration()
+        );
+        self::assertTrue($logger->hasInfoThatContains('Replacing variables using inline values.'));
+        self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
+    }
+
+    public function testResolveVariablesSpecialCharacterNonEscapedReplacement()
+    {
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $this->client,
+            ['variables' => [['name' => 'foo', 'type' => 'string']]],
+            []
+        );
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{{ foo }}}'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->client, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        $newJobDefinition = $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
+        )[0];
+        self::assertEquals(
+            [
+                'parameters' => [
+                    'some_parameter' => 'foo is special &quot; \' { } characters',
+                ],
+                'variables_id' => $vConfigurationId,
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+            ],
+            $newJobDefinition->getConfiguration()
+        );
+        self::assertTrue($logger->hasInfoThatContains('Replacing variables using inline values.'));
+        self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
+    }
 }
