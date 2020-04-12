@@ -464,7 +464,7 @@ class VariableResolverTest extends TestCase
         self::assertEquals(
             [
                 'parameters' => [
-                    'some_parameter' => 'foo is special &quot; \' { } characters',
+                    'some_parameter' => 'foo is special " \' { } characters',
                 ],
                 'variables_id' => $vConfigurationId,
                 'storage' => [],
@@ -494,26 +494,12 @@ class VariableResolverTest extends TestCase
         $variableResolver = new VariableResolver($this->client, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
-        $newJobDefinition = $variableResolver->resolveVariables(
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Variable replacement resulted in invalid configuration, error: Syntax error');
+        $variableResolver->resolveVariables(
             [$jobDefinition],
             null,
             ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
         )[0];
-        self::assertEquals(
-            [
-                'parameters' => [
-                    'some_parameter' => 'foo is special &quot; \' { } characters',
-                ],
-                'variables_id' => $vConfigurationId,
-                'storage' => [],
-                'processors' => [
-                    'before' => [],
-                    'after' => [],
-                ],
-            ],
-            $newJobDefinition->getConfiguration()
-        );
-        self::assertTrue($logger->hasInfoThatContains('Replacing variables using inline values.'));
-        self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 }

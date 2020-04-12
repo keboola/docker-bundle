@@ -35,7 +35,11 @@ class VariableResolver
     public function __construct(Client $client, LoggerInterface $logger)
     {
         $this->client = $client;
-        $this->moustache = new Mustache_Engine();
+        $this->moustache = new Mustache_Engine([
+            'escape' => function ($string) {
+                return trim(json_encode($string), '"');
+            },
+        ]);
         $this->logger = $logger;
     }
 
@@ -135,11 +139,17 @@ class VariableResolver
                 }
                 $this->logger->info(sprintf('Replaced values for variables: "%s".', implode(', ', $variableNames)));
 
+                $newConfiguration = json_decode(
+                    $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
+                    true
+                );
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new UserException(
+                        'Variable replacement resulted in invalid configuration, error: ' . json_last_error_msg()
+                    );
+                }
                 $newJobDefinitions[] = new JobDefinition(
-                    json_decode(
-                        $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
-                        true
-                    ),
+                    $newConfiguration,
                     $jobDefinition->getComponent(),
                     $jobDefinition->getConfigId(),
                     $jobDefinition->getConfigVersion(),
