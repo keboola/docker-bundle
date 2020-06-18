@@ -140,7 +140,10 @@ class StateFile
         $configuration->setConfigurationId($this->configurationId);
         try {
             if ($this->currentState !== null) {
-                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt($this->currentState, ProjectWrapper::class);
+                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt(
+                    $this->currentState,
+                    $this->encryptorFactory->getEncryptor()->getRegisteredProjectWrapperClass()
+                );
             } else {
                 $encryptedStateData = [];
             }

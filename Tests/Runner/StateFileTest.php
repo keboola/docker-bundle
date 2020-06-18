@@ -59,7 +59,8 @@ class StateFileTest extends TestCase
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
             hash('sha256', uniqid()),
-            hash('sha256', uniqid())
+            hash('sha256', uniqid()),
+            ''
         );
         $this->encryptorFactory->setStackId('test');
         $this->encryptorFactory->setComponentId('docker-demo');

@@ -21,7 +21,8 @@ abstract class BaseImageTest extends TestCase
             'alias/dummy-key',
             AWS_ECR_REGISTRY_REGION,
             hash('sha256', uniqid()),
-            hash('sha256', uniqid())
+            hash('sha256', uniqid()),
+            ''
         );
     }
 

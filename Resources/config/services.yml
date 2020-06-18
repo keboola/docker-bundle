@@ -35,7 +35,7 @@ services:
 
     docker_bundle.object_encryptor_factory:
         class: Keboola\ObjectEncryptor\ObjectEncryptorFactory
-        arguments: ["%kms_key_id%", "%kms_key_region%", "%encryption_key%", "%encryption_key%"]
+        arguments: ["%kms_key_id%", "%kms_key_region%", "%encryption_key%", "%encryption_key%", "%akv_url%"]
 
     syrup.storage_api:
         class: Keboola\DockerBundle\Service\StorageApiService
