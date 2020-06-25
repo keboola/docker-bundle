@@ -37,14 +37,14 @@ class PublicController extends \Keboola\Syrup\Controller\PublicController
         if ($projectId && $configurationId) {
             $encryptorFactory->setProjectId($projectId);
             $encryptorFactory->setConfigurationId($configurationId);
-            $wrapperClassName = ConfigurationWrapper::class;
+            $wrapperClassName = $encryptorFactory->getEncryptor()->getRegisteredConfigurationWrapperClass();
         } elseif ($projectId) {
             $encryptorFactory->setProjectId($projectId);
-            $wrapperClassName = ProjectWrapper::class;
+            $wrapperClassName = $encryptorFactory->getEncryptor()->getRegisteredProjectWrapperClass();
         } elseif ($configurationId) {
             throw new UserException("The configId parameter must be used together with projectId.");
         } else {
-            $wrapperClassName = ComponentWrapper::class;
+            $wrapperClassName = $encryptorFactory->getEncryptor()->getRegisteredComponentWrapperClass();
         }
 
         $contentTypeHeader = $request->headers->get("Content-Type");
