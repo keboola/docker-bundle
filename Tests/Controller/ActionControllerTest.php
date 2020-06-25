@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Tests\Controller;
 use Keboola\DockerBundle\Controller\ActionController;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -508,7 +507,7 @@ class ActionControllerTest extends WebTestCase
         $encryptorFactory->setProjectId('123');
         $encryptorFactory->setComponentId('dca-custom-science-python');
         $encryptorFactory->setStackId(parse_url($container->getParameter('storage_api.url'), PHP_URL_HOST));
-        $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('password', ComponentWrapper::class);
+        $encryptedPassword = $encryptorFactory->getEncryptor()->encrypt('password', $encryptorFactory->getEncryptor()->getRegisteredComponentWrapperClass());
         $request = $this->prepareRequest('decrypt', ["#password" => $encryptedPassword]);
 
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
