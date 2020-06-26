@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\JobExecutorTest;
+namespace Keboola\DockerBundle\Tests\Executor;
 
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;

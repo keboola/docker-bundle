@@ -4,8 +4,6 @@ namespace Keboola\DockerBundle\Controller;
 
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
-use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
@@ -253,9 +251,9 @@ class ApiController extends BaseApiController
         $encryptorFactory->setComponentId($componentId);
         if ($projectId) {
             $encryptorFactory->setProjectId($projectId);
-            $wrapperClass = ProjectWrapper::class;
+            $wrapperClass = $encryptorFactory->getEncryptor()->getRegisteredProjectWrapperClass();
         } else {
-            $wrapperClass = ComponentWrapper::class;
+            $wrapperClass = $encryptorFactory->getEncryptor()->getRegisteredComponentWrapperClass();
         }
 
         try {

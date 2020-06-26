@@ -7,7 +7,6 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ComponentWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -327,7 +326,7 @@ class ApiControllerTest extends WebTestCase
         $encryptorFactory = clone self::$container->get('docker_bundle.object_encryptor_factory');
         $encryptorFactory->setComponentId('docker-config-encrypt-verify');
         $encryptorFactory->setStackId(parse_url(self::$container->getParameter('storage_api.url'), PHP_URL_HOST));
-        $encrypted = $encryptorFactory->getEncryptor()->encrypt('bar', ComponentWrapper::class);
+        $encrypted = $encryptorFactory->getEncryptor()->encrypt('bar', $encryptorFactory->getEncryptor()->getRegisteredComponentWrapperClass());
 
         $request = Request::create(
             "/docker/docker-config-encrypt-verify/run",
