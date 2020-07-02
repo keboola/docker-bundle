@@ -1876,17 +1876,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "9.0.0",
+            "version": "9.0.1",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "1dda0899480ea280e7839852b76e1a3e920563fe"
+                "reference": "ccaaaa5774096db0a7ac47e955dfd860ec791122"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/1dda0899480ea280e7839852b76e1a3e920563fe",
-                "reference": "1dda0899480ea280e7839852b76e1a3e920563fe",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/ccaaaa5774096db0a7ac47e955dfd860ec791122",
+                "reference": "ccaaaa5774096db0a7ac47e955dfd860ec791122",
                 "shasum": ""
             },
             "require": {
@@ -1920,7 +1920,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-03-13T10:00:24+00:00"
+            "time": "2020-07-01T08:00:56+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
