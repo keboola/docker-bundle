@@ -36,7 +36,7 @@ class ImageBuilderTest extends BaseImageTest
                     'build_options' => [
                         'parent_type' => 'quayio',
                         'repository' => [
-                            'uri' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
+                            'uri' => 'https://bitbucket.org/keboola/private-test.git',
                             'type' => 'git',
                             '#password' => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
                             'username' => GIT_PRIVATE_USERNAME,
@@ -111,7 +111,7 @@ class ImageBuilderTest extends BaseImageTest
                     'build_options' => [
                         'parent_type' => 'quayio',
                         'repository' => [
-                            'uri' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
+                            'uri' => 'https://bitbucket.org/keboola/private-test.git',
                             'type' => 'git',
                             'username' => GIT_PRIVATE_USERNAME,
                         ],
@@ -133,7 +133,7 @@ class ImageBuilderTest extends BaseImageTest
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
             self::assertContains(
-                'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
+                'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
         }
@@ -149,7 +149,7 @@ class ImageBuilderTest extends BaseImageTest
                     'build_options' => [
                         'parent_type' => 'quayio',
                         'repository' => [
-                            'uri' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
+                            'uri' => 'https://bitbucket.org/keboola/private-test.git',
                             'type' => 'git',
                         ],
                         'commands' => [
@@ -170,7 +170,7 @@ class ImageBuilderTest extends BaseImageTest
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
             self::assertContains(
-                'Cannot access the repository https://bitbucket.org/keboolaprivatetest',
+                'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
         }
@@ -228,7 +228,7 @@ class ImageBuilderTest extends BaseImageTest
                 'dir' => 'home',
             ],
             'runtime' => [
-                'repository' => 'https://bitbucket.org/keboolaprivatetest/docker-demo-app.git',
+                'repository' => 'https://bitbucket.org/keboola/private-test.git',
                 'username' => GIT_PRIVATE_USERNAME,
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
