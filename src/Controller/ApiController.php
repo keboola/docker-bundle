@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use Elasticsearch\Client;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
@@ -115,7 +116,8 @@ class ApiController extends BaseApiController
         if (isset($queueParams['sqs'])) {
             $queueName = $queueParams['sqs'];
         }
-        $messageId = $this->enqueue($jobId, $queueName);
+//        $messageId = $this->enqueue($jobId, $queueName);
+        $messageId = '123';
 
         $this->logger->info('Job created', [
             'sqsQueue' => $queueName,
@@ -268,5 +270,36 @@ class ApiController extends BaseApiController
         } else {
             return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function projectStatsAction(Request $request)
+    {
+        $tokenInfo = $this->storageApi->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+        /** @var Client $client */
+        $client = $this->container->get('syrup.elasticsearch.client');
+        $data = $client->search([
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'project.id' => $projectId,
+                    ],
+                ],
+                'aggs' => [
+                    'jobs' => [
+                        'sum' => [
+                            'field' => 'durationSeconds',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $response = ['jobs' => ['durationSum' => $data['aggregations']['jobs']['value']]];
+        return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
     }
 }
