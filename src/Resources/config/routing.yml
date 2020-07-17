@@ -36,3 +36,9 @@ keboola_docker_sync_action:
     defaults:
       _controller: KeboolaDockerBundle:Action:process
     methods:  [POST]
+
+keboola_docker_project_stats:
+    path:     /stats/project/
+    defaults:
+        _controller: KeboolaDockerBundle:Api:projectStats
+    methods:  [POST]

@@ -393,3 +393,27 @@ You need to provide the whole configuration, linking a stored configuration is n
             {
                 "response": 1
             }
+
+# Group Stats
+
+Statistics about jobs
+
+## Project Stats [/stats/project]
+
+### Get project stats [GET]
+
+Returns the sum of runtime in seconds of all jobs in the project.
+
++ Request Process action (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+
++ Response 200 (application/json)
+
+            {
+                "jobs": {
+                    "durationSum": 12345
+                }
+            }

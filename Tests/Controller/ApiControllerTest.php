@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Controller;
 
+use Elasticsearch\Client;
 use Keboola\DockerBundle\Controller\ApiController;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
@@ -597,5 +598,97 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('error', $response['status']);
         $this->assertEquals(400, $client->getResponse()->getStatusCode());
         $this->assertEquals('Specify both \'row\' and \'config\'.', json_decode($client->getResponse()->getContent(), true)['message']);
+    }
+
+    public function testProjectStats()
+    {
+        $frameworkClient = $this->createClient();
+        /** @var Client $elasticClient */
+        $elasticClient = static::$kernel->getContainer()->get('syrup.elasticsearch.client');
+        $elasticClient->search();
+
+        // get current project id
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $tokenInfo = $storageClient->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+
+        $jobs = $elasticClient->search([
+            'body' => [
+                'size' => 1000,
+                'query' => [
+                    'match' => [
+                        'project.id' => $projectId,
+                    ],
+                ],
+            ],
+        ]);
+        $index = null;
+        $type = null;
+        foreach ($jobs['hits']['hits'] as $job) {
+            $index = $job['_index'];
+            $type = $job['_type'];
+            $elasticClient->update([
+                'index' => $job['_index'],
+                'id' => $job['_id'],
+                'type' => $job['_type'],
+                'body' => [
+                    'doc' => [
+                        'durationSeconds' => 0,
+                    ],
+                ],
+            ]);
+        }
+        // assume there was at least one job somewhere
+        self::assertNotEmpty($index);
+
+        // insert some jobs to be counted
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 34,
+                'project' => [
+                    'id' => $projectId,
+                ],
+            ],
+        ]);
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 1200,
+                'project' => [
+                    'id' => $projectId,
+                ],
+            ],
+        ]);
+
+        // insert jobs not to be counted
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 20,
+                'project' => [
+                    'id' => 123456,
+                ],
+            ],
+        ]);
+
+        // eventual consistency
+        sleep(5);
+
+        $frameworkClient->request(
+            'POST',
+            '/docker/stats/project/',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"row":"my-row"}'
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals(['jobs' => ['durationSum' => 1234]], $response);
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
     }
 }
