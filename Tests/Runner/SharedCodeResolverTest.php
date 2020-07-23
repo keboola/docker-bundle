@@ -149,7 +149,7 @@ class SharedCodeResolverTest extends TestCase
         );
         self::assertFalse(
             $logger->hasInfoThatContains('Loaded shared code snippets with ids: "first_code, secondCode".')
-            );
+        );
     }
 
     public function testResolveSharedCodeNoRows()

@@ -72,9 +72,11 @@ class SharedCodeResolver
             } catch (InvalidConfigurationException $e) {
                 throw new UserException('Shared code configuration is invalid: ' . $e->getMessage(), $e);
             }
-            $this->logger->info(sprintf('Loaded shared code snippets with ids: "%s".',
+            $this->logger->info(
+                sprintf('Loaded shared code snippets with ids: "%s".',
                     implode(', ', $context->getKeys())
-            ));
+                )
+            );
 
             $newConfiguration = json_decode(
                 $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
