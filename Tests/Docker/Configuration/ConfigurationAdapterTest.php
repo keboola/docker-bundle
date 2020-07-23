@@ -47,6 +47,7 @@ class ConfigurationAdapterTest extends TestCase
                     'version' => 2,
                 ],
             ],
+            'shared_code_row_ids' => [],
             'image_parameters' => [],
         ];
     }
@@ -77,6 +78,7 @@ authorization:
             params:
                 key: val
         version: 2
+shared_code_row_ids: {  }
 image_parameters: {  }
 
 EOT;
@@ -120,6 +122,7 @@ EOT;
             "version": 2
         }
     },
+    "shared_code_row_ids": [],
     "image_parameters": {}
 }
 EOT;
@@ -219,7 +222,7 @@ EOT;
             ]
         );
         self::assertEquals(
-            ['parameters' => [], 'image_parameters' => []],
+            ['parameters' => [], 'image_parameters' => [], 'shared_code_row_ids' => []],
             $data
         );
         $adapter = new Adapter('json');
@@ -228,7 +231,7 @@ EOT;
         $string = file_get_contents($temp->getTmpFolder() . '/config.json');
         self::assertEquals(
             "{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    " .
-            "\"storage\": {},\n    \"authorization\": {}\n}",
+            "\"shared_code_row_ids\": [],\n    \"storage\": {},\n    \"authorization\": {}\n}",
             $string
         );
     }
