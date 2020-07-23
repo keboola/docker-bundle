@@ -203,6 +203,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             'image_parameters' => [],
             'action' => 'run',
             'storage' => [],
+            'shared_code_row_ids' => [],
         ];
         $expectedConfigRaw = $expectedConfig;
         $expectedConfigRaw['authorization']['oauth_api']['credentials']['#first'] = 'topSecret';
@@ -277,6 +278,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             'image_parameters' => [],
             'action' => 'run',
             'storage' => [],
+            'shared_code_row_ids' => [],
         ];
         self::assertEquals($expectedConfig, json_decode(strrev(base64_decode($output)), true));
     }
