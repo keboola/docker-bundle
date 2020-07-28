@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\DockerBundle\Docker\SharedCodeResolver;
 use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -186,9 +187,13 @@ class Executor extends BaseExecutor
                 }
             }
 
+            $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
+            $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
+                $jobDefinitionParser->getJobDefinitions()
+            );
             $variableResolver = new VariableResolver($this->storageApi, $this->logger);
             $jobDefinitions = $variableResolver->resolveVariables(
-                $jobDefinitionParser->getJobDefinitions(),
+                $jobDefinitions,
                 empty($params['variableValuesId']) ? [] : $params['variableValuesId'],
                 empty($params['variableValuesData']) ? [] : $params['variableValuesData']
             );

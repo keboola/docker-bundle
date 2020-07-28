@@ -113,6 +113,7 @@ class AuthorizationTest extends BaseRunnerTest
             'action' => 'run',
             'storage' => [],
             'parameters' => [],
+            'shared_code_row_ids' => [],
         ];
         self::assertEquals($sampleData, $data);
     }
@@ -290,6 +291,7 @@ class AuthorizationTest extends BaseRunnerTest
             'action' => 'run',
             'storage' => [],
             'parameters' => [],
+            'shared_code_row_ids' => [],
         ];
         self::assertEquals($sampleData, $data);
     }

@@ -94,6 +94,7 @@ class JobDefinitionParserTest extends TestCase
                 ],
             ],
             'processors' => [],
+            'shared_code_row_ids' => [],
         ];
 
         $parser = new JobDefinitionParser();
@@ -186,6 +187,7 @@ class JobDefinitionParserTest extends TestCase
                 ],
             ],
             'processors' => [],
+            'shared_code_row_ids' => [],
         ];
 
         $parser = new JobDefinitionParser();
@@ -281,6 +283,7 @@ class JobDefinitionParserTest extends TestCase
                 'key' => 'val',
             ],
             'processors' => [],
+            'shared_code_row_ids' => [],
         ];
 
         $expectedRow2 = [
@@ -297,6 +300,7 @@ class JobDefinitionParserTest extends TestCase
                 ],
             ],
             'processors' => [],
+            'shared_code_row_ids' => [],
         ];
 
         $parser = new JobDefinitionParser();
@@ -389,6 +393,7 @@ class JobDefinitionParserTest extends TestCase
                 ],
             ],
             'processors' => [],
+            'shared_code_row_ids' => [],
         ];
 
         $parser = new JobDefinitionParser();

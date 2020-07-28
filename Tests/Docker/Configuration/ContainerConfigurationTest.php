@@ -79,6 +79,8 @@ class ContainerConfigurationTest extends TestCase
                 ],
                 "variables_id" => "12",
                 "variables_values_id" => "21",
+                "shared_code_id" => "34",
+                "shared_code_row_ids" => ["345", "435"]
             ]
         ]);
     }

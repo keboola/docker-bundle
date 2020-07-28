@@ -44,6 +44,7 @@ class ConfigFileTest extends BaseRunnerTest
         "fooBar": "baz"
     },
     "action": "run",
+    "shared_code_row_ids": [],
     "storage": {},
     "authorization": {}
 }

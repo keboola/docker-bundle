@@ -94,6 +94,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -132,6 +133,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -168,6 +170,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -204,6 +207,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -244,6 +248,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -416,6 +421,7 @@ class VariableResolverTest extends TestCase
                 ],
                 'storage' => [],
                 'processors' => [],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
@@ -472,6 +478,7 @@ class VariableResolverTest extends TestCase
                     'before' => [],
                     'after' => [],
                 ],
+                'shared_code_row_ids' => [],
             ],
             $newJobDefinition->getConfiguration()
         );
