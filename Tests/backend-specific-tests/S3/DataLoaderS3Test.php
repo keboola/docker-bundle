@@ -17,6 +17,12 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderS3Test extends BaseDataLoaderTest
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->cleanup('-s3');
+    }
+
     private function getS3StagingComponent()
     {
         return new Component([
@@ -40,7 +46,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             'input' => [
                 'tables' => [
                     [
-                        'source' => 'in.c-docker-demo-testConfig.test',
+                        'source' => 'in.c-docker-demo-testConfig-s3.test',
                     ],
                 ],
             ],
@@ -48,7 +54,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
                 'tables' => [
                     [
                         'source' => 'sliced.csv',
-                        'destination' => 'in.c-docker-demo-testConfig.out',
+                        'destination' => 'in.c-docker-demo-testConfig-s3.out',
                     ],
                 ],
             ],
@@ -66,9 +72,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $this->getNoDefaultBucketComponent(),
             new OutputFilter()
         );
-        $dataLoader->storeDataArchive('data', ['docker-demo-test']);
+        $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
         sleep(1);
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test']));
+        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test-s3']));
         self::assertCount(1, $files);
 
         $temp = new Temp();
@@ -100,7 +106,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             'input' => [
                 'tables' => [
                     [
-                        'source' => 'in.c-docker-demo-testConfig.test',
+                        'source' => 'in.c-docker-demo-testConfig-s3.test',
                     ],
                 ],
             ],
@@ -111,8 +117,8 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $this->client->createBucket('docker-demo-testConfig', 'in');
-        $this->client->createTable('in.c-docker-demo-testConfig', 'test', new CsvFile($filePath));
+        $this->client->createBucket('docker-demo-testConfig-s3', 'in');
+        $this->client->createTable('in.c-docker-demo-testConfig-s3', 'test', new CsvFile($filePath));
 
         $dataLoader = new DataLoader(
             $this->client,
@@ -125,7 +131,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]));
 
         $manifest = json_decode(
-            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig.test.manifest'),
+            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest'),
             true
         );
 
