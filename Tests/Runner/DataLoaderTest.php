@@ -13,6 +13,12 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends BaseDataLoaderTest
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->cleanup();
+    }
+
     public function testExecutorDefaultBucket()
     {
         $fs = new Filesystem();

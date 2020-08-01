@@ -46,7 +46,6 @@ abstract class BaseDataLoaderTest extends TestCase
         $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
-        $this->cleanup();
     }
 
     protected function cleanup($suffix = '')
