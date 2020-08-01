@@ -29,7 +29,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
                         'source' => 'in.c-docker-demo-testConfig-abs.test',
                     ],
                 ],
-                'files' => [['tags' => ['docker-demo-tests-abs']]]
+                'files' => [['tags' => ['docker-demo-test-abs']]]
             ],
         ];
         $fs = new Filesystem();
@@ -40,7 +40,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         );
         $this->client->createBucket('docker-demo-testConfig-abs', 'in');
         $this->client->createTable('in.c-docker-demo-testConfig-abs', 'test', new CsvFile($filePath));
-        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-tests-abs']));
+        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test-abs']));
         sleep(1);
 
         $dataLoader = new DataLoader(
