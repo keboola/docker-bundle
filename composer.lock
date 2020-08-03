@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d9133d02ed4404f14a2fdb090617ee9",
+    "content-hash": "96e0e9e06163a9e46f18f1ea53835f18",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1876,17 +1876,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "dev-odin-PS-717",
+            "version": "9.3.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "698735dd972b08933d86f619941e8f7bf2ff6a99"
+                "reference": "60594b568bba17c042f380ae5dc2e9ff1c10853b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/698735dd972b08933d86f619941e8f7bf2ff6a99",
-                "reference": "698735dd972b08933d86f619941e8f7bf2ff6a99",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/60594b568bba17c042f380ae5dc2e9ff1c10853b",
+                "reference": "60594b568bba17c042f380ae5dc2e9ff1c10853b",
                 "shasum": ""
             },
             "require": {
@@ -1920,7 +1920,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-08-02T13:17:44+00:00"
+            "time": "2020-08-03T19:24:51+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2017,21 +2017,21 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "dev-odin-PS-721",
+            "version": "11.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "69d8faf2837298ba0b21cbf162eacbe4cb6d2ef5"
+                "reference": "550b57770dc73b2521a2443db50a76fa34ed18bd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/69d8faf2837298ba0b21cbf162eacbe4cb6d2ef5",
-                "reference": "69d8faf2837298ba0b21cbf162eacbe4cb6d2ef5",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/550b57770dc73b2521a2443db50a76fa34ed18bd",
+                "reference": "550b57770dc73b2521a2443db50a76fa34ed18bd",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
-                "keboola/input-mapping": "dev-odin-PS-717",
+                "keboola/input-mapping": "^9.0",
                 "keboola/sanitizer": "^0.1",
                 "monolog/monolog": "^1.22",
                 "symfony/config": "^2.8|^4.1",
@@ -2062,7 +2062,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-08-02T16:18:01+00:00"
+            "time": "2020-03-13T15:16:46+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -7101,10 +7101,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/input-mapping": 20,
-        "keboola/output-mapping": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
