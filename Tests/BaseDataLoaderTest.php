@@ -46,27 +46,20 @@ abstract class BaseDataLoaderTest extends TestCase
         $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
-        try {
-            $this->client->dropBucket('in.c-docker-demo-testConfig', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
-            }
-        }
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test']));
-        foreach ($files as $file) {
-            $this->client->deleteFile($file['id']);
-        }
     }
 
-    public function tearDown()
+    protected function cleanup($suffix = '')
     {
         try {
-            $this->client->dropBucket('in.c-docker-demo-testConfig', ['force' => true]);
+            $this->client->dropBucket('in.c-docker-demo-testConfig' . $suffix, ['force' => true]);
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
             }
+        }
+        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test' . $suffix]));
+        foreach ($files as $file) {
+            $this->client->deleteFile($file['id']);
         }
     }
 

@@ -20,6 +20,7 @@
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Runner</exclude>
         <exclude>Tests/Executor</exclude>
+        <exclude>Tests/backend-specific-tests</exclude>
     </testsuite>
     <testsuite name="runner-tests">
         <directory>Tests/Runner</directory>

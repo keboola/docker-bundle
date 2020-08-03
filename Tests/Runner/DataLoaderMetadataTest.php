@@ -7,6 +7,12 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderMetadataTest extends BaseDataLoaderTest
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->cleanup();
+    }
+
     /**
      * Transform metadata into a key-value array
      * @param $metadata

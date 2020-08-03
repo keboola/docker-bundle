@@ -14,16 +14,22 @@ use Symfony\Component\Finder\Finder;
 
 class DataLoaderABSTest extends BaseDataLoaderTest
 {
+    public function setUp()
+    {
+        parent::setUp();
+        $this->cleanup('-abs');
+    }
+
     public function testLoadInputData()
     {
         $config = [
             'input' => [
                 'tables' => [
                     [
-                        'source' => 'in.c-docker-demo-testConfig.test',
+                        'source' => 'in.c-docker-demo-testConfig-abs.test',
                     ],
                 ],
-                'files' => [['tags' => ['docker-demo-test']]]
+                'files' => [['tags' => ['docker-demo-test-abs']]]
             ],
         ];
         $fs = new Filesystem();
@@ -32,9 +38,9 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $this->client->createBucket('docker-demo-testConfig', 'in');
-        $this->client->createTable('in.c-docker-demo-testConfig', 'test', new CsvFile($filePath));
-        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test']));
+        $this->client->createBucket('docker-demo-testConfig-abs', 'in');
+        $this->client->createTable('in.c-docker-demo-testConfig-abs', 'test', new CsvFile($filePath));
+        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test-abs']));
         sleep(1);
 
         $dataLoader = new DataLoader(
@@ -48,7 +54,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]));
 
         $manifest = json_decode(
-            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig.test.manifest'),
+            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-abs.test.manifest'),
             true
         );
 
@@ -82,7 +88,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $this->assertArrayHasKey('created', $manifest);
         $this->assertArrayHasKey('uri', $manifest);
         $this->assertArrayHasKey('primary_key', $manifest);
-        $this->assertEquals('in.c-docker-demo-testConfig.test', $manifest['id']);
+        $this->assertEquals('in.c-docker-demo-testConfig-abs.test', $manifest['id']);
         $this->assertEquals('test', $manifest['name']);
     }
 }
