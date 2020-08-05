@@ -679,8 +679,8 @@ class ApiControllerTest extends WebTestCase
         sleep(5);
 
         $frameworkClient->request(
-            'POST',
-            '/docker/stats/project/',
+            'GET',
+            '/docker/stats/project',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
