@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cd9a512a2ad4df2ca6c9a5458b4706f0",
+    "content-hash": "96e0e9e06163a9e46f18f1ea53835f18",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.147.0",
+            "version": "3.147.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "e63974c002c0f6520da597d44a3f83ce46d7a612"
+                "reference": "b259aad35203d262c02be9b6353597fd62484374"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e63974c002c0f6520da597d44a3f83ce46d7a612",
-                "reference": "e63974c002c0f6520da597d44a3f83ce46d7a612",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/b259aad35203d262c02be9b6353597fd62484374",
+                "reference": "b259aad35203d262c02be9b6353597fd62484374",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-07-17T18:14:13+00:00"
+            "time": "2020-07-31T18:32:20+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1703,16 +1703,16 @@
         },
         {
             "name": "keboola/azure-key-vault-client",
-            "version": "0.2.0",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/azure-key-vault-php-client.git",
-                "reference": "076d84485a0d91cd008da0826ba256b3318f1281"
+                "reference": "12afceec12280001d0cfb7c4c44068f9fca5125c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/azure-key-vault-php-client/zipball/076d84485a0d91cd008da0826ba256b3318f1281",
-                "reference": "076d84485a0d91cd008da0826ba256b3318f1281",
+                "url": "https://api.github.com/repos/keboola/azure-key-vault-php-client/zipball/12afceec12280001d0cfb7c4c44068f9fca5125c",
+                "reference": "12afceec12280001d0cfb7c4c44068f9fca5125c",
                 "shasum": ""
             },
             "require": {
@@ -1750,7 +1750,7 @@
                 "keboola",
                 "key vault"
             ],
-            "time": "2020-06-08T06:40:36+00:00"
+            "time": "2020-07-31T06:52:19+00:00"
         },
         {
             "name": "keboola/csv",
@@ -1876,17 +1876,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "9.0.1",
+            "version": "9.3.0",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "36ae53661e3817585383d334bae26298d922e1ed"
+                "reference": "60594b568bba17c042f380ae5dc2e9ff1c10853b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/36ae53661e3817585383d334bae26298d922e1ed",
-                "reference": "36ae53661e3817585383d334bae26298d922e1ed",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/60594b568bba17c042f380ae5dc2e9ff1c10853b",
+                "reference": "60594b568bba17c042f380ae5dc2e9ff1c10853b",
                 "shasum": ""
             },
             "require": {
@@ -1920,7 +1920,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-07-10T07:42:05+00:00"
+            "time": "2020-08-03T19:24:51+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -1963,16 +1963,16 @@
         },
         {
             "name": "keboola/object-encryptor",
-            "version": "0.3.0",
+            "version": "0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/object-encryptor.git",
-                "reference": "c26a9ab652b94ec1e6e23383ed65b22cf2aa0df4"
+                "reference": "9e386444df0cce1bf1eb9ecf6a37ba8528a5297b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/c26a9ab652b94ec1e6e23383ed65b22cf2aa0df4",
-                "reference": "c26a9ab652b94ec1e6e23383ed65b22cf2aa0df4",
+                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/9e386444df0cce1bf1eb9ecf6a37ba8528a5297b",
+                "reference": "9e386444df0cce1bf1eb9ecf6a37ba8528a5297b",
                 "shasum": ""
             },
             "require": {
@@ -1980,7 +1980,7 @@
                 "defuse/php-encryption": "^2.1",
                 "ext-zlib": "*",
                 "keboola-legacy/php-encryption": "^0.2",
-                "keboola/azure-key-vault-client": "^0.2",
+                "keboola/azure-key-vault-client": "^1.0",
                 "keboola/php-encryption": "^0.2",
                 "php": ">=5.6",
                 "phpseclib/mcrypt_compat": "^1.0",
@@ -2013,7 +2013,7 @@
                 "encryption",
                 "json"
             ],
-            "time": "2020-06-08T07:18:32+00:00"
+            "time": "2020-07-31T08:34:05+00:00"
         },
         {
             "name": "keboola/output-mapping",
@@ -2269,16 +2269,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.16.1",
+            "version": "10.16.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "a58d115f00ea32af32809452fad2e50c20674da7"
+                "reference": "25d56cb0bd1ecaa39a9f1adfa183d793c989b9ca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/a58d115f00ea32af32809452fad2e50c20674da7",
-                "reference": "a58d115f00ea32af32809452fad2e50c20674da7",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/25d56cb0bd1ecaa39a9f1adfa183d793c989b9ca",
+                "reference": "25d56cb0bd1ecaa39a9f1adfa183d793c989b9ca",
                 "shasum": ""
             },
             "require": {
@@ -2316,20 +2316,20 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2020-07-20T06:48:26+00:00"
+            "time": "2020-07-24T07:11:52+00:00"
         },
         {
             "name": "keboola/syrup",
-            "version": "11.3.3",
+            "version": "11.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "0a7c14e950a8ab5f69f9bcadd244c3916ed43843"
+                "reference": "cbe451a44b6e06725c0efbd409372790d9d64c93"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/0a7c14e950a8ab5f69f9bcadd244c3916ed43843",
-                "reference": "0a7c14e950a8ab5f69f9bcadd244c3916ed43843",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/cbe451a44b6e06725c0efbd409372790d9d64c93",
+                "reference": "cbe451a44b6e06725c0efbd409372790d9d64c93",
                 "shasum": ""
             },
             "require": {
@@ -2384,7 +2384,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2020-06-22T08:16:24+00:00"
+            "time": "2020-07-31T09:17:41+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -2553,16 +2553,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.25.4",
+            "version": "1.25.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "3022efff205e2448b560c833c6fbbf91c3139168"
+                "reference": "1817faadd1846cd08be9a49e905dc68823bc38c0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/3022efff205e2448b560c833c6fbbf91c3139168",
-                "reference": "3022efff205e2448b560c833c6fbbf91c3139168",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1817faadd1846cd08be9a49e905dc68823bc38c0",
+                "reference": "1817faadd1846cd08be9a49e905dc68823bc38c0",
                 "shasum": ""
             },
             "require": {
@@ -2636,29 +2636,29 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-05-22T07:31:27+00:00"
+            "time": "2020-07-23T08:35:51+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
-            "version": "2.5.0",
+            "version": "2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jmespath/jmespath.php.git",
-                "reference": "52168cb9472de06979613d365c7f1ab8798be895"
+                "reference": "42dae2cbd13154083ca6d70099692fef8ca84bfb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jmespath/jmespath.php/zipball/52168cb9472de06979613d365c7f1ab8798be895",
-                "reference": "52168cb9472de06979613d365c7f1ab8798be895",
+                "url": "https://api.github.com/repos/jmespath/jmespath.php/zipball/42dae2cbd13154083ca6d70099692fef8ca84bfb",
+                "reference": "42dae2cbd13154083ca6d70099692fef8ca84bfb",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.4.0",
-                "symfony/polyfill-mbstring": "^1.4"
+                "php": "^5.4 || ^7.0 || ^8.0",
+                "symfony/polyfill-mbstring": "^1.17"
             },
             "require-dev": {
-                "composer/xdebug-handler": "^1.2",
-                "phpunit/phpunit": "^4.8.36|^7.5.15"
+                "composer/xdebug-handler": "^1.4",
+                "phpunit/phpunit": "^4.8.36 || ^7.5.15"
             },
             "bin": [
                 "bin/jp.php"
@@ -2666,7 +2666,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "2.5-dev"
+                    "dev-master": "2.6-dev"
                 }
             },
             "autoload": {
@@ -2693,7 +2693,7 @@
                 "json",
                 "jsonpath"
             ],
-            "time": "2019-12-30T18:03:34+00:00"
+            "time": "2020-07-31T21:01:56+00:00"
         },
         {
             "name": "mustache/mustache",
