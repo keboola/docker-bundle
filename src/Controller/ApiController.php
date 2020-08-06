@@ -3,7 +3,10 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Elasticsearch\Client;
+use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\DockerBundle\Docker\SharedCodeResolver;
+use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\Syrup\Elasticsearch\JobMapper;
@@ -269,6 +272,44 @@ class ApiController extends BaseApiController
         } else {
             return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function resolveVariablesAction(Request $request)
+    {
+        $componentId = $request->get("componentId");
+        $projectId = $request->get("projectId");
+        $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
+        if (!$componentId || !$stackId) {
+            throw new UserException("Stack id and component id must be entered.");
+        }
+
+        $contentTypeHeader = $request->headers->get("Content-Type");
+        if (!is_string($contentTypeHeader)) {
+            throw new UserException("Incorrect Content-Type.");
+        }
+
+        $job = $this->createJobFromParams($this->getPostJson($request));
+
+        // get the configuration from storage
+        $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+
+        $jobDefinitionParser = new JobDefinitionParser();
+        $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+        $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
+        $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
+            $jobDefinitionParser->getJobDefinitions()
+        );
+        $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+        $jobDefinitions = $variableResolver->resolveVariables(
+            $jobDefinitions,
+            empty($params['variableValuesId']) ? [] : $params['variableValuesId'],
+            empty($params['variableValuesData']) ? [] : $params['variableValuesData']
+        );
+        // return the replaced configuration
     }
 
     /**
