@@ -3,12 +3,15 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Elasticsearch\Client;
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\SharedCodeResolver;
 use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\JobFactory;
@@ -278,38 +281,74 @@ class ApiController extends BaseApiController
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function resolveVariablesAction(Request $request)
+    public function configurationResolveAction(Request $request)
     {
-        $componentId = $request->get("componentId");
-        $projectId = $request->get("projectId");
-        $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
-        if (!$componentId || !$stackId) {
-            throw new UserException("Stack id and component id must be entered.");
+        $body = $this->getPostJson($request);
+        if (empty($body['componentId'])) {
+            throw new UserException('Missing "componentId" parameter in request body.');
         }
-
-        $contentTypeHeader = $request->headers->get("Content-Type");
-        if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type.");
+        $componentId = $body['componentId'];
+        if (empty($body['configId'])) {
+            throw new UserException('Missing "configId" parameter in request body.');
         }
-
-        $job = $this->createJobFromParams($this->getPostJson($request));
+        $configId = $body['configId'];
+        if (empty($body['configVersion'])) {
+            throw new UserException('Missing "configVersion" parameter in request body.');
+        }
+        $configVersion = $body['configVersion'];
+        if (!empty($body['variableValuesId'])) {
+            $variableValuesId = $body['variableValuesId'];
+        } else {
+            $variableValuesId = null;
+        }
+        if (!empty($body['variableValuesId']) && is_array($body['variableValuesId'])) {
+            $variableValuesData = $body['variableValuesData'];
+        } else {
+            $variableValuesData = [];
+        }
 
         // get the configuration from storage
-        $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+        $components = new Components($this->storageApi);
+        $configData = $components->getConfiguration($componentId, $configId);
+        $configDataVersion = $components->getConfigurationVersion($componentId, $configId, $configVersion);
+        // configuration version doesn't contain configuration id
+        $configData['configuration'] = $configDataVersion['configuration'];
+        $configData['rows'] = $configDataVersion['rows'];
 
         $jobDefinitionParser = new JobDefinitionParser();
-        $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+        $projectId = $this->storageApi->verifyToken()['owner']['id'];
+        $stackId = parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST);
+        /** @var ObjectEncryptorFactory $encryptorFactory */
+        $encryptorFactory = $this->container->get('docker_bundle.object_encryptor_factory');
+        $encryptorFactory->setStackId($stackId);
+        $encryptorFactory->setComponentId($componentId);
+        $encryptorFactory->setProjectId($projectId);
+        $componentClass = new Component($this->getComponent($componentId));
+        $jobDefinitionParser->parseConfig($componentClass, $encryptorFactory->getEncryptor()->decrypt($configData));
         $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
         $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
             $jobDefinitionParser->getJobDefinitions()
         );
         $variableResolver = new VariableResolver($this->storageApi, $this->logger);
-        $jobDefinitions = $variableResolver->resolveVariables(
-            $jobDefinitions,
-            empty($params['variableValuesId']) ? [] : $params['variableValuesId'],
-            empty($params['variableValuesData']) ? [] : $params['variableValuesData']
-        );
-        // return the replaced configuration
+        $jobDefinitions = $variableResolver->resolveVariables($jobDefinitions, $variableValuesId, $variableValuesData);
+        /** @var JobDefinition[] $jobDefinitions */
+        var_dump($jobDefinitions[0]->getConfiguration());
+        return $this->createJsonResponse($jobDefinitions[0]->getConfiguration(), 200, ['Content-Type' => 'application/json']);
+    }
+
+    protected function getComponent($id)
+    {
+        // Check list of components
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $id) {
+                $component = $c;
+            }
+        }
+        if (!isset($component)) {
+            throw new \Keboola\Syrup\Exception\UserException("Component '{$id}' not found.");
+        }
+        return $component;
     }
 
     /**

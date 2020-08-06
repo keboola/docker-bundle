@@ -8,6 +8,8 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -689,6 +691,54 @@ class ApiControllerTest extends WebTestCase
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
         $this->assertEquals(['jobs' => ['durationSum' => 1234]], $response);
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testResolveVariables()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        // get the configuration from storage
+        $components = new Components($storageClient);
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(['parameters' => ['a' => 'b']]);
+        $result = $components->addConfiguration($configuration);
+        $configId = $result['id'];
+        $configVersion = $result['version'];
+
+        $frameworkClient = $this->createClient();
+
+        // get current project id
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $tokenInfo = $storageClient->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $configVersion,
+            ])
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => 'b',
+                ],
+                'shared_code_row_ids' => [],
+                'storage' => [],
+                'processors' => [],
+            ],
+            $response
+        );
         $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
     }
 }
