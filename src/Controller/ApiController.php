@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Controller;
 
 use Elasticsearch\Client;
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\CreditsChecker;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner;
@@ -169,8 +170,16 @@ class ApiController extends BaseApiController
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
-
+        $this->checkCredits($request);
         return $this->createJobFromParams($params);
+    }
+
+    private function checkCredits(Request $request)
+    {
+        $creditsChecker = new CreditsChecker($this->storageApi);
+        if (!$creditsChecker->hasCredits()) {
+            throw new UserException('You do not have credits to run a job');
+        }
     }
 
     /**
@@ -187,7 +196,7 @@ class ApiController extends BaseApiController
         $this->validateParams($params);
         $params['mode'] = 'run';
         $params['tag'] = $request->get('tag');
-
+        $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
 

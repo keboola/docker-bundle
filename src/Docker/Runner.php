@@ -2,26 +2,21 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\Container;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use Keboola\DockerBundle\Docker\RunCommandOptions;
-use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
-use Keboola\DockerBundle\Docker\Runner\Limits;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
-use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
+use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
+use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
@@ -182,7 +177,7 @@ class Runner
      * @param $componentId
      * @param $configurationId
      * @return bool
-     * @throws ClientException
+     * @throws \Keboola\DockerBundle\Exception\ClientException
      */
     private function shouldStoreState($componentId, $configurationId)
     {
@@ -410,7 +405,7 @@ class Runner
      * @param string $mode
      * @param InputTableStateList $inputTableStateList
      * @return Output
-     * @throws ClientException
+     * @throws \Keboola\DockerBundle\Exception\ClientException
      */
     private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode, InputTableStateList $inputTableStateList)
     {
@@ -449,7 +444,7 @@ class Runner
      * @param string $mode
      * @param string $configVersion
      * @return Output
-     * @throws ClientException
+     * @throws \Keboola\DockerBundle\Exception\ClientException
      */
     private function runImages($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
     {

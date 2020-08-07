@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Job;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\CreditsChecker;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
@@ -16,6 +17,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
@@ -140,6 +142,11 @@ class Executor extends BaseExecutor
     {
         try {
             $this->tokenInfo = $this->storageApi->verifyToken();
+            $creditsChecker = new CreditsChecker($this->storageApi);
+            if (!$creditsChecker->hasCredits()) {
+                throw new \Keboola\Syrup\Exception\UserException('You do not have credits to run a job');
+            }
+
             $this->encryptorFactory->setProjectId($this->tokenInfo["owner"]["id"]);
             if (isset($job->getRawParams()["component"])) {
                 $this->encryptorFactory->setComponentId($job->getRawParams()["component"]);
