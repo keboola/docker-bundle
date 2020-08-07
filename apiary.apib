@@ -418,5 +418,65 @@ Returns the sum of runtime in seconds of all jobs in the project.
                 }
             }
 
-# Group Configurations
+# Group Configuration
 
+Configuration utilities
+
+## Resolve Configuration [/configuration/resolve]
+
++ Attributes
+    + componentId (required, string) - Component ID
+    + configurationId (required, string) - Configuration ID
+    + configVersion (required, string) - Configuration Version
+    + variableValuesId (optional, string) - ID of values of variables referenced in the configuration (if any)
+    + variableValuesData (optional, array) - [Actual values](https://developers.keboola.com/integrate/variables/#option-3--run-a-job-with-inline-values) of variables references in the configuration
+
+### Resolve Configuration [POST]
+
+Processes a configuration as if it were executed. This involves replacing
+[variables](https://developers.keboola.com/integrate/variables/) and
+[shared code](https://developers.keboola.com/integrate/variables/#shared-code). For configurations with rows, this also
+includes [merging configuration and configuration rows](https://help.keboola.com/components/#configuration-rows).
+The processed configuration is returned. If the configuration has rows, then the configuration itself is
+unmodified (it would not be executed). The state on both configuration and configuration rows is always returned as
+empty. The provided configuration is not unmodified, modifications are only returned.
+
++ Request Process action (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "componentId": "keboola.python-transformation-v2",
+                "configId": "12345",
+                "configVersion": "12"
+            }
+
++ Response 200 (application/json)
+
+            {
+                "version": 1,
+                "created": "2020-08-07T13:04:17+0200",
+                "creatorToken": {
+                    "id": 1234,
+                    "description": "test"
+                },
+                "changeDescription": "Configuration created",
+                "isDeleted": false,
+                "name": "test",
+                "description": null,
+                "configuration": {
+                    "parameters": {
+                        "a": "boo",
+                        "d": "foo"
+                    },
+                    "storage": {},
+                    "processors": {
+                        "before" => [],
+                        "after" => []
+                    }
+                }
+                "state": []
+            }
