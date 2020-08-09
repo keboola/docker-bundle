@@ -10,6 +10,7 @@ use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
+use Symfony\Component\Security\Core\User\User;
 
 class VariableResolverTest extends TestCase
 {
@@ -76,7 +77,7 @@ class VariableResolverTest extends TestCase
         );
         $configuration = [
             'variables_id' => $vConfigurationId,
-            'parameters' => ['some_parameter' => 'foo is {{ foo }} and {{ notreplaced }}.'],
+            'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
         ];
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->client, $logger);
@@ -86,7 +87,7 @@ class VariableResolverTest extends TestCase
         self::assertEquals(
             [
                 'parameters' => [
-                    'some_parameter' => 'foo is bar and .',
+                    'some_parameter' => 'foo is bar.',
                 ],
                 'variables_id' => $vConfigurationId,
                 'storage' => [],
@@ -508,5 +509,29 @@ class VariableResolverTest extends TestCase
             null,
             ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
         )[0];
+    }
+
+    public function testResolveVariablesMissingValues()
+    {
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $this->client,
+            ['variables' => [['name' => 'foo', 'type' => 'string']]],
+            []
+        );
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{ foo }} and bar is {{ bar }} and baz is {{ baz }}.'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->client, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Missing values for placeholders: "bar, baz"');
+        $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
+        );
     }
 }
