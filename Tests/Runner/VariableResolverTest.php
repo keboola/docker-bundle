@@ -10,7 +10,6 @@ use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\Test\TestLogger;
-use Symfony\Component\Security\Core\User\User;
 
 class VariableResolverTest extends TestCase
 {
