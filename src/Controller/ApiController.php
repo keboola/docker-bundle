@@ -3,9 +3,15 @@
 namespace Keboola\DockerBundle\Controller;
 
 use Elasticsearch\Client;
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\DockerBundle\Docker\SharedCodeResolver;
+use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\JobFactory;
@@ -269,6 +275,93 @@ class ApiController extends BaseApiController
         } else {
             return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
         }
+    }
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function configurationResolveAction(Request $request)
+    {
+        try {
+            $body = $this->getPostJson($request);
+            if (empty($body['componentId'])) {
+                throw new UserException('Missing "componentId" parameter in request body.');
+            }
+            $componentId = $body['componentId'];
+            if (empty($body['configId'])) {
+                throw new UserException('Missing "configId" parameter in request body.');
+            }
+            $configId = $body['configId'];
+            if (empty($body['configVersion'])) {
+                throw new UserException('Missing "configVersion" parameter in request body.');
+            }
+            $configVersion = $body['configVersion'];
+            if (!empty($body['variableValuesId'])) {
+                $variableValuesId = $body['variableValuesId'];
+            } else {
+                $variableValuesId = null;
+            }
+            if (!empty($body['variableValuesData']) && is_array($body['variableValuesData'])) {
+                $variableValuesData = $body['variableValuesData'];
+            } else {
+                $variableValuesData = [];
+            }
+
+            // get the configuration from storage
+            $components = new Components($this->storageApi);
+            $configDataVersion = $components->getConfigurationVersion($componentId, $configId, $configVersion);
+            // configuration version doesn't contain configuration id & state and we need them
+            // https://keboola.slack.com/archives/CFVRE56UA/p1596785471369600
+            $configDataVersion['id'] = $configId;
+            $configDataVersion['state'] = [];
+            foreach ($configDataVersion['rows'] as &$row) {
+                $row['state'] = [];
+            }
+
+            $jobDefinitionParser = new JobDefinitionParser();
+            $projectId = $this->storageApi->verifyToken()['owner']['id'];
+            $stackId = parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST);
+            /** @var ObjectEncryptorFactory $encryptorFactory */
+            $encryptorFactory = $this->container->get('docker_bundle.object_encryptor_factory');
+            $encryptorFactory->setStackId($stackId);
+            $encryptorFactory->setComponentId($componentId);
+            $encryptorFactory->setProjectId($projectId);
+            $componentClass = new Component($this->getComponent($componentId));
+            $jobDefinitionParser->parseConfig($componentClass, $encryptorFactory->getEncryptor()->decrypt($configDataVersion));
+            $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
+            $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
+                $jobDefinitionParser->getJobDefinitions()
+            );
+            $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+            $jobDefinitions = $variableResolver->resolveVariables($jobDefinitions, $variableValuesId, $variableValuesData);
+            /** @var JobDefinition[] $jobDefinitions */
+            if ($configDataVersion['rows']) {
+                foreach ($jobDefinitions as $index => $jobDefinition) {
+                    $configDataVersion['rows'][$index]['configuration'] = $jobDefinition->getConfiguration();
+                }
+            } else {
+                $configDataVersion['configuration'] = $jobDefinitions[0]->getConfiguration();
+            }
+        } catch (\Keboola\DockerBundle\Exception\UserException $e) {
+            throw new UserException($e->getMessage(), $e);
+        }
+        return $this->createJsonResponse($configDataVersion, 200, ['Content-Type' => 'application/json']);
+    }
+
+    protected function getComponent($id)
+    {
+        // Check list of components
+        $components = $this->storageApi->indexAction();
+        foreach ($components["components"] as $c) {
+            if ($c["id"] == $id) {
+                $component = $c;
+            }
+        }
+        if (!isset($component)) {
+            throw new \Keboola\Syrup\Exception\UserException("Component '{$id}' not found.");
+        }
+        return $component;
     }
 
     /**

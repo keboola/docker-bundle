@@ -8,6 +8,9 @@ use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -690,5 +693,358 @@ class ApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
         $this->assertEquals(['jobs' => ['durationSum' => 1234]], $response);
         $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    private function createSharedConfigurations()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.variables');
+        $configuration->setName(uniqid('test-resolve-v-'));
+        $configuration->setConfiguration(
+            ['variables' => [['name' => 'firstvar', 'type' => 'string'], ['name' => 'secondvar', 'type' => 'string']]]
+        );
+        $variablesId = $components->addConfiguration($configuration)['id'];
+        $configuration->setConfigurationId($variablesId);
+        $row = new ConfigurationRow($configuration);
+        $row->setConfiguration(
+            ['values' => [['name' => 'firstvar', 'value' => 'batman'], ['name' => 'secondvar', 'value' => 'watman']]]
+        );
+        $variableValuesId = $components->addConfigurationRow($row)['id'];
+
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.shared-code');
+        $configuration->setName(uniqid('test-resolve-sc-'));
+        $sharedCodeId = $components->addConfiguration($configuration)['id'];
+        $configuration->setConfigurationId($sharedCodeId);
+        $row = new ConfigurationRow($configuration);
+        $row->setRowId('brainfuck');
+        $row->setConfiguration(['code_content' => '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.']);
+        $sharedCodeRowId = $components->addConfigurationRow($row)['id'];
+
+        return [$variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId];
+    }
+
+    public function testResolveVariables()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
+
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(
+            [
+                'parameters' => ['a' => '{{firstvar}}', 'c' => '{{brainfuck}}', 'd' => '{{secondvar}}'],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+                'shared_code_row_ids' => [$sharedCodeRowId]
+            ]
+        );
+        $result = $components->addConfiguration($configuration);
+        $configId = $result['id'];
+        $configVersion = $result['version'];
+
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $configVersion,
+            ])
+        );
+        $this->assertEquals(
+            200,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('version', $response);
+        $this->assertArrayHasKey('name', $response);
+        // state is always cleared
+        $this->assertEquals([], $response['state']);
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => 'batman',
+                    'c' => '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+                    'd' => 'watman',
+                ],
+                'shared_code_row_ids' => ['brainfuck'],
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+            ],
+            $response['configuration']
+        );
+        $this->assertEquals([], $response['rows']);
+        $components->deleteConfiguration($componentId, $configId);
+        $components->deleteConfiguration('keboola.variables', $variablesId);
+        $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);
+    }
+
+    public function testResolveVariablesInline()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
+
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(
+            [
+                'parameters' => ['a' => '{{firstvar}}', 'c' => '{{brainfuck}}', 'd' => '{{secondvar}}'],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+                'shared_code_row_ids' => [$sharedCodeRowId]
+            ]
+        );
+        $result = $components->addConfiguration($configuration);
+        $configId = $result['id'];
+        $configVersion = $result['version'];
+
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $configVersion,
+                'variableValuesData' => [
+                    'values' => [
+                        [
+                            'name' => 'firstvar',
+                            'value' => 'boo',
+                        ],
+                        [
+                            'name' => 'secondvar',
+                            'value' => 'foo',
+                        ],
+                        [
+                            'name' => 'brainfuck',
+                            'value' => 'not used',
+                        ],
+                    ],
+                ],
+            ])
+        );
+        $this->assertEquals(
+            200,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('version', $response);
+        $this->assertArrayHasKey('name', $response);
+        // state is always cleared
+        $this->assertEquals([], $response['state']);
+        var_dump($frameworkClient->getResponse()->getContent());
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => 'boo',
+                    'c' => '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+                    'd' => 'foo',
+                ],
+                'shared_code_row_ids' => ['brainfuck'],
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+            ],
+            $response['configuration']
+        );
+        $this->assertEquals([], $response['rows']);
+        $components->deleteConfiguration($componentId, $configId);
+        $components->deleteConfiguration('keboola.variables', $variablesId);
+        $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);
+    }
+
+    public function testResolveVariablesRows()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
+
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(['parameters' => ['a' => '{{firstvar}}'], 'variables_id' => $variablesId, 'variables_values_id' => $variableValuesId]);
+        $result = $components->addConfiguration($configuration);
+        $row = new ConfigurationRow($configuration);
+        $configId = $result['id'];
+        $configuration->setConfigurationId($configId);
+        $row->setConfiguration(['parameters' => ['c' => '{{brainfuck}}', 'd' => '{{secondvar}}'], 'shared_code_id' => $sharedCodeId, 'shared_code_row_ids' => [$sharedCodeRowId]]);
+        $row->setName(uniqid('test-resolve-'));
+        $components->addConfigurationRow($row);
+        $result = $components->getConfiguration($componentId, $configId);
+        $configVersion = $result['version'];
+
+        $frameworkClient = $this->createClient();
+
+        // get current project id
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $tokenInfo = $storageClient->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $configVersion,
+            ])
+        );
+        $this->assertEquals(
+            200,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('version', $response);
+        $this->assertArrayHasKey('name', $response);
+        // state is always cleared
+        $this->assertEquals([], $response['state']);
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => '{{firstvar}}',
+                ],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+            ],
+            $response['configuration']
+        );
+        $this->assertArrayHasKey('id', $response['rows'][0]);
+        $this->assertArrayHasKey('version', $response['rows'][0]);
+        $this->assertArrayHasKey('name', $response['rows'][0]);
+        // state is always cleared
+        $this->assertEquals([], $response['rows'][0]['state']);
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => 'batman',
+                    'c' => '++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.',
+                    'd' => 'watman',
+                ],
+                'shared_code_row_ids' => ['brainfuck'],
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+            ],
+            $response['rows'][0]['configuration']
+        );
+        $components->deleteConfiguration($componentId, $configId);
+        $components->deleteConfiguration('keboola.variables', $variablesId);
+        $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);
+    }
+
+    public function testResolveVariablesMissingVariables()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
+
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(['parameters' => ['a' => '{{firstvar}}'], 'variables_id' => $variablesId]);
+        $result = $components->addConfiguration($configuration);
+        $configId = $result['id'];
+        $configVersion = $result['version'];
+
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $configVersion,
+            ])
+        );
+        $this->assertEquals(
+            400,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertEquals('User error', $response['error']);
+        $this->assertEquals(
+            sprintf(
+                'No variable values provided for configuration "%s", row "", referencing variables "%s".',
+                $configId,
+                $variablesId
+            ),
+            $response['message']
+        );
+
+        $components->deleteConfiguration($componentId, $configId);
+        $components->deleteConfiguration('keboola.variables', $variablesId);
+        $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);
+    }
+
+    public function testResolveVariablesMissingArgs()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'POST',
+            '/docker/configuration/resolve',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            json_encode([
+            ])
+        );
+        $this->assertEquals(
+            400,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertEquals('User error', $response['error']);
+        $this->assertEquals('Missing "componentId" parameter in request body.', $response['message']);
     }
 }

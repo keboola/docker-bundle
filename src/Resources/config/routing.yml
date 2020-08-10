@@ -48,3 +48,9 @@ keboola_docker_project_stats:
     defaults:
         _controller: KeboolaDockerBundle:Api:projectStats
     methods:  [GET]
+
+keboola_docker_configuration_resolve:
+    path:     /configuration/resolve
+    defaults:
+        _controller: KeboolaDockerBundle:Api:configurationResolve
+    methods:  [POST]
