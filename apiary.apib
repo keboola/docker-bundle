@@ -439,7 +439,7 @@ Processes a configuration as if it were executed. This involves replacing
 includes [merging configuration and configuration rows](https://help.keboola.com/components/#configuration-rows).
 The processed configuration is returned. If the configuration has rows, then the configuration itself is
 unmodified (it would not be executed). The state on both configuration and configuration rows is always returned as
-empty. The provided configuration is not unmodified, modifications are only returned.
+empty. The provided configuration modifications are not stored, but they are returned in the response.
 
 + Request Process action (application/json)
     + Headers
