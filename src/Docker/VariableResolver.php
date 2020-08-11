@@ -133,7 +133,7 @@ class VariableResolver
                 $variableNames = [];
                 foreach ($vConfiguration['variables'] as $variable) {
                     $variableNames[] = $variable['name'];
-                    if (!$context->__isset([$variable['name']])) {
+                    if (!$context->__isset($variable['name'])) {
                         throw new UserException(sprintf('No value provided for variable "%s".', $variable['name']));
                     }
                 }
@@ -148,6 +148,7 @@ class VariableResolver
                         'Variable replacement resulted in invalid configuration, error: ' . json_last_error_msg()
                     );
                 }
+                var_dump($context->getMissingVariables());
                 if ($context->getMissingVariables()) {
                     throw new UserException(
                         sprintf('Missing values for placeholders: "%s"', implode(', ', $context->getMissingVariables()))

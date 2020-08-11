@@ -514,6 +514,30 @@ class VariableResolverTest extends TestCase
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->client,
+            ['variables' => [['name' => 'foo', 'type' => 'string'], ['name' => 'goo', 'type' => 'string']]],
+            []
+        );
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->client, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('No value provided for variable "goo".');
+        $variableResolver->resolveVariables(
+            [$jobDefinition],
+            null,
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
+        );
+    }
+
+    public function testResolveVariablesMissingValuesInBody()
+    {
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $this->client,
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
