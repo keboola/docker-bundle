@@ -30,5 +30,4 @@ class WtfWarningFilterTest extends BaseContainerTest
         $result = WtfWarningFilter::filter($message);
         self::assertEquals($message, $result);
     }
-
 }
