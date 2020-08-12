@@ -18,6 +18,9 @@ class LoggerTest extends BaseContainerTest
     {
         $script = [
             'import sys',
+            'print("WARNING: Your kernel does not support swap limit capabilities or the ' .
+                'cgroup is not mounted. Memory limited without swap.", file=sys.stderr)',
+                // the above one is filtered in WtfWarningFilter and does not appear in the result at all
             'print("What is public is not secure", file=sys.stdout)',
             'print("Message to stderr isAlsoSecure", file=sys.stderr)',
         ];
@@ -31,6 +34,7 @@ class LoggerTest extends BaseContainerTest
         self::assertTrue($this->getLogHandler()->hasErrorRecords());
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('What is public is not [hidden]'));
         self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains('Message to stderr [hidden]'));
+        self::assertFalse($this->getContainerLogHandler()->hasErrorThatContains('Your kernel does not support swap'));
         $records = $this->getContainerLogHandler()->getRecords();
         self::assertGreaterThanOrEqual(2, count($records));
     }
