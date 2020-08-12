@@ -177,7 +177,7 @@ class Runner
      * @param $componentId
      * @param $configurationId
      * @return bool
-     * @throws \Keboola\DockerBundle\Exception\ClientException
+     * @throws ClientException
      */
     private function shouldStoreState($componentId, $configurationId)
     {
@@ -405,7 +405,7 @@ class Runner
      * @param string $mode
      * @param InputTableStateList $inputTableStateList
      * @return Output
-     * @throws \Keboola\DockerBundle\Exception\ClientException
+     * @throws ClientException
      */
     private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode, InputTableStateList $inputTableStateList)
     {
@@ -444,7 +444,7 @@ class Runner
      * @param string $mode
      * @param string $configVersion
      * @return Output
-     * @throws \Keboola\DockerBundle\Exception\ClientException
+     * @throws ClientException
      */
     private function runImages($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $configVersion, $mode)
     {

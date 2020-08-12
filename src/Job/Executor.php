@@ -17,7 +17,6 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\Syrup\Exception\UserException;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
 use Keboola\Syrup\Job\Metadata\Job;
