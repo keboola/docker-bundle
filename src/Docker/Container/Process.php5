@@ -55,6 +55,6 @@ class Process extends \Symfony\Component\Process\Process
 
     private function filter($value)
     {
-        return $this->outputFilter->filter($value);
+        return WtfWarningFilter::filter($this->outputFilter->filter($value));
     }
 }
