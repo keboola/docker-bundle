@@ -49,6 +49,12 @@ keboola_docker_project_stats:
         _controller: KeboolaDockerBundle:Api:projectStats
     methods:  [GET]
 
+keboola_docker_project_stats_agg:
+    path:     /stats/project/daily
+    defaults:
+        _controller: KeboolaDockerBundle:Api:projectDailyStats
+    methods:  [GET]
+
 keboola_docker_configuration_resolve:
     path:     /configuration/resolve
     defaults:

@@ -386,8 +386,16 @@ class ApiController extends BaseApiController
         $data = $client->search([
             'body' => [
                 'query' => [
-                    'match' => [
-                        'project.id' => $projectId,
+                    'constant_score' => [
+                        'filter' => [
+                            'bool' => [
+                                'must' => [
+                                    'term' => [
+                                        'project.id' => $projectId,
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                 ],
                 'aggs' => [
@@ -401,6 +409,83 @@ class ApiController extends BaseApiController
         ]);
 
         $response = ['jobs' => ['durationSum' => $data['aggregations']['jobs']['value']]];
-        return $this->createJsonResponse($response, 200, ["Content-Type" => "application/json"]);
+        return $this->createJsonResponse($response, 200, ['Content-Type' => 'application/json']);
+    }
+
+
+    /**
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function projectDailyStatsAction(Request $request)
+    {
+        $tokenInfo = $this->storageApi->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+        $fromDate = $request->get('fromDate');
+        $toDate = $request->get('toDate');
+        $timezoneOffset = $request->get('timezoneOffset');
+        if (empty($fromDate)) {
+            throw new UserException('Missing "fromDate" query parameter.');
+        }
+        if (empty($toDate)) {
+            throw new UserException('Missing "toDate" query parameter.');
+        }
+        if (empty($timezoneOffset)) {
+            throw new UserException('Missing "timezoneOffset" query parameter.');
+        }
+        /** @var Client $client */
+        $client = $this->container->get('syrup.elasticsearch.client');
+        $data = $client->search([
+            'body' => [
+                'query' => [
+                    'constant_score' => [
+                        'filter' => [
+                            'bool' => [
+                                'must' => [
+                                    [
+                                        'term' => [
+                                            'project.id' => $projectId,
+                                        ],
+                                    ],
+                                    [
+                                        'range' => [
+                                            'endTime' => [
+                                                'gte' => $fromDate,
+                                                'lte' => $toDate,
+                                            ],
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+                'aggs' => [
+                    'jobs_over_time' => [
+                        'date_histogram' => [
+                            'field' => 'endTime',
+                            "format" => 'yyyy-MM-dd',
+                            'interval' => 'day',
+                            'time_zone' => $timezoneOffset,
+                        ],
+                        'aggs' => [
+                            'jobs' => [
+                                'sum' => [
+                                    'field' => 'durationSeconds',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $result = [];
+        foreach ($data['aggregations']['jobs_over_time']['buckets'] as $bucket) {
+            $result[] = ['date' => $bucket['key_as_string'], 'durationSum' => $bucket['jobs']['value']];
+        }
+
+        $response = ['jobs' => $result];
+        return $this->createJsonResponse($response, 200, ['Content-Type' => 'application/json']);
     }
 }
