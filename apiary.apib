@@ -418,6 +418,42 @@ Returns the sum of runtime in seconds of all jobs in the project.
                 }
             }
 
+## Daily Project Stats [/stats/project/daily?fromDate={fromDate}&toDate={toDate}&timezoneOffset={timezoneOffset}]
+
++ Parameters
+    + fromDate (required, string, `2020-08-01`) ... Date to start listing (inclusive).
+    + toDate (required, string, `2020-08-03`) ... Date to end listing (inclusive).
+    + timezoneOffset (required, string, `+02:00`) ... Timezone in which the dates are assumed.
+
+### Get project stats [GET]
+
+Returns the daily sum of runtime in seconds of all jobs in the project.
+
++ Request Process action (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+
++ Response 200 (application/json)
+
+            {
+                "jobs": [
+                    {
+                        "date": "2020-08-01",
+                        "durationSum": 12
+                    },
+                    {
+                        "date": "2020-08-02",
+                        "durationSum": 0
+                    },
+                    {
+                        "date": "2020-08-03",
+                        "durationSum": 220
+                    }
+                ]
+            }
+
 # Group Configuration
 
 Configuration utilities
