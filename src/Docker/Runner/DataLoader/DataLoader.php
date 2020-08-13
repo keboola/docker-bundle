@@ -313,7 +313,11 @@ class DataLoader implements DataLoaderInterface
             (($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) &&
                 ($this->getStagingStorageOutput() !== Reader::STAGING_SNOWFLAKE)) ||
             (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SNOWFLAKE))
+                ($this->getStagingStorageInput() !== Reader::STAGING_SNOWFLAKE)) ||
+            (($this->getStagingStorageInput() === 'workspace-synapse') &&
+                ($this->getStagingStorageOutput() !== 'workspace-synapse')) ||
+            (($this->getStagingStorageOutput() === 'workspace-synapse') &&
+                ($this->getStagingStorageInput() !== 'workspace-synapse'))
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
