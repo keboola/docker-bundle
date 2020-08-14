@@ -650,6 +650,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 34,
+                'endTime' => '2020-08-13T00:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
                 ],
@@ -660,6 +661,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 1200,
+                'endTime' => '2020-08-12T15:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
                 ],
@@ -672,6 +674,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 20,
+                'endTime' => '2020-09-12T15:01:01+02:00',
                 'project' => [
                     'id' => 123456,
                 ],
@@ -686,13 +689,254 @@ class ApiControllerTest extends WebTestCase
             '/docker/stats/project',
             [],
             [],
-            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"row":"my-row"}'
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
         );
+
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
         $this->assertEquals(['jobs' => ['durationSum' => 1234]], $response);
         $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDaily()
+    {
+        $frameworkClient = $this->createClient();
+        /** @var Client $elasticClient */
+        $elasticClient = static::$kernel->getContainer()->get('syrup.elasticsearch.client');
+        $elasticClient->search();
+
+        // get current project id
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $tokenInfo = $storageClient->verifyToken();
+        $projectId = $tokenInfo['owner']['id'];
+
+        $jobs = $elasticClient->search([
+            'body' => [
+                'size' => 1000,
+                'query' => [
+                    'match' => [
+                        'project.id' => $projectId,
+                    ],
+                ],
+            ],
+        ]);
+        $index = null;
+        $type = null;
+        foreach ($jobs['hits']['hits'] as $job) {
+            $index = $job['_index'];
+            $type = $job['_type'];
+            $elasticClient->update([
+                'index' => $job['_index'],
+                'id' => $job['_id'],
+                'type' => $job['_type'],
+                'body' => [
+                    'doc' => [
+                        'durationSeconds' => 0,
+                    ],
+                ],
+            ]);
+        }
+        // assume there was at least one job somewhere
+        self::assertNotEmpty($index);
+
+        // insert some jobs to be counted
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 34,
+                'endTime' => '2020-08-13T00:01:01+02:00',
+                'project' => [
+                    'id' => $projectId,
+                ],
+            ],
+        ]);
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 1200,
+                'endTime' => '2020-08-12T15:01:01+02:00',
+                'project' => [
+                    'id' => $projectId,
+                ],
+            ],
+        ]);
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 560,
+                'endTime' => '2020-08-09T15:01:01+02:00',
+                'project' => [
+                    'id' => $projectId,
+                ],
+            ],
+        ]);
+
+        // insert jobs not to be counted
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 20,
+                'endTime' => '2020-09-12T15:01:01+02:00',
+                'project' => [
+                    'id' => 123456,
+                ],
+            ],
+        ]);
+
+        // eventual consistency TZOFFSET:02:00
+        sleep(5);
+
+        // first test TZOFFSET:02:00
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2020-08-12&toDate=2020-08-13&timezoneOffset=%2B02:00',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals(
+            [
+                [
+                    'date' => '2020-08-12',
+                    'durationSum' => 1200,
+                ],
+                [
+                    'date' => '2020-08-13',
+                    'durationSum' => 34,
+                ],
+            ],
+            $response['jobs']
+        );
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+
+        // second test TZOFFSET:00:00
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2020-08-12&toDate=2020-08-13&timezoneOffset=%2B00:00',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals(
+            [
+                [
+                    'date' => '2020-08-12',
+                    'durationSum' => 1234,
+                ],
+                [
+                    'date' => '2020-08-13',
+                    'durationSum' => 0,
+                ],
+            ],
+            $response['jobs']
+        );
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+
+        // third test - bigger range
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2020-08-09&toDate=2020-08-13&timezoneOffset=%2B00:00',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals(
+            [
+                [
+                    'date' => '2020-08-09',
+                    'durationSum' => 560,
+                ],
+                [
+                    'date' => '2020-08-10',
+                    'durationSum' => 0,
+                ],
+                [
+                    'date' => '2020-08-11',
+                    'durationSum' => 0,
+                ],
+                [
+                    'date' => '2020-08-12',
+                    'durationSum' => 1234,
+                ],
+                [
+                    'date' => '2020-08-13',
+                    'durationSum' => 0,
+                ],
+            ],
+            $response['jobs']
+        );
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+
+        // fourth test - negative range
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2022-08-09&toDate=2020-08-13&timezoneOffset=%2B00:00',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('jobs', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals([], $response['jobs']);
+        $this->assertEquals(200, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyMissingFromDate()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals('Missing "fromDate" query parameter.', $response['message']);
+        $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyMissingToDate()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2022-08-01',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals('Missing "toDate" query parameter.', $response['message']);
+        $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyMissingTimezone()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?fromDate=2022-08-01&toDate=2020-01-01',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        $this->assertEquals('Missing "timezoneOffset" query parameter.', $response['message']);
+        $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
     }
 
     private function createSharedConfigurations()
@@ -909,12 +1153,6 @@ class ApiControllerTest extends WebTestCase
         $configVersion = $result['version'];
 
         $frameworkClient = $this->createClient();
-
-        // get current project id
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
-        $tokenInfo = $storageClient->verifyToken();
-        $projectId = $tokenInfo['owner']['id'];
-
         $frameworkClient->request(
             'POST',
             '/docker/configuration/resolve',

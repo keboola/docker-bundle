@@ -37,16 +37,16 @@ keboola_docker_sync_action:
       _controller: KeboolaDockerBundle:Action:process
     methods:  [POST]
 
-keboola_docker_project_stats_deprecated:
-    path:     /stats/project/
-    defaults:
-        _controller: KeboolaDockerBundle:Api:projectStats
-    methods:  [POST]
-
 keboola_docker_project_stats:
     path:     /stats/project
     defaults:
         _controller: KeboolaDockerBundle:Api:projectStats
+    methods:  [GET]
+
+keboola_docker_project_stats_agg:
+    path:     /stats/project/daily
+    defaults:
+        _controller: KeboolaDockerBundle:Api:projectDailyStats
     methods:  [GET]
 
 keboola_docker_configuration_resolve:
