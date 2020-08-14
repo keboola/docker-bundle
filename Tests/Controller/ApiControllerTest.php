@@ -935,7 +935,7 @@ class ApiControllerTest extends WebTestCase
         );
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
-        $this->assertEquals('Missing "toDate" query parameter.', $response['message']);
+        $this->assertEquals('Missing "timezoneOffset" query parameter.', $response['message']);
         $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
     }
 
