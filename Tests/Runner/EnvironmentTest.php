@@ -41,7 +41,7 @@ class EnvironmentTest extends TestCase
                 'forward_token_details' => false,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -70,7 +70,7 @@ class EnvironmentTest extends TestCase
                 'forward_token_details' => false,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -100,7 +100,7 @@ class EnvironmentTest extends TestCase
                 'forward_token_details' => true,
             ],
         ]);
-        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, [], $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -134,7 +134,7 @@ class EnvironmentTest extends TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment('config-test-id', $component, $parameters, $this->tokenInfo, 123, STORAGE_API_URL);
+        $environment = new Environment('config-test-id', $component, $parameters, $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);

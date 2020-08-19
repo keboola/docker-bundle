@@ -479,7 +479,8 @@ class Runner
                 $image->getConfigData()['parameters'],
                 $tokenInfo,
                 $this->storageClient->getRunId(),
-                $this->storageClient->getApiUrl()
+                $this->storageClient->getApiUrl(),
+                $this->storageClient->getTokenString()
             );
             $imageDigests[] = [
                 'id' => $image->getFullImageId(),
