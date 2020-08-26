@@ -2659,7 +2659,7 @@ class RunnerTest extends BaseRunnerTest
         }
     }
 
-    public function testAbsStagingMapping()
+    public function testS3StagingMapping()
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -2672,16 +2672,16 @@ class RunnerTest extends BaseRunnerTest
         unset($csv);
 
         $componentData = [
-            'id' => 'keboola.runner-workspace-test',
+            'id' => 'keboola.runner-staging-test',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
-                    'tag' => 'latest',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
+                    'tag' => '0.0.3',
                 ],
                 'staging_storage' => [
-                    'input' => 'workspace-snowflake',
-                    'output' => 'workspace-snowflake',
+                    'input' => 's3',
+                    'output' => 'local',
                 ],
             ],
         ];
@@ -2689,7 +2689,7 @@ class RunnerTest extends BaseRunnerTest
         $configId = uniqid('runner-test-');
         $components = new Components($this->client);
         $configuration = new Configuration();
-        $configuration->setComponentId('keboola.runner-workspace-test');
+        $configuration->setComponentId('keboola.runner-staging-test');
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId($configId);
         $components->addConfiguration($configuration);
@@ -2710,17 +2710,10 @@ class RunnerTest extends BaseRunnerTest
                                 ],
                             ],
                         ],
-                        'output' => [
-                            'tables' => [
-                                [
-                                    'source' => 'local-table',
-                                    'destination' => 'out.c-runner-test.new-table',
-                                ],
-                            ],
-                        ],
                     ],
                     'parameters' => [
-                        'operation' => 'copy',
+                        'operation' => 'content',
+                        'filename' => 'local-table.manifest',
                     ],
                 ],
                 []
@@ -2731,11 +2724,18 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
 
-        $options = new ListConfigurationWorkspacesOptions();
-        $options->setComponentId('keboola.runner-workspace-test');
-        $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.new-table'));
-        $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
+        $records = $this->getContainerHandler()->getRecords();
+        self::assertCount(1, $records);
+        $message = $records[0]['message'];
+        $manifestData = json_decode($message, true);
+        self::assertEquals('in.c-runner-test.mytable', $manifestData['id']);
+        self::assertEquals('mytable', $manifestData['name']);
+        self::assertArrayHasKey('last_change_date', $manifestData);
+        self::assertArrayHasKey('s3', $manifestData);
+        self::assertArrayHasKey('region', $manifestData['s3']);
+        self::assertArrayHasKey('bucket', $manifestData['s3']);
+        self::assertArrayHasKey('key', $manifestData['s3']);
+        self::assertArrayHasKey('access_key_id', $manifestData['s3']['credentials']);
+        $components->deleteConfiguration('keboola.runner-staging-test', $configId);
     }
 }

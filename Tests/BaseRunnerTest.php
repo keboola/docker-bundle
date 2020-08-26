@@ -74,6 +74,16 @@ abstract class BaseRunnerTest extends TestCase
                 'token' => STORAGE_API_TOKEN,
             ]
         );
+        $tokenInfo = $this->client->verifyToken();
+        print(sprintf(
+            'Authorized as "%s (%s)" to project "%s (%s)" at "%s" stack.',
+            $tokenInfo['description'],
+            $tokenInfo['id'],
+            $tokenInfo['owner']['name'],
+            $tokenInfo['owner']['id'],
+            $this->client->getApiUrl()
+        ));
+
         $this->usageFile = null;
 
         $this->containerHandler = new TestHandler();
