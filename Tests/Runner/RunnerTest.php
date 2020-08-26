@@ -2658,4 +2658,84 @@ class RunnerTest extends BaseRunnerTest
             $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
         }
     }
+
+    public function testS3StagingMapping()
+    {
+        $this->clearBuckets();
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $componentData = [
+            'id' => 'keboola.runner-staging-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
+                    'tag' => '0.0.3',
+                ],
+                'staging_storage' => [
+                    'input' => 's3',
+                    'output' => 'local',
+                ],
+            ],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-staging-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        self::assertFalse($this->client->tableExists('out.c-runner-test.new-table'));
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'input' => [
+                            'tables' => [
+                                [
+                                    'source' => 'in.c-runner-test.mytable',
+                                    'destination' => 'local-table',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'content',
+                        'filename' => 'local-table.manifest',
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+
+        $records = $this->getContainerHandler()->getRecords();
+        self::assertCount(1, $records);
+        $message = $records[0]['message'];
+        $manifestData = json_decode($message, true);
+        self::assertEquals('in.c-runner-test.mytable', $manifestData['id']);
+        self::assertEquals('mytable', $manifestData['name']);
+        self::assertArrayHasKey('last_change_date', $manifestData);
+        self::assertArrayHasKey('s3', $manifestData);
+        self::assertArrayHasKey('region', $manifestData['s3']);
+        self::assertArrayHasKey('bucket', $manifestData['s3']);
+        self::assertArrayHasKey('key', $manifestData['s3']);
+        self::assertArrayHasKey('access_key_id', $manifestData['s3']['credentials']);
+        $components->deleteConfiguration('keboola.runner-staging-test', $configId);
+    }
 }
