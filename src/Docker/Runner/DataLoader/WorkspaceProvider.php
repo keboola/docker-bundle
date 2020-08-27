@@ -41,7 +41,11 @@ class WorkspaceProvider implements WorkspaceProviderInterface
     private function createWorkspace($type)
     {
         // this check is a workaround for https://keboola.atlassian.net/browse/KBC-236
-        $workspaceTypes = [WorkspaceProviderInterface::TYPE_REDSHIFT, WorkspaceProviderInterface::TYPE_SNOWFLAKE];
+        $workspaceTypes = [
+            WorkspaceProviderInterface::TYPE_REDSHIFT,
+            WorkspaceProviderInterface::TYPE_SNOWFLAKE,
+            WorkspaceProviderInterface::TYPE_SYNAPSE,
+        ];
         if (!in_array($type, $workspaceTypes)) {
             throw new UserException('Workspace type must be one of ' . implode(', ', $workspaceTypes));
         }

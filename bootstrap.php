@@ -18,6 +18,15 @@ defined('STORAGE_API_URL')
 defined('STORAGE_API_TOKEN')
     || define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ?: 'your_token');
 
+defined('STORAGE_API_URL_SYNAPSE')
+|| define('STORAGE_API_URL_SYNAPSE', getenv('STORAGE_API_URL_SYNAPSE') ?: 'sapi_url');
+
+defined('STORAGE_API_TOKEN_SYNAPSE')
+|| define('STORAGE_API_TOKEN_SYNAPSE', getenv('STORAGE_API_TOKEN_SYNAPSE') ?: 'your_token');
+
+defined('RUN_SYNAPSE_TESTS')
+|| define('RUN_SYNAPSE_TESTS', getenv('RUN_SYNAPSE_TESTS') ?: '0');
+
 defined('GIT_PRIVATE_USERNAME')
     || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ?: 'username');
 
