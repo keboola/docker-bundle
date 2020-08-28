@@ -34,6 +34,9 @@
     <testsuite name="abs-tests">
         <directory>Tests/backend-specific-tests/ABS</directory>
     </testsuite>
+    <testsuite name="synapse-tests">
+        <directory>Tests/backend-specific-tests/Synapse</directory>
+    </testsuite>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

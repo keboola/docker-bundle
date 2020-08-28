@@ -139,7 +139,7 @@ class WorkspaceProviderTest extends TestCase
         $options->setConfigurationId('runner-test-configuration');
         $provider->getWorkspaceId('snowflake');
         self::assertCount(1, $components->listConfigurationWorkspaces($options));
-        $provider->cleanup('snowflake');
+        $provider->cleanup();
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
     }
 
