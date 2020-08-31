@@ -106,8 +106,12 @@ class DataLoader implements DataLoaderInterface
         $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
+        /* this condition is here so as not to create a workspace when not needed for the job at all
+            checking only output setting is ok because input and output workspace mapping must match -
+            see  validateStagingSetting() */
         if (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT)
+            ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) ||
+            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE)
         ) {
             $this->workspaceProvider = new WorkspaceProvider(
                 $this->storageClient,
@@ -224,6 +228,8 @@ class DataLoader implements DataLoaderInterface
             return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SNOWFLAKE);
         } elseif ($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) {
             return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_REDSHIFT);
+        } elseif ($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) {
+            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SYNAPSE);
         } else {
             return [];
         }

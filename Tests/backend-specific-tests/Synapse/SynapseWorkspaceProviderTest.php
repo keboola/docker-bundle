@@ -46,7 +46,7 @@ class SynapseWorkspaceProviderTest extends TestCase
     public function testSynapseWorkspaceProvider()
     {
         if (!RUN_SYNAPSE_TESTS) {
-            self:self::markTestSkipped('Synapse test is disabled.');
+            self::markTestSkipped('Synapse test is disabled.');
         }
         $type = 'synapse';
         $components = new Components($this->client);

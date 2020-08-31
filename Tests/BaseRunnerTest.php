@@ -50,6 +50,15 @@ abstract class BaseRunnerTest extends TestCase
      */
     private $loggersServiceStub;
 
+    protected function initStorageClient()
+    {
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]
+        );
+    }
 
     public function setUp()
     {
@@ -68,12 +77,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->encryptorFactory->setComponentId('keboola.docker-demo-sync');
         $this->encryptorFactory->setProjectId('12345');
         $this->encryptorFactory->setStackId('test');
-        $this->client = new Client(
-            [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]
-        );
+        $this->initStorageClient();
         $tokenInfo = $this->client->verifyToken();
         print(sprintf(
             'Authorized as "%s (%s)" to project "%s (%s)" at "%s" stack.',
