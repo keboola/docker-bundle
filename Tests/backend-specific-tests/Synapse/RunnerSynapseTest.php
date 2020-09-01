@@ -94,6 +94,8 @@ class RunnerSynapseTest extends BaseRunnerTest
                     'output' => 'workspace-synapse',
                 ],
             ],
+            // https://keboola.slack.com/archives/C02C3GZUS/p1598942156005100
+            // https://github.com/microsoft/msphpsql/issues/400#issuecomment-481722255
             'features' => ['container-root-user'],
         ];
 
