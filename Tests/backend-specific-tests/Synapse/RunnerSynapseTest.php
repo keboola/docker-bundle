@@ -94,6 +94,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                     'output' => 'workspace-synapse',
                 ],
             ],
+            'features' => ['container-root-user'],
         ];
 
         $configId = uniqid('runner-test-');
