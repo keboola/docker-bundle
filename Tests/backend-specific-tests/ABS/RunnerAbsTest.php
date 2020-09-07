@@ -124,8 +124,9 @@ class RunnerAbsTest extends BaseRunnerTest
         self::assertArrayNotHasKey('s3', $manifestData);
         self::assertArrayHasKey('abs', $manifestData);
         self::assertArrayHasKey('region', $manifestData['abs']);
-        self::assertArrayHasKey('container', $manifestData['abs']);
-        self::assertArrayHasKey('name', $manifestData['abs']);
+        self::assertEquals(true, $manifestData['abs']['is_sliced']);
+        self::assertStringEndsWith('.csv.gzmanifest', $manifestData['abs']['name']);
+        self::assertStringEndsWith('in-c-runner-test-mytable', $manifestData['abs']['container']);
         self::assertArrayHasKey('sas_connection_string', $manifestData['abs']['credentials']);
         $components->deleteConfiguration('keboola.runner-staging-test', $configId);
     }
