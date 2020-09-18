@@ -87,7 +87,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':latest', $image->getFullImageId());
-        self::assertEquals( 'docker-testing:latest', $image->getPrintableImageId());
+        self::assertEquals('docker-testing:latest', $image->getPrintableImageId());
 
         $process = new Process('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . '| wc -l');
         $process->run();
