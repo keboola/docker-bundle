@@ -48,6 +48,7 @@ class ImageTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $configuration, new Temp(), true);
         self::assertEquals(QuayIO::class, get_class($image));
         self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
+        self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
     }
 
     public function testImageDigestNotPulled()

@@ -169,6 +169,23 @@ abstract class Image
     }
 
     /**
+     * Returns image id in a user friendly format
+     *
+     * @return string
+     */
+    public function getPrintableImageId()
+    {
+        return $this->stripRegistryName($this->getFullImageId());
+    }
+
+    private function stripRegistryName($string)
+    {
+        $parts = explode('/', $string);
+        array_shift($parts);
+        return implode('/', $parts);
+    }
+
+    /**
      * Prepare the container image so that it can be run.
      *
      * @param array $configData Configuration (same as the one stored in data config file)
@@ -258,6 +275,16 @@ abstract class Image
             }
         }
         return $this->imageDigests;
+    }
+
+    /**
+     * Return user friendly image digests.
+     *
+     * @return string[]
+     */
+    public function getPrintableImageDigests()
+    {
+        return array_map([$this, 'stripRegistryName'], $this->getImageDigests());
     }
 
     /**

@@ -483,8 +483,8 @@ class Runner
                 $this->storageClient->getTokenString()
             );
             $imageDigests[] = [
-                'id' => $image->getFullImageId(),
-                'digests' => $image->getImageDigests()
+                'id' => $image->getPrintableImageId(),
+                'digests' => $image->getPrintableImageDigests()
             ];
             $configFile->createConfigFile($image->getConfigData(), $outputFilter, $dataLoader->getWorkspaceCredentials());
 
