@@ -30,6 +30,7 @@ class QuayIORepositoryTest extends BaseImageTest
         $image->prepare([]);
 
         self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
+        self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
 
         $process = new Process('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
         $process->run();

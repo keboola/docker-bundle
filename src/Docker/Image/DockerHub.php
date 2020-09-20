@@ -19,7 +19,7 @@ class DockerHub extends Image
             });
             $this->logImageHash();
         } catch (\Exception $e) {
-            throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
+            throw new ApplicationException("Cannot pull image '{$this->getPrintableImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()}", $e);
         }
     }
 }

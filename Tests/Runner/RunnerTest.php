@@ -267,33 +267,33 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals(
             [
                 0 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file:0.3.0',
+                    'id' => 'developer-portal-v2/keboola.processor-last-file:0.3.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file@sha256:0c730bd4d91ca6962d72cd0d878a97857a1ef7c37eadd2eafd770ca26e627b0e'
+                        'developer-portal-v2/keboola.processor-last-file@sha256:0c730bd4d91ca6962d72cd0d878a97857a1ef7c37eadd2eafd770ca26e627b0e'
                     ],
                 ],
                 1 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress:v4.1.0',
+                    'id' => 'developer-portal-v2/keboola.processor-decompress:v4.1.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress@sha256:30a1a7119d51b5bb42d6c088fd3d98fed8ff7025fdca65618328face13bda91f'
+                        'developer-portal-v2/keboola.processor-decompress@sha256:30a1a7119d51b5bb42d6c088fd3d98fed8ff7025fdca65618328face13bda91f'
                     ],
                 ],
                 2 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files:v2.2.1',
+                    'id' => 'developer-portal-v2/keboola.processor-move-files:v2.2.1',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files@sha256:991ba73bb0fa8622c791eadc23b845aa74578fa136e328ea19b1305a530edded'
+                        'developer-portal-v2/keboola.processor-move-files@sha256:991ba73bb0fa8622c791eadc23b845aa74578fa136e328ea19b1305a530edded'
                     ],
                 ],
                 3 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv:4.0.0',
+                    'id' => 'developer-portal-v2/keboola.processor-iconv:4.0.0',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv@sha256:5c92ba8195dafe80455e59b99554155fd7095d59b1993e0dfc25ae44506e8be5'
+                        'developer-portal-v2/keboola.processor-iconv@sha256:5c92ba8195dafe80455e59b99554155fd7095d59b1993e0dfc25ae44506e8be5'
                     ],
                 ],
                 4 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation:1.2.8',
+                    'id' => 'developer-portal-v2/keboola.r-transformation:1.2.8',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation@sha256:e339e69841712bc8ef87f04020e244cbf237f206e6d6d2c1621c20e515b8562d'
+                        'developer-portal-v2/keboola.r-transformation@sha256:e339e69841712bc8ef87f04020e244cbf237f206e6d6d2c1621c20e515b8562d'
                     ],
                 ]
             ],
@@ -412,9 +412,9 @@ class RunnerTest extends BaseRunnerTest
             [
                 // the processor is not executed
                 0 => [
-                    'id' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:1.1.22',
+                    'id' => 'developer-portal-v2/keboola.python-transformation:1.1.22',
                     'digests' => [
-                        '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation@sha256:34d3a0a9a10cdc9a48b4ab51e057eae85682cf2768d05e9f5344832312ad9f52'
+                        'developer-portal-v2/keboola.python-transformation@sha256:34d3a0a9a10cdc9a48b4ab51e057eae85682cf2768d05e9f5344832312ad9f52'
                     ],
                 ]
             ],
@@ -1750,7 +1750,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
-            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/' .
+            'developer-portal-v2/' .
             'keboola.python-transformation:latest container \'1234567-norunid--0-keboola-docker-demo-sync\'' .
             ' failed: (2) Class 2 error'
         );

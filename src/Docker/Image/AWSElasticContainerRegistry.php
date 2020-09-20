@@ -110,7 +110,7 @@ class AWSElasticContainerRegistry extends Image
             if (strpos($process->getOutput(), "403 Forbidden") !== false) {
                 throw new LoginFailedException($process->getOutput());
             }
-            throw new ApplicationException("Cannot pull image '{$this->getFullImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
+            throw new ApplicationException("Cannot pull image '{$this->getPrintableImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
         }
     }
 }

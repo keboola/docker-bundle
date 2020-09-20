@@ -335,7 +335,7 @@ class Container
             "errorOutput" => mb_substr($errorOutput, -1000000),
             "container" => [
                 "id" => $this->getId(),
-                "image" => $this->getImage()->getFullImageId(),
+                "image" => $this->getImage()->getPrintableImageId(),
             ],
         ];
 
@@ -344,14 +344,14 @@ class Container
             // this catches the timeout from `sudo timeout`
             if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
                 throw new UserException(
-                    "Running {$this->getImage()->getFullImageId()} container exceeded the timeout of " .
+                    "Running {$this->getImage()->getPrintableImageId()} container exceeded the timeout of " .
                     $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds.",
                     null,
                     $data
                 );
             } else {
                 throw new InitializationException(
-                    "{$this->getImage()->getFullImageId()} container terminated. Will restart."
+                    "{$this->getImage()->getPrintableImageId()} container terminated. Will restart."
                 );
             }
         } elseif ($process->getExitCode() == 1) {
@@ -361,14 +361,14 @@ class Container
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
                 // syrup will log the process error output as part of the exception body
                 throw new UserException(
-                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    "{$this->getImage()->getPrintableImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
                     $data
                 );
             } else {
                 // syrup will log the process error output as part of the exception body
                 throw new ApplicationException(
-                    "{$this->getImage()->getFullImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    "{$this->getImage()->getPrintableImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
                     null,
                     $data
                 );
