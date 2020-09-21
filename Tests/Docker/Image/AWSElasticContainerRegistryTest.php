@@ -87,7 +87,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':latest', $image->getFullImageId());
-        self::assertEquals('docker-testing:latest', $image->getPrintableImageId());
+        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        array_shift($repoParts);
+        self::assertEquals(implode('/', $repoParts) . ':latest', $image->getPrintableImageId());
 
         $process = new Process('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . '| wc -l');
         $process->run();
@@ -133,7 +135,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $image->prepare([]);
 
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':test-hash', $image->getFullImageId());
-        self::assertEquals('docker-testing:test-hash', $image->getPrintableImageId());
+        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        array_shift($repoParts);
+        self::assertEquals(implode('/', $repoParts) . ':test-hash', $image->getPrintableImageId());
         self::assertTrue($testHandler->hasNotice(
             'Using image ' . AWS_ECR_REGISTRY_URI .
             ':test-hash with repo-digest ' . AWS_ECR_REGISTRY_URI . '@sha256:' .
