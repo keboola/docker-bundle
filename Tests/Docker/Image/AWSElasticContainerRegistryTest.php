@@ -147,8 +147,10 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             [AWS_ECR_REGISTRY_URI . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getImageDigests()
         );
+        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        array_shift($repoParts);
         self::assertEquals(
-            ['docker-testing@sha256:' . ImageTest::TEST_HASH_DIGEST],
+            [implode('/', $repoParts) . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getPrintableImageDigests()
         );
         (new Process('sudo docker rmi ' . AWS_ECR_REGISTRY_URI))->run();
