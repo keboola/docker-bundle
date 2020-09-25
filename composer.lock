@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.154.4",
+            "version": "3.155.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "199a3e1ee89c38251a4a47433560faf5d6a3ef14"
+                "reference": "5a3afb3b3171a133a491d3457e1e7dcaa45ac954"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/199a3e1ee89c38251a4a47433560faf5d6a3ef14",
-                "reference": "199a3e1ee89c38251a4a47433560faf5d6a3ef14",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/5a3afb3b3171a133a491d3457e1e7dcaa45ac954",
+                "reference": "5a3afb3b3171a133a491d3457e1e7dcaa45ac954",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-09-16T18:16:18+00:00"
+            "time": "2020-09-24T18:13:54+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1890,17 +1890,17 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "9.4.1",
+            "version": "9.4.3",
             "target-dir": "Keboola/InputMapping",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "527a76e57c32fc2969e5fefc364b5efafeee6f78"
+                "reference": "e14508d4de77a122389f9af396fa68b4a072c103"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/527a76e57c32fc2969e5fefc364b5efafeee6f78",
-                "reference": "527a76e57c32fc2969e5fefc364b5efafeee6f78",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/e14508d4de77a122389f9af396fa68b4a072c103",
+                "reference": "e14508d4de77a122389f9af396fa68b4a072c103",
                 "shasum": ""
             },
             "require": {
@@ -1934,7 +1934,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-09-07T07:26:06+00:00"
+            "time": "2020-09-25T10:17:35+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2031,23 +2031,23 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "11.1.1",
+            "version": "11.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "7fd1914c721cd1a1ccf8316acf71a96f211a9ad3"
+                "reference": "9075be0fe3326ea8b07dad23d4bb13a62c3c0037"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/7fd1914c721cd1a1ccf8316acf71a96f211a9ad3",
-                "reference": "7fd1914c721cd1a1ccf8316acf71a96f211a9ad3",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/9075be0fe3326ea8b07dad23d4bb13a62c3c0037",
+                "reference": "9075be0fe3326ea8b07dad23d4bb13a62c3c0037",
                 "shasum": ""
             },
             "require": {
                 "guzzlehttp/guzzle": "^6.2",
                 "keboola/input-mapping": "^9.3",
                 "keboola/sanitizer": "^0.1",
-                "monolog/monolog": "^1.22",
+                "monolog/monolog": "^1.22|^2.0",
                 "symfony/config": "^2.8|^4.1",
                 "symfony/finder": "^2.8|^4.1",
                 "symfony/serializer": "^2.8|^4.1",
@@ -2076,7 +2076,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-09-17T11:56:31+00:00"
+            "time": "2020-09-24T11:13:48+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2283,16 +2283,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "10.18.2",
+            "version": "10.19.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "6a8300931b54f068930dc2a0bd3c33108863651f"
+                "reference": "e59ee05a25c7a3b6d6a3308b7777d9d2b61f4453"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/6a8300931b54f068930dc2a0bd3c33108863651f",
-                "reference": "6a8300931b54f068930dc2a0bd3c33108863651f",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/e59ee05a25c7a3b6d6a3308b7777d9d2b61f4453",
+                "reference": "e59ee05a25c7a3b6d6a3308b7777d9d2b61f4453",
                 "shasum": ""
             },
             "require": {
@@ -2331,7 +2331,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2020-09-11T12:25:43+00:00"
+            "time": "2020-09-21T08:09:09+00:00"
         },
         {
             "name": "keboola/syrup",
@@ -3326,24 +3326,24 @@
         },
         {
             "name": "react/cache",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/cache.git",
-                "reference": "aa10d63a1b40a36a486bdf527f28bac607ee6466"
+                "reference": "44a568925556b0bd8cacc7b49fb0f1cf0d706a0c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/cache/zipball/aa10d63a1b40a36a486bdf527f28bac607ee6466",
-                "reference": "aa10d63a1b40a36a486bdf527f28bac607ee6466",
+                "url": "https://api.github.com/repos/reactphp/cache/zipball/44a568925556b0bd8cacc7b49fb0f1cf0d706a0c",
+                "reference": "44a568925556b0bd8cacc7b49fb0f1cf0d706a0c",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.0",
-                "react/promise": "~2.0|~1.1"
+                "react/promise": "^3.0 || ^2.0 || ^1.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^6.4 || ^5.7 || ^4.8.35"
+                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.35"
             },
             "type": "library",
             "autoload": {
@@ -3355,6 +3355,28 @@
             "license": [
                 "MIT"
             ],
+            "authors": [
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@clue.engineering",
+                    "homepage": "https://clue.engineering/"
+                },
+                {
+                    "name": "Cees-Jan Kiewiet",
+                    "email": "reactphp@ceesjankiewiet.nl",
+                    "homepage": "https://wyrihaximus.net/"
+                },
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com",
+                    "homepage": "https://sorgalla.com/"
+                },
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "homepage": "https://cboden.dev/"
+                }
+            ],
             "description": "Async, Promise-based cache interface for ReactPHP",
             "keywords": [
                 "cache",
@@ -3362,7 +3384,17 @@
                 "promise",
                 "reactphp"
             ],
-            "time": "2019-07-11T13:45:28+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/WyriHaximus",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-09-18T12:12:35+00:00"
         },
         {
             "name": "react/datagram",
