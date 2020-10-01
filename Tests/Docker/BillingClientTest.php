@@ -102,8 +102,8 @@ class BillingClientTest extends TestCase
                 200,
                 ['Content-Type' => 'application/json'],
                 '{
-                    "remaining": "123",
-                    "consumed": "456"
+                    "remaining": "123.4343434343434343",
+                    "consumed": "456.1212121212121212"
                 }'
             ),
         ]);
@@ -114,7 +114,7 @@ class BillingClientTest extends TestCase
         $stack->push($history);
         $client = $this->getClient(['handler' => $stack]);
         $credits = $client->getRemainingCredits();
-        self::assertEquals('123', $credits);
+        self::assertEquals(123.43434343434, $credits);
         self::assertCount(1, $requestHistory);
         /** @var Request $request */
         $request = $requestHistory[0]['request'];

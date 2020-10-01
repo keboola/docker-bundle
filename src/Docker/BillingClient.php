@@ -68,7 +68,7 @@ class BillingClient
     {
         $request = new Request('GET', 'credits', []);
         $data = $this->sendRequest($request);
-        return (int) $data['remaining'];
+        return (double) $data['remaining'];
     }
 
     private function createDefaultDecider($maxRetries)

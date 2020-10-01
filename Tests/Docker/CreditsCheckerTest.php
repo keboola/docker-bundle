@@ -75,61 +75,23 @@ class CreditsCheckerTest extends TestCase
         self::assertTrue($creditsChecker->hasCredits());
     }
 
-    public function testCheckCreditsHasFeatureHasCredits()
+    public function valuesProvider()
     {
-        $client = self::getMockBuilder(Client::class)
-            ->setMethods(['indexAction', 'verifyToken'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $client->method('indexAction')->willReturn(
-            [
-                'services' => [
-                    [
-                        'id' => 'graph',
-                        'url' => 'https://graph.keboola.com',
-                    ],
-                    [
-                        'id' => 'encryption',
-                        'url' => 'https://encryption.keboola.com',
-                    ],
-                    [
-                        'id' => 'billing',
-                        'url' => 'https://billing.keboola.com',
-                    ],
-                ],
-            ]
-        );
-        $client->method('verifyToken')->willReturn(
-            [
-                'id' => '123',
-                'owner' => [
-                    'id' => '123',
-                    'name' => 'test',
-                    'features' => [
-                        'transformation-config-storage',
-                        'pay-as-you-go',
-                    ],
-                ]
-            ]
-        );
-        $billingClient = self::getMockBuilder(BillingClient::class)
-            ->setMethods(['getRemainingCredits'])
-            ->disableOriginalConstructor()
-            ->getMock();
-        $billingClient->method('getRemainingCredits')
-            ->willReturn(123);
-        /** @var Client $client */
-        $creditsChecker = self::getMockBuilder(CreditsChecker::class)
-            ->setMethods(['getBillingClient'])
-            ->setConstructorArgs([$client])
-            ->getMock();
-        $creditsChecker->method('getBillingClient')
-            ->willReturn($billingClient);
-        /** @var CreditsChecker $creditsChecker */
-        self::assertTrue($creditsChecker->hasCredits());
+        return [
+            [-123, false],
+            [0, false],
+            [0.0001, true],
+            [1.0, true],
+            [123, true],
+        ];
     }
 
-    public function testCheckCreditsHasFeatureHasNoCredits()
+    /**
+     * $@dataProvider valuesProvider
+     * @param double $remainingCredits
+     * @param bool $hasCredits
+     */
+    public function testCheckCreditsHasFeatureHasCredits($remainingCredits, $hasCredits)
     {
         $client = self::getMockBuilder(Client::class)
             ->setMethods(['indexAction', 'verifyToken'])
@@ -171,7 +133,7 @@ class CreditsCheckerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $billingClient->method('getRemainingCredits')
-            ->willReturn(-123);
+            ->willReturn($remainingCredits);
         /** @var Client $client */
         $creditsChecker = self::getMockBuilder(CreditsChecker::class)
             ->setMethods(['getBillingClient'])
@@ -180,6 +142,6 @@ class CreditsCheckerTest extends TestCase
         $creditsChecker->method('getBillingClient')
             ->willReturn($billingClient);
         /** @var CreditsChecker $creditsChecker */
-        self::assertFalse($creditsChecker->hasCredits());
+        self::assertEquals($hasCredits, $creditsChecker->hasCredits());
     }
 }
