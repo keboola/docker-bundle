@@ -394,6 +394,11 @@ class ApiController extends BaseApiController
                                         'project.id' => $projectId,
                                     ],
                                 ],
+                                'must_not' => [
+                                    'term' => [
+                                        'component' => 'orchestrator',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
@@ -407,7 +412,7 @@ class ApiController extends BaseApiController
                 ],
             ],
         ]);
-
+        
         $response = ['jobs' => ['durationSum' => $data['aggregations']['jobs']['value']]];
         return $this->createJsonResponse($response, 200, ['Content-Type' => 'application/json']);
     }
@@ -454,6 +459,11 @@ class ApiController extends BaseApiController
                                                 'lte' => $toDate,
                                             ],
                                         ],
+                                    ],
+                                ],
+                                'must_not' => [
+                                    'term' => [
+                                        'component' => 'orchestrator',
                                     ],
                                 ],
                             ],
