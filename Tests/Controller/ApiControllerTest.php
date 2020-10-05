@@ -651,6 +651,7 @@ class ApiControllerTest extends WebTestCase
             'body' => [
                 'durationSeconds' => 34,
                 'endTime' => '2020-08-13T00:01:01+02:00',
+                'component' => 'docker',
                 'project' => [
                     'id' => $projectId,
                 ],
@@ -661,6 +662,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 1200,
+                'component' => 'docker',
                 'endTime' => '2020-08-12T15:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
@@ -674,9 +676,22 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 20,
+                'component' => 'docker',
                 'endTime' => '2020-09-12T15:01:01+02:00',
                 'project' => [
                     'id' => 123456,
+                ],
+            ],
+        ]);
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 20,
+                'component' => 'orchestrator',
+                'endTime' => '2020-08-12T15:01:01+02:00',
+                'project' => [
+                    'id' => $projectId,
                 ],
             ],
         ]);
@@ -745,6 +760,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 34,
+                'component' => 'docker',
                 'endTime' => '2020-08-13T00:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
@@ -756,6 +772,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 1200,
+                'component' => 'docker',
                 'endTime' => '2020-08-12T15:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
@@ -767,6 +784,7 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 560,
+                'component' => 'docker',
                 'endTime' => '2020-08-09T15:01:01+02:00',
                 'project' => [
                     'id' => $projectId,
@@ -780,9 +798,22 @@ class ApiControllerTest extends WebTestCase
             'type' => $type,
             'body' => [
                 'durationSeconds' => 20,
+                'component' => 'docker',
                 'endTime' => '2020-09-12T15:01:01+02:00',
                 'project' => [
                     'id' => 123456,
+                ],
+            ],
+        ]);
+        $elasticClient->create([
+            'index' => $index,
+            'type' => $type,
+            'body' => [
+                'durationSeconds' => 20,
+                'component' => 'orchestrator',
+                'endTime' => '2020-08-13T00:01:01+02:00',
+                'project' => [
+                    'id' => $projectId,
                 ],
             ],
         ]);
@@ -830,11 +861,7 @@ class ApiControllerTest extends WebTestCase
                 [
                     'date' => '2020-08-12',
                     'durationSum' => 1234,
-                ],
-                [
-                    'date' => '2020-08-13',
-                    'durationSum' => 0,
-                ],
+                ]
             ],
             $response['jobs']
         );
@@ -867,11 +894,7 @@ class ApiControllerTest extends WebTestCase
                 [
                     'date' => '2020-08-12',
                     'durationSum' => 1234,
-                ],
-                [
-                    'date' => '2020-08-13',
-                    'durationSum' => 0,
-                ],
+                ]
             ],
             $response['jobs']
         );
