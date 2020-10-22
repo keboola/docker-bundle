@@ -26,6 +26,7 @@ class ConfigurationAdapterTest extends TestCase
                             'where_values' => [],
                             'where_operator' => 'eq',
                             'column_types' => [],
+                            'overwrite' => false,
                         ],
                     ],
                     'files' => [],
@@ -67,6 +68,7 @@ storage:
                 where_values: {  }
                 where_operator: eq
                 column_types: {  }
+                overwrite: false
         files: {  }
 parameters:
     primary_key_column: id
@@ -102,7 +104,8 @@ EOT;
                     ],
                     "where_values": [],
                     "where_operator": "eq",
-                    "column_types": []
+                    "column_types": [],
+                    "overwrite": false
                 }
             ],
             "files": []
