@@ -94,7 +94,7 @@ class ActionControllerTest extends WebTestCase
         return $storageServiceStub;
     }
 
-    protected function getStorageServiceStubDcaPython($defaultBucket = false)
+    protected function getStorageServiceStubDcaPython($defaultBucket = false, $role = 'admin')
     {
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -179,7 +179,7 @@ class ActionControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []], "admin" => ["role" => $role]]));
         $storageClientStub->expects($this->any())
             ->method("getRunId")
             ->will($this->returnValue(uniqid()));
@@ -316,6 +316,21 @@ class ActionControllerTest extends WebTestCase
     }
 
     public function testActionTest()
+    {
+        $request = $this->prepareRequest('test');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"test":"test"}', $response->getContent());
+    }
+
+    public function testActionReadOnly()
     {
         $request = $this->prepareRequest('test');
         $container = self::$container;

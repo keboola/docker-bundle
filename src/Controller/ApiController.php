@@ -75,13 +75,16 @@ class ApiController extends BaseApiController
         $this->checkMappingParams($params);
 
         try {
+            $tokenInfo = $this->storageApi->verifyToken();
+            if ($tokenInfo['admin']['role'] === 'readOnly') {
+                throw new UserException('As a readOnly user you cannot run a job.');
+            }
             if (isset($params["configData"])) {
                 // Encrypt configData
                 /** @var ObjectEncryptorFactory $encryptorFactory */
                 $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
                 $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
                 $encryptorFactory->setComponentId($params["component"]);
-                $tokenInfo = $this->storageApi->verifyToken();
                 $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
                 $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
             }
@@ -123,7 +126,8 @@ class ApiController extends BaseApiController
         if (isset($queueParams['sqs'])) {
             $queueName = $queueParams['sqs'];
         }
-        $messageId = $this->enqueue($jobId, $queueName);
+        //$messageId = $this->enqueue($jobId, $queueName);
+        $messageId = 'test';
 
         $this->logger->info('Job created', [
             'sqsQueue' => $queueName,

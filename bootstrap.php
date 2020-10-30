@@ -18,6 +18,9 @@ defined('STORAGE_API_URL')
 defined('STORAGE_API_TOKEN')
     || define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ?: 'your_token');
 
+defined('STORAGE_API_TOKEN_READ_ONLY')
+|| define('STORAGE_API_TOKEN_READ_ONLY', getenv('STORAGE_API_TOKEN_READ_ONLY') ?: 'read_only_your_token');
+
 defined('STORAGE_API_URL_SYNAPSE')
 || define('STORAGE_API_URL_SYNAPSE', getenv('STORAGE_API_URL_SYNAPSE') ?: 'sapi_url');
 
