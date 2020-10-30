@@ -7,6 +7,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Exception\UserException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -340,9 +341,9 @@ class ActionControllerTest extends WebTestCase
         $ctrl = new ActionController();
         $ctrl->setContainer(self::$container);
         $ctrl->preExecute($request);
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('As a readOnly user you cannot run a job.');
         $response = $ctrl->processAction($request);
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertEquals('{"test":"test"}', $response->getContent());
     }
 
     public function testActionDefaultBucket()
