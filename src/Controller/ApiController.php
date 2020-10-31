@@ -126,8 +126,7 @@ class ApiController extends BaseApiController
         if (isset($queueParams['sqs'])) {
             $queueName = $queueParams['sqs'];
         }
-        //$messageId = $this->enqueue($jobId, $queueName);
-        $messageId = 'test';
+        $messageId = $this->enqueue($jobId, $queueName);
 
         $this->logger->info('Job created', [
             'sqsQueue' => $queueName,
