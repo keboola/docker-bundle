@@ -110,7 +110,7 @@ class ActionControllerTest extends WebTestCase
         $indexActionValue = [
             'components' => [
                 0 => [
-                    'id' => 'dca-custom-science-python',
+                    'id' => 'keboola.docker-demo-sync',
                     'type' => 'application',
                     'name' => 'Custom science Python',
                     'description' => 'Custom science Python',
@@ -121,40 +121,9 @@ class ActionControllerTest extends WebTestCase
                     'ico64' => 'https://d3iz2gfan5zufq.cloudfront.net/images/cloud-services/dca-custom-science-python-64-1.png',
                     'data' => [
                         'definition' => [
-                            'type' => 'builder',
-                            'uri' => 'keboola/docker-custom-python',
-                            'tag' => 'latest',
-                            'build_options' => [
-                                'parent_type' => 'quayio',
-                                'repository' => [
-                                    'uri' => '',
-                                    'type' => 'git',
-                                ],
-                                'commands' => [
-                                    0 => 'git clone -b {{version}} --depth 1 {{repository}} /home/ || (echo "KBC::USER_ERR:Cannot access the Git repository {{repository}}, please verify its URL, credentials and version.KBC::USER_ERR" && exit 1)',
-                                ],
-                                'parameters' => [
-                                    0 => [
-                                        'name' => 'version',
-                                        'type' => 'string',
-                                    ],
-                                    1 => [
-                                        'name' => 'repository',
-                                        'type' => 'string',
-                                    ],
-                                    2 => [
-                                        'name' => 'username',
-                                        'type' => 'string',
-                                        'required' => false,
-                                    ],
-                                    3 => [
-                                        'name' => '#password',
-                                        'type' => 'string',
-                                        'required' => false,
-                                    ],
-                                ],
-                                'entry_point' => 'python /home/main.py',
-                            ],
+                            'type' => 'aws-ecr',
+                            'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.docker-demo-sync',
+                            'tag' => '0.2.2',
                         ],
                         'process_timeout' => 21600,
                         'default_bucket' => $defaultBucket,
@@ -296,12 +265,7 @@ class ActionControllerTest extends WebTestCase
         $content = '
         {
             "configData": {
-                "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '
-                ,
-                "runtime": {
-                    "repository": "https://github.com/keboola/docker-actions-test",
-                    "version": "0.0.8"            
-                }
+                "parameters": ' . ($parameters ? json_encode($parameters) : '{}') . '                
             }
         }';
         $server = [
@@ -309,10 +273,10 @@ class ActionControllerTest extends WebTestCase
             'HTTP_Content-Type' => 'application/json'
         ];
         $parameters = [
-            "component" => "dca-custom-science-python",
+            "component" => "keboola.docker-demo-sync",
             "action" => $method
         ];
-        return Request::create("/docker/dca-custom-science-python/action/{$method}", 'POST', $parameters, [], [], $server, $content);
+        return Request::create("/docker/keboola.docker-demo-sync/action/{$method}", 'POST', $parameters, [], [], $server, $content);
     }
 
     public function testActionTest()
