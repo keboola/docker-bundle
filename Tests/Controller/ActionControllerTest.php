@@ -95,7 +95,7 @@ class ActionControllerTest extends WebTestCase
         return $storageServiceStub;
     }
 
-    protected function getStorageServiceStubDcaPython($defaultBucket = false, $role = 'admin')
+    protected function getStorageServiceStubDcaPython($defaultBucket = false)
     {
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -180,7 +180,7 @@ class ActionControllerTest extends WebTestCase
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []], "admin" => ["role" => $role]]));
+            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
         $storageClientStub->expects($this->any())
             ->method("getRunId")
             ->will($this->returnValue(uniqid()));
@@ -329,21 +329,6 @@ class ActionControllerTest extends WebTestCase
         $response = $ctrl->processAction($request);
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertEquals('{"test":"test"}', $response->getContent());
-    }
-
-    public function testActionReadOnly()
-    {
-        $request = $this->prepareRequest('test');
-        $container = self::$container;
-        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
-        $container->get('request_stack')->push($request);
-
-        $ctrl = new ActionController();
-        $ctrl->setContainer(self::$container);
-        $ctrl->preExecute($request);
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('As a readOnly user you cannot run a job.');
-        $response = $ctrl->processAction($request);
     }
 
     public function testActionDefaultBucket()

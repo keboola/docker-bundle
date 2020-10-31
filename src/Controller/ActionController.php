@@ -72,9 +72,6 @@ class ActionController extends BaseApiController
         } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
             throw new \Keboola\Syrup\Exception\UserException($e->getMessage(), $e);
         }
-        if ($tokenInfo['admin']['role'] === 'readOnly') {
-            throw new \Keboola\Syrup\Exception\UserException('As a readOnly user you cannot run a job.');
-        }
 
         if (!$this->storageApi->getRunId()) {
             $this->storageApi->setRunId($this->storageApi->generateRunId());
