@@ -110,6 +110,25 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('waiting', $response['status']);
     }
 
+    public function testRunReadonlyUser()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN_READ_ONLY],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals(400, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertEquals('error', $response['status']);
+        $this->assertEquals('User error', $response['error']);
+        $this->assertEquals('As a readOnly user you cannot run a job.', $response['message']);
+    }
+
     public function testRunConfigRow()
     {
         $client = $this->createClient();
