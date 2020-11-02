@@ -76,7 +76,7 @@ class ApiController extends BaseApiController
 
         try {
             $tokenInfo = $this->storageApi->verifyToken();
-            if ($tokenInfo['admin']['role'] === 'readOnly') {
+            if (!empty($tokenInfo['admin']['role']) && ($tokenInfo['admin']['role'] === 'readOnly')) {
                 throw new UserException('As a readOnly user you cannot run a job.');
             }
             if (isset($params["configData"])) {
