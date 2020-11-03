@@ -96,9 +96,11 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         return $this->storageServiceStub;
     }
 
-    protected function getJobExecutor(array $configuration, array $rows, array $state = [])
+    protected function getJobExecutor(array $configuration, array $rows, array $state = [], $disableConfig = false)
     {
-        $this->clearConfigurations();
+        if (!$disableConfig) {
+            $this->clearConfigurations();
+        }
         if (!$this->jobMapperStub) {
             $this->jobMapperStub = self::getMockBuilder(JobMapper::class)
                 ->disableOriginalConstructor()
@@ -122,18 +124,20 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $componentService = new ComponentsService($this->getStorageService());
         $cmp = new Components($this->getClient());
         $cfg = new Configuration();
-        $cfg->setComponentId('keboola.python-transformation');
-        $cfg->setConfigurationId('executor-configuration');
-        $cfg->setConfiguration($configuration);
-        $cfg->setState($state);
-        $cfg->setName('Test configuration');
-        $cmp->addConfiguration($cfg);
-        foreach ($rows as $item) {
-            $cfgRow = new ConfigurationRow($cfg);
-            $cfgRow->setConfiguration($item['configuration']);
-            $cfgRow->setRowId($item['id']);
-            $cfgRow->setIsDisabled($item['isDisabled']);
-            $cmp->addConfigurationRow($cfgRow);
+        if (!$disableConfig) {
+            $cfg->setComponentId('keboola.python-transformation');
+            $cfg->setConfigurationId('executor-configuration');
+            $cfg->setConfiguration($configuration);
+            $cfg->setState($state);
+            $cfg->setName('Test configuration');
+            $cmp->addConfiguration($cfg);
+            foreach ($rows as $item) {
+                $cfgRow = new ConfigurationRow($cfg);
+                $cfgRow->setConfiguration($item['configuration']);
+                $cfgRow->setRowId($item['id']);
+                $cfgRow->setIsDisabled($item['isDisabled']);
+                $cmp->addConfigurationRow($cfgRow);
+            }
         }
 
         $jobExecutor = new Executor(

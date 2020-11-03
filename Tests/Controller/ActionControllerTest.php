@@ -7,6 +7,7 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\Syrup\Exception\UserException;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -94,7 +95,7 @@ class ActionControllerTest extends WebTestCase
         return $storageServiceStub;
     }
 
-    protected function getStorageServiceStubDcaPython($defaultBucket = false)
+    protected function getStorageServiceStubDcaPython($defaultBucket = false, $role = 'admin')
     {
         $storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
@@ -143,12 +144,21 @@ class ActionControllerTest extends WebTestCase
             ]
         ];
 
+        $tokenInfo = [
+            'owner' => [
+                'id' => '123',
+                'features' => [],
+            ],
+        ];
+        if ($role !== null) {
+            $tokenInfo['admin'] = ['role' => $role];
+        }
         $storageClientStub->expects($this->any())
             ->method("indexAction")
             ->will($this->returnValue($indexActionValue));
         $storageClientStub->expects($this->any())
             ->method("verifyToken")
-            ->will($this->returnValue(["owner" => ["id" => "123", "features" => []]]));
+            ->will($this->returnValue($tokenInfo));
         $storageClientStub->expects($this->any())
             ->method("getRunId")
             ->will($this->returnValue(uniqid()));
@@ -284,6 +294,36 @@ class ActionControllerTest extends WebTestCase
         $request = $this->prepareRequest('test');
         $container = self::$container;
         $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $response = $ctrl->processAction($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals('{"test":"test"}', $response->getContent());
+    }
+
+    public function testActionReadOnly()
+    {
+        $request = $this->prepareRequest('test');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(false, 'readOnly'));
+        $container->get('request_stack')->push($request);
+
+        $ctrl = new ActionController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('As a readOnly user you cannot perform any actions.');
+        $ctrl->processAction($request);
+    }
+
+    public function testActionNoRole()
+    {
+        $request = $this->prepareRequest('test');
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython(false, null));
         $container->get('request_stack')->push($request);
 
         $ctrl = new ActionController();
