@@ -283,6 +283,25 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         self::assertEquals($expectedConfig, json_decode(strrev(base64_decode($output)), true));
     }
 
+
+    public function testRunReadonly()
+    {
+        $data = $this->getJobParameters();
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN_READ_ONLY,
+            ]
+        );
+
+        $jobExecutor = $this->getJobExecutor([], [], [], true);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
+        $job->setId(123456);
+        self::expectExceptionMessage('As a readOnly user you cannot run a job.');
+        self::expectException(UserException::class);
+        $jobExecutor->execute($job);
+    }
+
     public function testRunTag()
     {
         $this->createBuckets();

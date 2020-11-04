@@ -141,6 +141,10 @@ class Executor extends BaseExecutor
     {
         try {
             $this->tokenInfo = $this->storageApi->verifyToken();
+            if (!empty($this->tokenInfo['admin']['role']) && ($this->tokenInfo['admin']['role'] === 'readOnly')) {
+                throw new \Keboola\Syrup\Exception\UserException('As a readOnly user you cannot run a job.');
+            }
+
             $creditsChecker = new CreditsChecker($this->storageApi);
             if (!$creditsChecker->hasCredits()) {
                 throw new \Keboola\Syrup\Exception\UserException('You do not have credits to run a job');
