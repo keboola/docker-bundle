@@ -126,8 +126,7 @@ class ApiController extends BaseApiController
         if (isset($queueParams['sqs'])) {
             $queueName = $queueParams['sqs'];
         }
-        //$messageId = $this->enqueue($jobId, $queueName);
-        $messageId = 'test';
+        $messageId = $this->enqueue($jobId, $queueName);
 
         $this->logger->info('Job created', [
             'sqsQueue' => $queueName,
@@ -176,7 +175,7 @@ class ApiController extends BaseApiController
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = Runner::MODE_DEBUG;
-        $params['branch'] = $request->get("branch");
+        $params['branchId'] = $request->get("branch");
         return $this->createJobFromParams($params);
     }
 
@@ -210,7 +209,7 @@ class ApiController extends BaseApiController
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
-        $params['branch'] = $request->get("branch");
+        $params['branchId'] = $request->get("branch");
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
@@ -255,7 +254,7 @@ class ApiController extends BaseApiController
         $this->validateParams($params);
         $params['mode'] = 'run';
         $params['tag'] = $request->get('tag');
-        $params['branch'] = $request->get("branch");
+        $params['branchId'] = $request->get("branch");
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
