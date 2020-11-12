@@ -126,7 +126,8 @@ class ApiController extends BaseApiController
         if (isset($queueParams['sqs'])) {
             $queueName = $queueParams['sqs'];
         }
-        $messageId = $this->enqueue($jobId, $queueName);
+        //$messageId = $this->enqueue($jobId, $queueName);
+        $messageId = 'test';
 
         $this->logger->info('Job created', [
             'sqsQueue' => $queueName,
@@ -161,6 +162,25 @@ class ApiController extends BaseApiController
     }
 
     /**
+     *  Debug - create a snapshot of data folder before and after every container, do not perform output mapping.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     * @throws \Exception
+     */
+    public function debugBranchAction(Request $request)
+    {
+        // Get params from request
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = Runner::MODE_DEBUG;
+        $params['branch'] = $request->get("branch");
+        return $this->createJobFromParams($params);
+    }
+
+    /**
      * Run docker component with the provided configuration.
      *
      * @param Request $request
@@ -173,6 +193,24 @@ class ApiController extends BaseApiController
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
+        $this->checkCredits($request);
+        return $this->createJobFromParams($params);
+    }
+
+    /**
+     * Run docker component with the provided configuration.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function runBranchAction(Request $request)
+    {
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'run';
+        $params['branch'] = $request->get("branch");
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
@@ -199,6 +237,25 @@ class ApiController extends BaseApiController
         $this->validateParams($params);
         $params['mode'] = 'run';
         $params['tag'] = $request->get('tag');
+        $this->checkCredits($request);
+        return $this->createJobFromParams($params);
+    }
+
+    /**
+     * Run docker component with the provided configuration and specified image tag.
+     *
+     * @param Request $request
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function runBranchTagAction(Request $request)
+    {
+        $params = $this->getPostJson($request);
+        $component = $request->get("component");
+        $this->checkComponent($component);
+        $this->validateParams($params);
+        $params['mode'] = 'run';
+        $params['tag'] = $request->get('tag');
+        $params['branch'] = $request->get("branch");
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
