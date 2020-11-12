@@ -24,6 +24,21 @@ keboola_docker_component_tag_run:
     defaults: { _controller: KeboolaDockerBundle:Api:runTag }
     methods:  [POST]
 
+keboola_docker_component_branch_debug:
+    path:     /branch/{branch}/{component}/debug
+    defaults: { _controller: KeboolaDockerBundle:Api:debugBranch }
+    methods:  [POST]
+
+keboola_docker_component_branch_run:
+    path:     /branch/{branch}/{component}/run
+    defaults: { _controller: KeboolaDockerBundle:Api:runBranch }
+    methods:  [POST]
+
+keboola_docker_component_branch_tag_run:
+    path:     /branch/{branch}/{component}/run/tag/{tag}
+    defaults: { _controller: KeboolaDockerBundle:Api:runBranchTag }
+    methods:  [POST]
+
 # override default syrup action run
 keboola_docker_disabled_run:
     path:     /run

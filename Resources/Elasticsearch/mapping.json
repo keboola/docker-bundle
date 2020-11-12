@@ -30,6 +30,9 @@
             "variableValuesData": {
                 "type": "object",
                 "enabled": "false"
+            },
+            "branchId": {
+                "type": "string"
             }
         }
     }

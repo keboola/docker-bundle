@@ -110,6 +110,23 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals('waiting', $response['status']);
     }
 
+    public function testRunBranch()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/branch/dev-123/keboola.r-transformation/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertEquals('waiting', $response['status']);
+    }
+
     public function testRunReadonlyUser()
     {
         $client = $this->createClient();
@@ -163,12 +180,46 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
     }
 
+    public function testRunBranchTag()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/branch/dev-123/keboola.r-transformation/run/tag/1.1.0',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+    }
+
     public function testDebug()
     {
         $client = $this->createClient();
         $client->request(
             'POST',
             '/docker/keboola.r-transformation/debug',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "dummy"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+    }
+
+    public function testDebugBranch()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/branch/dev-123/keboola.r-transformation/debug',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
