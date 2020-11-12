@@ -19,6 +19,7 @@
         "keboola/php-utils": "^2.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",
+        "keboola/storage-api-client": "10.20.0",
         "symfony/validator": "^2.8|^4.1",
         "vkartaviy/retry": "^0.2"
     },
