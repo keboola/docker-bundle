@@ -30,13 +30,13 @@ class ApiController extends BaseApiController
      */
     private function validateParams($body)
     {
-        if (isset($body["row"]) && !isset($body["config"])) {
+        if (isset($body['row']) && !isset($body['config'])) {
             throw new UserException("Specify both 'row' and 'config'.");
         }
-        if (!isset($body["config"]) && !isset($body["configData"])) {
+        if (!isset($body['config']) && !isset($body['configData'])) {
             throw new UserException("Specify 'config' or 'configData'.");
         }
-        if (isset($body["config"]) && isset($body["configData"])) {
+        if (isset($body['config']) && isset($body['configData'])) {
             $this->logger->info("Both config and configData specified, 'config' ignored.");
         }
     }
@@ -51,8 +51,8 @@ class ApiController extends BaseApiController
     {
         // Check list of components
         $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $componentName) {
+        foreach ($components['components'] as $c) {
+            if ($c['id'] == $componentName) {
                 $component = $c;
                 break;
             }
@@ -79,30 +79,30 @@ class ApiController extends BaseApiController
             if (!empty($tokenInfo['admin']['role']) && ($tokenInfo['admin']['role'] === 'readOnly')) {
                 throw new UserException('As a readOnly user you cannot run a job.');
             }
-            if (isset($params["configData"])) {
+            if (isset($params['configData'])) {
                 // Encrypt configData
                 /** @var ObjectEncryptorFactory $encryptorFactory */
-                $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+                $encryptorFactory = $this->container->get('docker_bundle.object_encryptor_factory');
                 $encryptorFactory->setStackId(parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST));
-                $encryptorFactory->setComponentId($params["component"]);
-                $encryptorFactory->setProjectId($tokenInfo["owner"]["id"]);
-                $params["configData"] = $encryptorFactory->getEncryptor()->encrypt($params["configData"]);
+                $encryptorFactory->setComponentId($params['component']);
+                $encryptorFactory->setProjectId($tokenInfo['owner']['id']);
+                $params['configData'] = $encryptorFactory->getEncryptor()->encrypt($params['configData']);
             }
 
             // Create new job
             /** @var JobFactory $jobFactory */
             $jobFactory = $this->container->get('syrup.job_factory');
             $job = $jobFactory->create('run', $params);
-            $job->setEncryptor($this->container->get("docker_bundle.object_encryptor_factory")->getEncryptor());
+            $job->setEncryptor($this->container->get('docker_bundle.object_encryptor_factory')->getEncryptor());
 
             // Lock name contains component id and configuration id or random string
             $lockName = $job->getLockName() . '-' . $params['component'];
-            if (isset($params["config"]) && is_scalar($params["config"])) {
-                $lockName .= "-" . $params["config"];
+            if (isset($params['config']) && is_scalar($params['config'])) {
+                $lockName .= '-' . $params['config'];
             } else {
-                $lockName .= "-" . uniqid();
+                $lockName .= '-' . uniqid();
             }
-            if (isset($params["config"]) && !is_scalar($params["config"])) {
+            if (isset($params['config']) && !is_scalar($params['config'])) {
                 throw new UserException("Body parameter 'config' is not a number.");
             }
             $job->setLockName($lockName);
@@ -116,7 +116,7 @@ class ApiController extends BaseApiController
             $jobMapper = $this->container->get('syrup.elasticsearch.current_component_job_mapper');
             $jobId = $jobMapper->create($job);
         } catch (ApplicationException $e) {
-            throw new ApplicationException("Failed to create job", $e);
+            throw new ApplicationException('Failed to create job', $e);
         }
 
         // Add job to SQS
@@ -153,7 +153,7 @@ class ApiController extends BaseApiController
     {
         // Get params from request
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = Runner::MODE_DEBUG;
@@ -171,11 +171,11 @@ class ApiController extends BaseApiController
     {
         // Get params from request
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = Runner::MODE_DEBUG;
-        $params['branchId'] = $request->get("branch");
+        $params['branchId'] = $request->get('branch');
         return $this->createJobFromParams($params);
     }
 
@@ -188,7 +188,7 @@ class ApiController extends BaseApiController
     public function runAction(Request $request)
     {
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
@@ -205,11 +205,11 @@ class ApiController extends BaseApiController
     public function runBranchAction(Request $request)
     {
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
-        $params['branchId'] = $request->get("branch");
+        $params['branchId'] = $request->get('branch');
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
@@ -231,7 +231,7 @@ class ApiController extends BaseApiController
     public function runTagAction(Request $request)
     {
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
@@ -249,12 +249,12 @@ class ApiController extends BaseApiController
     public function runBranchTagAction(Request $request)
     {
         $params = $this->getPostJson($request);
-        $component = $request->get("component");
+        $component = $request->get('component');
         $this->checkComponent($component);
         $this->validateParams($params);
         $params['mode'] = 'run';
         $params['tag'] = $request->get('tag');
-        $params['branchId'] = $request->get("branch");
+        $params['branchId'] = $request->get('branch');
         $this->checkCredits($request);
         return $this->createJobFromParams($params);
     }
@@ -286,9 +286,9 @@ class ApiController extends BaseApiController
     {
         $json = parent::getPostJson($request, $assoc);
         if (is_array($json)) {
-            $json["component"] = $request->get("component");
+            $json['component'] = $request->get('component');
         } else {
-            $json->component = $request->get("component");
+            $json->component = $request->get('component');
         }
         return $json;
     }
@@ -300,28 +300,28 @@ class ApiController extends BaseApiController
      */
     public function migrateConfigAction(Request $request)
     {
-        $componentId = $request->get("componentId");
-        $projectId = $request->get("projectId");
-        $stackId = parse_url($this->container->getParameter("storage_api.url"), PHP_URL_HOST);
+        $componentId = $request->get('componentId');
+        $projectId = $request->get('projectId');
+        $stackId = parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST);
         if (!$componentId || !$stackId) {
-            throw new UserException("Stack id and component id must be entered.");
+            throw new UserException('Stack id and component id must be entered.');
         }
 
-        $contentTypeHeader = $request->headers->get("Content-Type");
+        $contentTypeHeader = $request->headers->get('Content-Type');
         if (!is_string($contentTypeHeader)) {
-            throw new UserException("Incorrect Content-Type.");
+            throw new UserException('Incorrect Content-Type.');
         }
 
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
+        if (strpos(strtolower($contentTypeHeader), 'text/plain') !== false) {
             $configData = $request->getContent();
-        } elseif (strpos(strtolower($contentTypeHeader), "application/json") !== false) {
+        } elseif (strpos(strtolower($contentTypeHeader), 'application/json') !== false) {
             $configData = $this->getPostJson($request, false);
         } else {
-            throw new UserException("Incorrect Content-Type.");
+            throw new UserException('Incorrect Content-Type.');
         }
 
         /** @var ObjectEncryptorFactory $encryptorFactory */
-        $encryptorFactory = $this->container->get("docker_bundle.object_encryptor_factory");
+        $encryptorFactory = $this->container->get('docker_bundle.object_encryptor_factory');
         $encryptorFactory->setStackId($stackId);
         $encryptorFactory->setComponentId($componentId);
         if ($projectId) {
@@ -338,10 +338,10 @@ class ApiController extends BaseApiController
             throw new UserException($e->getMessage(), $e);
         }
 
-        if (strpos(strtolower($contentTypeHeader), "text/plain") !== false) {
-            return $this->createResponse($configDataMigrated, 200, ["Content-Type" => "text/plain"]);
+        if (strpos(strtolower($contentTypeHeader), 'text/plain') !== false) {
+            return $this->createResponse($configDataMigrated, 200, ['Content-Type' => 'text/plain']);
         } else {
-            return $this->createJsonResponse($configDataMigrated, 200, ["Content-Type" => "application/json"]);
+            return $this->createJsonResponse($configDataMigrated, 200, ['Content-Type' => 'application/json']);
         }
     }
 
@@ -421,8 +421,8 @@ class ApiController extends BaseApiController
     {
         // Check list of components
         $components = $this->storageApi->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $id) {
+        foreach ($components['components'] as $c) {
+            if ($c['id'] == $id) {
                 $component = $c;
             }
         }
