@@ -14,13 +14,15 @@
         "keboola/gelf-server": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/object-encryptor": "^0.3",
+        "keboola/storage-api-php-client-branch-wrapper": "dev-odin-PS-1166-b",
         "keboola/output-mapping": "^11.1",
-        "keboola/input-mapping": "^9.5.2",
+        "keboola/input-mapping": "^9.5.1",
         "keboola/php-utils": "^2.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",
-        "symfony/validator": "^2.8|^4.1",
-        "vkartaviy/retry": "^0.2"
+        "symfony/validator": "^v2.8.52|^v4.4.11",
+        "vkartaviy/retry": "^v0.2.2",
+        "ext-zip": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7.27",

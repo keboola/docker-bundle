@@ -15,20 +15,21 @@ use Keboola\InputMapping\Reader\WorkspaceProviderInterface;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $storageClient;
+    private $clientWrapper;
 
     /**
      * @var LoggerInterface
@@ -77,7 +78,7 @@ class DataLoader implements DataLoaderInterface
     /**
      * DataLoader constructor.
      *
-     * @param Client $storageClient
+     * @param ClientWrapper $clientWrapper
      * @param LoggerInterface $logger
      * @param string $dataDirectory
      * @param array $storageConfig
@@ -87,7 +88,7 @@ class DataLoader implements DataLoaderInterface
      * @param string|null $configRowId
      */
     public function __construct(
-        Client $storageClient,
+        ClientWrapper $clientWrapper,
         LoggerInterface $logger,
         $dataDirectory,
         array $storageConfig,
@@ -96,7 +97,7 @@ class DataLoader implements DataLoaderInterface
         $configId = null,
         $configRowId = null
     ) {
-        $this->storageClient = $storageClient;
+        $this->clientWrapper = $clientWrapper;
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
         $this->storageConfig = $storageConfig;
@@ -114,7 +115,7 @@ class DataLoader implements DataLoaderInterface
             ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE)
         ) {
             $this->workspaceProvider = new WorkspaceProvider(
-                $this->storageClient,
+                $this->clientWrapper->getBasicClient(),
                 $this->component->getId(),
                 $this->configId
             );
@@ -131,7 +132,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
-        $reader = new Reader($this->storageClient, $this->logger, $this->workspaceProvider);
+        $reader = new Reader($this->clientWrapper->getBasicClient(), $this->logger, $this->workspaceProvider);
         $reader->setFormat($this->component->getConfigurationFormat());
 
         $resultInputTablesStateList = new InputTableStateList([]);
@@ -200,10 +201,10 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $fileWriter = new FileWriter($this->storageClient, $this->logger);
+            $fileWriter = new FileWriter($this->clientWrapper->getBasicClient(), $this->logger);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-            $tableWriter = new TableWriter($this->storageClient, $this->logger, $this->workspaceProvider);
+            $tableWriter = new TableWriter($this->clientWrapper->getBasicClient(), $this->logger, $this->workspaceProvider);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
                 $this->dataDirectory . '/out/tables',
@@ -242,9 +243,9 @@ class DataLoader implements DataLoaderInterface
      */
     public function storeDataArchive($fileName, array $tags)
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . $fileName . '.zip';
-        $zip->open($zipFileName, \ZipArchive::CREATE);
+        $zip->open($zipFileName, ZipArchive::CREATE);
         $finder = new Finder();
         /** @var SplFileInfo $item */
         foreach ($finder->in($this->dataDirectory) as $item) {
@@ -273,7 +274,7 @@ class DataLoader implements DataLoaderInterface
         $uploadOptions->setIsPermanent(false);
         $uploadOptions->setIsPublic(false);
         $uploadOptions->setNotify(false);
-        $this->storageClient->uploadFile($zipFileName, $uploadOptions);
+        $this->clientWrapper->getBasicClient()->uploadFile($zipFileName, $uploadOptions);
         $fs = new Filesystem();
         $fs->remove($zipFileName);
     }

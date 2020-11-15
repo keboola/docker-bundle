@@ -16,6 +16,7 @@ use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Temp\Temp;
 use Keboola\Syrup\Job\Executor as BaseExecutor;
@@ -75,6 +76,11 @@ class Executor extends BaseExecutor
     private $runner;
 
     /**
+     * @var ClientWrapper
+     */
+    private $clientWrapper;
+
+    /**
      * @param LoggersService $loggersService
      * @param ObjectEncryptorFactory $encryptorFactory
      * @param ComponentsService $components
@@ -101,12 +107,17 @@ class Executor extends BaseExecutor
         $this->loggerService = $loggersService;
         $this->jobMapper = $jobMapper;
         $this->encryptorFactory->setStackId(parse_url($storageApiUrl, PHP_URL_HOST));
-        $this->storageApi = $storageApiService->getClient();
+        $this->clientWrapper = new ClientWrapper(
+            $storageApiService->getClient(),
+            $storageApiService->getStepPollDelayFunction(),
+            $storageApiService->getLogger()
+        );
+        $this->storageApi = $this->clientWrapper->getBasicClient();
         $this->oauthApiUrl = $oauthApiUrl;
         $this->instanceLimits = $instanceLimits;
         $this->runner = new Runner(
             $this->encryptorFactory,
-            $this->storageApi,
+            $this->clientWrapper,
             $this->loggerService,
             $this->oauthApiUrl,
             $this->instanceLimits
@@ -141,6 +152,10 @@ class Executor extends BaseExecutor
     {
         try {
             $this->tokenInfo = $this->storageApi->verifyToken();
+            if (!$this->storageApi->getRunId()) {
+                $this->storageApi->setRunId($this->storageApi->generateRunId());
+            }
+
             if (!empty($this->tokenInfo['admin']['role']) && ($this->tokenInfo['admin']['role'] === 'readOnly')) {
                 throw new \Keboola\Syrup\Exception\UserException('As a readOnly user you cannot run a job.');
             }
@@ -164,6 +179,9 @@ class Executor extends BaseExecutor
                 }
                 $rowId = null;
             }
+            if (isset($params['branchId'])) {
+                $this->clientWrapper->setBranch($params['branchId']);
+            }
 
             $jobDefinitionParser = new JobDefinitionParser();
 
@@ -173,9 +191,6 @@ class Executor extends BaseExecutor
                 $component['data']['definition']['tag'] = $params['tag'];
             }
 
-            if (!$this->storageApi->getRunId()) {
-                $this->storageApi->setRunId($this->storageApi->generateRunId());
-            }
             $componentClass = new Component($component);
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {

@@ -10,6 +10,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -65,8 +66,9 @@ abstract class BaseDataLoaderTest extends TestCase
 
     protected function getDataLoader(array $config, $configRow = null)
     {
+        $clientWrapper = new ClientWrapper($this->client, null, null);
         return new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,

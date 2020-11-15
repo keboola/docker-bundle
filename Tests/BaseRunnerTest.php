@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -143,10 +144,10 @@ abstract class BaseRunnerTest extends TestCase
             $storageClientStub = $this->client;
         }
         $this->usageFile = new NullUsageFile();
-
+        $clientWrapper = new ClientWrapper($storageClientStub, null, null);
         return new Runner(
             $this->encryptorFactory,
-            $storageClientStub,
+            $clientWrapper,
             $this->loggersServiceStub,
             "dummy",
             ['cpu_count' => 2],
