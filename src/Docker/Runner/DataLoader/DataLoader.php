@@ -132,7 +132,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
-        $reader = new Reader($this->clientWrapper->getBasicClient(), $this->logger, $this->workspaceProvider);
+        $reader = new Reader($this->clientWrapper, $this->logger, $this->workspaceProvider);
         $reader->setFormat($this->component->getConfigurationFormat());
 
         $resultInputTablesStateList = new InputTableStateList([]);
@@ -201,10 +201,10 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $fileWriter = new FileWriter($this->clientWrapper->getBasicClient(), $this->logger);
+            $fileWriter = new FileWriter($this->clientWrapper, $this->logger);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-            $tableWriter = new TableWriter($this->clientWrapper->getBasicClient(), $this->logger, $this->workspaceProvider);
+            $tableWriter = new TableWriter($this->clientWrapper, $this->logger, $this->workspaceProvider);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
                 $this->dataDirectory . '/out/tables',
