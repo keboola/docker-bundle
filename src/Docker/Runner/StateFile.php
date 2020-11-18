@@ -8,12 +8,11 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
-use Keboola\ObjectEncryptor\Wrapper\ProjectWrapper;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -34,9 +33,9 @@ class StateFile
     private $dataDirectory;
 
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $storageClient;
+    private $clientWrapper;
 
     /**
      * @var string
@@ -84,7 +83,7 @@ class StateFile
 
     public function __construct(
         $dataDirectory,
-        Client $storageClient,
+        ClientWrapper $clientWrapper,
         ObjectEncryptorFactory $encryptorFactory,
         array $state,
         $format,
@@ -95,7 +94,7 @@ class StateFile
         $configurationRowId = null
     ) {
         $this->dataDirectory = $dataDirectory;
-        $this->storageClient = $storageClient;
+        $this->clientWrapper = $clientWrapper;
         $this->encryptorFactory = $encryptorFactory;
         $this->componentId = $componentId;
         $this->configurationId = $configurationId;
@@ -134,7 +133,7 @@ class StateFile
     public function persistState(InputTableStateList $inputTableStateList)
     {
         $this->outputFilter->collectValues((array)$this->currentState);
-        $components = new Components($this->storageClient);
+        $components = new Components($this->clientWrapper->getBasicClient());
         $configuration = new Configuration();
         $configuration->setComponentId($this->componentId);
         $configuration->setConfigurationId($this->configurationId);

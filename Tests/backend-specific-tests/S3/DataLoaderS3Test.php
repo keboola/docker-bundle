@@ -9,8 +9,10 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\OAuthV2Api\ClientWrapper;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApiBranch\ClientWrapper as StorageClientWrapper;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -64,8 +66,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
+        $clientWrapper = new StorageClientWrapper($this->client, null, null);
         $dataLoader = new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,
@@ -120,8 +123,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->client->createBucket('docker-demo-testConfig-s3', 'in');
         $this->client->createTable('in.c-docker-demo-testConfig-s3', 'test', new CsvFile($filePath));
 
+        $clientWrapper = new StorageClientWrapper($this->client, null, null);
         $dataLoader = new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,

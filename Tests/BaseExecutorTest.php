@@ -120,6 +120,9 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         $this->storageServiceStub->expects(self::any())
             ->method("getTokenData")
             ->will(self::returnValue($storageClientStub->verifyToken()));
+        $this->storageServiceStub->expects(self::any())
+            ->method('getStepPollDelayFunction')
+            ->will(self::returnValue(null));
 
         $componentService = new ComponentsService($this->getStorageService());
         $cmp = new Components($this->getClient());

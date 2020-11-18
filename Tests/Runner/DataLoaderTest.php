@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -36,8 +37,9 @@ class DataLoaderTest extends BaseDataLoaderTest
     {
         self::expectException(UserException::class);
         self::expectExceptionMessage('Configuration ID not set');
+        $clientWrapper = new ClientWrapper($this->client, null, null);
         new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             [],
@@ -73,9 +75,9 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-
+        $clientWrapper = new ClientWrapper($this->client, null, null);
         $dataLoader = new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,
@@ -109,10 +111,11 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
+        $clientWrapper = new ClientWrapper($this->client, null, null);
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage($error);
         new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             [],
@@ -203,8 +206,9 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
+        $clientWrapper = new ClientWrapper($this->client, null, null);
         $dataLoader = new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             [],

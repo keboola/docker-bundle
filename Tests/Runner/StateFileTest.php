@@ -9,6 +9,7 @@ use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -37,6 +38,11 @@ class StateFileTest extends TestCase
      */
     private $encryptorFactory;
 
+    /**
+     * @var ClientWrapper
+     */
+    private $clientWrapper;
+
     public function setUp()
     {
         parent::setUp();
@@ -55,6 +61,7 @@ class StateFileTest extends TestCase
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
+        $this->clientWrapper = new ClientWrapper($this->client, null, null);
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
@@ -71,7 +78,7 @@ class StateFileTest extends TestCase
     {
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             [
                 StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today']
@@ -99,7 +106,7 @@ class StateFileTest extends TestCase
         self::expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             ['lastUpdate' => 'today'],
             'json',
@@ -114,7 +121,7 @@ class StateFileTest extends TestCase
     {
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             [],
             'json',
@@ -160,9 +167,10 @@ class StateFileTest extends TestCase
         $state = ['key' => 'fooBar'];
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
@@ -185,9 +193,10 @@ class StateFileTest extends TestCase
             ->method('apiPut');
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -220,11 +229,11 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -244,11 +253,11 @@ class StateFileTest extends TestCase
             ->getMock();
         $sapiStub->expects(self::never())
             ->method('apiPut');
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -278,11 +287,11 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [],
             'json',
@@ -316,11 +325,11 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
@@ -354,11 +363,11 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
@@ -394,11 +403,11 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
@@ -419,7 +428,7 @@ class StateFileTest extends TestCase
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             [],
             'json',
@@ -440,7 +449,7 @@ class StateFileTest extends TestCase
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             [],
             'json',
@@ -457,7 +466,7 @@ class StateFileTest extends TestCase
     {
         $stateFile = new StateFile(
             $this->dataDir,
-            $this->client,
+            $this->clientWrapper,
             $this->encryptorFactory,
             [],
             'json',
@@ -491,9 +500,10 @@ class StateFileTest extends TestCase
             ->willThrowException(new ClientException("Test", 404));
 
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -530,9 +540,10 @@ class StateFileTest extends TestCase
             ->willThrowException(new ClientException("Test", 888));
 
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -578,9 +589,10 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
@@ -629,9 +641,10 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
+        $clientWrapper = new ClientWrapper($sapiStub, null, null);
         $stateFile = new StateFile(
             $this->dataDir,
-            $sapiStub,
+            $clientWrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',

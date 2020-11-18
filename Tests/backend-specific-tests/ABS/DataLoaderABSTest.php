@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\StorageApiBranch\ClientWrapper as StorageClientWrapper;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -43,8 +44,9 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test-abs']));
         sleep(1);
 
+        $clientWrapper = new StorageClientWrapper($this->client, null, null);
         $dataLoader = new DataLoader(
-            $this->client,
+            $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $config,

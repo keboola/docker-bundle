@@ -25,9 +25,9 @@ use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 
 class Runner
@@ -42,9 +42,9 @@ class Runner
     private $encryptorFactory;
 
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $storageClient;
+    private $clientWrapper;
 
     /**
      * @var Credentials
@@ -84,7 +84,7 @@ class Runner
     /**
      * Runner constructor.
      * @param ObjectEncryptorFactory $encryptorFactory
-     * @param Client $storageApi
+     * @param ClientWrapper $clientWrapper
      * @param LoggersService $loggersService
      * @param string $oauthApiUrl
      * @param array $instanceLimits
@@ -93,7 +93,7 @@ class Runner
      */
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
-        Client $storageApi,
+        ClientWrapper $clientWrapper,
         LoggersService $loggersService,
         $oauthApiUrl,
         array $instanceLimits,
@@ -103,11 +103,11 @@ class Runner
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
-        $this->storageClient = $storageApi;
-        $this->oauthClient = new Credentials($this->storageClient->getTokenString(), [
+        $this->clientWrapper = $clientWrapper;
+        $this->oauthClient = new Credentials($this->clientWrapper->getBasicClient()->getTokenString(), [
             'url' => $oauthApiUrl
         ]);
-        $this->oauthClient3 = new Credentials($this->storageClient->getTokenString(), [
+        $this->oauthClient3 = new Credentials($this->clientWrapper->getBasicClient()->getTokenString(), [
             'url' => $this->getOauthUrlV3()
         ]);
         $this->loggersService = $loggersService;
@@ -131,7 +131,7 @@ class Runner
      */
     private function getOauthUrlV3()
     {
-        $services = $this->storageClient->indexAction()['services'];
+        $services = $this->clientWrapper->getBasicClient()->indexAction()['services'];
         foreach ($services as $service) {
             if ($service['id'] == 'oauth') {
                 return $service['url'];
@@ -186,7 +186,7 @@ class Runner
             $storeState = true;
 
             // Do not store state if configuration does not exist
-            $components = new Components($this->storageClient);
+            $components = new Components($this->clientWrapper->getBasicClient());
             try {
                 $components->getConfiguration($componentId, $configurationId);
             } catch (ClientException $e) {
@@ -236,7 +236,7 @@ class Runner
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
             $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
-                $this->storageClient,
+                $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $configData['storage'],
@@ -248,7 +248,7 @@ class Runner
         } else {
             $outputFilter = new NullFilter();
             $dataLoader = new NullDataLoader(
-                $this->storageClient,
+                $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $configData['storage'],
@@ -261,7 +261,7 @@ class Runner
 
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
-            $this->storageClient,
+            $this->clientWrapper,
             $this->encryptorFactory,
             $jobDefinition->getState(),
             $component->getConfigurationFormat(),
@@ -275,7 +275,7 @@ class Runner
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),
             $this->loggersService->getLog(),
-            $this->storageClient,
+            $this->clientWrapper->getBasicClient(),
             $component,
             $configData
         );
@@ -450,7 +450,7 @@ class Runner
     {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
-        $tokenInfo = $this->storageClient->verifyToken();
+        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
         $limits = new Limits(
             $this->loggersService->getLog(),
             $this->instanceLimits,
@@ -478,9 +478,9 @@ class Runner
                 $image->getSourceComponent(),
                 $image->getConfigData()['parameters'],
                 $tokenInfo,
-                $this->storageClient->getRunId(),
-                $this->storageClient->getApiUrl(),
-                $this->storageClient->getTokenString()
+                $this->clientWrapper->getBasicClient()->getRunId(),
+                $this->clientWrapper->getBasicClient()->getApiUrl(),
+                $this->clientWrapper->getBasicClient()->getTokenString()
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),
@@ -490,7 +490,7 @@ class Runner
 
             $containerIdParts = [
                 $jobId,
-                $this->storageClient->getRunId() ?: 'norunid',
+                $this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid',
                 $rowId,
                 $priority,
                 $image->getSourceComponent()->getSanitizedComponentId()
@@ -498,7 +498,7 @@ class Runner
             $containerNameParts = [
                 $image->getSourceComponent()->getSanitizedComponentId(),
                 $jobId,
-                $this->storageClient->getRunId() ?: 'norunid',
+                $this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid',
                 $priority,
             ];
 
@@ -508,7 +508,7 @@ class Runner
                 new RunCommandOptions(
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
-                        'com.keboola.docker-runner.runId=' . ($this->storageClient->getRunId() ?: 'norunid'),
+                        'com.keboola.docker-runner.runId=' . ($this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid'),
                         'com.keboola.docker-runner.rowId=' . $rowId,
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts),
                         'com.keboola.docker-runner.projectId=' . $tokenInfo['owner']['id']

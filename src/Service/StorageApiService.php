@@ -32,7 +32,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
     /**
      * @return \Closure
      */
-    public static function getStepPollDelayFunction()
+    public function getStepPollDelayFunction()
     {
         return function ($tries) {
             switch ($tries) {
@@ -44,6 +44,11 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     return 5;
             }
         };
+    }
+
+    public function getLogger()
+    {
+        return $this->logger;
     }
 
     /**
@@ -59,7 +64,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     'url' => $client->getApiUrl(),
                     'userAgent' => $client->getUserAgent(),
                     'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'jobPollRetryDelay' => $this->getStepPollDelayFunction(),
                     'logger' => $this->logger
                 ]
             );
@@ -81,7 +86,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     'url' => $client->getApiUrl(),
                     'userAgent' => $client->getUserAgent(),
                     'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'jobPollRetryDelay' => $this->getStepPollDelayFunction(),
                 ]
             );
             if ($client->getRunId()) {
