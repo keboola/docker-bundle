@@ -6,7 +6,9 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -83,11 +85,17 @@ class ActionController extends BaseApiController
         // Limit processing to 45 seconds
         $component['data']['process_timeout'] = 45;
 
+        /** @var StorageApiService $storageApiService */
+        $storageApiService = $this->container->get('syrup.storage_api');
         /** @var Runner $runner */
         try {
             $runner = new Runner(
                 $encryptorFactory,
-                $this->storageApi,
+                new ClientWrapper(
+                    $this->storageApi,
+                    $storageApiService->getStepPollDelayFunction(),
+                    $storageApiService->getLogger()
+                ),
                 $this->container->get('docker_bundle.loggers'),
                 $this->container->getParameter('oauth_api.url'),
                 $this->container->getParameter('instance_limits')
