@@ -198,8 +198,7 @@ class ImageConfigurationTest extends TestCase
         $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
         $this->expectExceptionMessage(
             'The value "whatever" is not allowed for path "component.staging_storage.output". ' .
-            'Permissible values: "local", "none", 
-            "workspace-snowflake", "workspace-redshift", "workspace-synapse", "workspace-abs"'
+            'Permissible values: "local", "none", "workspace-snowflake", "workspace-redshift", "workspace-synapse", "workspace-abs"'
         );
         $config = [
             "definition" => [
