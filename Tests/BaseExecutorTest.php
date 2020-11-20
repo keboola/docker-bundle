@@ -131,7 +131,8 @@ abstract class BaseExecutorTest extends BaseRunnerTest
 
         $componentService = new ComponentsService($this->getStorageService());
         if ($branchName) {
-            $client = new Client([
+            $client = new Client(
+                [
                     'url' => STORAGE_API_URL,
                     'token' => STORAGE_API_TOKEN_MASTER,
                 ]
