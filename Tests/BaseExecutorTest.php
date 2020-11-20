@@ -5,9 +5,11 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Job\Executor;
 use Keboola\DockerBundle\Service\ComponentsService;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -30,6 +32,9 @@ abstract class BaseExecutorTest extends BaseRunnerTest
      * @var StorageApiService
      */
     private $storageServiceStub;
+
+    /** @var int */
+    public $branchId;
 
     public function setUp()
     {
@@ -96,7 +101,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
         return $this->storageServiceStub;
     }
 
-    protected function getJobExecutor(array $configuration, array $rows, array $state = [], $disableConfig = false)
+    protected function getJobExecutor(array $configuration, array $rows, array $state = [], $disableConfig = false, $branchName = '')
     {
         if (!$disableConfig) {
             $this->clearConfigurations();
@@ -125,21 +130,79 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             ->will(self::returnValue(null));
 
         $componentService = new ComponentsService($this->getStorageService());
-        $cmp = new Components($this->getClient());
-        $cfg = new Configuration();
-        if (!$disableConfig) {
-            $cfg->setComponentId('keboola.python-transformation');
-            $cfg->setConfigurationId('executor-configuration');
-            $cfg->setConfiguration($configuration);
-            $cfg->setState($state);
-            $cfg->setName('Test configuration');
-            $cmp->addConfiguration($cfg);
-            foreach ($rows as $item) {
-                $cfgRow = new ConfigurationRow($cfg);
-                $cfgRow->setConfiguration($item['configuration']);
-                $cfgRow->setRowId($item['id']);
-                $cfgRow->setIsDisabled($item['isDisabled']);
-                $cmp->addConfigurationRow($cfgRow);
+        if ($branchName) {
+            $client = new Client([
+                    'url' => STORAGE_API_URL,
+                    'token' => STORAGE_API_TOKEN_MASTER,
+                ]
+            );
+            $tokenInfo = $client->verifyToken();
+            print(sprintf(
+                'Authorized as "%s (%s)" to project "%s (%s)" at "%s" stack.',
+                $tokenInfo['description'],
+                $tokenInfo['id'],
+                $tokenInfo['owner']['name'],
+                $tokenInfo['owner']['id'],
+                $client->getApiUrl()
+            ));
+
+            $branches = new DevBranches($client);
+            $branchList = $branches->listBranches();
+            foreach ($branchList as $branch) {
+                if ($branch['name'] === 'my-dev-branch') {
+                    $branchId = $branch['id'];
+                    $branches->deleteBranch($branchId);
+                    break;
+                }
+            }
+            try {
+                $cmpMain = new Components($client);
+                $cmpMain->deleteConfiguration('keboola.python-transformation', 'executor-configuration');
+            } catch (ClientException $e) {
+                if ($e->getCode() !== 404) {
+                    throw $e;
+                }
+            }
+            $this->branchId = $branches->createBranch('my-dev-branch')['id'];
+            $branchClient = new BranchAwareClient($this->branchId, [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]);
+
+            $cmp = new Components($branchClient);
+            $cfg = new Configuration();
+            if (!$disableConfig) {
+                $cfg->setComponentId('keboola.python-transformation');
+                $cfg->setConfigurationId('executor-configuration');
+                $cfg->setConfiguration($configuration);
+                $cfg->setState($state);
+                $cfg->setName('Test configuration');
+                $cmp->addConfiguration($cfg);
+                foreach ($rows as $item) {
+                    $cfgRow = new ConfigurationRow($cfg);
+                    $cfgRow->setConfiguration($item['configuration']);
+                    $cfgRow->setRowId($item['id']);
+                    $cfgRow->setIsDisabled($item['isDisabled']);
+                    $cmp->addConfigurationRow($cfgRow);
+                }
+            }
+        } else {
+            $cmp = new Components($this->getClient());
+            $cfg = new Configuration();
+            if (!$disableConfig) {
+                $cfg->setComponentId('keboola.python-transformation');
+                $cfg->setConfigurationId('executor-configuration');
+                $cfg->setConfiguration($configuration);
+                $cfg->setState($state);
+                $cfg->setName('Test configuration');
+                $cmp->addConfiguration($cfg);
+                foreach ($rows as $item) {
+                    $cfgRow = new ConfigurationRow($cfg);
+                    $cfgRow->setConfiguration($item['configuration']);
+                    $cfgRow->setRowId($item['id']);
+                    $cfgRow->setIsDisabled($item['isDisabled']);
+                    $cmp->addConfigurationRow($cfgRow);
+                }
             }
         }
 
