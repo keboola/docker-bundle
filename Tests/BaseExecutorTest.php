@@ -150,7 +150,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
             $branches = new DevBranches($client);
             $branchList = $branches->listBranches();
             foreach ($branchList as $branch) {
-                if ($branch['name'] === 'my-dev-branch') {
+                if ($branch['name'] === $branchName) {
                     $branchId = $branch['id'];
                     $branches->deleteBranch($branchId);
                     break;
@@ -164,7 +164,7 @@ abstract class BaseExecutorTest extends BaseRunnerTest
                     throw $e;
                 }
             }
-            $this->branchId = $branches->createBranch('my-dev-branch')['id'];
+            $this->branchId = $branches->createBranch($branchName)['id'];
             $branchClient = new BranchAwareClient($this->branchId, [
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
