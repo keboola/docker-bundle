@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\InputMapping\Reader\Reader;
 use Keboola\InputMapping\Reader\WorkspaceProviderInterface;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
@@ -10,6 +11,13 @@ use Keboola\StorageApi\Workspaces;
 
 class WorkspaceProvider implements WorkspaceProviderInterface
 {
+    const STAGING_TYPE_MAP = [
+        Reader::STAGING_SNOWFLAKE => WorkspaceProviderInterface::TYPE_SNOWFLAKE,
+        Reader::STAGING_REDSHIFT => WorkspaceProviderInterface::TYPE_REDSHIFT,
+        Reader::STAGING_SYNAPSE => WorkspaceProviderInterface::TYPE_SYNAPSE,
+        Reader::STAGING_ABS_WORKSPACE => WorkspaceProviderInterface::TYPE_ABS,
+    ];
+
     /**
      * @var Client
      */

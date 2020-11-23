@@ -229,14 +229,10 @@ class DataLoader implements DataLoaderInterface
 
     public function getWorkspaceCredentials()
     {
-        if ($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SNOWFLAKE);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_REDSHIFT);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SYNAPSE);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_ABS_WORKSPACE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_ABS);
+        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP )) {
+            return $this->workspaceProvider->getCredentials(
+                WorkspaceProvider::STAGING_TYPE_MAP[$this->getStagingStorageInput()]
+            );
         } else {
             return [];
         }
