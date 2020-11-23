@@ -181,6 +181,8 @@ class Executor extends BaseExecutor
             }
             if (isset($params['branchId'])) {
                 $this->clientWrapper->setBranch($params['branchId']);
+            } else {
+                $this->clientWrapper->setBranch('');
             }
 
             $jobDefinitionParser = new JobDefinitionParser();
@@ -202,7 +204,12 @@ class Executor extends BaseExecutor
             } else {
                 // Read config from storage
                 try {
-                    $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+                    if ($this->clientWrapper->hasBranch()) {
+                        $components = new Components($this->clientWrapper->getBranchClient());
+                        $configuration = $components->getConfiguration($component["id"], $params["config"]);
+                    } else {
+                        $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
+                    }
                     $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
                 } catch (ClientException $e) {
                     throw new \Keboola\Syrup\Exception\UserException(

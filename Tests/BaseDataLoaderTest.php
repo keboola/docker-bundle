@@ -67,6 +67,7 @@ abstract class BaseDataLoaderTest extends TestCase
     protected function getDataLoader(array $config, $configRow = null)
     {
         $clientWrapper = new ClientWrapper($this->client, null, null);
+        $clientWrapper->setBranch('');
         return new DataLoader(
             $clientWrapper,
             new NullLogger(),

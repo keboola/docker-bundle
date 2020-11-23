@@ -16,7 +16,10 @@ defined('STORAGE_API_URL')
 || define('STORAGE_API_URL', getenv('STORAGE_API_URL') ?: 'sapi_url');
 
 defined('STORAGE_API_TOKEN')
-    || define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ?: 'your_token');
+|| define('STORAGE_API_TOKEN', getenv('STORAGE_API_TOKEN') ?: 'your_token');
+
+defined('STORAGE_API_TOKEN_MASTER')
+|| define('STORAGE_API_TOKEN_MASTER', getenv('STORAGE_API_TOKEN_MASTER') ?: 'your_token');
 
 defined('STORAGE_API_TOKEN_READ_ONLY')
 || define('STORAGE_API_TOKEN_READ_ONLY', getenv('STORAGE_API_TOKEN_READ_ONLY') ?: 'read_only_your_token');
