@@ -319,23 +319,7 @@ class DataLoader implements DataLoaderInterface
 
     private function validateStagingSetting()
     {
-        if ((($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_SNOWFLAKE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SNOWFLAKE)) ||
-            (($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_SYNAPSE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SYNAPSE))
-            (($this->getStagingStorageInput() === Reader::STAGING_ABS_WORKSPACE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_ABS_WORKSPACE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_ABS_WORKSPACE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_ABS_WORKSPACE))
-        ) {
+        if ($this->getStagingStorageInput() !== $this->getStagingStorageOutput()) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
                 $this->getStagingStorageInput(),
