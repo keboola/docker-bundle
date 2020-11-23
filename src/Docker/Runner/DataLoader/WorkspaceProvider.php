@@ -45,6 +45,7 @@ class WorkspaceProvider implements WorkspaceProviderInterface
             WorkspaceProviderInterface::TYPE_REDSHIFT,
             WorkspaceProviderInterface::TYPE_SNOWFLAKE,
             WorkspaceProviderInterface::TYPE_SYNAPSE,
+            WorkspaceProviderInterface::TYPE_ABS,
         ];
         if (!in_array($type, $workspaceTypes)) {
             throw new UserException('Workspace type must be one of ' . implode(', ', $workspaceTypes));
@@ -89,13 +90,20 @@ class WorkspaceProvider implements WorkspaceProviderInterface
         if ($this->workspace['connection']['backend'] !== $type) {
             throw new UserException('Multiple workspaces are not supported');
         }
-        return [
-            'host' => $this->workspace['connection']['host'],
-            'warehouse' => $this->workspace['connection']['warehouse'],
-            'database' => $this->workspace['connection']['database'],
-            'schema' => $this->workspace['connection']['schema'],
-            'user' => $this->workspace['connection']['user'],
-            'password' => $this->workspace['connection']['password'],
-        ];
+        if ($this->workspace['connection']['backend'] === WorkspaceProviderInterface::TYPE_ABS) {
+            return [
+                'connectionString' => $this->workspace['connection']['connectionString'],
+                'container' => $this->workspace['connection']['container'],
+            ];
+        } else {
+            return [
+                'host' => $this->workspace['connection']['host'],
+                'warehouse' => $this->workspace['connection']['warehouse'],
+                'database' => $this->workspace['connection']['database'],
+                'schema' => $this->workspace['connection']['schema'],
+                'user' => $this->workspace['connection']['user'],
+                'password' => $this->workspace['connection']['password'],
+            ];
+        }
     }
 }

@@ -112,7 +112,8 @@ class DataLoader implements DataLoaderInterface
             see  validateStagingSetting() */
         if (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) ||
             ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE)
+            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) ||
+            ($this->getStagingStorageOutput() === Reader::STAGING_ABS_WORKSPACE)
         ) {
             $this->workspaceProvider = new WorkspaceProvider(
                 $this->clientWrapper->getBasicClient(),
@@ -136,7 +137,7 @@ class DataLoader implements DataLoaderInterface
         $reader->setFormat($this->component->getConfigurationFormat());
 
         $resultInputTablesStateList = new InputTableStateList([]);
-        
+
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
@@ -234,6 +235,8 @@ class DataLoader implements DataLoaderInterface
             return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_REDSHIFT);
         } elseif ($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) {
             return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SYNAPSE);
+        } elseif ($this->getStagingStorageInput() === Reader::STAGING_ABS_WORKSPACE) {
+            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_ABS);
         } else {
             return [];
         }
@@ -328,6 +331,10 @@ class DataLoader implements DataLoaderInterface
                 ($this->getStagingStorageOutput() !== Reader::STAGING_SYNAPSE)) ||
             (($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) &&
                 ($this->getStagingStorageInput() !== Reader::STAGING_SYNAPSE))
+            (($this->getStagingStorageInput() === Reader::STAGING_ABS_WORKSPACE) &&
+                ($this->getStagingStorageOutput() !== Reader::STAGING_ABS_WORKSPACE)) ||
+            (($this->getStagingStorageOutput() === Reader::STAGING_ABS_WORKSPACE) &&
+                ($this->getStagingStorageInput() !== Reader::STAGING_ABS_WORKSPACE))
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
