@@ -315,14 +315,9 @@ class DataLoader implements DataLoaderInterface
 
     private function validateStagingSetting()
     {
-        if (
-            (
-                array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)
-                && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
-            ) || (
-                array_key_exists($this->getStagingStorageOutput(), WorkspaceProvider::STAGING_TYPE_MAP)
-                && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
-            )
+        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)
+            && array_key_exists($this->getStagingStorageOutput(), WorkspaceProvider::STAGING_TYPE_MAP)
+            && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
