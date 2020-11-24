@@ -72,8 +72,107 @@ Create an execution job on a specified component.
     + config (optional, string) - Configuration ID
     + row (optional, string) - Configuration row ID
     + configData (optional, object) - Arbitrary configuration data
-    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
-    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
+
+### Run job [POST]
+
++ Request Stored configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": "next-order-1",
+                "row": "my-row"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
+                    }
+                    "runtime": {
+                        "baz": "bar"
+                    }
+                }
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+## Create a branch job [/branch/{branch}/{component}/run]
+
+Create an execution job on a specified component. The job will read the given configuration from the 
+specified branch. If there are any output tables, they will be placed in buckets prefixed with the
+branch name. If there are any input tables and there are tables in buckets prefixed with the branch
+name, then these tables will take precedence over the tables specified in the job.
+
++ Parameters
+    + component (string) ... Component ID
+    + branch (string) ... [Branch](https://keboola.docs.apiary.io/#reference/development-branches) ID
+
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
         + values (required, array)
             + (object)
                 + name (required, string) - Name of the variable
@@ -164,13 +263,94 @@ Create an execution job on a specified component while using a specific image ta
     + component (string) - KBC component Id
     + tag (string) - Docker image tag to be used
 
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
+
+### Run job [POST]
+
++ Request Stored configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": "next-order-1",
+                "row": "my-row"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
+                    }
+                    "runtime": {
+                        "baz": "bar"
+                    }
+                }
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+
+## Create a branch job with image [/branch/{branch}/{component}/run/tag/{tag}]
+
+Create an execution job on a specified component while using a specific image tag. The job will read the given configuration from the 
+specified branch. If there are any output tables, they will be placed in buckets prefixed with the
+branch name. If there are any input tables and there are tables in buckets prefixed with the branch
+name, then these tables will take precedence over the tables specified in the job.
+
++ Parameters
+    + branch (string) ... [Branch](https://keboola.docs.apiary.io/#reference/development-branches) ID
+    + component (string) - KBC component Id
+    + tag (string) - Docker image tag to be used
 
 + Attributes
     + config (optional, string) - Configuration ID
     + row (optional, string) - Configuration row ID
     + configData (optional, object) - Arbitrary configuration data
-    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
-    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
         + values (required, array)
             + (object)
                 + name (required, string) - Name of the variable
@@ -275,8 +455,107 @@ mapping so that you don't end up with gigabyte size archives.
     + config (optional, string) - Configuration ID
     + row (optional, string) - Configuration row ID
     + configData (optional, object) - Arbitrary configuration data
-    + variableValuesId (optional, string) - Row ID with default [variable values](http://localhost:4000/integrate/variables/)
-    + variableValuesData (optional, object) - Array of [Variable values](http://localhost:4000/integrate/variables/) data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
+        + values (required, array)
+            + (object)
+                + name (required, string) - Name of the variable
+                + value (required, string) - Value of the variable
+
+### Create a debug job [POST]
+
++ Request Stored configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "config": "next-order-1",
+                "row": "my-row"
+            }
+
++ Request Custom configuration (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "storage": {
+                        "input": {
+                            "files": [
+                                {
+                                    "query": "name: testfile.png"
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "in.c-redshift.table1",
+                                    "destination": "table1.csv"
+                                },
+                                {
+                                    "source": "in.c-redshift.some-table",
+                                    "destination": "table2.csv"
+                                }
+                            ]
+                        },
+                        "output": {
+                            "files": [
+                                {
+                                    "source": "file.csv",
+                                    "tags": [
+                                        "processed-file",
+                                        "csv"
+                                    ]
+                                }
+                            ],
+                            "tables": [
+                                {
+                                    "source": "sliced.csv",
+                                    "destination": "out.c-main.data"
+                                }
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "foo": "bar",
+                        "script": null
+                    }
+                }
+            }
+
++ Response 202 (application/json)
+
+        {
+            "id": "67121676",
+            "url": "https://syrup.keboola.com/queue/job/67121676",
+            "status": "waiting"
+        }
+
+## Debug Branch Component [/branch/{branch}/{componentId}/debug]
+
+This API call accepts the same body attributes as the [Run call](#reference/run/create-a-job/run-job),
+see [Examples](https://documenter.getpostman.com/view/3086797/kbc-samples/77h845D#4c9c7c9f-6cd6-58e7-27e3-aef62538e0ba). 
+See [above](https://kebooladocker.docs.apiary.io/#reference/debug/debug-component) for details. It
+creates a job that prepares the `data` folder including the serialized configuration files. The job will read the given configuration from the 
+specified branch. If there are any input tables and there are tables in buckets prefixed with the branch
+name, then these tables will take precedence over the tables specified in the job.
+
+
++ Parameters
+    + branch (string) ... [Branch](https://keboola.docs.apiary.io/#reference/development-branches) ID
+    + componentId (string) ... KBC component Id
+
++ Attributes
+    + config (optional, string) - Configuration ID
+    + row (optional, string) - Configuration row ID
+    + configData (optional, object) - Arbitrary configuration data
+    + variableValuesId (optional, string) - Row ID with default [variable values](https://developers.keboola.com/integrate/variables/)
+    + variableValuesData (optional, object) - Array of [Variable values](https://developers.keboola.com/integrate/variables/) data
         + values (required, array)
             + (object)
                 + name (required, string) - Name of the variable
