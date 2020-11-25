@@ -133,7 +133,7 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         self::assertArrayHasKey('images', $ret);
         self::assertArrayHasKey('configVersion', $ret);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-' . $this->branchId . '-executor-test.output');
+        $csvData = $this->getClient()->getTableDataPreview('out.c-my-dev-branch-executor-test.output');
         $data = Client::parseCsv($csvData);
         usort($data, function ($a, $b) {
             return strcmp($a['name'], $b['name']);
@@ -152,6 +152,16 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
                 ],
             ],
             $data
+        );
+    }
+
+    protected function initStorageClient()
+    {
+        $this->client = new Client(
+            [
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN_MASTER,
+            ]
         );
     }
 
