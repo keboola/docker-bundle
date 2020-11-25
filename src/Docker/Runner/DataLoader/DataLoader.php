@@ -188,10 +188,13 @@ class DataLoader implements DataLoaderInterface
 
         $systemMetadata = [
             'componentId' => $this->component->getId(),
-            'configurationId' => $this->configId
+            'configurationId' => $this->configId,
         ];
         if ($this->configRowId) {
             $systemMetadata['configurationRowId'] = $this->configRowId;
+        }
+        if ($this->clientWrapper->hasBranch()) {
+            $systemMetadata['branchId'] = $this->clientWrapper->getBranchId();
         }
 
         // Get default bucket

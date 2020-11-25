@@ -2,7 +2,14 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\StorageApi\Client;
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\DevBranches;
+use Keboola\StorageApiBranch\ClientWrapper;
+use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderMetadataTest extends BaseDataLoaderTest
@@ -69,6 +76,76 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
+    public function createBranch($clientWrapper, $branchName)
+    {
+        $branches = new DevBranches($clientWrapper->getBasicClient());
+        foreach ($branches->listBranches() as $branch) {
+            if ($branch['name'] === $branchName) {
+                $branches->deleteBranch($branch['id']);
+            }
+        }
+        return $branches->createBranch($branchName)['id'];
+    }
+
+    public function testDefaultSystemMetadataBranch()
+    {
+        try {
+            $this->client->dropBucket('in.c-test-branch-docker-demo-testConfig', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $this->client = new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN_MASTER,
+        ]);
+        $clientWrapper = new ClientWrapper($this->client, null, null);
+        $branchId = $this->createBranch($clientWrapper, 'test-branch');
+        $clientWrapper->setBranchId($branchId);
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            [],
+            $this->getDefaultBucketComponent(),
+            new OutputFilter(),
+            'testConfig',
+            null
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        $tableQueue->waitForAll();
+
+        $bucketMetadata = $this->metadata->listBucketMetadata('in.c-test-branch-docker-demo-testConfig');
+        $expectedBucketMetadata = [
+            'system' => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'testConfig',
+                'KBC.createdBy.branch.id' => (string) $branchId,
+            ],
+        ];
+        self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
+
+        $tableMetadata = $this->metadata->listTableMetadata('in.c-test-branch-docker-demo-testConfig.sliced');
+        $expectedTableMetadata = [
+            'system'
+            => [
+                'KBC.createdBy.component.id' => 'docker-demo',
+                'KBC.createdBy.configuration.id' => 'testConfig',
+                'KBC.createdBy.branch.id' => (string) $branchId,
+                'KBC.lastUpdatedBy.component.id' => 'docker-demo',
+                'KBC.lastUpdatedBy.configuration.id' => 'testConfig',
+                'KBC.lastUpdatedBy.branch.id' => (string) $branchId,
+            ],
+        ];
+        self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
+    }
 
     public function testDefaultSystemConfigRowMetadata()
     {

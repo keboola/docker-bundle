@@ -496,6 +496,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertArrayHasKey('KBC.createdBy.component.id', $table1Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configuration.id', $table1Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table1Metadata['system']);
+        self::assertArrayNotHasKey('KBC.createdBy.branch.id', $table1Metadata['system']);
         self::assertEquals('keboola.docker-demo-sync', $table1Metadata['system']['KBC.createdBy.component.id']);
         self::assertEquals('config', $table1Metadata['system']['KBC.createdBy.configuration.id']);
         self::assertEquals('row-1', $table1Metadata['system']['KBC.createdBy.configurationRow.id']);
@@ -503,6 +504,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertArrayHasKey('KBC.createdBy.component.id', $table2Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configuration.id', $table2Metadata['system']);
         self::assertArrayHasKey('KBC.createdBy.configurationRow.id', $table2Metadata['system']);
+        self::assertArrayNotHasKey('KBC.createdBy.branch.id', $table2Metadata['system']);
         self::assertEquals('keboola.docker-demo-sync', $table2Metadata['system']['KBC.createdBy.component.id']);
         self::assertEquals('config', $table2Metadata['system']['KBC.createdBy.configuration.id']);
         self::assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);

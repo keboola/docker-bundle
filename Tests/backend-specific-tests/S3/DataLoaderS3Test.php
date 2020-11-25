@@ -124,7 +124,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->client->createTable('in.c-docker-demo-testConfig-s3', 'test', new CsvFile($filePath));
 
         $clientWrapper = new StorageClientWrapper($this->client, null, null);
-        $clientWrapper->setBranch('');
+        $clientWrapper->setBranchId('');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
