@@ -229,7 +229,7 @@ class DataLoader implements DataLoaderInterface
 
     public function getWorkspaceCredentials()
     {
-        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP )) {
+        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)) {
             return $this->workspaceProvider->getCredentials(
                 WorkspaceProvider::STAGING_TYPE_MAP[$this->getStagingStorageInput()]
             );
