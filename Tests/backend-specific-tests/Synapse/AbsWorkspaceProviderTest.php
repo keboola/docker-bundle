@@ -11,7 +11,7 @@ use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use PHPUnit\Framework\TestCase;
 
-class SynapseWorkspaceProviderTest extends TestCase
+class AbsWorkspaceProviderTest extends TestCase
 {
     /**
      * @var Client
