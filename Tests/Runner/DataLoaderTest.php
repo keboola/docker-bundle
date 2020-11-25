@@ -76,6 +76,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $clientWrapper = new ClientWrapper($this->client, null, null);
+        $clientWrapper->setBranchId('');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
