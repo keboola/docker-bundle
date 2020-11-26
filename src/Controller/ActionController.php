@@ -94,7 +94,8 @@ class ActionController extends BaseApiController
                 new ClientWrapper(
                     $this->storageApi,
                     $storageApiService->getStepPollDelayFunction(),
-                    $storageApiService->getLogger()
+                    $storageApiService->getLogger(),
+                    ''
                 ),
                 $this->container->get('docker_bundle.loggers'),
                 $this->container->getParameter('oauth_api.url'),
