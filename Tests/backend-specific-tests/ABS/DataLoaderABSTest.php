@@ -45,7 +45,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         sleep(1);
 
         $clientWrapper = new StorageClientWrapper($this->client, null, null);
-        $clientWrapper->setBranch('');
+        $clientWrapper->setBranchId('');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),

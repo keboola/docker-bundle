@@ -14,7 +14,7 @@
         "keboola/gelf-server": "^2.0",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/object-encryptor": "^0.3",
-        "keboola/storage-api-php-client-branch-wrapper": "^0.0.1",
+        "keboola/storage-api-php-client-branch-wrapper": "^0.0.2",
         "keboola/output-mapping": "^12.0.0",
         "keboola/input-mapping": "^10.0.0",
         "keboola/php-utils": "^2.0",

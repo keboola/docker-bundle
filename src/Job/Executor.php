@@ -180,9 +180,9 @@ class Executor extends BaseExecutor
                 $rowId = null;
             }
             if (isset($params['branchId'])) {
-                $this->clientWrapper->setBranch($params['branchId']);
+                $this->clientWrapper->setBranchId($params['branchId']);
             } else {
-                $this->clientWrapper->setBranch('');
+                $this->clientWrapper->setBranchId('');
             }
 
             $jobDefinitionParser = new JobDefinitionParser();
