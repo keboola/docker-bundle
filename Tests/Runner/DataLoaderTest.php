@@ -138,31 +138,6 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'workspace-snowflake',
                 'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-snowflake".'
             ],
-            'redshift-local' => [
-                'workspace-redshift',
-                'local',
-                'Component staging setting mismatch - input: "workspace-redshift", output: "local".'
-            ],
-            'snowflake-local' => [
-                'workspace-snowflake',
-                'local',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "local".'
-            ],
-            'local-redshift' => [
-                'local',
-                'workspace-redshift',
-                'Component staging setting mismatch - input: "local", output: "workspace-redshift".'
-            ],
-            'local-snowflake' => [
-                'local',
-                'workspace-snowflake',
-                'Component staging setting mismatch - input: "local", output: "workspace-snowflake".'
-            ],
-            'local-synapse' => [
-                'local',
-                'workspace-synapse',
-                'Component staging setting mismatch - input: "local", output: "workspace-synapse".'
-            ],
             'snowflake-synapse' => [
                 'workspace-snowflake',
                 'workspace-synapse',
@@ -173,11 +148,6 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'workspace-synapse',
                 'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-synapse".'
             ],
-            'synapse-local' => [
-                'workspace-synapse',
-                'local',
-                'Component staging setting mismatch - input: "workspace-synapse", output: "local".'
-            ],
             'synapse-snowflake' => [
                 'workspace-synapse',
                 'workspace-snowflake',
@@ -187,6 +157,21 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'workspace-synapse',
                 'workspace-redshift',
                 'Component staging setting mismatch - input: "workspace-synapse", output: "workspace-redshift".'
+            ],
+            'abs-snowflake' => [
+                'workspace-abs',
+                'workspace-snowflake',
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-snowflake".'
+            ],
+            'abs-redshift' => [
+                'workspace-abs',
+                'workspace-redshift',
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-redshift".'
+            ],
+            'abs-synapse' => [
+                'workspace-abs',
+                'workspace-synapse',
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-synapse".'
             ],
         ];
     }

@@ -112,7 +112,8 @@ class DataLoader implements DataLoaderInterface
             see  validateStagingSetting() */
         if (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) ||
             ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE)
+            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) ||
+            ($this->getStagingStorageOutput() === Reader::STAGING_ABS_WORKSPACE)
         ) {
             $this->workspaceProvider = new WorkspaceProvider(
                 $this->clientWrapper->getBasicClient(),
@@ -136,7 +137,7 @@ class DataLoader implements DataLoaderInterface
         $reader->setFormat($this->component->getConfigurationFormat());
 
         $resultInputTablesStateList = new InputTableStateList([]);
-        
+
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
@@ -228,12 +229,10 @@ class DataLoader implements DataLoaderInterface
 
     public function getWorkspaceCredentials()
     {
-        if ($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SNOWFLAKE);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_REDSHIFT);
-        } elseif ($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) {
-            return $this->workspaceProvider->getCredentials(WorkspaceProviderInterface::TYPE_SYNAPSE);
+        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)) {
+            return $this->workspaceProvider->getCredentials(
+                WorkspaceProvider::STAGING_TYPE_MAP[$this->getStagingStorageInput()]
+            );
         } else {
             return [];
         }
@@ -316,18 +315,9 @@ class DataLoader implements DataLoaderInterface
 
     private function validateStagingSetting()
     {
-        if ((($this->getStagingStorageInput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_REDSHIFT)) ||
-            (($this->getStagingStorageInput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_SNOWFLAKE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SNOWFLAKE)) ||
-            (($this->getStagingStorageInput() === Reader::STAGING_SYNAPSE) &&
-                ($this->getStagingStorageOutput() !== Reader::STAGING_SYNAPSE)) ||
-            (($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) &&
-                ($this->getStagingStorageInput() !== Reader::STAGING_SYNAPSE))
+        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)
+            && array_key_exists($this->getStagingStorageOutput(), WorkspaceProvider::STAGING_TYPE_MAP)
+            && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
