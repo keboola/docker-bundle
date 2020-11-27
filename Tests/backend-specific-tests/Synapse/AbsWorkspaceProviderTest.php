@@ -65,9 +65,6 @@ class AbsWorkspaceProviderTest extends TestCase
         $workspace = $workspaces->getWorkspace($workspaceId);
         self::assertEquals('keboola.runner-workspace-test', $workspace['component']);
         self::assertEquals('runner-test-configuration', $workspace['configurationId']);
-        self::assertArrayHasKey('host', $workspace['connection']);
-        self::assertArrayHasKey('database', $workspace['connection']);
-        self::assertArrayHasKey('user', $workspace['connection']);
         self::assertEquals($type, $workspace['connection']['backend']);
         self::assertEquals(['connectionString', 'container'], array_keys($provider->getCredentials($type)));
     }
