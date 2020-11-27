@@ -475,6 +475,7 @@ class Runner
             }
             $environment = new Environment(
                 $configId,
+                $rowId,
                 $image->getSourceComponent(),
                 $image->getConfigData()['parameters'],
                 $tokenInfo,
