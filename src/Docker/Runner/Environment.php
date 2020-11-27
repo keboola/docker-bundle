@@ -44,7 +44,17 @@ class Environment
      */
     private $stackId;
 
-    public function __construct($configId, Component $component, array $config, array $tokenInfo, $runId, $url, $token)
+    /**
+     * @var string
+     */
+    private $configRowId;
+
+    /**
+     * @var string
+     */
+    private $token;
+
+    public function __construct($configId, $configRowId, Component $component, array $config, array $tokenInfo, $runId, $url, $token)
     {
         if ($configId) {
             $this->configId = $configId;
@@ -59,6 +69,7 @@ class Environment
         $this->url = $url;
         $this->stackId = parse_url($url, PHP_URL_HOST);
         $this->token = $token;
+        $this->configRowId = $configRowId;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
@@ -72,6 +83,9 @@ class Environment
             "KBC_COMPONENTID" => $this->component->getId(),
             "KBC_STACKID" => $this->stackId
         ];
+        if ($this->configRowId) {
+            $envs['KBC_CONFIGROWID'] = $this->configRowId;
+        }
         if ($this->component->forwardToken()) {
             $envs["KBC_TOKEN"] = $this->token;
             $outputFilter->addValue($this->token);
