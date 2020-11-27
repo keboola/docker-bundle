@@ -165,12 +165,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
             'abs-redshift' => [
                 'workspace-abs',
-                'workspace-snowflake',
+                'workspace-redshift',
                 'Component staging setting mismatch - input: "workspace-abs", output: "workspace-redshift".'
             ],
             'abs-synapse' => [
                 'workspace-abs',
-                'workspace-snowflake',
+                'workspace-synapse',
                 'Component staging setting mismatch - input: "workspace-abs", output: "workspace-synapse".'
             ],
         ];
