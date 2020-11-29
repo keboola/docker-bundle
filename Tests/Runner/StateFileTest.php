@@ -147,7 +147,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id'),
+                self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
@@ -168,6 +168,7 @@ class StateFileTest extends TestCase
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -194,6 +195,7 @@ class StateFileTest extends TestCase
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -218,7 +220,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id"),
+                $this->equalTo("components/docker-demo/configs/config-id/state"),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -231,6 +233,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -277,7 +280,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id'),
+                self::equalTo('components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -289,6 +292,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -312,7 +316,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id'),
+                self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [],
@@ -327,6 +331,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -350,7 +355,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id'),
+                self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => new \stdClass(),
@@ -365,6 +370,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -388,7 +394,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id'),
+                self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
@@ -405,6 +411,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -487,7 +494,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo('components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -501,6 +508,7 @@ class StateFileTest extends TestCase
 
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -527,7 +535,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/rows/row-id'),
+                self::equalTo('components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -541,6 +549,7 @@ class StateFileTest extends TestCase
 
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -568,7 +577,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id"),
+                $this->equalTo("components/docker-demo/configs/config-id/state"),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -590,6 +599,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -620,7 +630,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id/rows/row-id"),
+                $this->equalTo("components/docker-demo/configs/config-id/rows/row-id/state"),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = \GuzzleHttp\json_decode($argument['state'], true);
@@ -642,6 +652,7 @@ class StateFileTest extends TestCase
             );
         /** @var Client $sapiStub */
         $clientWrapper = new ClientWrapper($sapiStub, null, null);
+        $clientWrapper->setBranchId('');
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
