@@ -8,8 +8,8 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Reader\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -133,7 +133,13 @@ class StateFile
     public function persistState(InputTableStateList $inputTableStateList)
     {
         $this->outputFilter->collectValues((array)$this->currentState);
-        $components = new Components($this->clientWrapper->getBasicClient());
+
+        if ($this->clientWrapper->hasBranch()) {
+            $client = $this->clientWrapper->getBranchClient();
+        } else {
+            $client = $this->clientWrapper->getBasicClient();
+        }
+
         $configuration = new Configuration();
         $configuration->setComponentId($this->componentId);
         $configuration->setConfigurationId($this->configurationId);
@@ -159,10 +165,11 @@ class StateFile
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
                 $configurationRow->setState($state);
-                $components->updateConfigurationRow($configurationRow);
+
+                $this->saveConfigurationRowState($configurationRow, $client);
             } else {
                 $configuration->setState($state);
-                $components->updateConfiguration($configuration);
+                $this->saveConfigurationState($configuration, $client);
             }
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
@@ -185,5 +192,34 @@ class StateFile
         }
         $fs->remove($fileName);
         return $state;
+    }
+
+    private function saveConfigurationState(Configuration $configuration, Client $client)
+    {
+        return $client->apiPut(
+            sprintf(
+                'components/%s/configs/%s/state',
+                $configuration->getComponentId(),
+                $configuration->getConfigurationId()
+            ),
+            [
+                'state' => json_encode($configuration->getState())
+            ]
+        );
+    }
+
+    private function saveConfigurationRowState(ConfigurationRow $row, Client $client)
+    {
+        return $client->apiPut(
+            sprintf(
+                "components/%s/configs/%s/rows/%s/state",
+                $row->getComponentConfiguration()->getComponentId(),
+                $row->getComponentConfiguration()->getConfigurationId(),
+                $row->getRowId()
+            ),
+            [
+                'state' => json_encode($row->getState())
+            ]
+        );
     }
 }
