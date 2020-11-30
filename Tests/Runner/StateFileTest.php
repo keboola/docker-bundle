@@ -676,13 +676,13 @@ class StateFileTest extends TestCase
         $stateFile->persistState($inputTablesState);
     }
 
-    public function testPeristStateUsesBranchClient()
+    public function testPersistStateUsesBranchClient()
     {
-        $brancSapiStub = $this->getMockBuilder(BranchAwareClient::class)
+        $branchSapiStub = $this->getMockBuilder(BranchAwareClient::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $brancSapiStub->expects(self::once())
+        $branchSapiStub->expects(self::once())
             ->method('apiPut')
             ->with(
                 self::equalTo('components/docker-demo/configs/config-id/state'),
@@ -701,22 +701,20 @@ class StateFileTest extends TestCase
                 )
             );
 
-        $wraper = $this->getMockBuilder(ClientWrapper::class)
+        $wrapper = $this->getMockBuilder(ClientWrapper::class)
             ->disableOriginalConstructor()
             ->getMock();
 
-        $wraper->expects(self::once())->method('hasBranch')->willReturn(true);
-        $wraper->expects(self::never())->method('getBasicClient');
-        $wraper->expects(self::once())->method('getBranchClient')->willReturn($brancSapiStub);
+        $wrapper->expects(self::once())->method('hasBranch')->willReturn(true);
+        $wrapper->expects(self::never())->method('getBasicClient');
+        $wrapper->expects(self::once())->method('getBranchClient')->willReturn($branchSapiStub);
 
         $state = ['key' => 'fooBar'];
         $testLogger = new TestLogger();
-        /** @var Client $brancSapiStub */
-        $clientWrapper = new ClientWrapper($brancSapiStub, null, null);
-
+        /** @var ClientWrapper $wrapper */
         $stateFile = new StateFile(
             $this->dataDir,
-            $wraper,
+            $wrapper,
             $this->encryptorFactory,
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
