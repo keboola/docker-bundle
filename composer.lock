@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8500b18237364ae8e067a5ab929176f6",
+    "content-hash": "60cfd93abe1c8251ed4381cc7a884ac2",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.164.0",
+            "version": "3.165.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "39ecf57d828eb50ab23fd70255a68b8996392ac9"
+                "reference": "ddc727e18c670ab07c453ceeb5f310bb6b2f1508"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/39ecf57d828eb50ab23fd70255a68b8996392ac9",
-                "reference": "39ecf57d828eb50ab23fd70255a68b8996392ac9",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ddc727e18c670ab07c453ceeb5f310bb6b2f1508",
+                "reference": "ddc727e18c670ab07c453ceeb5f310bb6b2f1508",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-11-24T19:18:22+00:00"
+            "time": "2020-12-01T19:14:48+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -747,6 +747,7 @@
                 "cache",
                 "caching"
             ],
+            "abandoned": true,
             "time": "2018-11-09T06:25:35+00:00"
         },
         {
@@ -2032,16 +2033,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "12.3.0",
+            "version": "12.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "cba03685a012ee9cf7dc79d38bca0de4aa0abb1d"
+                "reference": "c1d4613a44af88fd486e4b1c0527ff4d10902c2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/cba03685a012ee9cf7dc79d38bca0de4aa0abb1d",
-                "reference": "cba03685a012ee9cf7dc79d38bca0de4aa0abb1d",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/c1d4613a44af88fd486e4b1c0527ff4d10902c2d",
+                "reference": "c1d4613a44af88fd486e4b1c0527ff4d10902c2d",
                 "shasum": ""
             },
             "require": {
@@ -2078,7 +2079,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-11-25T12:15:32+00:00"
+            "time": "2020-12-01T21:15:50+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2385,16 +2386,16 @@
         },
         {
             "name": "keboola/syrup",
-            "version": "11.4.0",
+            "version": "11.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/syrup.git",
-                "reference": "cbe451a44b6e06725c0efbd409372790d9d64c93"
+                "reference": "66a9b8c2ed34608e6aa0d307ede32d70a25f9cdf"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/syrup/zipball/cbe451a44b6e06725c0efbd409372790d9d64c93",
-                "reference": "cbe451a44b6e06725c0efbd409372790d9d64c93",
+                "url": "https://api.github.com/repos/keboola/syrup/zipball/66a9b8c2ed34608e6aa0d307ede32d70a25f9cdf",
+                "reference": "66a9b8c2ed34608e6aa0d307ede32d70a25f9cdf",
                 "shasum": ""
             },
             "require": {
@@ -2408,7 +2409,7 @@
                 "keboola/object-encryptor": "^0.3",
                 "keboola/php-temp": "^1.0",
                 "keboola/php-utils": "^2.3.1",
-                "keboola/storage-api-client": "^10.14",
+                "keboola/storage-api-client": "^10.14|^11.0",
                 "php": "~5.6|^7.0",
                 "sensio/distribution-bundle": "^4.0.42",
                 "sensio/framework-extra-bundle": "~3.0.29",
@@ -2449,7 +2450,7 @@
                 }
             ],
             "description": "Syrup",
-            "time": "2020-07-31T09:17:41+00:00"
+            "time": "2020-11-30T10:12:09+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -6562,23 +6563,23 @@
         },
         {
             "name": "sebastian/code-unit-reverse-lookup",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/code-unit-reverse-lookup.git",
-                "reference": "4419fcdb5eabb9caa61a27c7a1db532a6b55dd18"
+                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/4419fcdb5eabb9caa61a27c7a1db532a6b55dd18",
-                "reference": "4419fcdb5eabb9caa61a27c7a1db532a6b55dd18",
+                "url": "https://api.github.com/repos/sebastianbergmann/code-unit-reverse-lookup/zipball/1de8cd5c010cb153fcd68b8d0f64606f523f7619",
+                "reference": "1de8cd5c010cb153fcd68b8d0f64606f523f7619",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.6 || ^7.0"
+                "php": ">=5.6"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5.7 || ^6.0"
+                "phpunit/phpunit": "^8.5"
             },
             "type": "library",
             "extra": {
@@ -6603,7 +6604,13 @@
             ],
             "description": "Looks up which function or method a line of code belongs to",
             "homepage": "https://github.com/sebastianbergmann/code-unit-reverse-lookup/",
-            "time": "2017-03-04T06:30:41+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/sebastianbergmann",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-11-30T08:15:22+00:00"
         },
         {
             "name": "sebastian/comparator",
@@ -7187,5 +7194,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "1.1.0"
 }
