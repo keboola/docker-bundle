@@ -52,6 +52,12 @@ keboola_docker_sync_action:
       _controller: KeboolaDockerBundle:Action:process
     methods:  [POST]
 
+keboola_docker_component_branch_sync_action:
+    path:     /branch/{branch}/{component}/action/{action}
+    defaults:
+      _controller: KeboolaDockerBundle:Action:process
+    methods:  [POST]
+
 keboola_docker_project_stats:
     path:     /stats/project
     defaults:

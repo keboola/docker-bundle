@@ -600,4 +600,26 @@ class ActionControllerTest extends WebTestCase
         $ctrl->preExecute($request);
         $ctrl->processAction($request);
     }
+
+    public function testActionTestOnBranch()
+    {
+        $container = self::$container;
+        $container->set("syrup.storage_api", $this->getStorageServiceStubDcaPython());
+
+        /** @var \Symfony\Bundle\FrameworkBundle\Client $client */
+        $client = $container->get('test.client');
+
+        $client->request(
+            'POST',
+            '/docker/branch/dev-123/keboola.docker-demo-sync/action/test',
+            [],
+            [],
+            [],
+            json_encode(['configData' => []])
+        );
+
+        $this->assertTrue($client->getResponse()->isSuccessful());
+        $this->assertEquals(200, $client->getResponse()->getStatusCode());
+        $this->assertEquals('{"test":"test"}', $client->getResponse()->getContent());
+    }
 }

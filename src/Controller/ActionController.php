@@ -95,7 +95,7 @@ class ActionController extends BaseApiController
                     $this->storageApi,
                     $storageApiService->getStepPollDelayFunction(),
                     $storageApiService->getLogger(),
-                    ''
+                    $request->get('branch', '')
                 ),
                 $this->container->get('docker_bundle.loggers'),
                 $this->container->getParameter('oauth_api.url'),
