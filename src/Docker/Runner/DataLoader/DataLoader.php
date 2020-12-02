@@ -154,7 +154,8 @@ class DataLoader implements DataLoaderInterface
                 $this->logger->debug('Downloading source files.');
                 $reader->downloadFiles(
                     $this->storageConfig['input']['files'],
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'files'
+                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'files',
+                    $this->getStagingStorageInput()
                 );
             }
         } catch (ClientException $e) {
