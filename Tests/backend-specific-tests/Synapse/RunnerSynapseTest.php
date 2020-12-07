@@ -213,7 +213,6 @@ class RunnerSynapseTest extends BaseRunnerTest
         $components->addConfiguration($configuration);
         $runner = $this->getRunner();
 
-        self::assertFalse($this->client->tableExists('out.c-synapse-runner-test.new-table'));
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -221,29 +220,15 @@ class RunnerSynapseTest extends BaseRunnerTest
                 [
                     'storage' => [
                         'input' => [
-                            'tables' => [
-                                [
-                                    'source' => 'in.c-synapse-runner-test.mytable',
-                                    'destination' => 'local-table',
-                                ],
-                            ],
                             'files' => [
                                 [
                                     'tags' => [self::ABS_TEST_FILE_TAG],
                                 ],
                             ],
                         ],
-                        'output' => [
-                            'tables' => [
-                                [
-                                    'source' => 'local-table-out',
-                                    'destination' => 'out.c-synapse-runner-test.new-table',
-                                ],
-                            ],
-                        ],
                     ],
                     'parameters' => [
-                        'operation' => 'copy-abs',
+                        'operation' => 'list-abs',
                     ],
                 ],
                 []
@@ -253,12 +238,20 @@ class RunnerSynapseTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
-
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
-        self::assertTrue($this->client->tableExists('out.c-synapse-runner-test.new-table'));
-        $components->deleteConfiguration('keboola.runner-workspace-synapse-test', $configId);
+        $output = $this->getContainerHandler()->getRecords();
+        $blobFound = false;
+        foreach ($output as $blobName) {
+            if ($blobName === '/data/files/in/abs-workspace-file.csv') {
+                $blobFound = true;
+            } else {
+                echo "\nFound blob " . $blobName . " which is not abs-workspace-file.csv\n";
+            }
+        }
+        self::assertTrue($blobFound);
+        $components->deleteConfiguration('keboola.runner-workspace-abs-test', $configId);
     }
 }
