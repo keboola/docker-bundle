@@ -247,9 +247,6 @@ class RunnerSynapseTest extends BaseRunnerTest
         foreach ($output as $blobMessage) {
             if (end(explode('/', $blobMessage['message'])) === $csv->getFilename()) {
                 $blobFound = true;
-            } else {
-                echo "\nDebug csv path " . $csv->getPath();
-                echo "\nFound blob " . json_encode($blobMessage) . " which is not abs-workspace-file.csv\n";
             }
         }
         self::assertTrue($blobFound);
