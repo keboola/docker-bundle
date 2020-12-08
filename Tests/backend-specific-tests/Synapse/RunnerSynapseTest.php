@@ -245,7 +245,8 @@ class RunnerSynapseTest extends BaseRunnerTest
         $output = $this->getContainerHandler()->getRecords();
         $blobFound = false;
         foreach ($output as $blobMessage) {
-            if (end(explode('/', $blobMessage['message'])) === $csv->getFilename()) {
+            $fileParts = explode('/', $blobMessage['message']);
+            if (end($fileParts) === $csv->getFilename()) {
                 $blobFound = true;
             }
         }
