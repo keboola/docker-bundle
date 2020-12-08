@@ -244,12 +244,12 @@ class RunnerSynapseTest extends BaseRunnerTest
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         $output = $this->getContainerHandler()->getRecords();
         $blobFound = false;
-        foreach ($output as $blobName) {
-            if ($blobName === '/data/in/files/abs-workspace-file.csv') {
+        foreach ($output as $blobMessage) {
+            if (end(explode('/', $blobMessage)) === $csv->getFilename()) {
                 $blobFound = true;
             } else {
                 echo "\nDebug csv path " . $csv->getPath();
-                echo "\nFound blob " . json_encode($blobName) . " which is not abs-workspace-file.csv\n";
+                echo "\nFound blob " . json_encode($blobMessage) . " which is not abs-workspace-file.csv\n";
             }
         }
         self::assertTrue($blobFound);
