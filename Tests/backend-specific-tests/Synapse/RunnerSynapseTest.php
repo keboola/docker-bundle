@@ -246,6 +246,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $blobFound = false;
         foreach ($output as $blobMessage) {
             $fileParts = explode('/', $blobMessage['message']);
+            echo "\nCompare end " . end($fileParts) . " with csv " . $csv->getFilename();
             if (end($fileParts) === $csv->getFilename()) {
                 $blobFound = true;
             }
