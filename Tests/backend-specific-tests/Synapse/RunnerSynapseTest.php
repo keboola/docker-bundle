@@ -248,7 +248,7 @@ class RunnerSynapseTest extends BaseRunnerTest
             if ($blobName === '/data/files/in/abs-workspace-file.csv') {
                 $blobFound = true;
             } else {
-                echo "\nFound blob " . $blobName . " which is not abs-workspace-file.csv\n";
+                echo "\nFound blob " . json_encode($blobName) . " which is not abs-workspace-file.csv\n";
             }
         }
         self::assertTrue($blobFound);
