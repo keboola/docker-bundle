@@ -86,6 +86,8 @@ class Container extends Configuration
                         ->scalarNode("schema")->end()
                         ->scalarNode("user")->end()
                         ->scalarNode("password")->end()
+                        ->scalarNode("container")->end()
+                        ->scalarNode("connectionString")->end()
                     ->end()
                 ->end()
             ->end()
