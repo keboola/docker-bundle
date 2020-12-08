@@ -184,7 +184,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                 ->setTags([self::ABS_TEST_FILE_TAG])
                 ->setFileName('abs-workspace-file.csv')
         );
-        unset($csv);
+        // unset($csv);
 
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
@@ -245,11 +245,13 @@ class RunnerSynapseTest extends BaseRunnerTest
         $output = $this->getContainerHandler()->getRecords();
         $blobFound = false;
         foreach ($output as $blobName) {
-            if ($blobName === '/data/files/in/abs-workspace-file.csv') {
+            if ($blobName === '/data/in/files/abs-workspace-file.csv') {
                 $blobFound = true;
             } else {
+                echo "\nDebug csv path " . $csv->getPath();
                 echo "\nFound blob " . json_encode($blobName) . " which is not abs-workspace-file.csv\n";
             }
+
         }
         self::assertTrue($blobFound);
         $components->deleteConfiguration('keboola.runner-workspace-abs-test', $configId);
