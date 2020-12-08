@@ -169,22 +169,15 @@ class RunnerSynapseTest extends BaseRunnerTest
         if (!RUN_SYNAPSE_TESTS) {
             self::markTestSkipped('Synapse test is disabled.');
         }
-        $this->clearBuckets();
         $this->clearFiles();
-        $this->createBuckets();
         $temp = new Temp();
         $temp->initRunFolder();
-        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
-        $csv->writeRow(['id', 'text']);
-        $csv->writeRow(['test1', 'test1']);
-        $this->getClient()->createTableAsync('in.c-synapse-runner-test', 'mytable', $csv);
+        file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
         $this->getClient()->uploadFile(
-            $csv->getPath(),
+            $temp->getTmpFolder() . '/my-lovely-file.wtf',
             (new FileUploadOptions())
                 ->setTags([self::ABS_TEST_FILE_TAG])
-                ->setFileName('abs-workspace-file.csv')
         );
-        // unset($csv);
 
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
@@ -238,20 +231,12 @@ class RunnerSynapseTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
+        self::assertTrue($this->getContainerHandler()->hasInfoThatContains('my_lovely_file.wtf'));
+
+        // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
-        $output = $this->getContainerHandler()->getRecords();
-        $blobFound = false;
-        foreach ($output as $blobMessage) {
-            $fileParts = explode('/', $blobMessage['message']);
-            echo "\nCompare end " . end($fileParts) . " with csv path" . $csv->getPath();
-            if (end($fileParts) === $csv->getFilename()) {
-                $blobFound = true;
-            }
-        }
-        self::assertTrue($blobFound);
-        $components->deleteConfiguration('keboola.runner-workspace-abs-test', $configId);
     }
 }
