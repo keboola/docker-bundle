@@ -251,7 +251,6 @@ class RunnerSynapseTest extends BaseRunnerTest
                 echo "\nDebug csv path " . $csv->getPath();
                 echo "\nFound blob " . json_encode($blobName) . " which is not abs-workspace-file.csv\n";
             }
-
         }
         self::assertTrue($blobFound);
         $components->deleteConfiguration('keboola.runner-workspace-abs-test', $configId);
