@@ -6,7 +6,6 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\StorageApi\Client;
-use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
@@ -89,11 +88,9 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testDefaultSystemMetadataBranch()
     {
-        try {
-            $this->client->dropBucket('in.c-test-branch-docker-demo-testConfig', ['force' => true]);
-        } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
-                throw $e;
+        foreach ($this->client->listBuckets() as $bucket) {
+            if (preg_match('/^in\.c\-[0-9]+\-docker\-demo\-testConfig$/', $bucket['id'])) {
+                $this->client->dropBucket($bucket['id'], ['force' => true]);
             }
         }
 
@@ -122,7 +119,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
 
-        $bucketMetadata = $this->metadata->listBucketMetadata('in.c-test-branch-docker-demo-testConfig');
+        $branchBucketId = sprintf('in.c-%s-docker-demo-testConfig', $branchId);
+        $bucketMetadata = $this->metadata->listBucketMetadata($branchBucketId);
         $expectedBucketMetadata = [
             'system' => [
                 'KBC.createdBy.component.id' => 'docker-demo',
@@ -132,7 +130,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         ];
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
 
-        $tableMetadata = $this->metadata->listTableMetadata('in.c-test-branch-docker-demo-testConfig.sliced');
+        $tableMetadata = $this->metadata->listTableMetadata(sprintf('%s.sliced', $branchBucketId));
         $expectedTableMetadata = [
             'system'
             => [
