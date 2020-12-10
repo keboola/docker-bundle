@@ -16,7 +16,7 @@
         "keboola/object-encryptor": "^0.3",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
         "keboola/output-mapping": "^12.5.2",
-        "keboola/input-mapping": "^11.2.0",
+        "keboola/input-mapping": "^11.3.0",
         "keboola/php-utils": "^2.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",
