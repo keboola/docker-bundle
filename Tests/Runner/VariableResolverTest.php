@@ -56,7 +56,7 @@ class VariableResolverTest extends TestCase
             ]),
             null,
             new NullLogger(),
-            null
+            ''
         );
         $components = new Components($this->clientWrapper->getBasicClient());
         $listOptions = new ListComponentConfigurationsOptions();
