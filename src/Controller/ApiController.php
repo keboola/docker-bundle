@@ -10,12 +10,15 @@ use Keboola\DockerBundle\Docker\JobDefinitionParser;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\SharedCodeResolver;
 use Keboola\DockerBundle\Docker\VariableResolver;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\JobFactory;
+use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -375,20 +378,34 @@ class ApiController extends BaseApiController
             } else {
                 $variableValuesData = [];
             }
+            /** @var StorageApiService $storageApiService */
+            $storageApiService = $this->container->get('syrup.storage_api');
+            $clientWrapper = new ClientWrapper(
+                $this->storageApi,
+                $storageApiService->getStepPollDelayFunction(),
+                $storageApiService->getLogger(),
+                $request->get('branch', '')
+            );
 
             // get the configuration from storage
-            $components = new Components($this->storageApi);
-            $configDataVersion = $components->getConfigurationVersion($componentId, $configId, $configVersion);
-            // configuration version doesn't contain configuration id & state and we need them
-            // https://keboola.slack.com/archives/CFVRE56UA/p1596785471369600
-            $configDataVersion['id'] = $configId;
-            $configDataVersion['state'] = [];
-            foreach ($configDataVersion['rows'] as &$row) {
-                $row['state'] = [];
+            if ($clientWrapper->hasBranch()) {
+                $components = new Components($clientWrapper->getBranchClient());
+                // branches do not support configuration versions yet
+                $configDataVersion = $components->getConfiguration($componentId, $configId);
+            } else {
+                $components = new Components($clientWrapper->getBasicClient());
+                $configDataVersion = $components->getConfigurationVersion($componentId, $configId, $configVersion);
+                // configuration version doesn't contain configuration id & state and we need them
+                // https://keboola.slack.com/archives/CFVRE56UA/p1596785471369600
+                $configDataVersion['id'] = $configId;
+                $configDataVersion['state'] = [];
+                foreach ($configDataVersion['rows'] as &$row) {
+                    $row['state'] = [];
+                }
             }
 
             $jobDefinitionParser = new JobDefinitionParser();
-            $projectId = $this->storageApi->verifyToken()['owner']['id'];
+            $projectId = $clientWrapper->getBasicClient()->verifyToken()['owner']['id'];
             $stackId = parse_url($this->container->getParameter('storage_api.url'), PHP_URL_HOST);
             /** @var ObjectEncryptorFactory $encryptorFactory */
             $encryptorFactory = $this->container->get('docker_bundle.object_encryptor_factory');
@@ -397,11 +414,11 @@ class ApiController extends BaseApiController
             $encryptorFactory->setProjectId($projectId);
             $componentClass = new Component($this->getComponent($componentId));
             $jobDefinitionParser->parseConfig($componentClass, $encryptorFactory->getEncryptor()->decrypt($configDataVersion));
-            $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
+            $sharedCodeResolver = new SharedCodeResolver($clientWrapper, $this->logger);
             $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
                 $jobDefinitionParser->getJobDefinitions()
             );
-            $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+            $variableResolver = new VariableResolver($clientWrapper, $this->logger);
             $jobDefinitions = $variableResolver->resolveVariables($jobDefinitions, $variableValuesId, $variableValuesData);
             /** @var JobDefinition[] $jobDefinitions */
             if ($configDataVersion['rows']) {

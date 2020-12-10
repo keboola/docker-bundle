@@ -6,9 +6,9 @@ use Keboola\DockerBundle\Docker\Configuration\Variables;
 use Keboola\DockerBundle\Docker\Configuration\VariableValues;
 use Keboola\DockerBundle\Docker\Runner\VariablesContext;
 use Keboola\DockerBundle\Exception\UserException;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Mustache_Engine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -16,9 +16,9 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class VariableResolver
 {
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $client;
+    private $clientWrapper;
 
     const KEBOOLA_VARIABLES = 'keboola.variables';
 
@@ -32,9 +32,9 @@ class VariableResolver
      */
     private $logger;
 
-    public function __construct(Client $client, LoggerInterface $logger)
+    public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
-        $this->client = $client;
+        $this->clientWrapper = $clientWrapper;
         $this->moustache = new Mustache_Engine([
             'escape' => function ($string) {
                 return trim(json_encode($string), '"');
@@ -62,7 +62,11 @@ class VariableResolver
                 $defaultValuesId = null;
             }
             if ($variablesId) {
-                $components = new Components($this->client);
+                if ($this->clientWrapper->hasBranch()) {
+                    $components = new Components($this->clientWrapper->getBranchClient());
+                } else {
+                    $components = new Components($this->clientWrapper->getBasicClient());
+                }
                 try {
                     $vConfiguration = $components->getConfiguration(self::KEBOOLA_VARIABLES, $variablesId);
                     $vConfiguration = (new Variables())->parse(array('config' => $vConfiguration['configuration']));

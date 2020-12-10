@@ -5,9 +5,9 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\DockerBundle\Docker\Configuration\SharedCodeRow;
 use Keboola\DockerBundle\Docker\Runner\SharedCodeContext;
 use Keboola\DockerBundle\Exception\UserException;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Mustache_Engine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -15,9 +15,9 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class SharedCodeResolver
 {
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $client;
+    private $clientWrapper;
 
     const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
 
@@ -31,9 +31,9 @@ class SharedCodeResolver
      */
     private $logger;
 
-    public function __construct(Client $client, LoggerInterface $logger)
+    public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
-        $this->client = $client;
+        $this->clientWrapper = $clientWrapper;
         $this->moustache = new Mustache_Engine([
             'escape' => function ($string) {
                 return trim(json_encode($string), '"');
@@ -59,7 +59,11 @@ class SharedCodeResolver
                 continue;
             }
 
-            $components = new Components($this->client);
+            if ($this->clientWrapper->hasBranch()) {
+                $components = new Components($this->clientWrapper->getBranchClient());
+            } else {
+                $components = new Components($this->clientWrapper->getBasicClient());
+            }
             $context = new SharedCodeContext();
             try {
                 foreach ($sharedCodeRowIds as $sharedCodeRowId) {

@@ -3,20 +3,26 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\DockerBundle\Tests\Runner\CreateBranchTrait;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\Components\Configuration as StorageConfiguration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
+use Keboola\StorageApiBranch\ClientWrapper;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 
 class VariableResolverTest extends TestCase
 {
+    use CreateBranchTrait;
+
     /**
-     * @var Client
+     * @var ClientWrapper
      */
-    private $client;
+    private $clientWrapper;
 
     /**
      * @var Component
@@ -43,11 +49,16 @@ class VariableResolverTest extends TestCase
     {
         parent::setUp();
 
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-        $components = new Components($this->client);
+        $this->clientWrapper = new ClientWrapper(
+            new Client([
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]),
+            null,
+            new NullLogger(),
+            ''
+        );
+        $components = new Components($this->clientWrapper->getBasicClient());
         $listOptions = new ListComponentConfigurationsOptions();
         $listOptions->setComponentId('keboola.variables');
         $configurations = $components->listComponentConfigurations($listOptions);
@@ -70,7 +81,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesValuesId()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
@@ -79,7 +90,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
@@ -105,7 +116,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesValuesData()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -114,7 +125,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables(
@@ -144,7 +155,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesDefaultValues()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
@@ -154,7 +165,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
@@ -181,7 +192,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesDefaultValuesOverride()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
@@ -191,7 +202,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], $vRowId, null)[0];
@@ -218,7 +229,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesDefaultValuesOverrideData()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
@@ -228,7 +239,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables(
@@ -259,7 +270,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesNoValues()
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -268,7 +279,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -282,7 +293,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesInvalidDefaultValues()
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -292,7 +303,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -305,7 +316,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesInvalidProvidedValues()
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -314,7 +325,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -327,7 +338,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesInvalidProvidedArguments()
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -336,7 +347,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -357,7 +368,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -370,7 +381,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesInvalidVariableConfiguration()
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['invalid' => 'data'],
             []
         );
@@ -379,7 +390,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -405,12 +416,8 @@ class VariableResolverTest extends TestCase
         $configuration = [
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
-        $client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], '123', [])[0];
@@ -431,7 +438,7 @@ class VariableResolverTest extends TestCase
     public function testInvalidValuesConfiguration()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['invalid' => [['name' => 'foo', 'value' => 'bar']]]
         );
@@ -440,7 +447,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }} and {{ notreplaced }}.'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         self::expectException(UserException::class);
         self::expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
@@ -450,7 +457,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesSpecialCharacterReplacement()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -459,7 +466,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables(
@@ -489,7 +496,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesSpecialCharacterNonEscapedReplacement()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -498,7 +505,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{{ foo }}}'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -513,7 +520,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesMissingValues()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string'], ['name' => 'goo', 'type' => 'string']]],
             []
         );
@@ -522,7 +529,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -537,7 +544,7 @@ class VariableResolverTest extends TestCase
     public function testResolveVariablesMissingValuesInBody()
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $this->client,
+            $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
         );
@@ -546,7 +553,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }} and bar is {{ bar }} and baz is {{ baz }}.'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->client, $logger);
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         self::expectException(UserException::class);
@@ -556,5 +563,62 @@ class VariableResolverTest extends TestCase
             null,
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
+    }
+
+    public function testResolveVariablesValuesBranch()
+    {
+        $client = new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN_MASTER,
+        ]);
+        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+            $client,
+            ['variables' => [['name' => 'foo', 'type' => 'string']]],
+            ['values' => [['name' => 'foo', 'value' => 'bar']]]
+        );
+        $this->clientWrapper = new ClientWrapper(
+            $client,
+            null,
+            new NullLogger()
+        );
+        $branchId = $this->createBranch($this->clientWrapper, 'my-dev-branch');
+        $this->clientWrapper->setBranchId($branchId);
+
+        // modify the dev branch variable configuration to "dev-bar"
+        $components = new Components($this->clientWrapper->getBranchClient());
+        $configuration = new StorageConfiguration();
+        $configuration->setComponentId('keboola.variables');
+        $configuration->setConfigurationId($vConfigurationId);
+        $newRow = new ConfigurationRow($configuration);
+        $newRow->setRowId($vRowId);
+        $newRow->setConfiguration(['values' => [['name' => 'foo', 'value' => 'dev-bar']]]);
+        $components->updateConfigurationRow($newRow);
+
+        $configuration = [
+            'variables_id' => $vConfigurationId,
+            'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
+        ];
+        $logger = new TestLogger();
+        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
+        self::assertEquals(
+            [
+                'parameters' => [
+                    'some_parameter' => 'foo is dev-bar.',
+                ],
+                'variables_id' => $vConfigurationId,
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+                'shared_code_row_ids' => [],
+            ],
+            $newJobDefinition->getConfiguration()
+        );
+        self::assertTrue($logger->hasInfoThatContains('Replacing variables using values with ID:'));
+        self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 }
