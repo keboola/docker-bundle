@@ -219,11 +219,11 @@ class Executor extends BaseExecutor
                 }
             }
 
-            $sharedCodeResolver = new SharedCodeResolver($this->storageApi, $this->logger);
+            $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $this->logger);
             $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
                 $jobDefinitionParser->getJobDefinitions()
             );
-            $variableResolver = new VariableResolver($this->storageApi, $this->logger);
+            $variableResolver = new VariableResolver($this->clientWrapper, $this->logger);
             $jobDefinitions = $variableResolver->resolveVariables(
                 $jobDefinitions,
                 empty($params['variableValuesId']) ? [] : $params['variableValuesId'],

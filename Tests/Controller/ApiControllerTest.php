@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Controller;
 
 use Elasticsearch\Client;
 use Keboola\DockerBundle\Controller\ApiController;
+use Keboola\DockerBundle\Tests\Runner\CreateBranchTrait;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
@@ -11,14 +12,18 @@ use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Job\Metadata\JobInterface;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 class ApiControllerTest extends WebTestCase
 {
+    use CreateBranchTrait;
+
     /**
      * @var ContainerInterface
      */
@@ -1130,6 +1135,127 @@ class ApiControllerTest extends WebTestCase
             $response['configuration']
         );
         $this->assertEquals([], $response['rows']);
+        $components->deleteConfiguration($componentId, $configId);
+        $components->deleteConfiguration('keboola.variables', $variablesId);
+        $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);
+    }
+
+    public function testResolveVariablesBranch()
+    {
+        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $components = new Components($storageClient);
+        list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
+
+        $componentId = 'keboola.python-transformation-v2';
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setName(uniqid('test-resolve-'));
+        $configuration->setConfiguration(
+            [
+                'parameters' => ['a' => '{{firstvar}}', 'c' => '{{brainfuck}}', 'd' => '{{secondvar}}'],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+                'shared_code_row_ids' => [$sharedCodeRowId]
+            ]
+        );
+        $result = $components->addConfiguration($configuration);
+        $configId = $result['id'];
+
+        $clientWrapper = new ClientWrapper(
+            new \Keboola\StorageApi\Client([
+                'token' => STORAGE_API_TOKEN_MASTER,
+                'url' => STORAGE_API_URL,
+            ]),
+            null,
+            new NullLogger()
+        );
+        $branchId = $this->createBranch($clientWrapper, 'resolve-branch');
+        $clientWrapper->setBranchId($branchId);
+
+        // modify the dev branch variable configuration to "dev-bar"
+        $components = new Components($clientWrapper->getBranchClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.variables');
+        $configuration->setConfigurationId($variablesId);
+        $newRow = new ConfigurationRow($configuration);
+        $newRow->setRowId($variableValuesId);
+        $newRow->setConfiguration(
+            ['values' => [['name' => 'firstvar', 'value' => 'dev-batman'], ['name' => 'secondvar', 'value' => 'dev-watman']]]
+        );
+        $components->updateConfigurationRow($newRow);
+
+        // modify the shared code configuration to "brainbug"
+        $components = new Components($clientWrapper->getBranchClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.shared-code');
+        $configuration->setConfigurationId($sharedCodeId);
+        $newRow = new ConfigurationRow($configuration);
+        $newRow->setRowId($sharedCodeRowId);
+        $newRow->setConfiguration(['code_content' => 'brainbug']);
+        $components->updateConfigurationRow($newRow);
+
+        // modify the dev branch configuration itself
+        $components = new Components($clientWrapper->getBranchClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId($componentId);
+        $configuration->setConfigurationId($configId);
+        $configuration->setConfiguration(
+            [
+                'parameters' => ['a' => '{{firstvar}}', 'c' => '{{brainfuck}}', 'dev-e' => '{{secondvar}}'],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+                'shared_code_row_ids' => [$sharedCodeRowId]
+            ]
+        );
+        $newVersion = $components->updateConfiguration($configuration)['version'];
+
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'POST',
+            sprintf('/docker/branch/%s/configuration/resolve', $branchId),
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN_MASTER],
+            json_encode([
+                'componentId' => $componentId,
+                'configId' => $configId,
+                'configVersion' => $newVersion,
+            ])
+        );
+        $this->assertEquals(
+            200,
+            $frameworkClient->getResponse()->getStatusCode(),
+            $frameworkClient->getResponse()->getContent()
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('id', $response);
+        $this->assertArrayHasKey('version', $response);
+        $this->assertArrayHasKey('name', $response);
+        // state is always cleared
+        $this->assertEquals([], $response['state']);
+        $this->assertEquals(
+            [
+                'parameters' => [
+                    'a' => 'dev-batman',
+                    'c' => 'brainbug',
+                    'dev-e' => 'dev-watman',
+                ],
+                'shared_code_row_ids' => ['brainfuck'],
+                'storage' => [],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+                'variables_id' => $variablesId,
+                'variables_values_id' => $variableValuesId,
+                'shared_code_id' => $sharedCodeId,
+            ],
+            $response['configuration']
+        );
+        $this->assertEquals([], $response['rows']);
+        $components = new Components($clientWrapper->getBasicClient());
         $components->deleteConfiguration($componentId, $configId);
         $components->deleteConfiguration('keboola.variables', $variablesId);
         $components->deleteConfiguration('keboola.shared-code', $sharedCodeId);

@@ -75,3 +75,9 @@ keboola_docker_configuration_resolve:
     defaults:
         _controller: KeboolaDockerBundle:Api:configurationResolve
     methods:  [POST]
+
+keboola_docker_branc_configuration_resolve:
+    path:     /branch/{branch}/configuration/resolve
+    defaults:
+        _controller: KeboolaDockerBundle:Api:configurationResolve
+    methods:  [POST]
