@@ -649,6 +649,30 @@ If you are using other stacks, you need to use the [correct URL](https://develop
 + Attributes
     + configData (optional, object) - Arbitrary configuration data
 
+### Process action [POST]
+
+The body attribute `configData` contains component configuration.
+You need to provide the whole configuration, linking a stored configuration is not supported.
+
++ Request Process action (application/json)
+    + Headers
+
+            X-StorageApi-Token: 123456
+
+    + Body
+
+            {
+                "configData": {
+                    "parameters": {}
+                }
+            }
+
++ Response 200 (application/json)
+
+            {
+                "response": 1
+            }
+
 ## Run a branch component action [/branch/{branch}/{image}/action/{action}]
 
 + Parameters
