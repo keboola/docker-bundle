@@ -205,6 +205,15 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
+        // Check for processed tags
+        if (isset($this->storageConfig["input"]["files"]) && $this->clientWrapper->hasBranch()) {
+            foreach ($this->storageConfig["input"]["files"] as $fileConfiguration) {
+                if (!empty($fileConfiguration['processed_tags'])) {
+                    throw new InvalidInputException("Invalid file output mapping, 'processed_tags' attribute is restricted for dev/branch context.");
+                }
+            }
+        }
+
         try {
             $fileWriter = new FileWriter($this->clientWrapper, $this->logger);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
