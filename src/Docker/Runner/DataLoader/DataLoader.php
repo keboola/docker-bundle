@@ -215,7 +215,6 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-
             $fileWriter = new FileWriter($this->stagingFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig], $this->getStagingStorageOutput());

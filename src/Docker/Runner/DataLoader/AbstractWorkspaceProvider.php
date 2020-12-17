@@ -30,7 +30,7 @@ abstract class AbstractWorkspaceProvider implements ProviderInterface
         $this->workspace = null;
     }
 
-    protected abstract function getType();
+    abstract protected function getType();
 
     protected function createWorkspace()
     {
