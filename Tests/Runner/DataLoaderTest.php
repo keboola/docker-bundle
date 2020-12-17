@@ -192,7 +192,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientWrapper = new ClientWrapper($this->client, null, null);
+        $clientWrapper = new ClientWrapper($this->client, null, null, '');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
@@ -201,6 +201,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $component,
             new OutputFilter()
         );
+        $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);

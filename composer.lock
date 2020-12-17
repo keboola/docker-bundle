@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "963c22d4f4bb1eec42ec75af7d6678a4",
+    "content-hash": "436ee915c89d56de0f0580ad3b72996d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.168.2",
+            "version": "3.170.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1d6a976da857d13b156bd63613ee086c13f6dc29"
+                "reference": "7f457a08219173eba4b856cb7aef3a903cd790cc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1d6a976da857d13b156bd63613ee086c13f6dc29",
-                "reference": "1d6a976da857d13b156bd63613ee086c13f6dc29",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7f457a08219173eba4b856cb7aef3a903cd790cc",
+                "reference": "7f457a08219173eba4b856cb7aef3a903cd790cc",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-12-10T19:35:18+00:00"
+            "time": "2020-12-15T19:13:22+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1891,21 +1891,20 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "11.3.1",
-            "target-dir": "Keboola/InputMapping",
+            "version": "dev-odin-1599-a",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "b3c98e391143e92431df9d091f5c3e3ee09f18c6"
+                "reference": "75c75f732d3302e127086e515400e80a9658571f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/b3c98e391143e92431df9d091f5c3e3ee09f18c6",
-                "reference": "b3c98e391143e92431df9d091f5c3e3ee09f18c6",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/75c75f732d3302e127086e515400e80a9658571f",
+                "reference": "75c75f732d3302e127086e515400e80a9658571f",
                 "shasum": ""
             },
             "require": {
-                "guzzlehttp/guzzle": "^6.5.5",
+                "ext-json": "*",
                 "keboola/storage-api-client": "^11.2",
                 "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
                 "symfony/config": "^2.8.52|^4.1",
@@ -1914,15 +1913,14 @@
                 "symfony/yaml": "^v2.8.52|^4.1"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "^0.4.4",
                 "keboola/php-temp": "^1.0",
                 "phpunit/phpunit": "^5.7.27",
                 "squizlabs/php_codesniffer": "^3.5.8"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Keboola\\InputMapping": ""
+                "psr-4": {
+                    "Keboola\\InputMapping\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1936,7 +1934,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-12-11T00:38:32+00:00"
+            "time": "2020-12-16T09:31:53+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2033,23 +2031,25 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "12.5.2",
+            "version": "dev-PS0-1517-abs-files",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "db6892bffa3339a5cbc61b655d42520b93d147d0"
+                "reference": "7edf12f291239755841a2e4600981a2c6c9781d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/db6892bffa3339a5cbc61b655d42520b93d147d0",
-                "reference": "db6892bffa3339a5cbc61b655d42520b93d147d0",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/7edf12f291239755841a2e4600981a2c6c9781d3",
+                "reference": "7edf12f291239755841a2e4600981a2c6c9781d3",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
                 "guzzlehttp/guzzle": "^6.5.5",
-                "keboola/input-mapping": "^11.2.0",
+                "keboola/input-mapping": "dev-odin-1599-a",
                 "keboola/sanitizer": "^0.1",
                 "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
+                "microsoft/azure-storage-blob": "^1.5",
                 "monolog/monolog": "^1.25.5|^2.0",
                 "symfony/config": "^2.8.52|^4.1",
                 "symfony/finder": "^2.8.52|^4.1",
@@ -2079,7 +2079,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-12-10T12:30:23+00:00"
+            "time": "2020-12-16T12:37:10+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2619,16 +2619,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "1.25.5",
+            "version": "1.26.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "1817faadd1846cd08be9a49e905dc68823bc38c0"
+                "reference": "2209ddd84e7ef1256b7af205d0717fb62cfc9c33"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/1817faadd1846cd08be9a49e905dc68823bc38c0",
-                "reference": "1817faadd1846cd08be9a49e905dc68823bc38c0",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/2209ddd84e7ef1256b7af205d0717fb62cfc9c33",
+                "reference": "2209ddd84e7ef1256b7af205d0717fb62cfc9c33",
                 "shasum": ""
             },
             "require": {
@@ -2644,7 +2644,7 @@
                 "graylog2/gelf-php": "~1.0",
                 "php-amqplib/php-amqplib": "~2.4",
                 "php-console/php-console": "^3.1.3",
-                "php-parallel-lint/php-parallel-lint": "^1.0",
+                "phpstan/phpstan": "^0.12.59",
                 "phpunit/phpunit": "~4.5",
                 "ruflin/elastica": ">=0.90 <3.0",
                 "sentry/sentry": "^0.13",
@@ -2664,11 +2664,6 @@
                 "sentry/sentry": "Allow sending log messages to a Sentry server"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.0.x-dev"
-                }
-            },
             "autoload": {
                 "psr-4": {
                     "Monolog\\": "src/Monolog"
@@ -2702,7 +2697,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-23T08:35:51+00:00"
+            "time": "2020-12-14T12:56:38+00:00"
         },
         {
             "name": "mtdowling/jmespath.php",
@@ -7183,7 +7178,10 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/output-mapping": 20,
+        "keboola/input-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

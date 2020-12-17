@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\SynapseWorkspaceProvider;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -48,15 +48,14 @@ class SynapseWorkspaceProviderTest extends TestCase
         if (!RUN_SYNAPSE_TESTS) {
             self::markTestSkipped('Synapse test is disabled.');
         }
-        $type = 'synapse';
         $components = new Components($this->client);
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.runner-workspace-test');
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
-        $workspaceId = $provider->getWorkspaceId($type);
+        $provider = new SynapseWorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
+        $workspaceId = $provider->getWorkspaceId();
         $workspaces = new Workspaces($this->client);
         $workspace = $workspaces->getWorkspace($workspaceId);
         self::assertEquals('keboola.runner-workspace-test', $workspace['component']);
@@ -64,7 +63,7 @@ class SynapseWorkspaceProviderTest extends TestCase
         self::assertArrayHasKey('host', $workspace['connection']);
         self::assertArrayHasKey('database', $workspace['connection']);
         self::assertArrayHasKey('user', $workspace['connection']);
-        self::assertEquals($type, $workspace['connection']['backend']);
-        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($provider->getCredentials($type)));
+        self::assertEquals('synapse', $workspace['connection']['backend']);
+        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($provider->getCredentials()));
     }
 }

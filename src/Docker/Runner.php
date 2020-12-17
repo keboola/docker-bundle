@@ -20,7 +20,7 @@ use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
