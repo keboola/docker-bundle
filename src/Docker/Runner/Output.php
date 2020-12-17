@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
-use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 
 class Output

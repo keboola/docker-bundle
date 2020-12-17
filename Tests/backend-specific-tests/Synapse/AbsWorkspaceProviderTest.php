@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\ABSWorkspaceProvider;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -48,24 +48,23 @@ class AbsWorkspaceProviderTest extends TestCase
         if (!RUN_SYNAPSE_TESTS) {
             self:self::markTestSkipped('Synapse test is disabled.');
         }
-        $type = 'abs';
         $components = new Components($this->client);
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.runner-workspace-test');
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider(
+        $provider = new ABSWorkspaceProvider(
             $this->client,
             'keboola.runner-workspace-test',
             'runner-test-configuration'
         );
-        $workspaceId = $provider->getWorkspaceId($type);
+        $workspaceId = $provider->getWorkspaceId();
         $workspaces = new Workspaces($this->client);
         $workspace = $workspaces->getWorkspace($workspaceId);
         self::assertEquals('keboola.runner-workspace-test', $workspace['component']);
         self::assertEquals('runner-test-configuration', $workspace['configurationId']);
-        self::assertEquals($type, $workspace['connection']['backend']);
-        self::assertEquals(['connectionString', 'container'], array_keys($provider->getCredentials($type)));
+        self::assertEquals('abs', $workspace['connection']['backend']);
+        self::assertEquals(['connectionString', 'container'], array_keys($provider->getCredentials()));
     }
 }

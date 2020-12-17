@@ -2,8 +2,9 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
-use Keboola\DockerBundle\Exception\UserException;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\AbstractWorkspaceProvider;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\RedshiftWorkspaceProvider;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\SnowflakeWorkspaceProvider;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -43,9 +44,10 @@ class WorkspaceProviderTest extends TestCase
 
     /**
      * @dataProvider workspaceTypeProvider
-     * @param string $type
+     * @param string $className
+     * @param string $backendType
      */
-    public function testWorkspaceProvider($type)
+    public function testWorkspaceProvider($className, $backendType)
     {
         $components = new Components($this->client);
         $configuration = new Configuration();
@@ -53,8 +55,9 @@ class WorkspaceProviderTest extends TestCase
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
-        $workspaceId = $provider->getWorkspaceId($type);
+        $provider = new $className($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
+        /** @var AbstractWorkspaceProvider $provider */
+        $workspaceId = $provider->getWorkspaceId();
         $workspaces = new Workspaces($this->client);
         $workspace = $workspaces->getWorkspace($workspaceId);
         self::assertEquals('keboola.runner-workspace-test', $workspace['component']);
@@ -62,30 +65,16 @@ class WorkspaceProviderTest extends TestCase
         self::assertArrayHasKey('host', $workspace['connection']);
         self::assertArrayHasKey('database', $workspace['connection']);
         self::assertArrayHasKey('user', $workspace['connection']);
-        self::assertEquals($type, $workspace['connection']['backend']);
-        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($provider->getCredentials($type)));
+        self::assertEquals($backendType, $workspace['connection']['backend']);
+        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($provider->getCredentials()));
     }
 
     public function workspaceTypeProvider()
     {
         return [
-            'redshift' => ['redshift'],
-            'snowflake' => ['snowflake'],
+            'redshift' => [RedshiftWorkspaceProvider::class, 'redshift'],
+            'snowflake' => [SnowflakeWorkspaceProvider::class, 'snowflake'],
         ];
-    }
-
-    public function testInvalidType()
-    {
-        $components = new Components($this->client);
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.runner-workspace-test');
-        $configuration->setName('runner-tests');
-        $configuration->setConfigurationId('runner-test-configuration');
-        $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Workspace type must be one of redshift, snowflake');
-        $provider->getWorkspaceId('invalid');
     }
 
     public function testEmptyConfiguration()
@@ -96,8 +85,8 @@ class WorkspaceProviderTest extends TestCase
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', null);
-        $workspaceId = $provider->getWorkspaceId('snowflake');
+        $provider = new SnowflakeWorkspaceProvider($this->client, 'keboola.runner-workspace-test', null);
+        $workspaceId = $provider->getWorkspaceId();
         $workspaces = new Workspaces($this->client);
         $workspace = $workspaces->getWorkspace($workspaceId);
         self::assertEquals(null, $workspace['component']);
@@ -116,12 +105,12 @@ class WorkspaceProviderTest extends TestCase
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
+        $provider = new SnowflakeWorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-test');
         $options->setConfigurationId('runner-test-configuration');
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
-        $provider->getWorkspaceId('snowflake');
+        $provider->getWorkspaceId();
         self::assertCount(1, $components->listConfigurationWorkspaces($options));
     }
 
@@ -133,43 +122,13 @@ class WorkspaceProviderTest extends TestCase
         $configuration->setName('runner-tests');
         $configuration->setConfigurationId('runner-test-configuration');
         $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
+        $provider = new SnowflakeWorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-test');
         $options->setConfigurationId('runner-test-configuration');
-        $provider->getWorkspaceId('snowflake');
+        $provider->getWorkspaceId();
         self::assertCount(1, $components->listConfigurationWorkspaces($options));
         $provider->cleanup();
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
-    }
-
-    public function testMultipleTypes()
-    {
-        $components = new Components($this->client);
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.runner-workspace-test');
-        $configuration->setName('runner-tests');
-        $configuration->setConfigurationId('runner-test-configuration');
-        $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
-        $provider->getWorkspaceId('snowflake');
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Multiple workspaces are not supported');
-        $provider->getWorkspaceId('redshift');
-    }
-
-    public function testMultipleTypesCredentials()
-    {
-        $components = new Components($this->client);
-        $configuration = new Configuration();
-        $configuration->setComponentId('keboola.runner-workspace-test');
-        $configuration->setName('runner-tests');
-        $configuration->setConfigurationId('runner-test-configuration');
-        $components->addConfiguration($configuration);
-        $provider = new WorkspaceProvider($this->client, 'keboola.runner-workspace-test', 'runner-test-configuration');
-        $provider->getWorkspaceId('snowflake');
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Multiple workspaces are not supported');
-        $provider->getCredentials('redshift');
     }
 }
