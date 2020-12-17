@@ -60,6 +60,7 @@ abstract class AbstractWorkspaceProvider implements ProviderInterface
         if ($this->workspace) {
             $workspaces = new Workspaces($this->client);
             $workspaces->deleteWorkspace($this->workspace['id'], ['async' => true]);
+            $this->workspace = null;
         }
     }
 

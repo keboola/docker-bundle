@@ -70,8 +70,11 @@ class DataLoader implements DataLoaderInterface
     /** @var OutputFilterInterface */
     private $outputFilter;
 
+    /** @var InputStrategyFactory */
+    private $inputStrategyFactory;
+
     /** @var OutputStrategyFactory */
-    private $stagingFactory;
+    private $outputStrategyFactory;
 
     /** @var array */
     private $tokenInfo;
@@ -109,6 +112,34 @@ class DataLoader implements DataLoaderInterface
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
         $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+
+        $this->inputStrategyFactory = new InputStrategyFactory(
+            $this->clientWrapper,
+            $this->logger,
+            $this->component->getConfigurationFormat()
+        );
+        ProviderInitializer::initializeInputProviders(
+            $this->inputStrategyFactory,
+            $this->getStagingStorageInput(),
+            $this->component->getId(),
+            $this->configId,
+            $this->tokenInfo,
+            $this->dataDirectory
+        );
+
+        $this->outputStrategyFactory = new OutputStrategyFactory(
+            $this->clientWrapper,
+            $this->logger,
+            $this->component->getConfigurationFormat()
+        );
+        ProviderInitializer::initializeOutputProviders(
+            $this->outputStrategyFactory,
+            $this->getStagingStorageInput(),
+            $this->component->getId(),
+            $this->configId,
+            $this->tokenInfo,
+            $this->dataDirectory
+        );
     }
 
     /**
@@ -119,19 +150,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
-        $this->stagingFactory = new InputStrategyFactory(
-            $this->clientWrapper,
-            $this->logger,
-            $this->component->getConfigurationFormat()
-        );        ProviderInitializer::initializeInputProviders(
-            $this->stagingFactory,
-            $this->getStagingStorageInput(),
-            $this->component->getId(),
-            $this->configId,
-            $this->tokenInfo,
-            $this->dataDirectory
-        );
-        $reader = new Reader($this->stagingFactory);
+        $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
 
         try {
@@ -165,20 +184,6 @@ class DataLoader implements DataLoaderInterface
     public function storeOutput()
     {
         $this->logger->debug("Storing results.");
-        $this->stagingFactory = new OutputStrategyFactory(
-            $this->clientWrapper,
-            $this->logger,
-            $this->component->getConfigurationFormat()
-        );
-        ProviderInitializer::initializeOutputProviders(
-            $this->stagingFactory,
-            $this->getStagingStorageInput(),
-            $this->component->getId(),
-            $this->configId,
-            $this->tokenInfo,
-            $this->dataDirectory
-        );
-
         $outputTablesConfig = [];
         $outputFilesConfig = [];
 
@@ -215,10 +220,10 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $fileWriter = new FileWriter($this->stagingFactory);
+            $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig], $this->getStagingStorageOutput());
-            $tableWriter = new TableWriter($this->stagingFactory);
+            $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
                 $this->dataDirectory . '/out/tables',
@@ -239,7 +244,8 @@ class DataLoader implements DataLoaderInterface
 
     private function getWorkspace()
     {
-        foreach ($this->stagingFactory->getStrategyMap() as $staging) {
+        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
             if ($staging->getFileDataProvider() && is_a($staging->getFileDataProvider(), AbstractWorkspaceProvider::class)) {
                 return $staging->getFileDataProvider();
             }
@@ -361,7 +367,8 @@ class DataLoader implements DataLoaderInterface
 
     public function cleanWorkspace()
     {
-        foreach ($this->stagingFactory->getStrategyMap() as $staging) {
+        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
             if ($staging->getFileDataProvider()) {
                 $staging->getFileDataProvider()->cleanup();
             }
