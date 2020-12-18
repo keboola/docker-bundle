@@ -35,7 +35,6 @@ abstract class AbstractWorkspaceProvider implements ProviderInterface
     protected function createWorkspace()
     {
         if ($this->configurationId) {
-            var_dump($this->client);
             $components = new Components($this->client);
             $this->workspace = $components->createConfigurationWorkspace(
                 $this->componentId,

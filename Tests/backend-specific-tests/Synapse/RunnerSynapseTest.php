@@ -78,7 +78,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         return [$jobDefinition];
     }
 
-    public function testWorkspaceMapping()
+    public function testWorkspaceSynapseMapping()
     {
         if (!RUN_SYNAPSE_TESTS) {
             self::markTestSkipped('Synapse test is disabled.');
@@ -173,7 +173,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $temp = new Temp();
         $temp->initRunFolder();
         file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
-        $this->getClient()->uploadFile(
+        $fileId = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/my-lovely-file.wtf',
             (new FileUploadOptions())
                 ->setTags([self::ABS_TEST_FILE_TAG])
@@ -231,7 +231,7 @@ class RunnerSynapseTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
-        self::assertTrue($this->getContainerHandler()->hasInfoThatContains('my_lovely_file.wtf'));
+        self::assertTrue($this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/%s_my_lovely_file.wtf/%s', $fileId, $fileId)));
 
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
