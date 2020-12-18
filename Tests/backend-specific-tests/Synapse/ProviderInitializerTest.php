@@ -48,7 +48,8 @@ class ProviderInitializerTest extends BaseRunnerTest
         $configuration->setName($configuration->getConfigurationId());
         $configuration->setComponentId('keboola.runner-workspace-abs-test');
         $components->addConfiguration($configuration);
-        ProviderInitializer::initializeOutputProviders(
+        $initializer = new ProviderInitializer();
+        $initializer->initializeOutputProviders(
             $stagingFactory,
             OutputStrategyFactory::WORKSPACE_ABS,
             'keboola.runner-workspace-abs-test',

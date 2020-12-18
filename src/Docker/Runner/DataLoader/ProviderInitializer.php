@@ -10,18 +10,18 @@ use Keboola\StorageApiBranch\ClientWrapper;
 class ProviderInitializer
 {
     /** @var AbsWorkspaceProvider */
-    private static $redshiftWorkspaceProvider;
+    private $redshiftWorkspaceProvider;
 
     /** @var AbsWorkspaceProvider */
-    private static $snowflakeWorkspaceProvider;
+    private $snowflakeWorkspaceProvider;
 
     /** @var AbsWorkspaceProvider */
-    private static $synapseWorkspaceProvider;
+    private $synapseWorkspaceProvider;
 
     /** @var AbsWorkspaceProvider */
-    private static $absWorkspaceProvider;
+    private $absWorkspaceProvider;
 
-    public static function initializeInputProviders(
+    public function initializeInputProviders(
         InputStrategyFactory $stagingFactory,
         $stagingStorageInput,
         $componentId,
@@ -31,7 +31,7 @@ class ProviderInitializer
     ) {
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_REDSHIFT) && $tokenInfo['owner']['hasRedshift']) {
             $stagingFactory->addProvider(
-                self::getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_REDSHIFT => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -39,7 +39,7 @@ class ProviderInitializer
         }
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_SNOWFLAKE) && $tokenInfo['owner']['hasSnowflake']) {
             $stagingFactory->addProvider(
-                self::getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_SNOWFLAKE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -47,7 +47,7 @@ class ProviderInitializer
         }
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_SYNAPSE) && $tokenInfo['owner']['hasSynapse']) {
             $stagingFactory->addProvider(
-                self::getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_SYNAPSE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -57,7 +57,7 @@ class ProviderInitializer
             ($tokenInfo['owner']['fileStorageProvider'] === 'azure')
         ) {
             $stagingFactory->addProvider(
-                self::getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::TABLE_DATA]),
                 ]
@@ -78,39 +78,39 @@ class ProviderInitializer
         );
     }
 
-    private static function getRedshiftWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    private function getRedshiftWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
     {
-        if (!self::$redshiftWorkspaceProvider) {
-            self::$redshiftWorkspaceProvider = new RedshiftWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        if (!$this->redshiftWorkspaceProvider) {
+            $this->redshiftWorkspaceProvider = new RedshiftWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
         }
-        return self::$redshiftWorkspaceProvider;
+        return $this->redshiftWorkspaceProvider;
     }
 
-    private static function getSnowflakeWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    private function getSnowflakeWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
     {
-        if (!self::$snowflakeWorkspaceProvider) {
-            self::$snowflakeWorkspaceProvider = new SnowflakeWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        if (!$this->snowflakeWorkspaceProvider) {
+            $this->snowflakeWorkspaceProvider = new SnowflakeWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
         }
-        return self::$snowflakeWorkspaceProvider;
+        return $this->snowflakeWorkspaceProvider;
     }
 
-    private static function getSynapseWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    private function getSynapseWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
     {
-        if (!self::$synapseWorkspaceProvider) {
-            self::$synapseWorkspaceProvider = new SynapseWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        if (!$this->synapseWorkspaceProvider) {
+            $this->synapseWorkspaceProvider = new SynapseWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
         }
-        return self::$synapseWorkspaceProvider;
+        return $this->synapseWorkspaceProvider;
     }
 
-    private static function getAbsWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    private function getAbsWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
     {
-        if (!self::$absWorkspaceProvider) {
-            self::$absWorkspaceProvider = new AbsWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        if (!$this->absWorkspaceProvider) {
+            $this->absWorkspaceProvider = new AbsWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
         }
-        return self::$absWorkspaceProvider;
+        return $this->absWorkspaceProvider;
     }
 
-    public static function initializeOutputProviders(
+    public function initializeOutputProviders(
         OutputStrategyFactory $stagingFactory,
         $stagingStorageOutput,
         $componentId,
@@ -120,7 +120,7 @@ class ProviderInitializer
     ) {
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_REDSHIFT) && $tokenInfo['owner']['hasRedshift']) {
             $stagingFactory->addProvider(
-                self::getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_REDSHIFT => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -128,7 +128,7 @@ class ProviderInitializer
         }
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_SNOWFLAKE) && $tokenInfo['owner']['hasSnowflake']) {
             $stagingFactory->addProvider(
-                self::getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_SNOWFLAKE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -136,7 +136,7 @@ class ProviderInitializer
         }
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_SYNAPSE) && $tokenInfo['owner']['hasSynapse']) {
             $stagingFactory->addProvider(
-                self::getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_SYNAPSE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -146,7 +146,7 @@ class ProviderInitializer
             ($tokenInfo['owner']['fileStorageProvider'] === 'azure')
         ) {
             $stagingFactory->addProvider(
-                self::getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
+                $this->getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_DATA]),
                 ]

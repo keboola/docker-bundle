@@ -79,6 +79,9 @@ class DataLoader implements DataLoaderInterface
     /** @var array */
     private $tokenInfo;
 
+    /** @var ProviderInitializer */
+    private $initializer;
+
     /**
      * DataLoader constructor.
      *
@@ -118,13 +121,16 @@ class DataLoader implements DataLoaderInterface
             $this->logger,
             $this->component->getConfigurationFormat()
         );
-        ProviderInitializer::initializeInputProviders(
+        $this->initializer = new ProviderInitializer();
+        $this->initializer->initializeInputProviders(
             $this->inputStrategyFactory,
             $this->getStagingStorageInput(),
             $this->component->getId(),
             $this->configId,
             $this->tokenInfo,
-            $this->dataDirectory
+            /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
+                we need need the base dir here */
+            dirname($this->dataDirectory)
         );
 
         $this->outputStrategyFactory = new OutputStrategyFactory(
@@ -132,13 +138,14 @@ class DataLoader implements DataLoaderInterface
             $this->logger,
             $this->component->getConfigurationFormat()
         );
-        ProviderInitializer::initializeOutputProviders(
+        $this->initializer->initializeOutputProviders(
             $this->outputStrategyFactory,
             $this->getStagingStorageInput(),
             $this->component->getId(),
             $this->configId,
             $this->tokenInfo,
-            $this->dataDirectory
+            // see above
+            dirname($this->dataDirectory)
         );
     }
 
@@ -159,7 +166,7 @@ class DataLoader implements DataLoaderInterface
                 $resultInputTablesStateList = $reader->downloadTables(
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $inputTableStateList,
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
+                    'data/in/tables/',
                     $this->getStagingStorageInput()
                 );
             }
@@ -169,7 +176,7 @@ class DataLoader implements DataLoaderInterface
                 $this->logger->debug('Downloading source files.');
                 $reader->downloadFiles(
                     $this->storageConfig['input']['files'],
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'files',
+                    'data/in/files/',
                     $this->getStagingStorageInput()
                 );
             }
@@ -222,11 +229,14 @@ class DataLoader implements DataLoaderInterface
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
-            $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig], $this->getStagingStorageOutput());
+            $fileWriter->uploadFiles(
+                'data/out/files/',
+                ['mapping' => $outputFilesConfig], $this->getStagingStorageOutput()
+            );
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
-                $this->dataDirectory . '/out/tables',
+                '/data/out/tables/',
                 $uploadTablesOptions,
                 $systemMetadata,
                 $this->getStagingStorageOutput()
