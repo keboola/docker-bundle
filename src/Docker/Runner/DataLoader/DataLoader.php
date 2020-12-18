@@ -231,7 +231,8 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles(
                 'data/out/files/',
-                ['mapping' => $outputFilesConfig], $this->getStagingStorageOutput()
+                ['mapping' => $outputFilesConfig],
+                $this->getStagingStorageOutput()
             );
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
