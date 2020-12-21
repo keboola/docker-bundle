@@ -6,7 +6,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApiBranch\ClientWrapper as StorageClientWrapper;
 use Psr\Log\NullLogger;

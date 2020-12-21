@@ -7,15 +7,16 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader\NullWorkspaceProvider;
-use Keboola\InputMapping\Reader\Options\InputTableOptionsList;
-use Keboola\InputMapping\Reader\Reader;
-use Keboola\InputMapping\Reader\State\InputTableStateList;
-use Keboola\InputMapping\Reader\WorkspaceProviderInterface;
+use Keboola\InputMapping\Reader;
+use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
+use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
@@ -66,14 +67,20 @@ class DataLoader implements DataLoaderInterface
      */
     private $configRowId;
 
-    /**
-     * @var OutputFilterInterface
-     */
+    /** @var OutputFilterInterface */
     private $outputFilter;
-    /**
-     * @var WorkspaceProvider
-     */
-    private $workspaceProvider;
+
+    /** @var InputStrategyFactory */
+    private $inputStrategyFactory;
+
+    /** @var OutputStrategyFactory */
+    private $outputStrategyFactory;
+
+    /** @var array */
+    private $tokenInfo;
+
+    /** @var ProviderInitializer */
+    private $initializer;
 
     /**
      * DataLoader constructor.
@@ -107,35 +114,50 @@ class DataLoader implements DataLoaderInterface
         $this->configRowId = $configRowId;
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
-        /* this condition is here so as not to create a workspace when not needed for the job at all
-            checking only output setting is ok because input and output workspace mapping must match -
-            see  validateStagingSetting() */
-        if (($this->getStagingStorageOutput() === Reader::STAGING_SNOWFLAKE) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_REDSHIFT) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_SYNAPSE) ||
-            ($this->getStagingStorageOutput() === Reader::STAGING_ABS_WORKSPACE)
-        ) {
-            $this->workspaceProvider = new WorkspaceProvider(
-                $this->clientWrapper->getBasicClient(),
-                $this->component->getId(),
-                $this->configId
-            );
-        } else {
-            $this->workspaceProvider = new NullWorkspaceProvider();
-        }
+        $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+
+        $this->inputStrategyFactory = new InputStrategyFactory(
+            $this->clientWrapper,
+            $this->logger,
+            $this->component->getConfigurationFormat()
+        );
+        $this->initializer = new ProviderInitializer();
+        $this->initializer->initializeInputProviders(
+            $this->inputStrategyFactory,
+            $this->getStagingStorageInput(),
+            $this->component->getId(),
+            $this->configId,
+            $this->tokenInfo,
+            /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
+                we need need the base dir here */
+            dirname($this->dataDirectory)
+        );
+
+        $this->outputStrategyFactory = new OutputStrategyFactory(
+            $this->clientWrapper,
+            $this->logger,
+            $this->component->getConfigurationFormat()
+        );
+        $this->initializer->initializeOutputProviders(
+            $this->outputStrategyFactory,
+            $this->getStagingStorageInput(),
+            $this->component->getId(),
+            $this->configId,
+            $this->tokenInfo,
+            // see above
+            dirname($this->dataDirectory)
+        );
     }
 
     /**
      * Download source files
      * @param InputTableStateList $inputTableStateList
      * @return InputTableStateList
-     * @throws \Keboola\StorageApi\Exception
+     * @throws Exception
      */
     public function loadInputData(InputTableStateList $inputTableStateList)
     {
-        $reader = new Reader($this->clientWrapper, $this->logger, $this->workspaceProvider);
-        $reader->setFormat($this->component->getConfigurationFormat());
-
+        $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
 
         try {
@@ -144,7 +166,7 @@ class DataLoader implements DataLoaderInterface
                 $resultInputTablesStateList = $reader->downloadTables(
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $inputTableStateList,
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'tables',
+                    'data/in/tables/',
                     $this->getStagingStorageInput()
                 );
             }
@@ -154,7 +176,7 @@ class DataLoader implements DataLoaderInterface
                 $this->logger->debug('Downloading source files.');
                 $reader->downloadFiles(
                     $this->storageConfig['input']['files'],
-                    $this->dataDirectory . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'files',
+                    'data/in/files/',
                     $this->getStagingStorageInput()
                 );
             }
@@ -169,7 +191,6 @@ class DataLoader implements DataLoaderInterface
     public function storeOutput()
     {
         $this->logger->debug("Storing results.");
-
         $outputTablesConfig = [];
         $outputFilesConfig = [];
 
@@ -206,13 +227,17 @@ class DataLoader implements DataLoaderInterface
         }
 
         try {
-            $fileWriter = new FileWriter($this->clientWrapper, $this->logger);
+            $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
-            $fileWriter->uploadFiles($this->dataDirectory . "/out/files", ["mapping" => $outputFilesConfig]);
-            $tableWriter = new TableWriter($this->clientWrapper, $this->logger, $this->workspaceProvider);
+            $fileWriter->uploadFiles(
+                'data/out/files/',
+                ['mapping' => $outputFilesConfig],
+                $this->getStagingStorageOutput()
+            );
+            $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
-                $this->dataDirectory . '/out/tables',
+                '/data/out/tables/',
                 $uploadTablesOptions,
                 $systemMetadata,
                 $this->getStagingStorageOutput()
@@ -228,12 +253,33 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
+    private function getWorkspace()
+    {
+        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
+            if ($staging->getFileDataProvider() && is_a($staging->getFileDataProvider(), AbstractWorkspaceProvider::class)) {
+                return $staging->getFileDataProvider();
+            }
+            if ($staging->getFileMetadataProvider() && is_a($staging->getFileMetadataProvider(), AbstractWorkspaceProvider::class)) {
+                return $staging->getFileMetadataProvider();
+            }
+            if ($staging->getTableDataProvider() && is_a($staging->getTableDataProvider(), AbstractWorkspaceProvider::class)) {
+                return $staging->getTableDataProvider();
+            }
+            if ($staging->getTableMetadataProvider() && is_a($staging->getTableMetadataProvider(), AbstractWorkspaceProvider::class)) {
+                return $staging->getTableMetadataProvider();
+            }
+        }
+        return null;
+    }
+
     public function getWorkspaceCredentials()
     {
-        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)) {
-            return $this->workspaceProvider->getCredentials(
-                WorkspaceProvider::STAGING_TYPE_MAP[$this->getStagingStorageInput()]
-            );
+        // this returns the first workspace found, which is ok so far because there can only be one
+        // (ensured in validateStagingSetting())
+        $workspace = $this->getWorkspace();
+        if ($workspace) {
+            return $workspace->getCredentials();
         } else {
             return [];
         }
@@ -301,7 +347,7 @@ class DataLoader implements DataLoaderInterface
                 return $stagingStorage['input'];
             }
         }
-        return Reader::STAGING_LOCAL;
+        return OutputStrategyFactory::LOCAL;
     }
 
     private function getStagingStorageOutput()
@@ -311,13 +357,15 @@ class DataLoader implements DataLoaderInterface
                 return $stagingStorage['output'];
             }
         }
-        return Reader::STAGING_LOCAL;
+        return OutputStrategyFactory::LOCAL;
     }
 
     private function validateStagingSetting()
     {
-        if (array_key_exists($this->getStagingStorageInput(), WorkspaceProvider::STAGING_TYPE_MAP)
-            && array_key_exists($this->getStagingStorageOutput(), WorkspaceProvider::STAGING_TYPE_MAP)
+        $workspaceTypes = [OutputStrategyFactory::WORKSPACE_ABS, OutputStrategyFactory::WORKSPACE_REDSHIFT,
+            OutputStrategyFactory::WORKSPACE_SNOWFLAKE, OutputStrategyFactory::WORKSPACE_SYNAPSE];
+        if (in_array($this->getStagingStorageInput(), $workspaceTypes)
+            && in_array($this->getStagingStorageOutput(), $workspaceTypes)
             && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
         ) {
             throw new ApplicationException(sprintf(
@@ -330,6 +378,20 @@ class DataLoader implements DataLoaderInterface
 
     public function cleanWorkspace()
     {
-        $this->workspaceProvider->cleanup();
+        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
+            if ($staging->getFileDataProvider()) {
+                $staging->getFileDataProvider()->cleanup();
+            }
+            if ($staging->getFileMetadataProvider()) {
+                $staging->getFileMetadataProvider()->cleanup();
+            }
+            if ($staging->getTableDataProvider()) {
+                $staging->getTableDataProvider()->cleanup();
+            }
+            if ($staging->getTableMetadataProvider()) {
+                $staging->getTableMetadataProvider()->cleanup();
+            }
+        }
     }
 }

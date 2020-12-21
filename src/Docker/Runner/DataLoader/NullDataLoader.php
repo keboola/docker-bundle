@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use Keboola\InputMapping\Reader\State\InputTableStateList;
+use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
 
