@@ -84,7 +84,7 @@ class ProviderInitializerTest extends TestCase
                     'hasSynapse' => true,
                     'hasRedshift' => true,
                     'hasSnowflake' => true,
-                    'fileStorageProvider' => 'azure',
+                    'fileStorageProvider' => 'aws',
                 ],
             ],
             '/tmp/random/data'
