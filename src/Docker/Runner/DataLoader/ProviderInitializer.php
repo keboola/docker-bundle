@@ -9,16 +9,16 @@ use Keboola\StorageApiBranch\ClientWrapper;
 
 class ProviderInitializer
 {
-    /** @var AbsWorkspaceProvider */
+    /** @var RedshiftWorkspaceProvider */
     private $redshiftWorkspaceProvider;
 
-    /** @var AbsWorkspaceProvider */
+    /** @var SnowflakeWorkspaceProvider */
     private $snowflakeWorkspaceProvider;
 
-    /** @var AbsWorkspaceProvider */
+    /** @var SynapseWorkspaceProvider */
     private $synapseWorkspaceProvider;
 
-    /** @var AbsWorkspaceProvider */
+    /** @var ABSWorkspaceProvider */
     private $absWorkspaceProvider;
 
     public function initializeInputProviders(
@@ -105,7 +105,7 @@ class ProviderInitializer
     private function getAbsWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
     {
         if (!$this->absWorkspaceProvider) {
-            $this->absWorkspaceProvider = new AbsWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+            $this->absWorkspaceProvider = new ABSWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
         }
         return $this->absWorkspaceProvider;
     }
