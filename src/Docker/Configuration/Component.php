@@ -31,7 +31,7 @@ class Component extends Configuration
             ->variableNode('image_parameters')->defaultValue([])->end()
             ->scalarNode('network')
                 ->validate()
-                    ->ifNotInArray(['none', 'bridge'])
+                    ->ifNotInArray(['none', 'bridge', 'no-internet'])
                     ->thenInvalid('Invalid network type %s.')
                 ->end()
                 ->defaultValue('bridge')
