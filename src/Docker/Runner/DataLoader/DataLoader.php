@@ -237,7 +237,7 @@ class DataLoader implements DataLoaderInterface
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
-                '/data/out/tables/',
+                'data/out/tables/',
                 $uploadTablesOptions,
                 $systemMetadata,
                 $this->getStagingStorageOutput()
