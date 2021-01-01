@@ -324,8 +324,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             new NullUsageFile()
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(
-            sprintf('data/in/files/%s_my_lovely_file.wtf/%s', $fileId, $fileId))
-        );
+            sprintf('data/in/files/%s_my_lovely_file.wtf/%s', $fileId, $fileId)
+        ));
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains('data/in/tables/mytable3.csvmanifest'));
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
