@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProvider;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
@@ -13,7 +12,7 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\TestUsageFile;
-use Keboola\InputMapping\Reader\Options\InputTableOptions;
+use Keboola\InputMapping\Table\Options\InputTableOptions;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -2381,7 +2380,7 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'tags' => ['docker-runner-test'],
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
-                            ],
+                    ],
                         ],
                     ],
                     'output' => [
@@ -2389,9 +2388,9 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'source' => 'mytable',
                                 'destination' => 'in.c-runner-test.mytable-2',
-                            ]
-                        ]
-                    ]
+                            ],
+                        ],
+                    ],
                 ],
                 'parameters' => [
                     'script' => [
@@ -2786,7 +2785,7 @@ class RunnerTest extends BaseRunnerTest
             'tags:"docker-runner-test" AND tags:"processed"'
         ));
         self::assertCount(1, $inputFileList);
-    }
+}
 
     public function testOutputTablesAsFiles()
     {
