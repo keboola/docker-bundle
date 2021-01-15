@@ -481,7 +481,8 @@ class Runner
                 $tokenInfo,
                 $this->clientWrapper->getBasicClient()->getRunId(),
                 $this->clientWrapper->getBasicClient()->getApiUrl(),
-                $this->clientWrapper->getBasicClient()->getTokenString()
+                $this->clientWrapper->getBasicClient()->getTokenString(),
+                $this->clientWrapper->getBranchId()
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),

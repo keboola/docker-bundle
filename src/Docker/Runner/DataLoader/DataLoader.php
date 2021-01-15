@@ -159,6 +159,7 @@ class DataLoader implements DataLoaderInterface
     {
         $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
+        $disableDevInputs = !$this->component->allowBranchMapping();
 
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
@@ -167,7 +168,8 @@ class DataLoader implements DataLoaderInterface
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $inputTableStateList,
                     'data/in/tables/',
-                    $this->getStagingStorageInput()
+                    $this->getStagingStorageInput(),
+                    $disableDevInputs
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&

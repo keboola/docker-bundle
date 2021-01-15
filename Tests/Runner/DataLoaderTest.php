@@ -2,12 +2,15 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\StorageApi\Metadata;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -205,5 +208,117 @@ class DataLoaderTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
+    }
+
+    public function testBranchMappingDisabled()
+    {
+        $clientWrapper = new ClientWrapper($this->client, null, null, '');
+        $clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
+        $metadata = new Metadata($clientWrapper->getBasicClient());
+        $metadata->postBucketMetadata(
+            'in.c-docker-demo-testConfig',
+            'system',
+            [
+                [
+                    'key' => 'KBC.createdBy.branch.id',
+                    'value' => '1234',
+                ],
+            ]
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-demo-testConfig.test',
+                            'destination' => 'test.csv',
+                        ],
+                    ],
+                ],
+            ],
+            $component,
+            new OutputFilter()
+        );
+        self::expectException(UserException::class);
+        self::expectExceptionMessage(
+            'The buckets "in.c-docker-demo-testConfig" come from a development ' .
+            'branch and must not be used directly in input mapping.'
+        );
+        $dataLoader->loadInputData(new InputTableStateList([]));
+    }
+
+    public function testBranchMappingEnabled()
+    {
+        $clientWrapper = new ClientWrapper($this->client, null, null, '');
+        $clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->temp->getTmpFolder() . '/data.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
+        $clientWrapper->getBasicClient()->createTable('in.c-docker-demo-testConfig', 'test', $csv);
+        $metadata = new Metadata($clientWrapper->getBasicClient());
+        $metadata->postBucketMetadata(
+            'in.c-docker-demo-testConfig',
+            'system',
+            [
+                [
+                    'key' => 'KBC.createdBy.branch.id',
+                    'value' => '1234',
+                ],
+            ]
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+            'features' => ['dev-mapping-allowed'],
+        ]);
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-demo-testConfig.test',
+                            'destination' => 'test.csv',
+                        ],
+                    ],
+                ],
+            ],
+            $component,
+            new OutputFilter()
+        );
+        $ret = $dataLoader->loadInputData(new InputTableStateList([]));
+        self::assertInstanceOf(InputTableStateList::class, $ret);
     }
 }
