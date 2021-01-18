@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f8663dc951ecc4e52ee5ecabf34b52a4",
+    "content-hash": "d8a9d41092afcb71498a146bfdb42fe4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.171.17",
+            "version": "3.171.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "f23f4871eceec8c92645f054186a83bba86c1f3e"
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f23f4871eceec8c92645f054186a83bba86c1f3e",
-                "reference": "f23f4871eceec8c92645f054186a83bba86c1f3e",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-01-13T19:17:33+00:00"
+            "time": "2021-01-15T19:26:11+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1892,16 +1892,16 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "dev-odin-PS-1694",
+            "version": "12.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "964661cf623feb63648b92349efb0864428e469e"
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/964661cf623feb63648b92349efb0864428e469e",
-                "reference": "964661cf623feb63648b92349efb0864428e469e",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/ad46e3cac48bfe7ed3e9932df7735e1192826706",
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706",
                 "shasum": ""
             },
             "require": {
@@ -1935,7 +1935,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2021-01-13T20:38:41+00:00"
+            "time": "2021-01-18T09:21:51+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2032,16 +2032,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "dev-odin-PS-1695",
+            "version": "13.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "897245085ddb0d32563a6fa48f063aeea3f0ed7f"
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/897245085ddb0d32563a6fa48f063aeea3f0ed7f",
-                "reference": "897245085ddb0d32563a6fa48f063aeea3f0ed7f",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/a53d90913686d8b0916855e3cef7e7ba430698de",
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de",
                 "shasum": ""
             },
             "require": {
@@ -2080,7 +2080,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2021-01-14T10:59:49+00:00"
+            "time": "2021-01-18T09:41:03+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -4050,6 +4050,7 @@
                 }
             ],
             "description": "A security checker for your composer.lock",
+            "abandoned": "https://github.com/fabpot/local-php-security-checker",
             "time": "2018-12-19T17:14:59+00:00"
         },
         {
@@ -7191,19 +7192,9 @@
             "time": "2020-07-08T17:02:28+00:00"
         }
     ],
-    "aliases": [
-        {
-            "alias": "12.0.3",
-            "alias_normalized": "12.0.3.0",
-            "version": "dev-odin-PS-1694",
-            "package": "keboola/input-mapping"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/output-mapping": 20,
-        "keboola/input-mapping": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
