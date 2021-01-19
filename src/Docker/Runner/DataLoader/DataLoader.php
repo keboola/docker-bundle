@@ -11,6 +11,7 @@ use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
+use Keboola\InputMapping\Table\Options\ReaderOptions;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
@@ -159,6 +160,7 @@ class DataLoader implements DataLoaderInterface
     {
         $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
+        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
 
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
@@ -167,7 +169,8 @@ class DataLoader implements DataLoaderInterface
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $inputTableStateList,
                     'data/in/tables/',
-                    $this->getStagingStorageInput()
+                    $this->getStagingStorageInput(),
+                    $readerOptions
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&

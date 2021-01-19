@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "34112d2464b9967de2d545a71fcc02e9",
+    "content-hash": "d8a9d41092afcb71498a146bfdb42fe4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.171.12",
+            "version": "3.171.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "2a575d8336a6005fcd7b8c3d54783ee5ddc3ceac"
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2a575d8336a6005fcd7b8c3d54783ee5ddc3ceac",
-                "reference": "2a575d8336a6005fcd7b8c3d54783ee5ddc3ceac",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
                 "shasum": ""
             },
             "require": {
@@ -89,20 +89,20 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-01-05T19:12:58+00:00"
+            "time": "2021-01-15T19:26:11+00:00"
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.2.8",
+            "version": "1.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "8a7ecad675253e4654ea05505233285377405215"
+                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/8a7ecad675253e4654ea05505233285377405215",
-                "reference": "8a7ecad675253e4654ea05505233285377405215",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
+                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
                 "shasum": ""
             },
             "require": {
@@ -111,14 +111,15 @@
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7 || 6.5 - 8",
+                "phpstan/phpstan": "^0.12.55",
                 "psr/log": "^1.0",
+                "symfony/phpunit-bridge": "^4.2 || ^5",
                 "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-main": "1.x-dev"
                 }
             },
             "autoload": {
@@ -159,7 +160,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-08-23T12:54:47+00:00"
+            "time": "2021-01-12T12:10:35+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1891,16 +1892,16 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "12.0.3",
+            "version": "12.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "a5bec91c38945c3f6924442e15f28b11319ea152"
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/a5bec91c38945c3f6924442e15f28b11319ea152",
-                "reference": "a5bec91c38945c3f6924442e15f28b11319ea152",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/ad46e3cac48bfe7ed3e9932df7735e1192826706",
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706",
                 "shasum": ""
             },
             "require": {
@@ -1934,7 +1935,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2021-01-01T18:35:02+00:00"
+            "time": "2021-01-18T09:21:51+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2031,16 +2032,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "13.1.2",
+            "version": "13.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "b17b79e815acfbcabfe74fcb56368bc26000e6bc"
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/b17b79e815acfbcabfe74fcb56368bc26000e6bc",
-                "reference": "b17b79e815acfbcabfe74fcb56368bc26000e6bc",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/a53d90913686d8b0916855e3cef7e7ba430698de",
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de",
                 "shasum": ""
             },
             "require": {
@@ -2079,7 +2080,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2021-01-06T11:09:01+00:00"
+            "time": "2021-01-18T09:41:03+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -4049,6 +4050,7 @@
                 }
             ],
             "description": "A security checker for your composer.lock",
+            "abandoned": "https://github.com/fabpot/local-php-security-checker",
             "time": "2018-12-19T17:14:59+00:00"
         },
         {

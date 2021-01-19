@@ -168,7 +168,7 @@ class ComponentTest extends TestCase
         self::assertEquals('in.c-keboola-ex-generic-test', $component->getDefaultBucketName('test'));
     }
 
-    public function testRunAsRoot()
+    public function testFlagsOff()
     {
         $componentData = [
             'id' => 'keboola.ex-generic',
@@ -181,9 +181,12 @@ class ComponentTest extends TestCase
         ];
         $component = new Component($componentData);
         self::assertFalse($component->runAsRoot());
+        self::assertFalse($component->allowBranchMapping());
+        self::assertFalse($component->blockBranchJobs());
+        self::assertFalse($component->branchConfigurationsAreUnsafe());
     }
 
-    public function testDoNotRunAsRoot()
+    public function testFlagsOn()
     {
         $componentData = [
             'id' => 'keboola.ex-generic',
@@ -194,11 +197,14 @@ class ComponentTest extends TestCase
                 ],
             ],
             'features' => [
-                'container-root-user'
-            ]
+                'container-root-user', 'dev-branch-configuration-unsafe', 'dev-branch-job-blocked', 'dev-mapping-allowed',
+            ],
         ];
         $component = new Component($componentData);
         self::assertTrue($component->runAsRoot());
+        self::assertTrue($component->allowBranchMapping());
+        self::assertTrue($component->blockBranchJobs());
+        self::assertTrue($component->branchConfigurationsAreUnsafe());
     }
 
     public function testInvalidRepository()

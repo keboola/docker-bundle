@@ -129,6 +129,30 @@ class Component
     /**
      * @return bool
      */
+    public function blockBranchJobs()
+    {
+        return in_array('dev-branch-job-blocked', $this->features);
+    }
+
+    /**
+     * @return bool
+     */
+    public function branchConfigurationsAreUnsafe()
+    {
+        return in_array('dev-branch-configuration-unsafe', $this->features);
+    }
+
+    /**
+     * @return bool
+     */
+    public function allowBranchMapping()
+    {
+        return in_array('dev-mapping-allowed', $this->features);
+    }
+
+    /**
+     * @return bool
+     */
     public function hasNoSwap()
     {
         return in_array('no-swap', $this->features);

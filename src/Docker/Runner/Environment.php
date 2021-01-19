@@ -54,7 +54,12 @@ class Environment
      */
     private $token;
 
-    public function __construct($configId, $configRowId, Component $component, array $config, array $tokenInfo, $runId, $url, $token)
+    /**
+     * @var string
+     */
+    private $branchId;
+
+    public function __construct($configId, $configRowId, Component $component, array $config, array $tokenInfo, $runId, $url, $token, $branchId)
     {
         if ($configId) {
             $this->configId = $configId;
@@ -70,6 +75,7 @@ class Environment
         $this->stackId = parse_url($url, PHP_URL_HOST);
         $this->token = $token;
         $this->configRowId = $configRowId;
+        $this->branchId = $branchId;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
@@ -95,6 +101,9 @@ class Environment
             $envs["KBC_PROJECTNAME"] = $this->tokenInfo["owner"]["name"];
             $envs["KBC_TOKENID"] = $this->tokenInfo["id"];
             $envs["KBC_TOKENDESC"] = $this->tokenInfo["description"];
+        }
+        if ($this->branchId) {
+            $envs['KBC_BRANCHID'] = (string) $this->branchId;
         }
         return $envs;
     }
