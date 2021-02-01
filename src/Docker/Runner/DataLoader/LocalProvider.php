@@ -31,6 +31,6 @@ class LocalProvider implements ProviderInterface
 
     public function getPath()
     {
-        $this->path;
+        return $this->path;
     }
 }

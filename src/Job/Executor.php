@@ -194,12 +194,16 @@ class Executor extends BaseExecutor
             }
 
             $componentClass = new Component($component);
+            if ($componentClass->blockBranchJobs() && $this->clientWrapper->hasBranch()) {
+                throw new \Keboola\Syrup\Exception\UserException('This component cannot be run in a development branch.');
+            }
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
                 $configId = null;
                 if (isset($params["config"])) {
                     $configId = $params["config"];
                 }
+                $this->checkUnsafeConfiguration($componentClass, $params['configData'], $this->clientWrapper->getBranchId());
                 $jobDefinitionParser->parseConfigData($componentClass, $params["configData"], $configId);
             } else {
                 // Read config from storage
@@ -210,6 +214,7 @@ class Executor extends BaseExecutor
                     } else {
                         $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     }
+                    $this->checkUnsafeConfiguration($componentClass, $configuration, $this->clientWrapper->getBranchId());
                     $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
                 } catch (ClientException $e) {
                     throw new \Keboola\Syrup\Exception\UserException(
@@ -277,6 +282,17 @@ class Executor extends BaseExecutor
             $this->logger->info("Job {$job->getId()} terminated");
         } catch (\Exception $e) {
             throw new \Keboola\Syrup\Exception\ApplicationException("Job {$job->getId()} termination failed: " . $e->getMessage(), $e);
+        }
+    }
+
+    private function checkUnsafeConfiguration(Component $component, array $configuration, $branchId)
+    {
+        if ($component->branchConfigurationsAreUnsafe() && $branchId) {
+            if (empty($configuration['configuration']['runtime']['safe'])) {
+                throw new \Keboola\Syrup\Exception\UserException(
+                    'Is is not safe to run this configuration in a development branch. Please review the configuration.'
+                );
+            }
         }
     }
 }

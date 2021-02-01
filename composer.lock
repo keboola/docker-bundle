@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "436ee915c89d56de0f0580ad3b72996d",
+    "content-hash": "d8a9d41092afcb71498a146bfdb42fe4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.170.0",
+            "version": "3.171.19",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "7f457a08219173eba4b856cb7aef3a903cd790cc"
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7f457a08219173eba4b856cb7aef3a903cd790cc",
-                "reference": "7f457a08219173eba4b856cb7aef3a903cd790cc",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
+                "reference": "e786e4a8b2ec85b258833d0570ff6b61348cbdb6",
                 "shasum": ""
             },
             "require": {
@@ -89,20 +89,20 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2020-12-15T19:13:22+00:00"
+            "time": "2021-01-15T19:26:11+00:00"
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.2.8",
+            "version": "1.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "8a7ecad675253e4654ea05505233285377405215"
+                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/8a7ecad675253e4654ea05505233285377405215",
-                "reference": "8a7ecad675253e4654ea05505233285377405215",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
+                "reference": "78a0e288fdcebf92aa2318a8d3656168da6ac1a5",
                 "shasum": ""
             },
             "require": {
@@ -111,14 +111,15 @@
                 "php": "^5.3.2 || ^7.0 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7 || 6.5 - 8",
+                "phpstan/phpstan": "^0.12.55",
                 "psr/log": "^1.0",
+                "symfony/phpunit-bridge": "^4.2 || ^5",
                 "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.x-dev"
+                    "dev-main": "1.x-dev"
                 }
             },
             "autoload": {
@@ -159,7 +160,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-08-23T12:54:47+00:00"
+            "time": "2021-01-12T12:10:35+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1891,16 +1892,16 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "dev-odin-1599-a",
+            "version": "12.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "75c75f732d3302e127086e515400e80a9658571f"
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/75c75f732d3302e127086e515400e80a9658571f",
-                "reference": "75c75f732d3302e127086e515400e80a9658571f",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/ad46e3cac48bfe7ed3e9932df7735e1192826706",
+                "reference": "ad46e3cac48bfe7ed3e9932df7735e1192826706",
                 "shasum": ""
             },
             "require": {
@@ -1934,7 +1935,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2020-12-16T09:31:53+00:00"
+            "time": "2021-01-18T09:21:51+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2031,22 +2032,22 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "dev-PS0-1517-abs-files",
+            "version": "13.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "7edf12f291239755841a2e4600981a2c6c9781d3"
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/7edf12f291239755841a2e4600981a2c6c9781d3",
-                "reference": "7edf12f291239755841a2e4600981a2c6c9781d3",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/a53d90913686d8b0916855e3cef7e7ba430698de",
+                "reference": "a53d90913686d8b0916855e3cef7e7ba430698de",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/guzzle": "^6.5.5",
-                "keboola/input-mapping": "dev-odin-1599-a",
+                "keboola/input-mapping": "^12.0.0",
                 "keboola/sanitizer": "^0.1",
                 "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
                 "microsoft/azure-storage-blob": "^1.5",
@@ -2079,7 +2080,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
-            "time": "2020-12-16T12:37:10+00:00"
+            "time": "2021-01-18T09:41:03+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2531,16 +2532,16 @@
         },
         {
             "name": "microsoft/azure-storage-blob",
-            "version": "1.5.1",
+            "version": "1.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Azure/azure-storage-blob-php.git",
-                "reference": "44f9268b3510a18450c591b1155a49399edb0c9b"
+                "reference": "2475330963372d519387cb8135d6a9cfd42272da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Azure/azure-storage-blob-php/zipball/44f9268b3510a18450c591b1155a49399edb0c9b",
-                "reference": "44f9268b3510a18450c591b1155a49399edb0c9b",
+                "url": "https://api.github.com/repos/Azure/azure-storage-blob-php/zipball/2475330963372d519387cb8135d6a9cfd42272da",
+                "reference": "2475330963372d519387cb8135d6a9cfd42272da",
                 "shasum": ""
             },
             "require": {
@@ -2571,24 +2572,24 @@
                 "sdk",
                 "storage"
             ],
-            "time": "2020-08-28T09:40:50+00:00"
+            "time": "2020-12-29T02:22:11+00:00"
         },
         {
             "name": "microsoft/azure-storage-common",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Azure/azure-storage-common-php.git",
-                "reference": "fe85677aa5188f8efe6916b4d6773a194e2c2ede"
+                "reference": "e5738035891546075bd369954e8af121d65ebd6d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Azure/azure-storage-common-php/zipball/fe85677aa5188f8efe6916b4d6773a194e2c2ede",
-                "reference": "fe85677aa5188f8efe6916b4d6773a194e2c2ede",
+                "url": "https://api.github.com/repos/Azure/azure-storage-common-php/zipball/e5738035891546075bd369954e8af121d65ebd6d",
+                "reference": "e5738035891546075bd369954e8af121d65ebd6d",
                 "shasum": ""
             },
             "require": {
-                "guzzlehttp/guzzle": "~6.0",
+                "guzzlehttp/guzzle": "~6.0|^7.0",
                 "php": ">=5.6.0"
             },
             "type": "library",
@@ -2615,7 +2616,7 @@
                 "sdk",
                 "storage"
             ],
-            "time": "2020-08-28T09:02:11+00:00"
+            "time": "2020-12-28T07:59:51+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -3031,16 +3032,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.29",
+            "version": "2.0.30",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "497856a8d997f640b4a516062f84228a772a48a8"
+                "reference": "136b9ca7eebef78be14abf90d65c5e57b6bc5d36"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/497856a8d997f640b4a516062f84228a772a48a8",
-                "reference": "497856a8d997f640b4a516062f84228a772a48a8",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/136b9ca7eebef78be14abf90d65c5e57b6bc5d36",
+                "reference": "136b9ca7eebef78be14abf90d65c5e57b6bc5d36",
                 "shasum": ""
             },
             "require": {
@@ -3048,7 +3049,7 @@
             },
             "require-dev": {
                 "phing/phing": "~2.7",
-                "phpunit/phpunit": "^4.8.35|^5.7|^6.0",
+                "phpunit/phpunit": "^4.8.35|^5.7|^6.0|^9.4",
                 "squizlabs/php_codesniffer": "~2.0"
             },
             "suggest": {
@@ -3118,7 +3119,21 @@
                 "x.509",
                 "x509"
             ],
-            "time": "2020-09-08T04:24:43+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/terrafrost",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/phpseclib",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/phpseclib/phpseclib",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2020-12-17T05:42:04+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -4035,6 +4050,7 @@
                 }
             ],
             "description": "A security checker for your composer.lock",
+            "abandoned": "https://github.com/fabpot/local-php-security-checker",
             "time": "2018-12-19T17:14:59+00:00"
         },
         {
@@ -7178,10 +7194,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/output-mapping": 20,
-        "keboola/input-mapping": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

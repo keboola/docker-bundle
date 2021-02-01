@@ -5,10 +5,23 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\InputMapping\Staging\Scope;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
+use Keboola\StorageApiBranch\ClientWrapper;
 
 class ProviderInitializer
 {
-    public static function initializeInputProviders(
+    /** @var RedshiftWorkspaceProvider */
+    private $redshiftWorkspaceProvider;
+
+    /** @var SnowflakeWorkspaceProvider */
+    private $snowflakeWorkspaceProvider;
+
+    /** @var SynapseWorkspaceProvider */
+    private $synapseWorkspaceProvider;
+
+    /** @var ABSWorkspaceProvider */
+    private $absWorkspaceProvider;
+
+    public function initializeInputProviders(
         InputStrategyFactory $stagingFactory,
         $stagingStorageInput,
         $componentId,
@@ -18,7 +31,7 @@ class ProviderInitializer
     ) {
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_REDSHIFT) && $tokenInfo['owner']['hasRedshift']) {
             $stagingFactory->addProvider(
-                new RedshiftWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_REDSHIFT => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -26,7 +39,7 @@ class ProviderInitializer
         }
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_SNOWFLAKE) && $tokenInfo['owner']['hasSnowflake']) {
             $stagingFactory->addProvider(
-                new SnowflakeWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_SNOWFLAKE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -34,7 +47,7 @@ class ProviderInitializer
         }
         if (($stagingStorageInput === InputStrategyFactory::WORKSPACE_SYNAPSE) && $tokenInfo['owner']['hasSynapse']) {
             $stagingFactory->addProvider(
-                new SynapseWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_SYNAPSE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -44,7 +57,7 @@ class ProviderInitializer
             ($tokenInfo['owner']['fileStorageProvider'] === 'azure')
         ) {
             $stagingFactory->addProvider(
-                new ABSWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::TABLE_DATA]),
                 ]
@@ -65,7 +78,39 @@ class ProviderInitializer
         );
     }
 
-    public static function initializeOutputProviders(
+    private function getRedshiftWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    {
+        if (!$this->redshiftWorkspaceProvider) {
+            $this->redshiftWorkspaceProvider = new RedshiftWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        }
+        return $this->redshiftWorkspaceProvider;
+    }
+
+    private function getSnowflakeWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    {
+        if (!$this->snowflakeWorkspaceProvider) {
+            $this->snowflakeWorkspaceProvider = new SnowflakeWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        }
+        return $this->snowflakeWorkspaceProvider;
+    }
+
+    private function getSynapseWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    {
+        if (!$this->synapseWorkspaceProvider) {
+            $this->synapseWorkspaceProvider = new SynapseWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        }
+        return $this->synapseWorkspaceProvider;
+    }
+
+    private function getAbsWorkspaceProvider(ClientWrapper $clientWrapper, $componentId, $configId)
+    {
+        if (!$this->absWorkspaceProvider) {
+            $this->absWorkspaceProvider = new ABSWorkspaceProvider($clientWrapper->getBasicClient(), $componentId, $configId);
+        }
+        return $this->absWorkspaceProvider;
+    }
+
+    public function initializeOutputProviders(
         OutputStrategyFactory $stagingFactory,
         $stagingStorageOutput,
         $componentId,
@@ -75,7 +120,7 @@ class ProviderInitializer
     ) {
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_REDSHIFT) && $tokenInfo['owner']['hasRedshift']) {
             $stagingFactory->addProvider(
-                new RedshiftWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getRedshiftWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_REDSHIFT => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -83,7 +128,7 @@ class ProviderInitializer
         }
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_SNOWFLAKE) && $tokenInfo['owner']['hasSnowflake']) {
             $stagingFactory->addProvider(
-                new SnowflakeWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getSnowflakeWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_SNOWFLAKE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -91,7 +136,7 @@ class ProviderInitializer
         }
         if (($stagingStorageOutput === OutputStrategyFactory::WORKSPACE_SYNAPSE) && $tokenInfo['owner']['hasSynapse']) {
             $stagingFactory->addProvider(
-                new SynapseWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getSynapseWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_SYNAPSE => new Scope([Scope::TABLE_DATA]),
                 ]
@@ -101,7 +146,7 @@ class ProviderInitializer
             ($tokenInfo['owner']['fileStorageProvider'] === 'azure')
         ) {
             $stagingFactory->addProvider(
-                new ABSWorkspaceProvider($stagingFactory->getClientWrapper()->getBasicClient(), $componentId, $configId),
+                $this->getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
                     OutputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_DATA]),
                 ]
