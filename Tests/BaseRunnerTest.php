@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Tests;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -155,5 +157,18 @@ abstract class BaseRunnerTest extends TestCase
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
         );
+    }
+
+    /**
+     * @param array $componentData
+     * @param $configId
+     * @param array $configData
+     * @param array $state
+     * @return JobDefinition[]
+     */
+    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
+    {
+        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
+        return [$jobDefinition];
     }
 }
