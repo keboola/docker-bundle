@@ -6,7 +6,7 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false"
+         stopOnFailure="true"
          syntaxCheck="false"
          bootstrap="bootstrap.php">
 
@@ -19,11 +19,20 @@
         <exclude>Tests/Command</exclude>
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Runner</exclude>
+        <exclude>Tests/RunnerPart2</exclude>
+        <exclude>Tests/RunnerPart3</exclude>
         <exclude>Tests/Executor</exclude>
+        <exclude>Tests/Docker/Container</exclude>
         <exclude>Tests/backend-specific-tests</exclude>
     </testsuite>
     <testsuite name="runner-tests">
         <directory>Tests/Runner</directory>
+    </testsuite>
+    <testsuite name="runner-tests-2">
+        <directory>Tests/RunnerPart2</directory>
+    </testsuite>
+    <testsuite name="container-tests">
+        <directory>Tests/Docker/Container</directory>
     </testsuite>
     <testsuite name="executor-tests">
         <directory>Tests/Executor</directory>

@@ -66,3 +66,4 @@ RUN echo "www-data ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 COPY composer.* ./
 RUN composer install $COMPOSER_FLAGS --no-scripts --no-autoloader
 COPY . .
+RUN composer install $COMPOSER_FLAGS --no-scripts
