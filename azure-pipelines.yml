@@ -1,0 +1,82 @@
+pr: none
+trigger:
+  batch: true
+  branches:
+    include:
+      - '*'
+  tags:
+    include:
+      - '*'
+
+pool:
+  name: 'Default'
+
+stages: 
+  - stage: BeforeTests
+    displayName: Before Tests
+    jobs:
+      - job: Prepare
+        displayName: Prepare
+        pool:
+          vmImage: 'ubuntu-16.04'
+        steps:
+          - script: |
+              docker-compose build               
+              docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
+            displayName: 'PHP CS'
+
+  - stage: Tests
+    dependsOn: tests
+    jobs:
+      - job: Base Tests 
+        steps:
+          - script: |
+              docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+      - job: Runner Tests
+        steps:
+          - script: |
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+      - job: Executor Tests
+        steps:
+          - script: |
+              docker-compose run tests ./vendor/bin/phpunit --testsuite executor-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+      - job: Executor Tests
+        steps:
+          - script: |
+              docker-compose run tests ./vendor/bin/phpunit --testsuite s3-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+      - job: Executor Tests
+        steps:
+          - script: |
+              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite abs-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+      - job: Executor Tests
+        steps:
+          - script: |
+              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
+            env:
+              - template: azure-pipelines-env-template.yml
+
+  - stage: AfterTests
+    jobs:
+      - job: Report
+        steps:
+          - template: azure-pipelines-composer-steps.yml
+          - script: docker run --rm -e AWS_ACCESS_KEY_ID=$AWS_ECR_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY=$AWS_ECR_SECRET_ACCESS_KEY -v $TRAVIS_BUILD_DIR/coverage/:/data/ quay.io/keboola/aws-cli:latest s3 sync "s3://docker-runner-logs/coverage/$TRAVIS_BUILD_NUMBER" /data/
+          - script: curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+          - script: chmod +x ./cc-test-reporter
+          - script: ./cc-test-reporter sum-coverage --output - --parts 3 coverage/codeclimate.*.json | ./cc-test-reporter upload-coverage --input -
+            displayName: 'CC report'
