@@ -210,7 +210,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals($envs['KBC_STACKID'], parse_url(PHP_URL_HOST, STORAGE_API_URL));
+        self::assertEquals(parse_url(STORAGE_API_URL, PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);
