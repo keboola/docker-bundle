@@ -232,6 +232,7 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
             self::markTestSkipped('Synapse test is disabled.');
         }
         $this->clearBuckets();
+        $this->createBuckets();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
             'data' => [
@@ -285,7 +286,7 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
-        $data = $this->client->getTableDataPreview('out.c-abs-workspace-runner-test.output-test-table');
+        $data = $this->getClient()->getTableDataPreview('out.c-abs-workspace-runner-test.output-test-table');
         self::assertEquals("\"first\",\"second\"\n\"1a\",\"2b\"\n", $data);
 
         // assert the workspace is removed
