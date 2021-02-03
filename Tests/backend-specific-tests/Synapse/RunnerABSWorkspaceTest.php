@@ -42,7 +42,6 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
             }
             $components->deleteConfiguration('keboola.runner-workspace-test', $configuration['id']);
         }
-        parent::setUp();
     }
 
     private function createBuckets()
