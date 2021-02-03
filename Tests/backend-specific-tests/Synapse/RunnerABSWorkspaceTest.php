@@ -1,5 +1,7 @@
 <?php
 
+namespace Keboola\DockerBundle\Tests\Runner;
+
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
