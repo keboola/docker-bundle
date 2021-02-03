@@ -28,7 +28,6 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
 
     private function createBuckets()
     {
-        $this->clearBuckets();
         // Create buckets
         $this->getClient()->createBucket('abs-workspace-runner-test', Client::STAGE_IN, 'Docker TestSuite', 'synapse');
         $this->getClient()->createBucket('abs-workspace-runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'synapse');
