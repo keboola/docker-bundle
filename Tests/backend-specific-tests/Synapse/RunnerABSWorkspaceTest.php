@@ -9,9 +9,11 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
 class RunnerABSWorkspaceTest extends BaseRunnerTest
@@ -22,6 +24,23 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
     {
         if (!RUN_SYNAPSE_TESTS) {
             return;
+        }
+        $this->client = new Client([
+            'url' => STORAGE_API_URL_SYNAPSE,
+            'token' => STORAGE_API_TOKEN_SYNAPSE,
+        ]);
+        $components = new Components($this->client);
+        $workspaces = new Workspaces($this->client);
+        $options = new ListComponentConfigurationsOptions();
+        $options->setComponentId('keboola.runner-workspace-test');
+        foreach ($components->listComponentConfigurations($options) as $configuration) {
+            $wOptions = new ListConfigurationWorkspacesOptions();
+            $wOptions->setComponentId('keboola.runner-workspace-test');
+            $wOptions->setConfigurationId($configuration['id']);
+            foreach ($components->listConfigurationWorkspaces($wOptions) as $workspace) {
+                $workspaces->deleteWorkspace($workspace['id']);
+            }
+            $components->deleteConfiguration('keboola.runner-workspace-test', $configuration['id']);
         }
         parent::setUp();
     }
