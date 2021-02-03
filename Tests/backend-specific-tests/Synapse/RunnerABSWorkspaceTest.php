@@ -47,7 +47,9 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
 
     private function clearFiles()
     {
-        $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([self::ABS_TEST_FILE_TAG]));
+        $fileList = $this->getClient()->listFiles(
+            (new ListFilesOptions())->setTags([self::ABS_TEST_FILE_TAG, 'foo', 'bar'])
+        );
         foreach ($fileList as $file) {
             $this->client->deleteFile($file['id']);
         }
@@ -332,29 +334,16 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
                 [
                     'storage' => [
                         'input' => [
-                            "files" => [
-                                [
-                                    "tags" => [self::ABS_TEST_FILE_TAG],
-                                ],
-                            ],
+                            'tables' => [],
+                            "files" => [],
                         ],
                         'output' => [
-                            'tables' => [
-                                [
-                                    'source' => 'my-table.csv',
-                                    "destination" => "out.c-abs-workspace-runner-test.output-test-table",
-                                ],
-                            ],
-                            "files" => [
-                                [
-                                    "source" => "file",
-                                    "tags" => [self::ABS_TEST_FILE_TAG]
-                                ]
-                            ]
+                            'tables' => [],
+                            "files" => [],
                         ],
                     ],
                     'parameters' => [
-                        'operation' => 'create-abs-table',
+                        'operation' => 'create-abs-file',
                     ],
                 ],
                 []
@@ -364,9 +353,12 @@ class RunnerABSWorkspaceTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
-        $data = $this->client->getTableDataPreview('out.c-abs-workspace-runner-test.output-test-table');
-        self::assertEquals("\"first\",\"second\"\n\"1a\",\"2b\"\n", $data);
 
+        // the create-abs-file should create an output file and that should be in our storage
+        $files = $this->getClient()->listFiles((new ListFilesOptions())->setTags(['foo', 'bar']));
+
+        // all the test files should be cleared, so the only file there should be the one made by create-abs-file
+        $this->assertEquals('my_file.dat', $files[0]['name']);
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
