@@ -59,7 +59,7 @@ class ProviderInitializer
             $stagingFactory->addProvider(
                 $this->getAbsWorkspaceProvider($stagingFactory->getClientWrapper(), $componentId, $configId),
                 [
-                    InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::TABLE_DATA]),
+                    InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_DATA]),
                 ]
             );
         }
