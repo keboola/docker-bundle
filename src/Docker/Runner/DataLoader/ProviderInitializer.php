@@ -73,7 +73,7 @@ class ProviderInitializer
                 InputStrategyFactory::WORKSPACE_REDSHIFT => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_METADATA]),
                 InputStrategyFactory::WORKSPACE_SYNAPSE => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_METADATA]),
                 InputStrategyFactory::WORKSPACE_SNOWFLAKE => new Scope([Scope::FILE_DATA, Scope::FILE_METADATA, Scope::TABLE_METADATA]),
-                InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::FILE_METADATA, Scope::TABLE_METADATA]),
+                InputStrategyFactory::WORKSPACE_ABS => new Scope([Scope::TABLE_METADATA]),
             ]
         );
     }
