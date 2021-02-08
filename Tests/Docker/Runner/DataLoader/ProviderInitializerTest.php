@@ -206,10 +206,10 @@ class ProviderInitializerTest extends TestCase
             ],
             '/tmp/random/data'
         );
-        
+
         self::assertInstanceOf(InputFileLocal::class, $stagingFactory->getFileInputStrategy(InputStrategyFactory::LOCAL));
         self::assertInstanceOf(InputTableLocal::class, $stagingFactory->getTableInputStrategy(InputStrategyFactory::LOCAL, '', new InputTableStateList([])));
-        // self::assertInstanceOf(InputFileABSWorkspace::class, $stagingFactory->getFileInputStrategy(InputStrategyFactory::WORKSPACE_ABS));
+        self::assertInstanceOf(InputFileABSWorkspace::class, $stagingFactory->getFileInputStrategy(InputStrategyFactory::WORKSPACE_ABS));
         self::assertInstanceOf(InputTableABSWorkspace::class, $stagingFactory->getTableInputStrategy(InputStrategyFactory::WORKSPACE_ABS, '', new InputTableStateList([])));
 
         self::expectExceptionMessage('The project does not support "workspace-snowflake" table input backend.');
