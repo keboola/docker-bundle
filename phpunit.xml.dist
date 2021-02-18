@@ -6,7 +6,7 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="true"
+         stopOnFailure="false"
          syntaxCheck="false"
          bootstrap="bootstrap.php">
 
@@ -20,7 +20,6 @@
         <exclude>Tests/Controller</exclude>
         <exclude>Tests/Runner</exclude>
         <exclude>Tests/RunnerPart2</exclude>
-        <exclude>Tests/RunnerPart3</exclude>
         <exclude>Tests/Executor</exclude>
         <exclude>Tests/Docker/Container</exclude>
         <exclude>Tests/backend-specific-tests</exclude>
