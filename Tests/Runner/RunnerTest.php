@@ -2074,60 +2074,6 @@ class RunnerTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
 
-    public function testPermissionsFailedWithoutContainerRootUserFeature()
-    {
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-
-        $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'mytable.csv.gz',
-                            'destination' => 'in.c-runner-test.mytable',
-                            'columns' => ['col1'],
-                        ],
-                    ],
-                ],
-            ],
-            'parameters' => [
-                'script' => [
-                    'from subprocess import call',
-                    'import os',
-                    'os.makedirs("/data/out/tables/mytable.csv.gz")',
-                    'call(["chmod", "000", "/data/out/tables/mytable.csv.gz"])',
-                    'with open("/data/out/tables/mytable.csv.gz/part1", "w") as file:',
-                    '   file.write("value1")',
-                ],
-            ],
-        ];
-
-        $runner = $this->getRunner();
-        self::expectException(UserException::class);
-        // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
-        self::expectExceptionMessageRegExp('/Permission denied/');
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                $config,
-                []
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile()
-        );
-    }
-
     public function testAuthorizationDecrypt()
     {
         $componentData = [

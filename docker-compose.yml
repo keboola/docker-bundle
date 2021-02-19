@@ -1,10 +1,36 @@
-version: "2"
+version: '3'
+# for development purposes only
+
 services:
-  # for development purposes
-  php:
-    build: .
+  tests: &tests
+    build:
+      context: .
+      dockerfile: DockerfileTests
+    image: keboola/docker-runner-tests
     volumes:
-      - ./:/code
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/:/tmp/
     environment:
+      - AWS_ECR_ACCESS_KEY_ID
+      - AWS_ECR_REGISTRY_ACCOUNT_ID
+      - AWS_ECR_REGISTRY_REGION
+      - AWS_ECR_REGISTRY_URI
+      - AWS_ECR_SECRET_ACCESS_KEY
+      - AWS_KMS_TEST_KEY
+      - DOCKERHUB_PRIVATE_PASSWORD
+      - DOCKERHUB_PRIVATE_SERVER
+      - DOCKERHUB_PRIVATE_USERNAME
+      - GIT_PRIVATE_PASSWORD
+      - GIT_PRIVATE_USERNAME
       - STORAGE_API_TOKEN
       - STORAGE_API_URL
+      - STORAGE_API_URL_SYNAPSE
+      - STORAGE_API_TOKEN_SYNAPSE
+      - STORAGE_API_TOKEN_MASTER
+      - RUNNER_COMMAND_TO_GET_HOST_IP
+      - STORAGE_API_TOKEN_READ_ONLY
+      - RUN_SYNAPSE_TESTS
+
+  host-tests: 
+    <<: *tests
+    network_mode: host
