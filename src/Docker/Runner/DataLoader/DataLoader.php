@@ -235,6 +235,7 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
+                $systemMetadata,
                 $this->getStagingStorageOutput()
             );
             $tableWriter = new TableWriter($this->outputStrategyFactory);
