@@ -213,14 +213,14 @@ class DataLoader implements DataLoaderInterface
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
         $systemMetadata = [
-            'componentId' => $this->component->getId(),
-            'configurationId' => $this->configId,
+            TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
+            TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
         ];
         if ($this->configRowId) {
-            $systemMetadata['configurationRowId'] = $this->configRowId;
+            $systemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
         if ($this->clientWrapper->hasBranch()) {
-            $systemMetadata['branchId'] = $this->clientWrapper->getBranchId();
+            $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
 
         // Get default bucket
