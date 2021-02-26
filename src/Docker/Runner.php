@@ -240,6 +240,7 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $configData['storage'],
+                $configData['runtime'],
                 $component,
                 $outputFilter,
                 $jobDefinition->getConfigId(),

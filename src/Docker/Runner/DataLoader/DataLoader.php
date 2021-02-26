@@ -49,6 +49,11 @@ class DataLoader implements DataLoaderInterface
     private $storageConfig;
 
     /**
+     * @var array
+     */
+    private $runtimeConfig;
+
+    /**
      * @var string
      */
     private $defaultBucketName;
@@ -100,6 +105,7 @@ class DataLoader implements DataLoaderInterface
         LoggerInterface $logger,
         $dataDirectory,
         array $storageConfig,
+        array $runtimeConfig,
         Component $component,
         OutputFilterInterface $outputFilter,
         $configId = null,
@@ -109,6 +115,7 @@ class DataLoader implements DataLoaderInterface
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
         $this->storageConfig = $storageConfig;
+        $this->runtimeConfig = $runtimeConfig;
         $this->component = $component;
         $this->outputFilter = $outputFilter;
         $this->configId = $configId;
@@ -222,6 +229,9 @@ class DataLoader implements DataLoaderInterface
         if ($this->clientWrapper->hasBranch()) {
             $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
+        if ($this->useFileMetadataTags()) {
+            $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
+        }
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -235,7 +245,7 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $systemMetadata,
+                $this->useFileMetadataTags() ? $systemMetadata : [],
                 $this->getStagingStorageOutput()
             );
             $tableWriter = new TableWriter($this->outputStrategyFactory);
@@ -255,6 +265,11 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
         }
+    }
+
+    private function useFileMetadataTags()
+    {
+        return $this->component->allowUseFileStorageOnly() && $this->runtimeConfig['use-file-storage-only'];
     }
 
     private function getWorkspace()
