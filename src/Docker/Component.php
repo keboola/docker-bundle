@@ -159,6 +159,14 @@ class Component
     }
 
     /**
+     * @return bool
+     */
+    public function allowUseFileStorageOnly()
+    {
+        return in_array('allow-use-file-storage-only', $this->features);
+    }
+
+    /**
      * Change type of component image
      * @param $type
      * @return Component
