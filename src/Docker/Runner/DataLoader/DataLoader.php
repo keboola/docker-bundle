@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -94,32 +95,25 @@ class DataLoader implements DataLoaderInterface
      * @param ClientWrapper $clientWrapper
      * @param LoggerInterface $logger
      * @param string $dataDirectory
-     * @param array $storageConfig
-     * @param Component $component
+     * @param JobDefinition $jobDefinition
      * @param OutputFilterInterface $outputFilter
-     * @param string|null $configId
-     * @param string|null $configRowId
      */
     public function __construct(
         ClientWrapper $clientWrapper,
         LoggerInterface $logger,
         $dataDirectory,
-        array $storageConfig,
-        array $runtimeConfig,
-        Component $component,
-        OutputFilterInterface $outputFilter,
-        $configId = null,
-        $configRowId = null
+        JobDefinition $jobDefinition,
+        OutputFilterInterface $outputFilter
     ) {
         $this->clientWrapper = $clientWrapper;
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
-        $this->storageConfig = $storageConfig;
-        $this->runtimeConfig = $runtimeConfig;
-        $this->component = $component;
+        $this->storageConfig = $jobDefinition->getConfiguration()['storage'];
+        $this->runtimeConfig = $jobDefinition->getConfiguration()['runtime'];
+        $this->component = $jobDefinition->getComponent();
         $this->outputFilter = $outputFilter;
-        $this->configId = $configId;
-        $this->configRowId = $configRowId;
+        $this->configId = $jobDefinition->getConfigId();
+        $this->configRowId = $jobDefinition->getRowId();
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
         $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();

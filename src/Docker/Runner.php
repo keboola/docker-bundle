@@ -239,12 +239,8 @@ class Runner
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
-                $configData['storage'],
-                $configData['runtime'],
-                $component,
-                $outputFilter,
-                $jobDefinition->getConfigId(),
-                $jobDefinition->getRowId()
+                $jobDefinition,
+                $outputFilter
             );
         } else {
             $outputFilter = new NullFilter();
@@ -252,11 +248,8 @@ class Runner
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
-                $configData['storage'],
-                $component,
-                $outputFilter,
-                $jobDefinition->getConfigId(),
-                $jobDefinition->getRowId()
+                $jobDefinition,
+                $outputFilter
             );
         }
 
