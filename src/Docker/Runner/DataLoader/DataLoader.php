@@ -264,7 +264,7 @@ class DataLoader implements DataLoaderInterface
 
     private function useFileMetadataTags()
     {
-        return $this->component->allowUseFileStorageOnly() && $this->runtimeConfig['use-file-storage-only'];
+        return $this->component->allowUseFileStorageOnly() && $this->runtimeConfig['use_file_storage_only'];
     }
 
     private function getWorkspace()
