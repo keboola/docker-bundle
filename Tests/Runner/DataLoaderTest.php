@@ -80,6 +80,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $clientWrapper = new ClientWrapper($this->client, null, null);
         $clientWrapper->setBranchId('');
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Failed to write manifest for table sliced.csv');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
@@ -87,8 +89,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
             new OutputFilter()
         );
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Failed to write manifest for table sliced.csv');
         $dataLoader->storeOutput();
     }
 
