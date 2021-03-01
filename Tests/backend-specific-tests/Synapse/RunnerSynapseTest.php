@@ -454,6 +454,9 @@ class RunnerSynapseTest extends BaseRunnerTest
                     'parameters' => [
                         'operation' => 'create-abs-file',
                     ],
+                    'runtime' => [
+                        'use_file_storage_only' => true,
+                    ],
                 ],
                 []
             ),
@@ -464,11 +467,11 @@ class RunnerSynapseTest extends BaseRunnerTest
         );
         // wait for the file to show up in the listing
         sleep(2);
-        $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([
-            self::ABS_TEST_FILE_TAG,
-            'componentId: keboola.runner-workspace-abs-test',
-            sprintf('configurationId: %s', $configId)
-        ]));
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:' . self::ABS_TEST_FILE_TAG .
+            ' AND tags:"componentId: keboola.runner-workspace-abs-test" AND tags:' .
+            sprintf('"configurationId: %s"', $configId)
+        ));
         $this->assertCount(1, $fileList);
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
