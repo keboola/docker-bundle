@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
@@ -110,11 +111,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            [],
-            $this->getDefaultBucketComponent(),
-            new OutputFilter(),
-            'testConfig',
-            null
+            new JobDefinition([], $this->getDefaultBucketComponent(), 'testConfig'),
+            new OutputFilter()
         );
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();

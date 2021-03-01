@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
@@ -24,13 +25,15 @@ class DataLoaderABSTest extends BaseDataLoaderTest
     public function testLoadInputData()
     {
         $config = [
-            'input' => [
-                'tables' => [
-                    [
-                        'source' => 'in.c-docker-demo-testConfig-abs.test',
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-docker-demo-testConfig-abs.test',
+                        ],
                     ],
+                    'files' => [['tags' => ['docker-demo-test-abs']]]
                 ],
-                'files' => [['tags' => ['docker-demo-test-abs']]]
             ],
         ];
         $fs = new Filesystem();
@@ -46,12 +49,12 @@ class DataLoaderABSTest extends BaseDataLoaderTest
 
         $clientWrapper = new StorageClientWrapper($this->client, null, null);
         $clientWrapper->setBranchId('');
+        $jobDefinition = new JobDefinition($config, $this->getNoDefaultBucketComponent());
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $config,
-            $this->getNoDefaultBucketComponent(),
+            $jobDefinition,
             new OutputFilter()
         );
         $dataLoader->loadInputData(new InputTableStateList([]));
