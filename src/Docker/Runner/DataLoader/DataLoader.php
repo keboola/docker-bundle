@@ -108,8 +108,9 @@ class DataLoader implements DataLoaderInterface
         $this->clientWrapper = $clientWrapper;
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
-        $this->storageConfig = $jobDefinition->getConfiguration()['storage'];
-        $this->runtimeConfig = $jobDefinition->getConfiguration()['runtime'];
+        $configuration = $jobDefinition->getConfiguration();
+        $this->storageConfig = isset($configuration['storage']) ? $configuration['storage'] : [];
+        $this->runtimeConfig = isset($configuration['runtime']) ? $configuration['runtime'] : [];
         $this->component = $jobDefinition->getComponent();
         $this->outputFilter = $outputFilter;
         $this->configId = $jobDefinition->getConfigId();
