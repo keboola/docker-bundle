@@ -70,7 +70,14 @@ abstract class BaseDataLoaderTest extends TestCase
         $clientWrapper = new ClientWrapper($this->client, null, null);
         $clientWrapper->setBranchId('');
         $config = ['storage' => $storageConfig];
-        $jobDefinition = new JobDefinition($config, $this->getDefaultBucketComponent(), 'testConfig', $configRow);
+        $jobDefinition = new JobDefinition(
+            $config,
+            $this->getDefaultBucketComponent(),
+            'testConfig',
+            null,
+            [],
+            $configRow
+        );
         return new DataLoader(
             $clientWrapper,
             new NullLogger(),
