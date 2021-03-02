@@ -229,7 +229,7 @@ class DataLoader implements DataLoaderInterface
         if ($this->clientWrapper->hasBranch()) {
             $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
-        if ($this->useFileFileStorageOnly()) {
+        if ($this->useFileStorageOnly()) {
             $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
         }
 
@@ -245,10 +245,10 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $this->useFileFileStorageOnly() ? $systemMetadata : [],
+                $this->useFileStorageOnly() ? $systemMetadata : [],
                 $this->getStagingStorageOutput()
             );
-            if ($this->useFileFileStorageOnly()) {
+            if ($this->useFileStorageOnly()) {
                 $tablesFilesConfig = [];
                 foreach ($outputTablesConfig as $table) {
                     $tablesFilesConfig[] = [
@@ -283,7 +283,7 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function useFileFileStorageOnly()
+    private function useFileStorageOnly()
     {
         return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
     }
