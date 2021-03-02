@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
@@ -64,19 +65,25 @@ abstract class BaseDataLoaderTest extends TestCase
         }
     }
 
-    protected function getDataLoader(array $config, $configRow = null)
+    protected function getDataLoader(array $storageConfig, $configRow = null)
     {
         $clientWrapper = new ClientWrapper($this->client, null, null);
         $clientWrapper->setBranchId('');
+        $config = ['storage' => $storageConfig];
+        $jobDefinition = new JobDefinition(
+            $config,
+            $this->getDefaultBucketComponent(),
+            'testConfig',
+            null,
+            [],
+            $configRow
+        );
         return new DataLoader(
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $config,
-            $this->getDefaultBucketComponent(),
-            new OutputFilter(),
-            'testConfig',
-            $configRow
+            $jobDefinition,
+            new OutputFilter()
         );
     }
 

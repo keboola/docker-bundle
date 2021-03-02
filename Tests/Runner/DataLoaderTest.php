@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -45,8 +46,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            [],
-            $this->getDefaultBucketComponent(),
+            new JobDefinition([], $this->getDefaultBucketComponent()),
             new OutputFilter()
         );
     }
@@ -80,16 +80,15 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $clientWrapper = new ClientWrapper($this->client, null, null);
         $clientWrapper->setBranchId('');
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('Invalid type for path "container.storage.output.tables.0.primary_key". Expected array, but got string');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $config,
-            $this->getNoDefaultBucketComponent(),
+            new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
             new OutputFilter()
         );
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Failed to write manifest for table sliced.csv');
         $dataLoader->storeOutput();
     }
 
@@ -122,8 +121,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            [],
-            $component,
+            new JobDefinition([], $component),
             new OutputFilter()
         );
     }
@@ -200,8 +198,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            [],
-            $component,
+            new JobDefinition([], $component),
             new OutputFilter()
         );
         $dataLoader->storeOutput();
@@ -239,11 +236,8 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            [
+        $config = [
+            'storage' => [
                 'input' => [
                     'tables' => [
                         [
@@ -253,7 +247,12 @@ class DataLoaderTest extends BaseDataLoaderTest
                     ],
                 ],
             ],
-            $component,
+        ];
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
             new OutputFilter()
         );
         self::expectException(UserException::class);
@@ -301,11 +300,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
             'features' => ['dev-mapping-allowed'],
         ]);
-        $dataLoader = new DataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            [
+        $config = [
+            'storage' => [
                 'input' => [
                     'tables' => [
                         [
@@ -315,7 +311,12 @@ class DataLoaderTest extends BaseDataLoaderTest
                     ],
                 ],
             ],
-            $component,
+        ];
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
             new OutputFilter()
         );
         $ret = $dataLoader->loadInputData(new InputTableStateList([]));

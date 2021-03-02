@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
@@ -70,8 +71,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $config,
-            $this->getNoDefaultBucketComponent(),
+            new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
             new OutputFilter()
         );
         $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
@@ -128,8 +128,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
-            $config,
-            $this->getS3StagingComponent(),
+            new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
             new OutputFilter()
         );
         $dataLoader->loadInputData(new InputTableStateList([]));

@@ -3,6 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -49,6 +50,11 @@ class DataLoader implements DataLoaderInterface
     private $storageConfig;
 
     /**
+     * @var array
+     */
+    private $runtimeConfig;
+
+    /**
      * @var string
      */
     private $defaultBucketName;
@@ -89,30 +95,26 @@ class DataLoader implements DataLoaderInterface
      * @param ClientWrapper $clientWrapper
      * @param LoggerInterface $logger
      * @param string $dataDirectory
-     * @param array $storageConfig
-     * @param Component $component
+     * @param JobDefinition $jobDefinition
      * @param OutputFilterInterface $outputFilter
-     * @param string|null $configId
-     * @param string|null $configRowId
      */
     public function __construct(
         ClientWrapper $clientWrapper,
         LoggerInterface $logger,
         $dataDirectory,
-        array $storageConfig,
-        Component $component,
-        OutputFilterInterface $outputFilter,
-        $configId = null,
-        $configRowId = null
+        JobDefinition $jobDefinition,
+        OutputFilterInterface $outputFilter
     ) {
         $this->clientWrapper = $clientWrapper;
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
-        $this->storageConfig = $storageConfig;
-        $this->component = $component;
+        $configuration = $jobDefinition->getConfiguration();
+        $this->storageConfig = isset($configuration['storage']) ? $configuration['storage'] : [];
+        $this->runtimeConfig = isset($configuration['runtime']) ? $configuration['runtime'] : [];
+        $this->component = $jobDefinition->getComponent();
         $this->outputFilter = $outputFilter;
-        $this->configId = $configId;
-        $this->configRowId = $configRowId;
+        $this->configId = $jobDefinition->getConfigId();
+        $this->configRowId = $jobDefinition->getRowId();
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
         $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
@@ -213,14 +215,17 @@ class DataLoader implements DataLoaderInterface
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
         $systemMetadata = [
-            'componentId' => $this->component->getId(),
-            'configurationId' => $this->configId,
+            TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
+            TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
         ];
         if ($this->configRowId) {
-            $systemMetadata['configurationRowId'] = $this->configRowId;
+            $systemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
         if ($this->clientWrapper->hasBranch()) {
-            $systemMetadata['branchId'] = $this->clientWrapper->getBranchId();
+            $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+        }
+        if ($this->useFileMetadataTags()) {
+            $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
         }
 
         // Get default bucket
@@ -235,6 +240,7 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
+                $this->useFileMetadataTags() ? $systemMetadata : [],
                 $this->getStagingStorageOutput()
             );
             $tableWriter = new TableWriter($this->outputStrategyFactory);
@@ -254,6 +260,11 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
         }
+    }
+
+    private function useFileMetadataTags()
+    {
+        return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
     }
 
     private function getWorkspace()

@@ -402,4 +402,81 @@ class RunnerSynapseTest extends BaseRunnerTest
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
     }
+
+    public function testAbsWorkspaceMappingFilesOutput()
+    {
+        if (!RUN_SYNAPSE_TESTS) {
+            self::markTestSkipped('Synapse test is disabled.');
+        }
+        $this->clearBuckets();
+        $componentData = [
+            'id' => 'keboola.runner-workspace-abs-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'tag' => 'latest',
+                ],
+                'staging_storage' => [
+                    'input' => 'workspace-abs',
+                    'output' => 'workspace-abs',
+                ],
+            ],
+            // https://keboola.slack.com/archives/C02C3GZUS/p1598942156005100
+            // https://github.com/microsoft/msphpsql/issues/400#issuecomment-481722255
+            'features' => ['container-root-user', 'allow-use-file-storage-only'],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-workspace-abs-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'output' => [
+                            'files' => [
+                                [
+                                    'source' => 'my-file.dat',
+                                    'tags' => [self::ABS_TEST_FILE_TAG],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'create-abs-file',
+                    ],
+                    'runtime' => [
+                        'use_file_storage_only' => true,
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        // wait for the file to show up in the listing
+        sleep(2);
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:' . self::ABS_TEST_FILE_TAG .
+            ' AND tags:"componentId: keboola.runner-workspace-abs-test" AND tags:' .
+            sprintf('"configurationId: %s"', $configId)
+        ));
+        $this->assertCount(1, $fileList);
+        // assert the workspace is removed
+        $options = new ListConfigurationWorkspacesOptions();
+        $options->setComponentId('keboola.runner-workspace-abs-test');
+        $options->setConfigurationId($configId);
+        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+    }
 }
