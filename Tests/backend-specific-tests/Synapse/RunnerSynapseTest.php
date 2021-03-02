@@ -35,7 +35,10 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     private function clearFiles()
     {
-        $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([self::ABS_TEST_FILE_TAG]));
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([
+            self::ABS_TEST_FILE_TAG,
+            "componentId: keboola.runner-workspace-abs-test",
+        ]));
         foreach ($fileList as $file) {
             $this->client->deleteFile($file['id']);
         }
@@ -550,8 +553,7 @@ class RunnerSynapseTest extends BaseRunnerTest
 
         // but the file should exist
         $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
-            'tags:' . self::ABS_TEST_FILE_TAG .
-            ' AND tags:"componentId: keboola.runner-workspace-abs-test" AND tags:' .
+            'tags:"componentId: keboola.runner-workspace-abs-test" AND tags:' .
             sprintf('"configurationId: %s"', $configId)
         ));
         $this->assertCount(1, $fileList);
