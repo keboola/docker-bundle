@@ -253,7 +253,7 @@ class DataLoader implements DataLoaderInterface
                 foreach ($outputTablesConfig as $table) {
                     $tablesFilesConfig[] = [
                         'source' => $table['source'],
-                        'permanent' => true,
+                        'is_permanent' => true,
                     ];
                 }
                 $fileWriter->uploadFiles(
