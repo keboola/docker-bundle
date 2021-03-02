@@ -13,6 +13,7 @@ use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\InputMapping\Table\Options\ReaderOptions;
+use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
@@ -193,6 +194,10 @@ class DataLoader implements DataLoaderInterface
         return $resultInputTablesStateList;
     }
 
+    /**
+     * @return LoadTableQueue|null
+     * @throws \Exception
+     */
     public function storeOutput()
     {
         $this->logger->debug("Storing results.");
@@ -224,7 +229,7 @@ class DataLoader implements DataLoaderInterface
         if ($this->clientWrapper->hasBranch()) {
             $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
-        if ($this->useFileMetadataTags()) {
+        if ($this->useFileFileStorageOnly()) {
             $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
         }
 
@@ -240,9 +245,25 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $this->useFileMetadataTags() ? $systemMetadata : [],
+                $this->useFileFileStorageOnly() ? $systemMetadata : [],
                 $this->getStagingStorageOutput()
             );
+            if ($this->useFileFileStorageOnly()) {
+                $tablesFilesConfig = [];
+                foreach ($outputTablesConfig as $table) {
+                    $tablesFilesConfig[] = [
+                        'source' => $table['source'],
+                        'permanent' => true,
+                    ];
+                }
+                $fileWriter->uploadFiles(
+                    'data/out/tables/',
+                    ['mapping' => $tablesFilesConfig],
+                    $systemMetadata,
+                    $this->getStagingStorageOutput()
+                );
+                return null;
+            }
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
@@ -262,7 +283,7 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function useFileMetadataTags()
+    private function useFileFileStorageOnly()
     {
         return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
     }
