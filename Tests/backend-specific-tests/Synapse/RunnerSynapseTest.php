@@ -549,7 +549,7 @@ class RunnerSynapseTest extends BaseRunnerTest
             sprintf('"configurationId: %s"', $configId)
         ));
         $this->assertCount(1, $fileList);
-        $this->assertEquals('my-table.csv', $fileList[0]['name']);
+        $this->assertEquals('my_table.csv', $fileList[0]['name']);
 
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
