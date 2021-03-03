@@ -248,6 +248,10 @@ class DataLoader implements DataLoaderInterface
                 $this->useFileStorageOnly() ? $systemMetadata : [],
                 $this->getStagingStorageOutput()
             );
+            if (isset($this->storageConfig["input"]["files"])) {
+                // tag input files
+                $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
+            }
             if ($this->useFileStorageOnly()) {
                 $tablesFilesConfig = [];
                 foreach ($outputTablesConfig as $table) {
@@ -272,11 +276,6 @@ class DataLoader implements DataLoaderInterface
                 $systemMetadata,
                 $this->getStagingStorageOutput()
             );
-
-            if (isset($this->storageConfig["input"]["files"])) {
-                // tag input files
-                $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
-            }
             return $tableQueue;
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
