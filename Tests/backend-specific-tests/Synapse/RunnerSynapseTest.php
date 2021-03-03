@@ -55,7 +55,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     public function setUp()
     {
         if (!RUN_SYNAPSE_TESTS) {
-            return;
+            self::markTestSkipped('Synapse test is disabled.');
         }
         parent::setUp();
     }
@@ -83,9 +83,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testWorkspaceSynapseMapping()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearBuckets();
         $this->createBuckets();
         $temp = new Temp();
@@ -169,9 +166,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testAbsWorkspaceMapping()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearFiles();
         $temp = new Temp();
         $temp->initRunFolder();
@@ -245,9 +239,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testAbsWorkspaceMappingCombined()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearFiles();
         $this->clearBuckets();
         $this->createBuckets();
@@ -339,9 +330,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testAbsWorkspaceMappingOutput()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearBuckets();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
@@ -408,9 +396,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testAbsWorkspaceMappingFilesOutput()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearBuckets();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
@@ -485,9 +470,6 @@ class RunnerSynapseTest extends BaseRunnerTest
 
     public function testAbsWorkspaceOutputTablesAsFiles()
     {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
         $this->clearBuckets();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
