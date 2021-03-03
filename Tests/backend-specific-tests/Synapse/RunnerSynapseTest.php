@@ -433,6 +433,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                         'input' => [
                             'files' => [
                                 [
+                                    'tags' => [self::ABS_TEST_FILE_TAG],
                                     'processed_tags' => ['processed'],
                                 ],
                             ],
@@ -469,7 +470,12 @@ class RunnerSynapseTest extends BaseRunnerTest
         ));
         $this->assertCount(1, $fileList);
         $this->assertEquals('my-file.dat', $fileList[0]['name']);
-        $this->assertContains('processed', $fileList[0]['tags']);
+
+        // check that the input file is now tagged as processed
+        $inputFileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:' . self::ABS_TEST_FILE_TAG . ' AND tags:"processed"'
+        ));
+        $this->assertCount(1, $inputFileList);
 
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
