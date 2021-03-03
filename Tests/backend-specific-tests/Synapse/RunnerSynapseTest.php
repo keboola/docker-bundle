@@ -464,7 +464,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         // wait for the file to show up in the listing
         sleep(2);
         $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
-            'tags:' . self::ABS_TEST_FILE_TAG .
+            'tags:"output-mapping-test-tag"' .
             ' AND tags:"componentId: keboola.runner-workspace-abs-test" AND tags:' .
             sprintf('"configurationId: %s"', $configId)
         ));
