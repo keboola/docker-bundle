@@ -430,6 +430,13 @@ class RunnerSynapseTest extends BaseRunnerTest
                 $configId,
                 [
                     'storage' => [
+                        'input' => [
+                            'files' => [
+                                [
+                                    'processed_tags' => ['processed'],
+                                ],
+                            ],
+                        ],
                         'output' => [
                             'files' => [
                                 [
@@ -461,6 +468,9 @@ class RunnerSynapseTest extends BaseRunnerTest
             sprintf('"configurationId: %s"', $configId)
         ));
         $this->assertCount(1, $fileList);
+        $this->assertEquals('my-file.dat', $fileList[0]['name']);
+        $this->assertContains('processed', $fileList[0]['tags']);
+
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
@@ -539,6 +549,7 @@ class RunnerSynapseTest extends BaseRunnerTest
             sprintf('"configurationId: %s"', $configId)
         ));
         $this->assertCount(1, $fileList);
+        $this->assertEquals('', $fileList[0]['name']);
 
         // assert the workspace is removed
         $options = new ListConfigurationWorkspacesOptions();
