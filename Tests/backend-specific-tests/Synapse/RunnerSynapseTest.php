@@ -442,7 +442,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                             'files' => [
                                 [
                                     'source' => 'my-file.dat',
-                                    'tags' => [self::ABS_TEST_FILE_TAG],
+                                    'tags' => ['output-mapping-test-tag'],
                                 ],
                             ],
                         ],
