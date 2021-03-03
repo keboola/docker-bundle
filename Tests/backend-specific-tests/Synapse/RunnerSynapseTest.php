@@ -469,7 +469,7 @@ class RunnerSynapseTest extends BaseRunnerTest
             sprintf('"configurationId: %s"', $configId)
         ));
         $this->assertCount(1, $fileList);
-        $this->assertEquals('my-file.dat', $fileList[0]['name']);
+        $this->assertEquals('my_file.dat', $fileList[0]['name']);
 
         // check that the input file is now tagged as processed
         $inputFileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
