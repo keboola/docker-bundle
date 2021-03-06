@@ -321,20 +321,20 @@ class Runner
      * @param $mode
      * @param $jobId
      * @param $usageFile
-     * @param string|null $rowId
+     * @param array $rowIds
      * @return Output[]
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, $rowId = null)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds)
     {
-        if ($rowId) {
-            $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowId) {
+        if ($rowIds) {
+            $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
                 /**
                  * @var JobDefinition $jobDefinition
                  */
-                return $jobDefinition->getRowId() === $rowId;
+                return in_array($jobDefinition->getRowId(), $rowIds);
             });
             if (count($jobDefinitions) === 0) {
-                throw new UserException("Row {$rowId} not found.");
+                throw new UserException(sprintf('None of rows %s was found.', implode(',', $rowIds)));
             }
         }
 
@@ -346,7 +346,7 @@ class Runner
         foreach ($jobDefinitions as $jobDefinition) {
             $counter++;
             if ($jobDefinition->isDisabled()) {
-                if ($rowId !== null) {
+                if (in_array($jobDefinition->getRowId(), $rowIds)) {
                     $this->loggersService->getLog()->info(
                         "Force running disabled configuration: " . $jobDefinition->getConfigId()
                         . ', version: ' . $jobDefinition->getConfigVersion()

@@ -33,9 +33,6 @@
     <testsuite name="container-tests">
         <directory>Tests/Docker/Container</directory>
     </testsuite>
-    <testsuite name="executor-tests">
-        <directory>Tests/Executor</directory>
-    </testsuite>
     <testsuite name="s3-tests">
         <directory>Tests/backend-specific-tests/S3</directory>
     </testsuite>

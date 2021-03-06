@@ -159,7 +159,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -218,7 +219,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -272,7 +274,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            'row-2'
+            ['row-2']
         );
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -287,11 +289,11 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                         [
                             'source' => 'mytable.csv.gz',
                             'destination' => 'in.c-runner-test.mytable',
-                            'columns' => ['col1']
-                        ]
-                    ]
-                ]
-            ]
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
         ], $this->getComponent(), 'my-config', 1, [], 'row-1');
         $jobDefinitions = [$jobDefinition1];
         $runner = $this->getRunner();
@@ -303,7 +305,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            'row-2'
+            ['row-2']
         );
     }
 
@@ -315,7 +317,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -328,7 +331,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                         [
                             'source' => 'mytable',
                             'destination' => 'in.c-runner-test.mytable',
-                            'columns' => ['col1']
+                            'columns' => ['col1'],
                         ],
                     ],
                 ],
@@ -366,7 +369,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
@@ -385,7 +389,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                             [
                                 'source' => 'mytable',
                                 'destination' => 'in.c-runner-test.mytable',
-                                'columns' => ['col1']
+                                'columns' => ['col1'],
                             ],
                         ],
                     ],
@@ -434,7 +438,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            'disabled-row'
+            ['disabled-row']
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Force running disabled configuration: my-config, version: 1, row: disabled-row'
@@ -491,7 +495,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $metadata = new Metadata($this->getClient());
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable'));
@@ -551,7 +556,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -628,7 +634,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
@@ -691,7 +698,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertCount(2, $outputs);
         self::assertCount(1, $outputs[0]->getImages());
@@ -816,7 +824,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            'row-1'
+            ['row-1']
         );
         // the script logs all the input files, so fileId2 should be there, but not fileId1
         $this->assertTrue($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload'));
