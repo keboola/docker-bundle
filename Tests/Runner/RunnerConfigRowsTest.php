@@ -298,7 +298,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $jobDefinitions = [$jobDefinition1];
         $runner = $this->getRunner();
         self::expectException(UserException::class);
-        self::expectExceptionMessage('Row row-2 not found.');
+        self::expectExceptionMessage('None of rows "row-2" was found.');
         $runner->run(
             $jobDefinitions,
             'run',
