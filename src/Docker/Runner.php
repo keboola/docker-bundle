@@ -334,7 +334,7 @@ class Runner
                 return in_array($jobDefinition->getRowId(), $rowIds);
             });
             if (count($jobDefinitions) === 0) {
-                throw new UserException(sprintf('None of rows %s was found.', implode(',', $rowIds)));
+                throw new UserException(sprintf('None of rows "%s" was found.', implode(',', $rowIds)));
             }
         }
 
