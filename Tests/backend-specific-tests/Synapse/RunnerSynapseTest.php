@@ -148,7 +148,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                         'operation' => 'copy-synapse',
                     ],
                 ],
-                [],
+                []
             ),
             'run',
             'run',
