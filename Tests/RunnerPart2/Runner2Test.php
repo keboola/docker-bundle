@@ -67,7 +67,8 @@ class Runner2Test extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
