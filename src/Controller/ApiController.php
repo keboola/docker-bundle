@@ -18,7 +18,6 @@ use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Syrup\Job\Metadata\JobFactory;
-use Psr\Log\NullLogger;
 use Symfony\Component\HttpFoundation\Request;
 use Keboola\Syrup\Exception\UserException;
 
@@ -502,18 +501,25 @@ class ApiController extends BaseApiController
     {
         $tokenInfo = $this->storageApi->verifyToken();
         $projectId = $tokenInfo['owner']['id'];
-        $fromDate = $request->get('fromDate');
-        $toDate = $request->get('toDate');
-        $timezoneOffset = $request->get('timezoneOffset');
-        if (empty($fromDate)) {
-            throw new UserException('Missing "fromDate" query parameter.');
+
+        try {
+            $fromDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->get('fromDate', ''));
+        } catch (\Exception $e) {
+            throw new UserException('Missing or invalid "fromDate" query parameter.');
         }
-        if (empty($toDate)) {
-            throw new UserException('Missing "toDate" query parameter.');
+
+        try {
+            $toDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->get('toDate', ''));
+        } catch (\Exception $e) {
+            throw new UserException('Missing or invalid "toDate" query parameter.');
         }
-        if (empty($timezoneOffset)) {
-            throw new UserException('Missing "timezoneOffset" query parameter.');
+
+        try {
+            $timezone = new \DateTimeZone($request->get('timezoneOffset', ''));
+        } catch (\Exception $e) {
+            throw new UserException('Missing or invalid "timezoneOffset" query parameter.');
         }
+
         /** @var Client $client */
         $client = $this->container->get('syrup.elasticsearch.client');
         $data = $client->search([
@@ -531,8 +537,8 @@ class ApiController extends BaseApiController
                                     [
                                         'range' => [
                                             'endTime' => [
-                                                'gte' => $fromDate,
-                                                'lte' => $toDate,
+                                                'gte' => $fromDate->format('Y-m-d'),
+                                                'lte' => $toDate->format('Y-m-d'),
                                             ],
                                         ],
                                     ],
@@ -552,7 +558,7 @@ class ApiController extends BaseApiController
                             'field' => 'endTime',
                             "format" => 'yyyy-MM-dd',
                             'interval' => 'day',
-                            'time_zone' => $timezoneOffset,
+                            'time_zone' => $timezone->getName(),
                         ],
                         'aggs' => [
                             'jobs' => [
