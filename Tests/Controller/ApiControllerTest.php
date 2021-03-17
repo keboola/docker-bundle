@@ -1001,8 +1001,28 @@ class ApiControllerTest extends WebTestCase
         );
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
-        $this->assertEquals('Missing "fromDate" query parameter.', $response['message']);
+        $this->assertEquals('Missing or invalid "fromDate" query parameter.', $response['message']);
         $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyInvalidFromDate()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?'.http_build_query([
+                'fromDate' => '20200501',
+                'toDate' => '2020-05-07',
+                'timezoneOffset' => '+02:00',
+            ]),
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        self::assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        self::assertEquals('Missing or invalid "fromDate" query parameter.', $response['message']);
+        self::assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
     }
 
     public function testProjectStatsDailyMissingToDate()
@@ -1017,8 +1037,28 @@ class ApiControllerTest extends WebTestCase
         );
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
-        $this->assertEquals('Missing "toDate" query parameter.', $response['message']);
+        $this->assertEquals('Missing or invalid "toDate" query parameter.', $response['message']);
         $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyInvalidToDate()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?'.http_build_query([
+                'fromDate' => '2020-05-01',
+                'toDate' => '20200507',
+                'timezoneOffset' => '+02:00',
+            ]),
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        self::assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        self::assertEquals('Missing or invalid "toDate" query parameter.', $response['message']);
+        self::assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
     }
 
     public function testProjectStatsDailyMissingTimezone()
@@ -1033,8 +1073,28 @@ class ApiControllerTest extends WebTestCase
         );
         $response = json_decode($frameworkClient->getResponse()->getContent(), true);
         $this->assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
-        $this->assertEquals('Missing "timezoneOffset" query parameter.', $response['message']);
+        $this->assertEquals('Missing or invalid "timezoneOffset" query parameter.', $response['message']);
         $this->assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
+    }
+
+    public function testProjectStatsDailyInvalidTimezone()
+    {
+        $frameworkClient = $this->createClient();
+        $frameworkClient->request(
+            'GET',
+            '/docker/stats/project/daily?'.http_build_query([
+                'fromDate' => '2020-05-01',
+                'toDate' => '2020-05-07',
+                'timezoneOffset' => '7',
+            ]),
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN]
+        );
+        $response = json_decode($frameworkClient->getResponse()->getContent(), true);
+        self::assertArrayHasKey('message', $response, $frameworkClient->getResponse()->getContent());
+        self::assertEquals('Missing or invalid "timezoneOffset" query parameter.', $response['message']);
+        self::assertEquals(400, $frameworkClient->getResponse()->getStatusCode());
     }
 
     private function createSharedConfigurations()
