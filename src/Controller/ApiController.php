@@ -2,7 +2,10 @@
 
 namespace Keboola\DockerBundle\Controller;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Elasticsearch\Client;
+use Exception;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\CreditsChecker;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -69,7 +72,7 @@ class ApiController extends BaseApiController
      * Create syrup Job from request parameters.
      * @param array $params
      * @return \Symfony\Component\HttpFoundation\JsonResponse
-     * @throws \Exception
+     * @throws Exception
      */
     private function createJobFromParams($params)
     {
@@ -149,7 +152,7 @@ class ApiController extends BaseApiController
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function debugAction(Request $request)
     {
@@ -167,7 +170,7 @@ class ApiController extends BaseApiController
      *
      * @param Request $request
      * @return \Symfony\Component\HttpFoundation\Response
-     * @throws \Exception
+     * @throws Exception
      */
     public function debugBranchAction(Request $request)
     {
@@ -487,7 +490,7 @@ class ApiController extends BaseApiController
                 ],
             ],
         ]);
-        
+
         $response = ['jobs' => ['durationSum' => $data['aggregations']['jobs']['value']]];
         return $this->createJsonResponse($response, 200, ['Content-Type' => 'application/json']);
     }
@@ -502,21 +505,19 @@ class ApiController extends BaseApiController
         $tokenInfo = $this->storageApi->verifyToken();
         $projectId = $tokenInfo['owner']['id'];
 
-        try {
-            $fromDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->get('fromDate', ''));
-        } catch (\Exception $e) {
+        $fromDate = DateTimeImmutable::createFromFormat('Y-m-d', $request->get('fromDate', ''));
+        if ($fromDate === false) {
             throw new UserException('Missing or invalid "fromDate" query parameter.');
         }
 
-        try {
-            $toDate = \DateTimeImmutable::createFromFormat('Y-m-d', $request->get('toDate', ''));
-        } catch (\Exception $e) {
+        $toDate = DateTimeImmutable::createFromFormat('Y-m-d', $request->get('toDate', ''));
+        if ($toDate === false) {
             throw new UserException('Missing or invalid "toDate" query parameter.');
         }
 
         try {
-            $timezone = new \DateTimeZone($request->get('timezoneOffset', ''));
-        } catch (\Exception $e) {
+            $timezone = new DateTimeZone($request->get('timezoneOffset', ''));
+        } catch (Exception $e) {
             throw new UserException('Missing or invalid "timezoneOffset" query parameter.');
         }
 
