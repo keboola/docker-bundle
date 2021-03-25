@@ -22,6 +22,8 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\WorkspaceProvider\Provider\AbstractWorkspaceProvider;
+use Keboola\WorkspaceProvider\ProviderInitializer;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -84,12 +86,6 @@ class DataLoader implements DataLoaderInterface
     /** @var OutputStrategyFactory */
     private $outputStrategyFactory;
 
-    /** @var array */
-    private $tokenInfo;
-
-    /** @var ProviderInitializer */
-    private $initializer;
-
     /**
      * DataLoader constructor.
      *
@@ -118,23 +114,11 @@ class DataLoader implements DataLoaderInterface
         $this->configRowId = $jobDefinition->getRowId();
         $this->defaultBucketName = $this->getDefaultBucket();
         $this->validateStagingSetting();
-        $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
 
         $this->inputStrategyFactory = new InputStrategyFactory(
             $this->clientWrapper,
             $this->logger,
             $this->component->getConfigurationFormat()
-        );
-        $this->initializer = new ProviderInitializer();
-        $this->initializer->initializeInputProviders(
-            $this->inputStrategyFactory,
-            $this->getStagingStorageInput(),
-            $this->component->getId(),
-            $this->configId,
-            $this->tokenInfo,
-            /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
-                we need need the base dir here */
-            dirname($this->dataDirectory)
         );
 
         $this->outputStrategyFactory = new OutputStrategyFactory(
@@ -142,12 +126,27 @@ class DataLoader implements DataLoaderInterface
             $this->logger,
             $this->component->getConfigurationFormat()
         );
-        $this->initializer->initializeOutputProviders(
+
+        $providerInitializer = new ProviderInitializer();
+        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+
+        $providerInitializer->initializeInputProviders(
+            $this->inputStrategyFactory,
+            $this->getStagingStorageInput(),
+            $this->component->getId(),
+            $this->configId,
+            $tokenInfo,
+            /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
+                we need need the base dir here */
+            dirname($this->dataDirectory)
+        );
+
+        $providerInitializer->initializeOutputProviders(
             $this->outputStrategyFactory,
             $this->getStagingStorageInput(),
             $this->component->getId(),
             $this->configId,
-            $this->tokenInfo,
+            $tokenInfo,
             // see above
             dirname($this->dataDirectory)
         );
