@@ -143,7 +143,7 @@ class DataLoader implements DataLoaderInterface
 
         $providerInitializer->initializeOutputProviders(
             $this->outputStrategyFactory,
-            $this->getStagingStorageInput(),
+            $this->getStagingStorageOutput(),
             $this->component->getId(),
             $this->configId,
             $tokenInfo,
@@ -401,6 +401,7 @@ class DataLoader implements DataLoaderInterface
     {
         $workspaceTypes = [OutputStrategyFactory::WORKSPACE_ABS, OutputStrategyFactory::WORKSPACE_REDSHIFT,
             OutputStrategyFactory::WORKSPACE_SNOWFLAKE, OutputStrategyFactory::WORKSPACE_SYNAPSE];
+
         if (in_array($this->getStagingStorageInput(), $workspaceTypes)
             && in_array($this->getStagingStorageOutput(), $workspaceTypes)
             && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
