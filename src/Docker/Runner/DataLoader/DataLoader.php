@@ -424,18 +424,20 @@ class DataLoader implements DataLoaderInterface
     public function cleanWorkspace()
     {
         // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
-        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
-            if ($staging->getFileDataProvider()) {
-                $staging->getFileDataProvider()->cleanup();
-            }
-            if ($staging->getFileMetadataProvider()) {
-                $staging->getFileMetadataProvider()->cleanup();
-            }
-            if ($staging->getTableDataProvider()) {
-                $staging->getTableDataProvider()->cleanup();
-            }
-            if ($staging->getTableMetadataProvider()) {
-                $staging->getTableMetadataProvider()->cleanup();
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
+            foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
+                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                    continue;
+                }
+
+                try {
+                    $stagingProvider->cleanup();
+                } catch (ClientException $e) {
+                    // ignore errors if the cleanup fails because the workspace is already gone
+                    if ($e->getStringCode() !== 'workspace.workspaceNotFound') {
+                        throw $e;
+                    }
+                }
             }
         }
     }

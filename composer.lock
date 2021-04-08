@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.176.7",
+            "version": "3.177.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "734dd0535f8e70ebb59be37f522af4e45d006ace"
+                "reference": "ce99fa71b917428ae790063c41e9cc4b85592299"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/734dd0535f8e70ebb59be37f522af4e45d006ace",
-                "reference": "734dd0535f8e70ebb59be37f522af4e45d006ace",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ce99fa71b917428ae790063c41e9cc4b85592299",
+                "reference": "ce99fa71b917428ae790063c41e9cc4b85592299",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-04-02T18:16:40+00:00"
+            "time": "2021-04-07T18:13:10+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -2459,12 +2459,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/workspace-provider.git",
-                "reference": "9d0fad83dc169bf2037a873079f44cb8238fc3b9"
+                "reference": "7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/9d0fad83dc169bf2037a873079f44cb8238fc3b9",
-                "reference": "9d0fad83dc169bf2037a873079f44cb8238fc3b9",
+                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4",
+                "reference": "7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4",
                 "shasum": ""
             },
             "require": {
@@ -2497,10 +2497,7 @@
                 "keboola",
                 "workspace-provider"
             ],
-            "support": {
-                "source": "https://github.com/keboola/workspace-provider/tree/pepa_PS-1553_refactoringForDataLoader"
-            },
-            "time": "2021-04-08T12:07:08+00:00"
+            "time": "2021-04-08T14:11:08+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -3081,16 +3078,16 @@
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.30",
+            "version": "2.0.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "136b9ca7eebef78be14abf90d65c5e57b6bc5d36"
+                "reference": "233a920cb38636a43b18d428f9a8db1f0a1a08f4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/136b9ca7eebef78be14abf90d65c5e57b6bc5d36",
-                "reference": "136b9ca7eebef78be14abf90d65c5e57b6bc5d36",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/233a920cb38636a43b18d428f9a8db1f0a1a08f4",
+                "reference": "233a920cb38636a43b18d428f9a8db1f0a1a08f4",
                 "shasum": ""
             },
             "require": {
@@ -3182,7 +3179,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-12-17T05:42:04+00:00"
+            "time": "2021-04-06T13:56:45+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -7266,5 +7263,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "1.1.0"
 }
