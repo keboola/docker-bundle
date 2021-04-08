@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
+use Keboola\InputMapping\Staging\Definition;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
@@ -24,9 +25,10 @@ use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Keboola\WorkspaceProvider\Exception\WorkspaceProviderException;
 use Keboola\WorkspaceProvider\InputProviderInitializer;
 use Keboola\WorkspaceProvider\OutputProviderInitializer;
+use Keboola\WorkspaceProvider\Provider\AbstractStagingProvider;
+use Keboola\WorkspaceProvider\Provider\WorkspaceStagingProvider;
 use Keboola\WorkspaceProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -305,37 +307,27 @@ class DataLoader implements DataLoaderInterface
         // this returns the first workspace found, which is ok so far because there can only be one
         // (ensured in validateStagingSetting())
         // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
-        foreach ($this->inputStrategyFactory->getStrategyMap() as $staging) {
-            try {
-                if ($staging->getFileDataProvider()) {
-                    return $staging->getFileDataProvider()->getCredentials();
+        foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
+            foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
+                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                    continue;
                 }
-            } catch (WorkspaceProviderException $e) {
-                // no workspace here, try another one
-            }
-            try {
-                if ($staging->getFileMetadataProvider()) {
-                    return $staging->getFileMetadataProvider()->getCredentials();
-                }
-            } catch (WorkspaceProviderException $e) {
-                // no workspace here, try another one
-            }
-            try {
-                if ($staging->getTableDataProvider()) {
-                    return $staging->getTableDataProvider()->getCredentials();
-                }
-            } catch (WorkspaceProviderException $e) {
-                // no workspace here, try another one
-            }
-            try {
-                if ($staging->getTableMetadataProvider()) {
-                    return $staging->getTableMetadataProvider()->getCredentials();
-                }
-            } catch (WorkspaceProviderException $e) {
-                // no workspace here, try another one
+
+                return $stagingProvider->getCredentials();
             }
         }
         return [];
+    }
+
+    /**
+     * @return iterable<AbstractStagingProvider>
+     */
+    private function getStagingProviders(Definition $stagingDefinition)
+    {
+        yield $stagingDefinition->getFileDataProvider();
+        yield $stagingDefinition->getFileMetadataProvider();
+        yield $stagingDefinition->getTableDataProvider();
+        yield $stagingDefinition->getTableMetadataProvider();
     }
 
     /**

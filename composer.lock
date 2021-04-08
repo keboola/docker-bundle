@@ -2459,12 +2459,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/workspace-provider.git",
-                "reference": "10409623efbe1139db6b812de106e7288c960c44"
+                "reference": "9d0fad83dc169bf2037a873079f44cb8238fc3b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/10409623efbe1139db6b812de106e7288c960c44",
-                "reference": "10409623efbe1139db6b812de106e7288c960c44",
+                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/9d0fad83dc169bf2037a873079f44cb8238fc3b9",
+                "reference": "9d0fad83dc169bf2037a873079f44cb8238fc3b9",
                 "shasum": ""
             },
             "require": {
@@ -2500,7 +2500,7 @@
             "support": {
                 "source": "https://github.com/keboola/workspace-provider/tree/pepa_PS-1553_refactoringForDataLoader"
             },
-            "time": "2021-04-08T06:42:32+00:00"
+            "time": "2021-04-08T12:07:08+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
