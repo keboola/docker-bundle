@@ -2459,12 +2459,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/workspace-provider.git",
-                "reference": "f3ceb108f4ba7dba0fdf03ebec05f3860249b344"
+                "reference": "10409623efbe1139db6b812de106e7288c960c44"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/f3ceb108f4ba7dba0fdf03ebec05f3860249b344",
-                "reference": "f3ceb108f4ba7dba0fdf03ebec05f3860249b344",
+                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/10409623efbe1139db6b812de106e7288c960c44",
+                "reference": "10409623efbe1139db6b812de106e7288c960c44",
                 "shasum": ""
             },
             "require": {
@@ -2497,7 +2497,10 @@
                 "keboola",
                 "workspace-provider"
             ],
-            "time": "2021-04-01T14:51:08+00:00"
+            "support": {
+                "source": "https://github.com/keboola/workspace-provider/tree/pepa_PS-1553_refactoringForDataLoader"
+            },
+            "time": "2021-04-08T06:42:32+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -7263,5 +7266,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
