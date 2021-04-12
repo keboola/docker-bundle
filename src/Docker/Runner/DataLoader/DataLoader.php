@@ -25,11 +25,11 @@ use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Keboola\WorkspaceProvider\InputProviderInitializer;
-use Keboola\WorkspaceProvider\OutputProviderInitializer;
-use Keboola\WorkspaceProvider\Provider\AbstractStagingProvider;
-use Keboola\WorkspaceProvider\Provider\WorkspaceStagingProvider;
-use Keboola\WorkspaceProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
+use Keboola\StagingProvider\InputProviderInitializer;
+use Keboola\StagingProvider\OutputProviderInitializer;
+use Keboola\StagingProvider\Provider\AbstractStagingProvider;
+use Keboola\StagingProvider\Provider\WorkspaceStagingProvider;
+use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -135,6 +135,10 @@ class DataLoader implements DataLoaderInterface
 
         $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
 
+        /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
+            we need need the base dir here */
+        $dataDirectory = dirname($this->dataDirectory);
+
         $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
             new Components($this->clientWrapper->getBasicClient()),
             new Workspaces($this->clientWrapper->getBasicClient()),
@@ -143,24 +147,22 @@ class DataLoader implements DataLoaderInterface
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
-            $workspaceProviderFactory
+            $workspaceProviderFactory,
+            $dataDirectory
         );
         $inputProviderInitializer->initializeProviders(
             $this->getStagingStorageInput(),
-            $tokenInfo,
-            /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
-                we need need the base dir here */
-            dirname($this->dataDirectory)
+            $tokenInfo
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
             $this->outputStrategyFactory,
-            $workspaceProviderFactory
+            $workspaceProviderFactory,
+            $dataDirectory
         );
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
-            $tokenInfo,
-            dirname($this->dataDirectory)
+            $tokenInfo
         );
     }
 

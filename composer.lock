@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c15391e9eeb921d399cfc15786bfc43a",
+    "content-hash": "2a68fa25fb3e6e4ae6ab99a28adeedc0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2286,6 +2286,55 @@
             "time": "2019-01-11T10:21:17+00:00"
         },
         {
+            "name": "keboola/staging-provider",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/keboola/staging-provider.git",
+                "reference": "9159ac94e897fbe953cb9238f422461511ec889e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/9159ac94e897fbe953cb9238f422461511ec889e",
+                "reference": "9159ac94e897fbe953cb9238f422461511ec889e",
+                "shasum": ""
+            },
+            "require": {
+                "keboola/input-mapping": "^12.5",
+                "keboola/output-mapping": "^12.5|^13.2|^14.3",
+                "keboola/storage-api-client": "^11.2|^12.0",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^5.7",
+                "squizlabs/php_codesniffer": "^3.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Keboola\\StagingProvider\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Keboola",
+                    "email": "devel@keboola.com"
+                }
+            ],
+            "keywords": [
+                "keboola",
+                "staging-provider"
+            ],
+            "support": {
+                "source": "https://github.com/keboola/staging-provider/tree/1.0.0"
+            },
+            "time": "2021-04-12T15:17:11+00:00"
+        },
+        {
             "name": "keboola/storage-api-client",
             "version": "11.7.0",
             "source": {
@@ -2452,52 +2501,6 @@
             ],
             "description": "Syrup",
             "time": "2020-11-30T10:12:09+00:00"
-        },
-        {
-            "name": "keboola/workspace-provider",
-            "version": "dev-pepa_PS-1553_refactoringForDataLoader",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/keboola/workspace-provider.git",
-                "reference": "7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/keboola/workspace-provider/zipball/7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4",
-                "reference": "7347ffda0eb2b24f1c46af8060b0a9ef37bc42e4",
-                "shasum": ""
-            },
-            "require": {
-                "keboola/input-mapping": "^12.5",
-                "keboola/output-mapping": "^12.5|^13.2|^14.3",
-                "keboola/storage-api-client": "^11.2|^12.0",
-                "php": ">=5.6"
-            },
-            "require-dev": {
-                "phpunit/phpunit": "^5.7",
-                "squizlabs/php_codesniffer": "^3.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Keboola\\WorkspaceProvider\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Keboola",
-                    "email": "devel@keboola.com"
-                }
-            ],
-            "keywords": [
-                "keboola",
-                "workspace-provider"
-            ],
-            "time": "2021-04-08T14:11:08+00:00"
         },
         {
             "name": "kriswallsmith/assetic",
@@ -7250,9 +7253,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/workspace-provider": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -7263,5 +7264,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
