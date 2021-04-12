@@ -18,9 +18,9 @@
         "keboola/object-encryptor": "^0.3",
         "keboola/output-mapping": "^14.0",
         "keboola/php-utils": "^2.0",
+        "keboola/staging-provider": "^1.0",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
         "keboola/syrup": "^11.3",
-        "keboola/workspace-provider": "^1.0",
         "mustache/mustache": "^2.13",
         "symfony/validator": "^v2.8.52|^v4.4.11",
         "vkartaviy/retry": "^v0.2.2"
