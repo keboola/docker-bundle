@@ -157,4 +157,16 @@ class ContainerConfigurationTest extends TestCase
             ]
         ]);
     }
+
+    public function testRuntimeConfiguration()
+    {
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'safe' => true,
+                    'image_tag' => '12.7.0',
+                ],
+            ],
+        ]);
+    }
 }

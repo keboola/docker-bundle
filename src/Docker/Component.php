@@ -254,6 +254,18 @@ class Component
     {
         return $this->data['definition'];
     }
+    
+    public function setImageTag($tag)
+    {
+        if (!is_string($tag)) {
+            throw new \InvalidArgumentException(sprintf(
+                'Argument $tag is expected to be a string, %s given',
+                gettype($tag)
+            ));
+        }
+
+        $this->data['definition']['tag'] = $tag;
+    }
 
     public function setNetworkType($value)
     {

@@ -302,43 +302,111 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $jobExecutor->execute($job);
     }
 
-    public function testRunTag()
+    /**
+     * @dataProvider tagOverrideTestDataProvider
+     */
+    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedOverrideVersion)
     {
-        $this->createBuckets();
-        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-        $csv->writeRow(['name', 'oldValue', 'newValue']);
-        $csv->writeRow(['price', '100', '1000']);
-        $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
+        $requestData = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'configData' => [
+                    'parameters' => [
+                        'script' => [
+                            'print("Hello world!")',
+                        ],
+                    ],
+                ],
+            ],
+        ];
 
-        $data = $this->getJobParameters();
-        $data['params']['tag'] = '1.1.12';
-        $jobExecutor = $this->getJobExecutor([], []);
-        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
+        $storedConfig = [];
+
+        if ($storedConfigTag !== null) {
+            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
+        }
+
+        if ($requestConfigTag !== null) {
+            $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
+        }
+
+        if ($requestParamsTag !== null) {
+            $requestData['params']['tag'] = $requestParamsTag;
+        }
+
+        $jobExecutor = $this->getJobExecutor($storedConfig, []);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        $csvData = $this->getClient()->getTableDataPreview('out.c-executor-test.output');
-        $data = Client::parseCsv($csvData);
-        usort($data, function ($a, $b) {
-            return strcmp($a['name'], $b['name']);
-        });
-        self::assertEquals(
-            [
-                [
-                    'name' => 'price',
-                    'oldValue' => '100',
-                    'newValue' => '1000',
-                ],
-                [
-                    'name' =>  'size',
-                    'oldValue' => 'small',
-                    'newValue' => 'big',
-                ],
-            ],
-            $data
-        );
-        self::assertTrue($this->getRunnerHandler()->hasWarning('Overriding component tag with: \'1.1.12\''));
+        if ($expectedOverrideVersion !== null) {
+            self::assertTrue($this->getRunnerHandler()->hasWarning(sprintf(
+                'Overriding component tag with: \'%s\'',
+                $expectedOverrideVersion
+            )));
+        } else {
+            self::assertFalse($this->getRunnerHandler()->hasWarningThatContains('Overriding component tag'));
+        }
+    }
+
+    public function tagOverrideTestDataProvider()
+    {
+        yield 'no override' => [
+            'storedConfigTag' => null,
+            'requestConfigTag' => null,
+            'requestParamsTag' => null,
+            'expectedOverrideVersion' => null,
+        ];
+        
+        yield 'stored config' => [
+            'storedConfigTag' => '1.2.5',
+            'requestConfigTag' => null,
+            'requestParamsTag' => null,
+            'expectedOverrideVersion' => null,
+        ];
+
+        yield 'request config' => [
+            'storedConfigTag' => null,
+            'requestConfigTag' => '1.2.6',
+            'requestParamsTag' => null,
+            'expectedOverrideVersion' => '1.2.6',
+        ];
+
+        yield 'request params' => [
+            'storedConfigTag' => null,
+            'requestConfigTag' => null,
+            'requestParamsTag' => '1.2.7',
+            'expectedOverrideVersion' => '1.2.7',
+        ];
+
+        yield 'stored config + request config' => [
+            'storedConfigTag' => '1.2.5',
+            'requestConfigTag' => '1.2.6',
+            'requestParamsTag' => null,
+            'expectedOverrideVersion' => '1.2.6',
+        ];
+
+        yield 'stored config + request params' => [
+            'storedConfigTag' => '1.2.5',
+            'requestConfigTag' => null,
+            'requestParamsTag' => '1.2.7',
+            'expectedOverrideVersion' => '1.2.7',
+        ];
+
+        yield 'request config + request params' => [
+            'storedConfigTag' => null,
+            'requestConfigTag' => '1.2.6',
+            'requestParamsTag' => '1.2.7',
+            'expectedOverrideVersion' => '1.2.7',
+        ];
+
+        yield 'all ways' => [
+            'storedConfigTag' => '1.2.5',
+            'requestConfigTag' => '1.2.6',
+            'requestParamsTag' => '1.2.7',
+            'expectedOverrideVersion' => '1.2.7',
+        ];
     }
 
     public function testIncrementalTags()
