@@ -262,6 +262,6 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $jobExecutor = $this->getJobExecutor($configuration, []);
         $jobExecutor->execute($job);
 
-        self::assertTrue($this->getRunnerHandler()->hasWarning('Overriding component tag with: \'1.1.12\''));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Using component tag: "1.1.12"'));
     }
 }
