@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Executor;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
@@ -263,115 +263,5 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $jobExecutor->execute($job);
 
         self::assertTrue($this->getRunnerHandler()->hasWarning('Overriding component tag with: \'1.1.12\''));
-    }
-
-    /**
-     * @dataProvider tagOverrideTestDataProvider
-     */
-    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedOverrideVersion)
-    {
-        $requestData = [
-            'params' => [
-                'component' => 'keboola.python-transformation',
-                'mode' => 'run',
-                'config' => 'executor-configuration',
-            ],
-        ];
-
-        $storedConfig = [
-            'parameters' => [
-                'script' => [
-                    'print("Hello world!")',
-                ],
-            ],
-        ];
-
-        if ($storedConfigTag !== null) {
-            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
-        }
-
-        if ($requestConfigTag !== null) {
-            $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
-            $requestData['params']['configData']['parameters']['script'] = [
-                'print("Hello world!")',
-            ];
-        }
-
-        if ($requestParamsTag !== null) {
-            $requestData['params']['tag'] = $requestParamsTag;
-        }
-
-        $jobExecutor = $this->getJobExecutor($storedConfig, []);
-        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
-        $job->setId(123456);
-        $jobExecutor->execute($job);
-
-        if ($expectedOverrideVersion !== null) {
-            self::assertTrue($this->getRunnerHandler()->hasWarning(sprintf(
-                'Overriding component tag with: \'%s\'',
-                $expectedOverrideVersion
-            )));
-        } else {
-            self::assertFalse($this->getRunnerHandler()->hasWarningThatContains('Overriding component tag'));
-        }
-    }
-
-    public function tagOverrideTestDataProvider()
-    {
-        yield 'no override' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => null,
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
-        ];
-
-        yield 'stored config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.5',
-        ];
-
-        yield 'request config' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
-        ];
-
-        yield 'request params' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'stored config + request config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
-        ];
-
-        yield 'stored config + request params' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'request config + request params' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'all ways' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
     }
 }

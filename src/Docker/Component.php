@@ -254,7 +254,7 @@ class Component
     {
         return $this->data['definition'];
     }
-    
+
     public function setImageTag($tag)
     {
         if (!is_string($tag)) {
@@ -265,6 +265,11 @@ class Component
         }
 
         $this->data['definition']['tag'] = $tag;
+    }
+
+    public function getImageTag()
+    {
+        return $this->data['definition']['tag'];
     }
 
     public function setNetworkType($value)

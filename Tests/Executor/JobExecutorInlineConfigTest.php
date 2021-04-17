@@ -305,7 +305,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     /**
      * @dataProvider tagOverrideTestDataProvider
      */
-    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedOverrideVersion)
+    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedVersion)
     {
         $requestData = [
             'params' => [
@@ -340,14 +340,9 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        if ($expectedOverrideVersion !== null) {
-            self::assertTrue($this->getRunnerHandler()->hasWarning(sprintf(
-                'Overriding component tag with: \'%s\'',
-                $expectedOverrideVersion
-            )));
-        } else {
-            self::assertFalse($this->getRunnerHandler()->hasWarningThatContains('Overriding component tag'));
-        }
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', $expectedVersion)
+        ));
     }
 
     public function tagOverrideTestDataProvider()
@@ -356,56 +351,56 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             'storedConfigTag' => null,
             'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
+            'expectedVersion' => '1.4.0',
         ];
-        
+
         yield 'stored config' => [
             'storedConfigTag' => '1.2.5',
             'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
+            'expectedVersion' => '1.4.0',
         ];
 
         yield 'request config' => [
             'storedConfigTag' => null,
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
+            'expectedVersion' => '1.2.6',
         ];
 
         yield 'request params' => [
             'storedConfigTag' => null,
             'requestConfigTag' => null,
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
 
         yield 'stored config + request config' => [
             'storedConfigTag' => '1.2.5',
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
+            'expectedVersion' => '1.2.6',
         ];
 
         yield 'stored config + request params' => [
             'storedConfigTag' => '1.2.5',
             'requestConfigTag' => null,
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
 
         yield 'request config + request params' => [
             'storedConfigTag' => null,
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
 
         yield 'all ways' => [
             'storedConfigTag' => '1.2.5',
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
     }
 
