@@ -321,9 +321,6 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             ],
         ];
 
-        $storedConfig = [];
-        $storedConfig['runtime']['image_tag'] = 'this value will never be used';
-
         if ($requestConfigTag !== null) {
             $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
         }
@@ -332,7 +329,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             $requestData['params']['tag'] = $requestParamsTag;
         }
 
-        $jobExecutor = $this->getJobExecutor($storedConfig, []);
+        $jobExecutor = $this->getJobExecutor([], []);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
         $job->setId(123456);
         $jobExecutor->execute($job);
@@ -369,6 +366,36 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         ];
     }
 
+    public function testStoredConfigTagIsOverriddenByRequestEvenIfNoTag()
+    {
+        $requestData = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'configData' => [
+                    'parameters' => [
+                        'script' => [
+                            'print("Hello world!")',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $stored = [
+            'runtime' => [
+                'image_tag' => 'never used',
+            ],
+        ];
+
+        $jobExecutor = $this->getJobExecutor($stored, []);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', '1.4.0')
+        ));
+    }
     public function testIncrementalTags()
     {
         $this->clearFiles();
