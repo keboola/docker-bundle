@@ -210,58 +210,72 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $jobExecutor->execute($job);
     }
 
-    public function testTagCanBeOverriddenByConfiguration()
+    /**
+     * @dataProvider tagOverrideTestDataProvider
+     */
+    public function testTagOverride($storedConfigTag, $requestParamsTag, $expectedVersion)
     {
-        $this->createBuckets();
-        $configuration = [
-            'runtime' => [
-                'image_tag' => '1.1.12',
-            ],
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-executor-test.source',
-                            'destination' => 'input.csv',
-                        ],
-                    ],
-                ],
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'result.csv',
-                            'destination' => 'out.c-executor-test.output',
-                        ],
-                    ],
-                ],
-            ],
+        $storedConfig = [
             'parameters' => [
                 'script' => [
-                    'from shutil import copyfile',
-                    'copyfile("/data/in/tables/input.csv", "/data/out/tables/result.csv")',
+                    'print("Hello world!")',
                 ],
             ],
         ];
-        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-        $csv->writeRow(['name', 'oldValue', 'newValue']);
-        $csv->writeRow(['price', '100', '1000']);
-        $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
 
-        $data = [
+        if ($storedConfigTag !== null) {
+            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
+        }
+
+        $requestData = [
             'params' => [
                 'component' => 'keboola.python-transformation',
                 'mode' => 'run',
                 'config' => 'executor-configuration',
             ],
         ];
+        if ($requestParamsTag !== null) {
+            $requestData['params']['tag'] = $requestParamsTag;
+        }
 
-        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
+        $jobExecutor = $this->getJobExecutor($storedConfig, []);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
         $job->setId(123456);
-
-        $jobExecutor = $this->getJobExecutor($configuration, []);
         $jobExecutor->execute($job);
 
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Using component tag: "1.1.12"'));
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', $expectedVersion)
+        ));
     }
+
+    /**
+     * @return \Generator
+     */
+    public function tagOverrideTestDataProvider()
+    {
+        yield 'no override' => [
+            'storedConfigTag' => null,
+            'requestParamsTag' => null,
+            'expectedVersion' => '1.4.0',
+        ];
+
+        yield 'stored config' => [
+            'storedConfigTag' => '1.2.5',
+            'requestParamsTag' => null,
+            'expectedVersion' => '1.2.5',
+        ];
+
+        yield 'request params' => [
+            'storedConfigTag' => null,
+            'requestParamsTag' => '1.2.7',
+            'expectedVersion' => '1.2.7',
+        ];
+
+        yield 'all ways' => [
+            'storedConfigTag' => '1.2.5',
+            'requestParamsTag' => '1.2.7',
+            'expectedVersion' => '1.2.7',
+        ];
+    }
+
 }

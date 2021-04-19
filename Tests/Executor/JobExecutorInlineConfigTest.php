@@ -305,7 +305,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     /**
      * @dataProvider tagOverrideTestDataProvider
      */
-    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedVersion)
+    public function testTagOverride($requestConfigTag, $requestParamsTag, $expectedVersion)
     {
         $requestData = [
             'params' => [
@@ -322,10 +322,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         ];
 
         $storedConfig = [];
-
-        if ($storedConfigTag !== null) {
-            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
-        }
+        $storedConfig['runtime']['image_tag'] = 'this value will never be used';
 
         if ($requestConfigTag !== null) {
             $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
@@ -348,56 +345,24 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     public function tagOverrideTestDataProvider()
     {
         yield 'no override' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => null,
-            'requestParamsTag' => null,
-            'expectedVersion' => '1.4.0',
-        ];
-
-        yield 'stored config' => [
-            'storedConfigTag' => '1.2.5',
             'requestConfigTag' => null,
             'requestParamsTag' => null,
             'expectedVersion' => '1.4.0',
         ];
 
         yield 'request config' => [
-            'storedConfigTag' => null,
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => null,
             'expectedVersion' => '1.2.6',
         ];
 
         yield 'request params' => [
-            'storedConfigTag' => null,
             'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedVersion' => '1.2.7',
-        ];
-
-        yield 'stored config + request config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedVersion' => '1.2.6',
-        ];
-
-        yield 'stored config + request params' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedVersion' => '1.2.7',
-        ];
-
-        yield 'request config + request params' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
             'expectedVersion' => '1.2.7',
         ];
 
         yield 'all ways' => [
-            'storedConfigTag' => '1.2.5',
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
             'expectedVersion' => '1.2.7',
