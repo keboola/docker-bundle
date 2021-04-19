@@ -277,5 +277,4 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
             'expectedVersion' => '1.2.7',
         ];
     }
-
 }
