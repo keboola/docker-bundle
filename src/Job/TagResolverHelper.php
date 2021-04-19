@@ -33,6 +33,24 @@ class TagResolverHelper
         if (isset($requestParameters['tag']) &&
             $requestParameters['tag'] !== ''
         ) {
+            return $requestParameters['tag'];
+        }
+        
+        if (isset($componentConfiguration['runtime']['image_tag']) &&
+            $componentConfiguration['runtime']['image_tag'] !== ''
+        ) {
+            return $componentConfiguration['runtime']['image_tag'];
+        }
+        
+        return $component->getImageTag();
+    }
+        array $requestParameters,
+        array $componentConfiguration,
+        Component $component
+    ) {
+        if (isset($requestParameters['tag']) &&
+            $requestParameters['tag'] !== ''
+        ) {
             $tag = $requestParameters['tag'];
         } elseif (isset($componentConfiguration['runtime']['image_tag']) &&
             $componentConfiguration['runtime']['image_tag'] !== ''
