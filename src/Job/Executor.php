@@ -188,23 +188,26 @@ class Executor extends BaseExecutor
             $jobDefinitionParser = new JobDefinitionParser();
 
             $component = $this->getComponent($params["component"]);
-            if (!empty($params['tag'])) {
-                $this->logger->warn("Overriding component tag with: '" . $params['tag'] . "'");
-                $component['data']['definition']['tag'] = $params['tag'];
-            }
-
             $componentClass = new Component($component);
+
             if ($componentClass->blockBranchJobs() && $this->clientWrapper->hasBranch()) {
                 throw new \Keboola\Syrup\Exception\UserException('This component cannot be run in a development branch.');
             }
+
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
                 $configId = null;
                 if (isset($params["config"])) {
                     $configId = $params["config"];
                 }
-                $this->checkUnsafeConfiguration($componentClass, $params['configData'], $this->clientWrapper->getBranchId());
+                $this->checkUnsafeConfiguration(
+                    $componentClass,
+                    $params['configData'],
+                    $this->clientWrapper->getBranchId()
+                );
+
                 $jobDefinitionParser->parseConfigData($componentClass, $params["configData"], $configId);
+                $componentConfiguration = $params["configData"];
             } else {
                 // Read config from storage
                 try {
@@ -214,8 +217,17 @@ class Executor extends BaseExecutor
                     } else {
                         $configuration = $this->components->getConfiguration($component["id"], $params["config"]);
                     }
-                    $this->checkUnsafeConfiguration($componentClass, $configuration, $this->clientWrapper->getBranchId());
-                    $jobDefinitionParser->parseConfig($componentClass, $this->encryptorFactory->getEncryptor()->decrypt($configuration));
+
+                    $this->checkUnsafeConfiguration(
+                        $componentClass,
+                        $configuration,
+                        $this->clientWrapper->getBranchId()
+                    );
+
+                    $decryptedConfiguration = $this->encryptorFactory->getEncryptor()->decrypt($configuration);
+
+                    $jobDefinitionParser->parseConfig($componentClass, $decryptedConfiguration);
+                    $componentConfiguration = $decryptedConfiguration['configuration'];
                 } catch (ClientException $e) {
                     throw new \Keboola\Syrup\Exception\UserException(
                         "Error reading configuration '{$params["config"]}': " . $e->getMessage(),
@@ -223,6 +235,13 @@ class Executor extends BaseExecutor
                     );
                 }
             }
+
+            $componentClass->setImageTag(TagResolverHelper::resolveComponentImageTag(
+                $params,
+                $componentConfiguration,
+                $componentClass
+            ));
+            $this->logger->info(sprintf('Using component tag: "%s"', $componentClass->getImageTag()));
 
             $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $this->logger);
             $jobDefinitions = $sharedCodeResolver->resolveSharedCode(

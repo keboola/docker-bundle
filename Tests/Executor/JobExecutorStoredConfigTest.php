@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Executor;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
@@ -208,5 +208,73 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         self::expectException(UserException::class);
         self::expectExceptionMessage('Error reading configuration \'executor-configuration\': Branch id "my-non-existent-branch" does not exist');
         $jobExecutor->execute($job);
+    }
+
+    /**
+     * @dataProvider tagOverrideTestDataProvider
+     */
+    public function testTagOverride($storedConfigTag, $requestParamsTag, $expectedVersion)
+    {
+        $storedConfig = [
+            'parameters' => [
+                'script' => [
+                    'print("Hello world!")',
+                ],
+            ],
+        ];
+
+        if ($storedConfigTag !== null) {
+            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
+        }
+
+        $requestData = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'config' => 'executor-configuration',
+            ],
+        ];
+        if ($requestParamsTag !== null) {
+            $requestData['params']['tag'] = $requestParamsTag;
+        }
+
+        $jobExecutor = $this->getJobExecutor($storedConfig, []);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', $expectedVersion)
+        ));
+    }
+
+    /**
+     * @return \Generator
+     */
+    public function tagOverrideTestDataProvider()
+    {
+        yield 'no override' => [
+            'storedConfigTag' => null,
+            'requestParamsTag' => null,
+            'expectedVersion' => '1.4.0',
+        ];
+
+        yield 'stored config' => [
+            'storedConfigTag' => '1.2.5',
+            'requestParamsTag' => null,
+            'expectedVersion' => '1.2.5',
+        ];
+
+        yield 'request params' => [
+            'storedConfigTag' => null,
+            'requestParamsTag' => '1.2.7',
+            'expectedVersion' => '1.2.7',
+        ];
+
+        yield 'all ways' => [
+            'storedConfigTag' => '1.2.5',
+            'requestParamsTag' => '1.2.7',
+            'expectedVersion' => '1.2.7',
+        ];
     }
 }
