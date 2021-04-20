@@ -305,7 +305,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
     /**
      * @dataProvider tagOverrideTestDataProvider
      */
-    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedOverrideVersion)
+    public function testTagOverride($requestConfigTag, $requestParamsTag, $expectedVersion)
     {
         $requestData = [
             'params' => [
@@ -321,12 +321,6 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             ],
         ];
 
-        $storedConfig = [];
-
-        if ($storedConfigTag !== null) {
-            $storedConfig['runtime']['image_tag'] = $storedConfigTag;
-        }
-
         if ($requestConfigTag !== null) {
             $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
         }
@@ -335,80 +329,73 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
             $requestData['params']['tag'] = $requestParamsTag;
         }
 
-        $jobExecutor = $this->getJobExecutor($storedConfig, []);
+        $jobExecutor = $this->getJobExecutor([], []);
         $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        if ($expectedOverrideVersion !== null) {
-            self::assertTrue($this->getRunnerHandler()->hasWarning(sprintf(
-                'Overriding component tag with: \'%s\'',
-                $expectedOverrideVersion
-            )));
-        } else {
-            self::assertFalse($this->getRunnerHandler()->hasWarningThatContains('Overriding component tag'));
-        }
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', $expectedVersion)
+        ));
     }
 
     public function tagOverrideTestDataProvider()
     {
         yield 'no override' => [
-            'storedConfigTag' => null,
             'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
-        ];
-        
-        yield 'stored config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
+            'expectedVersion' => '1.4.0',
         ];
 
         yield 'request config' => [
-            'storedConfigTag' => null,
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
+            'expectedVersion' => '1.2.6',
         ];
 
         yield 'request params' => [
-            'storedConfigTag' => null,
             'requestConfigTag' => null,
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'stored config + request config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
-        ];
-
-        yield 'stored config + request params' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'request config + request params' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
 
         yield 'all ways' => [
-            'storedConfigTag' => '1.2.5',
             'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
     }
 
+    public function testStoredConfigTagIsOverriddenByRequestEvenIfNoTag()
+    {
+        $requestData = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'configData' => [
+                    'parameters' => [
+                        'script' => [
+                            'print("Hello world!")',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $stored = [
+            'runtime' => [
+                'image_tag' => 'never used',
+            ],
+        ];
+
+        $jobExecutor = $this->getJobExecutor($stored, []);
+        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $requestData);
+        $job->setId(123456);
+        $jobExecutor->execute($job);
+
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', '1.4.0')
+        ));
+    }
     public function testIncrementalTags()
     {
         $this->clearFiles();

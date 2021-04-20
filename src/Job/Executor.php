@@ -196,8 +196,6 @@ class Executor extends BaseExecutor
 
             // Manual config from request
             if (isset($params["configData"]) && is_array($params["configData"])) {
-                $configuration = $params['configData'];
-
                 $configId = null;
                 if (isset($params["config"])) {
                     $configId = $params["config"];
@@ -238,7 +236,12 @@ class Executor extends BaseExecutor
                 }
             }
 
-            $this->overrideComponentImageTag($params, $componentConfiguration, $componentClass);
+            $componentClass->setImageTag(TagResolverHelper::resolveComponentImageTag(
+                $params,
+                $componentConfiguration,
+                $componentClass
+            ));
+            $this->logger->info(sprintf('Using component tag: "%s"', $componentClass->getImageTag()));
 
             $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $this->logger);
             $jobDefinitions = $sharedCodeResolver->resolveSharedCode(
@@ -310,26 +313,5 @@ class Executor extends BaseExecutor
                 );
             }
         }
-    }
-
-    private function overrideComponentImageTag(
-        array $requestParameters,
-        array $componentConfiguration,
-        Component $component
-    ) {
-        if (isset($requestParameters['tag']) &&
-            $requestParameters['tag'] !== ''
-        ) {
-            $tag = $requestParameters['tag'];
-        } elseif (isset($componentConfiguration['runtime']['image_tag']) &&
-            $componentConfiguration['runtime']['image_tag'] !== ''
-        ) {
-            $tag = $componentConfiguration['runtime']['image_tag'];
-        } else {
-            return;
-        }
-
-        $this->logger->warn(sprintf("Overriding component tag with: '%s'", $tag));
-        $component->setImageTag($tag);
     }
 }

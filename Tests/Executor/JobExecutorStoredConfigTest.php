@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Functional;
+namespace Keboola\DockerBundle\Tests\Executor;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Tests\BaseExecutorTest;
@@ -210,74 +210,11 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $jobExecutor->execute($job);
     }
 
-    public function testTagCanBeOverriddenByConfiguration()
-    {
-        $this->createBuckets();
-        $configuration = [
-            'runtime' => [
-                'image_tag' => '1.1.12',
-            ],
-            'storage' => [
-                'input' => [
-                    'tables' => [
-                        [
-                            'source' => 'in.c-executor-test.source',
-                            'destination' => 'input.csv',
-                        ],
-                    ],
-                ],
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'result.csv',
-                            'destination' => 'out.c-executor-test.output',
-                        ],
-                    ],
-                ],
-            ],
-            'parameters' => [
-                'script' => [
-                    'from shutil import copyfile',
-                    'copyfile("/data/in/tables/input.csv", "/data/out/tables/result.csv")',
-                ],
-            ],
-        ];
-        $csv = new CsvFile($this->getTemp()->getTmpFolder() . DIRECTORY_SEPARATOR . "upload.csv");
-        $csv->writeRow(['name', 'oldValue', 'newValue']);
-        $csv->writeRow(['price', '100', '1000']);
-        $csv->writeRow(['size', 'small', 'big']);
-        $this->getClient()->createTableAsync("in.c-executor-test", "source", $csv);
-
-        $data = [
-            'params' => [
-                'component' => 'keboola.python-transformation',
-                'mode' => 'run',
-                'config' => 'executor-configuration',
-            ],
-        ];
-
-        $job = new Job($this->getEncryptorFactory()->getEncryptor(), $data);
-        $job->setId(123456);
-
-        $jobExecutor = $this->getJobExecutor($configuration, []);
-        $jobExecutor->execute($job);
-
-        self::assertTrue($this->getRunnerHandler()->hasWarning('Overriding component tag with: \'1.1.12\''));
-    }
-
     /**
      * @dataProvider tagOverrideTestDataProvider
      */
-    public function testTagOverride($storedConfigTag, $requestConfigTag, $requestParamsTag, $expectedOverrideVersion)
+    public function testTagOverride($storedConfigTag, $requestParamsTag, $expectedVersion)
     {
-        $requestData = [
-            'params' => [
-                'component' => 'keboola.python-transformation',
-                'mode' => 'run',
-                'config' => 'executor-configuration',
-            ],
-        ];
-
         $storedConfig = [
             'parameters' => [
                 'script' => [
@@ -290,13 +227,13 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
             $storedConfig['runtime']['image_tag'] = $storedConfigTag;
         }
 
-        if ($requestConfigTag !== null) {
-            $requestData['params']['configData']['runtime']['image_tag'] = $requestConfigTag;
-            $requestData['params']['configData']['parameters']['script'] = [
-                'print("Hello world!")',
-            ];
-        }
-
+        $requestData = [
+            'params' => [
+                'component' => 'keboola.python-transformation',
+                'mode' => 'run',
+                'config' => 'executor-configuration',
+            ],
+        ];
         if ($requestParamsTag !== null) {
             $requestData['params']['tag'] = $requestParamsTag;
         }
@@ -306,72 +243,38 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         $job->setId(123456);
         $jobExecutor->execute($job);
 
-        if ($expectedOverrideVersion !== null) {
-            self::assertTrue($this->getRunnerHandler()->hasWarning(sprintf(
-                'Overriding component tag with: \'%s\'',
-                $expectedOverrideVersion
-            )));
-        } else {
-            self::assertFalse($this->getRunnerHandler()->hasWarningThatContains('Overriding component tag'));
-        }
+        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
+            sprintf('Using component tag: "%s"', $expectedVersion)
+        ));
     }
 
+    /**
+     * @return \Generator
+     */
     public function tagOverrideTestDataProvider()
     {
         yield 'no override' => [
             'storedConfigTag' => null,
-            'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => null,
+            'expectedVersion' => '1.4.0',
         ];
 
         yield 'stored config' => [
             'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.5',
-        ];
-
-        yield 'request config' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
+            'expectedVersion' => '1.2.5',
         ];
 
         yield 'request params' => [
             'storedConfigTag' => null,
-            'requestConfigTag' => null,
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'stored config + request config' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => null,
-            'expectedOverrideVersion' => '1.2.6',
-        ];
-
-        yield 'stored config + request params' => [
-            'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => null,
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
-        ];
-
-        yield 'request config + request params' => [
-            'storedConfigTag' => null,
-            'requestConfigTag' => '1.2.6',
-            'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
 
         yield 'all ways' => [
             'storedConfigTag' => '1.2.5',
-            'requestConfigTag' => '1.2.6',
             'requestParamsTag' => '1.2.7',
-            'expectedOverrideVersion' => '1.2.7',
+            'expectedVersion' => '1.2.7',
         ];
     }
 }
