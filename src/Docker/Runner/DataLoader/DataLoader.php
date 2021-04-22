@@ -267,6 +267,7 @@ class DataLoader implements DataLoaderInterface
                     $tablesFilesConfig[] = [
                         'source' => $table['source'],
                         'is_permanent' => true,
+                        'tags' => $table['file_tags'],
                     ];
                 }
                 $fileWriter->uploadFiles(
