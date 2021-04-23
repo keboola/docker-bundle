@@ -258,7 +258,7 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $this->useFileStorageOnly() ? $systemMetadata : [],
+                $systemMetadata,
                 $this->getStagingStorageOutput()
             );
             if ($this->useFileStorageOnly()) {
