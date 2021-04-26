@@ -2383,6 +2383,7 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'source' => 'in.c-runner-test.mytable',
                                 'destination' => 'mytable',
+
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
                             ],
                         ],
@@ -2682,5 +2683,173 @@ class RunnerTest extends BaseRunnerTest
         self::assertArrayHasKey('key', $manifestData['s3']);
         self::assertArrayHasKey('access_key_id', $manifestData['s3']['credentials']);
         $components->deleteConfiguration('keboola.runner-staging-test', $configId);
+    }
+
+    public function testStorageFilesOutputProcessed()
+    {
+        $this->clearFiles();
+        $componentData = [
+            'id' => 'keboola.runner-staging-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
+                    'tag' => '0.1.0',
+                ],
+                'staging_storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-staging-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'input' => [
+                            'files' => [
+                                [
+                                    'tags' => ['docker-runner-test'],
+                                    'processed_tags' => ['processed'],
+                                ],
+                            ],
+                        ],
+                        'output' => [
+                            'files' => [
+                                [
+                                    'source' => 'my-file.dat',
+                                    'tags' => ['docker-runner-test'],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'create-output-file-local',
+                        'filename' => 'my-file.dat',
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        // wait for the file to show up in the listing
+        sleep(2);
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:"docker-runner-test"' .
+            ' AND tags:"componentId: keboola.runner-staging-test" AND tags:' .
+            sprintf('"configurationId: %s"', $configId)
+        ));
+        self::assertCount(1, $fileList);
+        self::assertEquals('my_file.dat', $fileList[0]['name']);
+
+        // check that the input file is now tagged as processed
+        $inputFileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:"docker-runner-test" AND tags:"processed"'
+        ));
+        self::assertCount(1, $inputFileList);
+
+        // assert the workspace is removed
+        $options = new ListConfigurationWorkspacesOptions();
+        $options->setComponentId('keboola.runner-staging-test');
+        $options->setConfigurationId($configId);
+        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+    }
+
+    public function testOutputTablesAsFiles()
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+        $componentData = [
+            'id' => 'keboola.runner-staging-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
+                    'tag' => '0.1.0',
+                ],
+                'staging_storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+            'features' => ['allow-use-file-storage-only'],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-staging-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'output' => [
+                            'tables' => [
+                                [
+                                    'source' => 'my-table.csv',
+                                    "destination" => "out.c-runner-test.test-table",
+                                    'file_tags' => ['foo', 'docker-runner-test'],
+                                    'columns' => ['first', 'second']
+                                ],
+                            ],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'create-output-table-local',
+                        'filename' => 'my-table.csv',
+                    ],
+                    'runtime' => [
+                        'use_file_storage_only' => true,
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+        // wait for the file to show up in the listing
+        sleep(2);
+
+        // table should not exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.test-table'));
+
+        // but the file should exist
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:"componentId: keboola.runner-staging-test" AND tags:' .
+            sprintf('"configurationId: %s"', $configId)
+        ));
+        self::assertCount(1, $fileList);
+        self::assertEquals('my_table.csv', $fileList[0]['name']);
+        self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
+
+        // assert the workspace is removed
+        $options = new ListConfigurationWorkspacesOptions();
+        $options->setComponentId('keboola.runner-staging-test');
+        $options->setConfigurationId($configId);
+        self::assertCount(0, $components->listConfigurationWorkspaces($options));
     }
 }
