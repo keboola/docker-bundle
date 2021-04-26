@@ -2762,12 +2762,6 @@ class RunnerTest extends BaseRunnerTest
             'tags:"docker-runner-test" AND tags:"processed"'
         ));
         self::assertCount(1, $inputFileList);
-
-        // assert the workspace is removed
-        $options = new ListConfigurationWorkspacesOptions();
-        $options->setComponentId('keboola.runner-staging-test');
-        $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
     }
 
     public function testOutputTablesAsFiles()
@@ -2809,7 +2803,7 @@ class RunnerTest extends BaseRunnerTest
                             'tables' => [
                                 [
                                     'source' => 'my-table.csv',
-                                    "destination" => "out.c-runner-test.test-table",
+                                    'destination' => 'out.c-runner-test.test-table',
                                     'file_tags' => ['foo', 'docker-runner-test'],
                                     'columns' => ['first', 'second']
                                 ],
@@ -2845,11 +2839,5 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
         self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
-
-        // assert the workspace is removed
-        $options = new ListConfigurationWorkspacesOptions();
-        $options->setComponentId('keboola.runner-staging-test');
-        $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
     }
 }
