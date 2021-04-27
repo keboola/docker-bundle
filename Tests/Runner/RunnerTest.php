@@ -2727,7 +2727,7 @@ class RunnerTest extends BaseRunnerTest
                         'input' => [
                             'files' => [
                                 [
-                                    'tags' => ['docker-runner-test'],
+                                    'tags' => ['texty.csv.gz'],
                                     'processed_tags' => ['processed'],
                                 ],
                             ],
