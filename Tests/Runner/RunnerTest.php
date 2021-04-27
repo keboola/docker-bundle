@@ -2688,6 +2688,12 @@ class RunnerTest extends BaseRunnerTest
     public function testStorageFilesOutputProcessed()
     {
         $this->clearFiles();
+        // create the file for the input file processing test
+        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $this->getClient()->uploadFile(
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
+        );
         $componentData = [
             'id' => 'keboola.runner-staging-test',
             'data' => [
@@ -2721,7 +2727,7 @@ class RunnerTest extends BaseRunnerTest
                         'input' => [
                             'files' => [
                                 [
-                                    'tags' => ['docker-runner-test'],
+                                    'tags' => ['texty.csv.gz'],
                                     'processed_tags' => ['processed'],
                                 ],
                             ],
