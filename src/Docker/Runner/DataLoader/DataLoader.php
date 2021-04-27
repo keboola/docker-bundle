@@ -258,7 +258,7 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $this->useFileStorageOnly() ? $systemMetadata : [],
+                $systemMetadata,
                 $this->getStagingStorageOutput()
             );
             if ($this->useFileStorageOnly()) {
@@ -267,6 +267,7 @@ class DataLoader implements DataLoaderInterface
                     $tablesFilesConfig[] = [
                         'source' => $table['source'],
                         'is_permanent' => true,
+                        'tags' => $table['file_tags'],
                     ];
                 }
                 $fileWriter->uploadFiles(
