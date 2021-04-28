@@ -6,6 +6,7 @@ use Keboola\InputMapping\Configuration\File as InputFile;
 use Keboola\InputMapping\Configuration\Table as InputTable;
 use Keboola\OutputMapping\Configuration\File as OutputFile;
 use Keboola\OutputMapping\Configuration\Table as OutputTable;
+use Keboola\OutputMapping\Configuration\TableFile as OutputTableFile;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Container extends Configuration
@@ -73,6 +74,13 @@ class Container extends Configuration
         ;
         OutputFile::configureNode($outputFile);
 
+        $outputTableFile = $output
+            ->children()
+                ->arrayNode('table_files')
+                    ->prototype('array')
+        ;
+        OutputTableFile::configureNode($outputTableFile);
+        
         // authorization
         $root->children()
             ->arrayNode("authorization")
