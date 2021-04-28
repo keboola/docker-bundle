@@ -239,15 +239,10 @@ class DataLoader implements DataLoaderInterface
         $systemMetadata = [
             TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
             TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
+            TableWriter::SYSTEM_KEY_RUN_ID => $this->clientWrapper->getBasicClient()->getRunId(),
         ];
         if ($this->configRowId) {
             $systemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
-        }
-        if ($this->clientWrapper->hasBranch()) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
-        }
-        if ($this->useFileStorageOnly()) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
         }
 
         // Get default bucket
