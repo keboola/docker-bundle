@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2a68fa25fb3e6e4ae6ab99a28adeedc0",
+    "content-hash": "48528c24d5750b4e5aa9e1ba799e0654",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2032,16 +2032,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "14.4.0",
+            "version": "dev-PS-2110-table-files",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "f3587afb6b4f7e60254c6b029a8025480f1ccae6"
+                "reference": "6ef5a14c47cb3d174422e722c2fb393441786248"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/f3587afb6b4f7e60254c6b029a8025480f1ccae6",
-                "reference": "f3587afb6b4f7e60254c6b029a8025480f1ccae6",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/6ef5a14c47cb3d174422e722c2fb393441786248",
+                "reference": "6ef5a14c47cb3d174422e722c2fb393441786248",
                 "shasum": ""
             },
             "require": {
@@ -2082,9 +2082,9 @@
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
             "support": {
                 "issues": "https://github.com/keboola/output-mapping/issues",
-                "source": "https://github.com/keboola/output-mapping/tree/14.4.0"
+                "source": "https://github.com/keboola/output-mapping/tree/PS-2110-table-files"
             },
-            "time": "2021-04-23T12:01:37+00:00"
+            "time": "2021-04-28T10:50:04+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -7255,9 +7255,18 @@
             "time": "2020-07-08T17:02:28+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "keboola/output-mapping",
+            "version": "dev-PS-2110-table-files",
+            "alias": "14.4.0",
+            "alias_normalized": "14.4.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/output-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
