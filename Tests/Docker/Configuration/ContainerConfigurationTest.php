@@ -169,4 +169,25 @@ class ContainerConfigurationTest extends TestCase
             ],
         ]);
     }
+
+    public function testConfigurationWithTableFiles()
+    {
+        (new Configuration\Container())->parse([
+            "config" => [
+                "storage" => [
+                    "input" => [
+                        "tables" => [],
+                        "files" => [],
+                    ],
+                    "output" => [
+                        "tables" => [],
+                        "files" => [],
+                        "table_files" => [
+                            "tags" => ["tag"],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+    }
 }

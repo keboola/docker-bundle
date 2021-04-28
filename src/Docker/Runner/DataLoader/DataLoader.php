@@ -227,24 +227,28 @@ class DataLoader implements DataLoaderInterface
         ) {
             $outputFilesConfig = $this->storageConfig["output"]["files"];
         }
-
+        if (isset($this->storageConfig["output"]["table_files"]) &&
+            count($this->storageConfig["output"]["table_files"])
+        ) {
+            $outputTableFilesConfig = $this->storageConfig["output"]["table_files"];
+        }
         $this->logger->debug("Uploading output tables and files.");
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
-        $systemMetadata = [
+        $commonSystemMetadata = [
             TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
             TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
         ];
         if ($this->configRowId) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
+            $commonSystemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
+        $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
         if ($this->clientWrapper->hasBranch()) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+            $tableSystemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
-        if ($this->useFileStorageOnly()) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
-        }
+
+        $fileSystemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -258,23 +262,16 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $systemMetadata,
+                $fileSystemMetadata,
                 $this->getStagingStorageOutput()
             );
             if ($this->useFileStorageOnly()) {
-                $tablesFilesConfig = [];
-                foreach ($outputTablesConfig as $table) {
-                    $tablesFilesConfig[] = [
-                        'source' => $table['source'],
-                        'is_permanent' => true,
-                        'tags' => $table['file_tags'],
-                    ];
-                }
                 $fileWriter->uploadFiles(
                     'data/out/tables/',
-                    ['mapping' => $tablesFilesConfig],
-                    $systemMetadata,
-                    $this->getStagingStorageOutput()
+                    [],
+                    $fileSystemMetadata,
+                    $this->getStagingStorageOutput(),
+                    $outputTableFilesConfig
                 );
                 if (isset($this->storageConfig["input"]["files"])) {
                     // tag input files
@@ -287,7 +284,7 @@ class DataLoader implements DataLoaderInterface
             $tableQueue = $tableWriter->uploadTables(
                 'data/out/tables/',
                 $uploadTablesOptions,
-                $systemMetadata,
+                $tableSystemMetadata,
                 $this->getStagingStorageOutput()
             );
             if (isset($this->storageConfig["input"]["files"])) {
