@@ -2810,13 +2810,14 @@ class RunnerTest extends BaseRunnerTest
                             'tables' => [],
                             'table_files' => [
                                 'tags' => ['foo', 'docker-runner-test'],
-                                'permanent' => true,
+                                'is_permanent' => false,
                             ],
                         ],
                     ],
                     'parameters' => [
                         'operation' => 'create-output-table-local',
                         'filename' => 'my-table.csv',
+                        'includeManifest' => true,
                     ],
                     'runtime' => [
                         'use_file_storage_only' => true,
@@ -2843,6 +2844,6 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
         self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
-        self::assertNull($fileList[0]['maxAgeDays']);
+        self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 }

@@ -227,7 +227,11 @@ class DataLoader implements DataLoaderInterface
         ) {
             $outputFilesConfig = $this->storageConfig["output"]["files"];
         }
-
+        if (isset($this->storageConfig["output"]["table_files"]) &&
+            count($this->storageConfig["output"]["table_files"])
+        ) {
+            $outputTableFilesConfig = $this->storageConfig["output"]["table_files"];
+        }
         $this->logger->debug("Uploading output tables and files.");
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
@@ -262,19 +266,12 @@ class DataLoader implements DataLoaderInterface
                 $this->getStagingStorageOutput()
             );
             if ($this->useFileStorageOnly()) {
-                $tablesFilesConfig = [];
-                foreach ($outputTablesConfig as $table) {
-                    $tablesFilesConfig[] = [
-                        'source' => $table['source'],
-                        'is_permanent' => true,
-                        'tags' => $table['file_tags'],
-                    ];
-                }
                 $fileWriter->uploadFiles(
                     'data/out/tables/',
-                    ['mapping' => $tablesFilesConfig],
+                    [],
                     $systemMetadata,
-                    $this->getStagingStorageOutput()
+                    $this->getStagingStorageOutput(),
+                    $outputTableFilesConfig
                 );
                 if (isset($this->storageConfig["input"]["files"])) {
                     // tag input files
