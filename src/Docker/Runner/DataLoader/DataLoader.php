@@ -236,14 +236,19 @@ class DataLoader implements DataLoaderInterface
 
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
-        $systemMetadata = [
+        $commonSystemMetadata = [
             TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
             TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
-            TableWriter::SYSTEM_KEY_RUN_ID => $this->clientWrapper->getBasicClient()->getRunId(),
         ];
         if ($this->configRowId) {
-            $systemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
+            $commonSystemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
+        $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
+        if ($this->clientWrapper->hasBranch()) {
+            $tableSystemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+        }
+
+        $fileSystemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -257,14 +262,14 @@ class DataLoader implements DataLoaderInterface
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
-                $systemMetadata,
+                $fileSystemMetadata,
                 $this->getStagingStorageOutput()
             );
             if ($this->useFileStorageOnly()) {
                 $fileWriter->uploadFiles(
                     'data/out/tables/',
                     [],
-                    $systemMetadata,
+                    $fileSystemMetadata,
                     $this->getStagingStorageOutput(),
                     $outputTableFilesConfig
                 );
@@ -279,7 +284,7 @@ class DataLoader implements DataLoaderInterface
             $tableQueue = $tableWriter->uploadTables(
                 'data/out/tables/',
                 $uploadTablesOptions,
-                $systemMetadata,
+                $tableSystemMetadata,
                 $this->getStagingStorageOutput()
             );
             if (isset($this->storageConfig["input"]["files"])) {
