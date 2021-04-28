@@ -77,10 +77,9 @@ class Container extends Configuration
         $outputTableFile = $output
             ->children()
                 ->arrayNode('table_files')
-                    ->prototype('array')
         ;
         OutputTableFile::configureNode($outputTableFile);
-        
+
         // authorization
         $root->children()
             ->arrayNode("authorization")
