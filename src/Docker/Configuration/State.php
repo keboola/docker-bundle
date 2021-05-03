@@ -29,7 +29,7 @@ class State extends Configuration
                             ->arrayNode(StateFile::NAMESPACE_FILES)
                                 ->prototype('array')
                                     ->children()
-                                        ->arrayNode('tags')->isRequired()->end()
+                                        ->variableNode('tags')->isRequired()->end()
                                         ->scalarNode('lastImportId')->isRequired()->end()
                                     ->end()
                                 ->end()
