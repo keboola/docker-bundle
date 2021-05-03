@@ -159,8 +159,8 @@ class StateFile
                 self::NAMESPACE_COMPONENT => $encryptedStateData,
                 self::NAMESPACE_STORAGE => [
                     self::NAMESPACE_INPUT => [
-                        self::NAMESPACE_FILES => $inputFileStateList->jsonSerialize(),
                         self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize(),
+                        self::NAMESPACE_FILES => $inputFileStateList->jsonSerialize(),
                     ]
                 ]
             ];

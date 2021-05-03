@@ -211,7 +211,7 @@ class StateFileTest extends TestCase
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
-        self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[]}}}', LogLevel::NOTICE));
+        self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
     }
 
     public function testPersistStateEncrypts()
