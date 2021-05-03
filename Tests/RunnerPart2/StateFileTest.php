@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\BranchAwareClient;
@@ -152,14 +153,14 @@ class StateFileTest extends TestCase
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
-                            'key' => 'fooBar'
+                            'key' => 'fooBar',
                         ],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
-                                StateFile::NAMESPACE_TABLES => []
-                            ]
+                                StateFile::NAMESPACE_TABLES => [],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
                         ],
-
                     ])]
                 )
             );
@@ -182,7 +183,7 @@ class StateFileTest extends TestCase
             $testLogger
         );
         $stateFile->stashState($state);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
 
@@ -209,7 +210,7 @@ class StateFileTest extends TestCase
             $testLogger
         );
         $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
         self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[]}}}', LogLevel::NOTICE));
     }
 
@@ -247,7 +248,7 @@ class StateFileTest extends TestCase
             new NullLogger()
         );
         $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testStashStateDoesNotUpdate()
@@ -306,7 +307,7 @@ class StateFileTest extends TestCase
             new NullLogger()
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testPersistsStateUpdatesToEmptyArray()
@@ -323,10 +324,10 @@ class StateFileTest extends TestCase
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
-                                StateFile::NAMESPACE_TABLES => []
-                            ]
+                                StateFile::NAMESPACE_TABLES => [],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
                         ],
-
                     ])]
                 )
             );
@@ -345,7 +346,7 @@ class StateFileTest extends TestCase
             new NullLogger()
         );
         $stateFile->stashState([]);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testPersistsStateUpdatesToEmptyObject()
@@ -362,10 +363,10 @@ class StateFileTest extends TestCase
                         StateFile::NAMESPACE_COMPONENT => new \stdClass(),
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
-                                StateFile::NAMESPACE_TABLES => []
-                            ]
+                                StateFile::NAMESPACE_TABLES => [],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
                         ],
-
                     ])]
                 )
             );
@@ -384,7 +385,7 @@ class StateFileTest extends TestCase
             new NullLogger()
         );
         $stateFile->stashState(new \stdClass());
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testPersistsStateSavesUnchangedState()
@@ -403,10 +404,10 @@ class StateFileTest extends TestCase
                         ],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
-                                StateFile::NAMESPACE_TABLES => []
-                            ]
+                                StateFile::NAMESPACE_TABLES => [],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
                         ],
-
                     ])]
                 )
             );
@@ -425,7 +426,7 @@ class StateFileTest extends TestCase
             new NullLogger()
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testLoadStateFromFile()
@@ -525,7 +526,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage("Failed to store state: Test");
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testPersisStatePassOtherExceptions()
@@ -566,7 +567,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(ClientException::class);
         $this->expectExceptionMessage("Test");
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
 
@@ -589,11 +590,12 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_TABLES => [
                                     [
                                         'source' => 'in.c-main.test',
-                                        'lastImportDate' => 'today'
-                                    ]
-                                ]
-                            ]
-                        ]
+                                        'lastImportDate' => 'today',
+                                    ],
+                                ],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
+                        ],
                     ], $data);
                     return true;
                 })
@@ -619,7 +621,7 @@ class StateFileTest extends TestCase
                 'lastImportDate' => 'today'
             ]
         ]);
-        $stateFile->persistState($inputTablesState);
+        $stateFile->persistState($inputTablesState, new InputFileStateList([]));
     }
 
 
@@ -644,7 +646,8 @@ class StateFileTest extends TestCase
                                         'source' => 'in.c-main.test',
                                         'lastImportDate' => 'today'
                                     ]
-                                ]
+                                ],
+                                StateFile::NAMESPACE_FILES => [],
                             ]
                         ]
                     ], $data);
@@ -673,7 +676,7 @@ class StateFileTest extends TestCase
                 'lastImportDate' => 'today'
             ]
         ]);
-        $stateFile->persistState($inputTablesState);
+        $stateFile->persistState($inputTablesState, new InputFileStateList([]));
     }
 
     public function testPersistStateUsesBranchClient()
@@ -693,10 +696,10 @@ class StateFileTest extends TestCase
                         ],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
-                                StateFile::NAMESPACE_TABLES => []
-                            ]
+                                StateFile::NAMESPACE_TABLES => [],
+                                StateFile::NAMESPACE_FILES => [],
+                            ],
                         ],
-
                     ])]
                 )
             );
@@ -724,6 +727,6 @@ class StateFileTest extends TestCase
             $testLogger
         );
         $stateFile->stashState($state);
-        $stateFile->persistState(new InputTableStateList([]));
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 }
