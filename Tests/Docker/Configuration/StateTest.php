@@ -173,7 +173,7 @@ class StateTest extends TestCase
         $state = [
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
-                    StateFile::NAMESPACE_TABLES => [
+                    StateFile::NAMESPACE_FILES => [
                         [
                             "tags" => [
                                 [
