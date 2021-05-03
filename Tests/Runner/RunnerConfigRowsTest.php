@@ -16,6 +16,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
 
@@ -46,22 +47,27 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
+    private function clearFiles()
+    {
+        // remove uploaded files
+        $options = new ListFilesOptions();
+        $options->setTags(['docker-runner-test']);
+        $files = $this->getClient()->listFiles($options);
+        foreach ($files as $file) {
+            $this->getClient()->deleteFile($file['id']);
+        }
+    }
+
     public function setUp()
     {
         parent::setUp();
         $this->clearBuckets();
+        $this->clearFiles();
 
         // Create buckets
         $this->getClient()->createBucket('runner-test', Client::STAGE_IN, 'Docker TestSuite');
         $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite');
 
-        // remove uploaded files
-        $options = new ListFilesOptions();
-        $options->setTags(['docker-bundle-test']);
-        $files = $this->getClient()->listFiles($options);
-        foreach ($files as $file) {
-            $this->getClient()->deleteFile($file['id']);
-        }
         $component = new Components($this->getClient());
         try {
             $component->deleteConfiguration('docker-demo', 'runner-configuration');
@@ -701,10 +707,17 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $csv->writeRow(['test1', 'test1']);
         $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
         unset($csv);
-
         $tableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
 
-
+        file_put_contents($temp->getTmpFolder() . "/upload", "test");
+        $fileId1 = $this->getClient()->uploadFile(
+            $temp->getTmpFolder() . '/upload',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1'])
+        );
+        $fileId2 = $this->getClient()->uploadFile(
+            $temp->getTmpFolder() . '/upload',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2'])
+        );
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test2', 'test2']);
@@ -741,20 +754,29 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
                             ],
                         ],
+                        'files' => [
+                            [
+                                'tags' => ['docker-runner-test'],
+                                'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
+                            ],
+                        ],
                     ],
                     'output' => [
                         'tables' => [
                             [
                                 'source' => 'mytable',
                                 'destination' => 'in.c-runner-test.mytable-2',
-                            ]
+                            ],
                         ]
-                    ]
+                    ],
                 ],
                 'parameters' => [
                     'script' => [
-                        'from shutil import copyfile',
+                        'import glob, os',
+                        'from shutil import copyfile, copytree',
                         'copyfile("/data/in/tables/mytable", "/data/out/tables/mytable")',
+                        'for f in glob.glob("/data/in/files/*"):',
+                        '    print(f)',
                     ],
                 ],
             ],
@@ -768,10 +790,20 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                             [
                                 'source' => 'in.c-runner-test.mytable',
                                 'lastImportDate' => $tableInfo['lastImportDate'],
-                            ]
-                        ]
-                    ]
-                ]
+                            ],
+                        ],
+                        StateFile::NAMESPACE_FILES => [
+                            [
+                                'tags' => [
+                                    [
+                                        'name' => 'docker-runner-test',
+                                    ],
+                                ],
+                                'lastImportId' => $fileId1,
+                            ],
+                        ],
+                    ],
+                ],
             ],
             'row-1'
         );
@@ -786,6 +818,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             'row-1'
         );
+        // the script logs all the input files, so fileId2 should be there, but not fileId1
+        $this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload');
+        $this->assertFalse($this->getContainerHandler()->hasInfoThatMatches($fileId1));
 
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
         $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');
@@ -796,6 +831,11 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
             $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
+        );
+        // confirm that the state is correct
+        self::assertEquals(
+            ['tags' => [['name' => 'docker-runner-test']], 'lastImportId' => $fileId2],
+            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0]
         );
     }
 }

@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -260,7 +261,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
             'branch and must not be used directly in input mapping.'
         );
-        $dataLoader->loadInputData(new InputTableStateList([]));
+        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function testBranchMappingEnabled()
@@ -319,7 +320,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition($config, $component),
             new OutputFilter()
         );
-        $ret = $dataLoader->loadInputData(new InputTableStateList([]));
-        self::assertInstanceOf(InputTableStateList::class, $ret);
+        $ret = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        self::assertInstanceOf(InputTableStateList::class, $ret[0]);
+        self::assertInstanceOf(InputFileStateList::class, $ret[1]);
     }
 }

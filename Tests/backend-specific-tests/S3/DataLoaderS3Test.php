@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -131,7 +132,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
             new OutputFilter()
         );
-        $dataLoader->loadInputData(new InputTableStateList([]));
+        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
             file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest'),
