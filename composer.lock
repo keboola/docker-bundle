@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.179.2",
+            "version": "3.180.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "7d3490e35878d0884905fa0c1ab43ecf178c8d9b"
+                "reference": "761d06d3d320bd1a0114f9d937eccd1613e1913b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/7d3490e35878d0884905fa0c1ab43ecf178c8d9b",
-                "reference": "7d3490e35878d0884905fa0c1ab43ecf178c8d9b",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/761d06d3d320bd1a0114f9d937eccd1613e1913b",
+                "reference": "761d06d3d320bd1a0114f9d937eccd1613e1913b",
                 "shasum": ""
             },
             "require": {
@@ -92,9 +92,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.179.2"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.180.0"
             },
-            "time": "2021-04-30T19:46:52+00:00"
+            "time": "2021-05-03T20:41:22+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -2162,16 +2162,16 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "14.5.0",
+            "version": "14.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "f983c52cfee09c759021c96adddb41d23d3be353"
+                "reference": "13659d198ec1fab4494347753953b1ced6463bf1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/f983c52cfee09c759021c96adddb41d23d3be353",
-                "reference": "f983c52cfee09c759021c96adddb41d23d3be353",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/13659d198ec1fab4494347753953b1ced6463bf1",
+                "reference": "13659d198ec1fab4494347753953b1ced6463bf1",
                 "shasum": ""
             },
             "require": {
@@ -2212,9 +2212,9 @@
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
             "support": {
                 "issues": "https://github.com/keboola/output-mapping/issues",
-                "source": "https://github.com/keboola/output-mapping/tree/14.5.0"
+                "source": "https://github.com/keboola/output-mapping/tree/14.5.1"
             },
-            "time": "2021-04-28T13:26:15+00:00"
+            "time": "2021-05-04T08:56:46+00:00"
         },
         {
             "name": "keboola/php-encryption",
