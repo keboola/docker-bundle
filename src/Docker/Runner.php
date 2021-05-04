@@ -454,8 +454,8 @@ class Runner
         );
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
-        $output->setInputTableStateList($resultInputTablesState ?? new InputTableStateList([]));
-        $output->setInputFileStateList($resultInputFilesState ?? new InputFileStateList([]));
+        $output->setInputTableStateList($resultInputTablesState ? $resultInputTablesState : new InputTableStateList([]));
+        $output->setInputFileStateList($resultInputFilesState ? $resultInputFilesState : new InputFileStateList([]));
         $output->setDataLoader($dataLoader);
 
         if ($mode === self::MODE_DEBUG) {
