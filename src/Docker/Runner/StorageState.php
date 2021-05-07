@@ -7,9 +7,11 @@ use Keboola\InputMapping\State\InputTableStateList;
 
 class StorageState
 {
-    private InputFileStateList $inputFileStateList;
+    /** @var InputFileStateList */
+    private $inputFileStateList;
 
-    private InputTableStateList $inputTableStateList;
+    /** @var InputTableStateList */
+    private $inputTableStateList;
 
     public function __construct(
         InputTableStateList $inputTableStateList,
