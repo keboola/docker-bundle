@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
@@ -21,7 +22,7 @@ interface DataLoaderInterface
     );
 
     /**
-     * @return array [InputTableStateList, InputFileStateList]
+     * @return StorageState
      */
     public function loadInputData(
         InputTableStateList $inputTableStateList,

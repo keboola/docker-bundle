@@ -320,8 +320,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition($config, $component),
             new OutputFilter()
         );
-        $ret = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
-        self::assertInstanceOf(InputTableStateList::class, $ret[0]);
-        self::assertInstanceOf(InputFileStateList::class, $ret[1]);
+        $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        self::assertInstanceOf(InputTableStateList::class, $storageState->getInputTableStateList());
+        self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
     }
 }

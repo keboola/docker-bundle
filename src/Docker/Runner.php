@@ -448,14 +448,11 @@ class Runner
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
-        list($resultInputTablesState, $resultInputFilesState) = $dataLoader->loadInputData(
-            $inputTableStateList,
-            $inputFileStateList
-        );
+        $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
-        $output->setInputTableStateList($resultInputTablesState ? $resultInputTablesState : new InputTableStateList([]));
-        $output->setInputFileStateList($resultInputFilesState ? $resultInputFilesState : new InputFileStateList([]));
+        $output->setInputTableStateList($storageState->getInputTableStateList());
+        $output->setInputFileStateList($storageState->getInputFileStateList());
         $output->setDataLoader($dataLoader);
 
         if ($mode === self::MODE_DEBUG) {

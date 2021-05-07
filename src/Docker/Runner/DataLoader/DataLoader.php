@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
@@ -171,7 +172,7 @@ class DataLoader implements DataLoaderInterface
      * Download source files
      * @param InputTableStateList $inputTableStateList
      * @param InputFileStateList $inputFileStateList
-     * @return array [InputTableStateList, InputFileStateList]
+     * @return StorageState
      * @throws Exception
      */
     public function loadInputData(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
@@ -207,7 +208,7 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
-        return [$resultInputTablesStateList, $resultInputFilesStateList];
+        return new StorageState($resultInputTablesStateList, $resultInputFilesStateList);
     }
 
     /**
