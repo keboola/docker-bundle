@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -24,7 +25,7 @@ class NullDataLoader implements DataLoaderInterface
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList
     ) {
-        return [new InputTableStateList([]), new InputFileStateList([])];
+        return new StorageState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
     public function storeOutput()
