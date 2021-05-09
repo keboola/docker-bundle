@@ -540,10 +540,10 @@ class RunnerTest extends BaseRunnerTest
             StateFile::NAMESPACE_COMPONENT => [],
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
-                    StateFile::NAMESPACE_TABLES => []
-                ]
-            ]
-
+                    StateFile::NAMESPACE_TABLES => [],
+                    StateFile::NAMESPACE_FILES => [],
+                ],
+            ],
         ], $cfg['state']);
         $this->clearConfigurations();
     }
@@ -655,10 +655,10 @@ class RunnerTest extends BaseRunnerTest
             StateFile::NAMESPACE_COMPONENT => ['baz' => 'fooBar'],
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
-                    StateFile::NAMESPACE_TABLES => []
-                ]
-            ]
-
+                    StateFile::NAMESPACE_TABLES => [],
+                    StateFile::NAMESPACE_FILES => [],
+                ],
+            ],
         ], $configuration['state']);
         $this->clearConfigurations();
     }
@@ -825,10 +825,10 @@ class RunnerTest extends BaseRunnerTest
             StateFile::NAMESPACE_COMPONENT => ['baz' => 'fooBar'],
             StateFile::NAMESPACE_STORAGE => [
                 StateFile::NAMESPACE_INPUT => [
-                    StateFile::NAMESPACE_TABLES => []
-                ]
-            ]
-
+                    StateFile::NAMESPACE_TABLES => [],
+                    StateFile::NAMESPACE_FILES => [],
+                ],
+            ],
         ], $configuration['state']);
         $this->clearConfigurations();
     }
@@ -2355,6 +2355,17 @@ class RunnerTest extends BaseRunnerTest
 
         self::assertNotEquals($tableInfo['lastImportDate'], $updatedTableInfo['lastImportDate']);
 
+        file_put_contents($temp->getTmpFolder() . "/upload", "test");
+        $fileId1 = $this->getClient()->uploadFile(
+            $temp->getTmpFolder() . '/upload',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1'])
+        );
+        $fileId2 = $this->getClient()->uploadFile(
+            $temp->getTmpFolder() . '/upload',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2'])
+        );
+        sleep(2);
+
         $componentDefinition = new Component([
             'id' => 'keboola.docker-demo-sync',
             'data' => [
@@ -2383,7 +2394,12 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'source' => 'in.c-runner-test.mytable',
                                 'destination' => 'mytable',
-
+                                'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
+                            ],
+                        ],
+                        'files' => [
+                            [
+                                'tags' => ['docker-runner-test'],
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
                             ],
                         ],
@@ -2399,8 +2415,11 @@ class RunnerTest extends BaseRunnerTest
                 ],
                 'parameters' => [
                     'script' => [
+                        'import glob, os',
                         'from shutil import copyfile',
                         'copyfile("/data/in/tables/mytable", "/data/out/tables/mytable")',
+                        'for f in glob.glob("/data/in/files/*"):',
+                        '    print(f)',
                     ],
                 ],
             ],
@@ -2414,10 +2433,20 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'source' => 'in.c-runner-test.mytable',
                                 'lastImportDate' => $tableInfo['lastImportDate'],
-                            ]
-                        ]
-                    ]
-                ]
+                            ],
+                        ],
+                        StateFile::NAMESPACE_FILES => [
+                            [
+                                'tags' => [
+                                    [
+                                        'name' => 'docker-runner-test',
+                                    ],
+                                ],
+                                'lastImportId' => $fileId1,
+                            ],
+                        ],
+                    ],
+                ],
             ]
         );
 
@@ -2431,6 +2460,10 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
 
+        // the script logs all the input files, so fileId2 should be there, but not fileId1
+        $this->assertTrue($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload'));
+        $this->assertFalse($this->getContainerHandler()->hasInfoThatContains($fileId1));
+
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
         $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');
         self::assertEquals(1, $outputTableInfo['rowsCount']);
@@ -2439,6 +2472,11 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
             $configuration['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
+        );
+        // confirm that the file state is correct
+        self::assertEquals(
+            ['tags' => [['name' => 'docker-runner-test']], 'lastImportId' => $fileId2],
+            $configuration['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0]
         );
     }
 

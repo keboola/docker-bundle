@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Configuration\ComponentState\Adapter;
 use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
@@ -26,6 +27,8 @@ class StateFile
     const NAMESPACE_INPUT = 'input';
 
     const NAMESPACE_TABLES = 'tables';
+
+    const NAMESPACE_FILES = 'files';
 
     /**
      * @var string
@@ -130,7 +133,7 @@ class StateFile
         $this->currentState = $currentState;
     }
 
-    public function persistState(InputTableStateList $inputTableStateList)
+    public function persistState(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
     {
         $this->outputFilter->collectValues((array)$this->currentState);
 
@@ -156,7 +159,8 @@ class StateFile
                 self::NAMESPACE_COMPONENT => $encryptedStateData,
                 self::NAMESPACE_STORAGE => [
                     self::NAMESPACE_INPUT => [
-                        self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize()
+                        self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize(),
+                        self::NAMESPACE_FILES => $inputFileStateList->jsonSerialize(),
                     ]
                 ]
             ];
@@ -165,7 +169,6 @@ class StateFile
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
                 $configurationRow->setState($state);
-
                 $this->saveConfigurationRowState($configurationRow, $client);
             } else {
                 $configuration->setState($state);

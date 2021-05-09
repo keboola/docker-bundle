@@ -20,6 +20,7 @@ use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -281,9 +282,32 @@ class Runner
         } else {
             $inputTableStateList = new InputTableStateList([]);
         }
+        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES])) {
+            $inputFileStateList = new InputFileStateList(
+                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES]
+            );
+        } else {
+            $inputFileStateList = new InputFileStateList([]);
+        }
 
         try {
-            $output = $this->runComponent($jobId, $jobDefinition->getConfigId(), $jobDefinition->getRowId(), $component, $usageFile, $dataLoader, $workingDirectory, $stateFile, $imageCreator, $configFile, $outputFilter, $jobDefinition->getConfigVersion(), $mode, $inputTableStateList);
+            $output = $this->runComponent(
+                $jobId,
+                $jobDefinition->getConfigId(),
+                $jobDefinition->getRowId(),
+                $component,
+                $usageFile,
+                $dataLoader,
+                $workingDirectory,
+                $stateFile,
+                $imageCreator,
+                $configFile,
+                $outputFilter,
+                $jobDefinition->getConfigVersion(),
+                $mode,
+                $inputTableStateList,
+                $inputFileStateList
+            );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
             throw $e;
@@ -351,7 +375,10 @@ class Runner
         /** @var Output $output */
         foreach ($outputs as $output) {
             if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($jobDefinition->getComponentId(), $jobDefinition->getConfigId())) {
-                $output->getStateFile()->persistState($output->getInputTableStateList());
+                $output->getStateFile()->persistState(
+                    $output->getInputTableStateList(),
+                    $output->getInputFileStateList()
+                );
             }
         }
         return $outputs;
@@ -398,17 +425,34 @@ class Runner
      * @param string $configVersion
      * @param string $mode
      * @param InputTableStateList $inputTableStateList
+     * @param InputFileStateList $inputFileStateList
      * @return Output
      * @throws ClientException
      */
-    private function runComponent($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, DataLoaderInterface $dataLoader, WorkingDirectory $workingDirectory, StateFile $stateFile, ImageCreator $imageCreator, ConfigFile $configFile, OutputFilterInterface $outputFilter, $configVersion, $mode, InputTableStateList $inputTableStateList)
-    {
+    private function runComponent(
+        $jobId,
+        $configId,
+        $rowId,
+        Component $component,
+        UsageFileInterface $usageFile,
+        DataLoaderInterface $dataLoader,
+        WorkingDirectory $workingDirectory,
+        StateFile $stateFile,
+        ImageCreator $imageCreator,
+        ConfigFile $configFile,
+        OutputFilterInterface $outputFilter,
+        $configVersion,
+        $mode,
+        InputTableStateList $inputTableStateList,
+        InputFileStateList $inputFileStateList
+    ) {
         // initialize
         $workingDirectory->createWorkingDir();
-        $resultInputTablesState = $dataLoader->loadInputData($inputTableStateList);
+        $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
         $output = $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $configVersion, $mode);
-        $output->setInputTableStateList($resultInputTablesState);
+        $output->setInputTableStateList($storageState->getInputTableStateList());
+        $output->setInputFileStateList($storageState->getInputFileStateList());
         $output->setDataLoader($dataLoader);
 
         if ($mode === self::MODE_DEBUG) {

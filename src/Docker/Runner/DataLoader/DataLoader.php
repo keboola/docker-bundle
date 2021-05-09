@@ -5,12 +5,14 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\Definition;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
+use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\InputMapping\Table\Options\ReaderOptions;
@@ -169,15 +171,16 @@ class DataLoader implements DataLoaderInterface
     /**
      * Download source files
      * @param InputTableStateList $inputTableStateList
-     * @return InputTableStateList
+     * @param InputFileStateList $inputFileStateList
+     * @return StorageState
      * @throws Exception
      */
-    public function loadInputData(InputTableStateList $inputTableStateList)
+    public function loadInputData(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
     {
         $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
+        $resultInputFilesStateList = new InputFileStateList([]);
         $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
-
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
@@ -193,10 +196,11 @@ class DataLoader implements DataLoaderInterface
                 count($this->storageConfig['input']['files'])
             ) {
                 $this->logger->debug('Downloading source files.');
-                $reader->downloadFiles(
+                $resultInputFilesStateList = $reader->downloadFiles(
                     $this->storageConfig['input']['files'],
                     'data/in/files/',
-                    $this->getStagingStorageInput()
+                    $this->getStagingStorageInput(),
+                    $inputFileStateList
                 );
             }
         } catch (ClientException $e) {
@@ -204,7 +208,7 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
-        return $resultInputTablesStateList;
+        return new StorageState($resultInputTablesStateList, $resultInputFilesStateList);
     }
 
     /**
