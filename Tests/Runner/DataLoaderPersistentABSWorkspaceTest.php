@@ -279,10 +279,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             self::assertEquals(
                 sprintf(
                     'Multiple workspaces (total 2) found (IDs: %s, %s) for configuration "%s" of component "%s".',
-                        $workspace1['id'],
-                        $workspace2['id'],
-                        $configurationId,
-                        'keboola.runner-config-test'
+                    $workspace1['id'],
+                    $workspace2['id'],
+                    $configurationId,
+                    'keboola.runner-config-test'
                 ),
                 $e->getMessage()
             );
