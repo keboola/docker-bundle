@@ -21,23 +21,14 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
-use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFileWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingWorkspaceProviderFactory;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
-use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
-use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\AbstractStagingProvider;
 use Keboola\StagingProvider\Provider\WorkspaceStagingProvider;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -147,20 +138,14 @@ class DataLoader implements DataLoaderInterface
             we need the base dir here */
         $dataDirectory = dirname($this->dataDirectory);
 
+        $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory($this->logger, $this->clientWrapper);
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
-        if ($this->configId && ($this->getStagingStorageInput() === InputStrategyFactory::WORKSPACE_ABS)) {
-            // ABS workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace();
-        } else {
-            $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
-                new Components($this->clientWrapper->getBasicClient()),
-                new Workspaces($this->clientWrapper->getBasicClient()),
-                $this->component->getId(),
-                $this->configId
-            );
-            $this->logger->info('Created a new ephemeral workspace.');
-        }
+        $workspaceProviderFactory = $workspaceProviderFactoryFactory->getWorkspaceProviderFactory(
+            $this->getStagingStorageInput(),
+            $this->component,
+            $this->configId
+        );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
             $workspaceProviderFactory,
@@ -179,45 +164,6 @@ class DataLoader implements DataLoaderInterface
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
             $tokenInfo
-        );
-    }
-
-    private function getWorkspaceFactoryForPersistentAbsWorkspace()
-    {
-        // ABS workspaces are persistent, but only if configId is present
-        $componentsApi = new Components($this->clientWrapper->getBasicClient());
-        $listOptions = (new ListConfigurationWorkspacesOptions())
-            ->setComponentId($this->component->getId())
-            ->setConfigurationId($this->configId);
-        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
-        if (count($workspaces) === 0) {
-            $workspace = $componentsApi->createConfigurationWorkspace(
-                $this->component->getId(),
-                $this->configId,
-                ['backend' => AbsWorkspaceStaging::getType()]
-            );
-            $workspaceId = $workspace['id'];
-            $connectionString = $workspace['connection']['connectionString'];
-            $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
-        } elseif (count($workspaces) === 1) {
-            $workspaceId = $workspaces[0]['id'];
-            $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
-            $connectionString = $workspaceApi->resetWorkspacePassword($workspaceId)['connectionString'];
-            $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
-        } else {
-            throw new ApplicationException(sprintf(
-                'Multiple workspaces (total %s) found (IDs: %s, %s) for configuration "%s" of component "%s".',
-                count($workspaces),
-                $workspaces[0]['id'],
-                $workspaces[1]['id'],
-                $this->configId,
-                $this->component->getId()
-            ));
-        }
-        return new ExistingFilesystemWorkspaceProviderFactory(
-            new Workspaces($this->clientWrapper->getBasicClient()),
-            $workspaceId,
-            $connectionString
         );
     }
 

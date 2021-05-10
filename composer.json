@@ -18,7 +18,7 @@
         "keboola/object-encryptor": "^0.3",
         "keboola/output-mapping": "^14.0",
         "keboola/php-utils": "^2.0",
-        "keboola/staging-provider": "dev-odin-PS-2159 as 1.0.0",
+        "keboola/staging-provider": "^1.1",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",

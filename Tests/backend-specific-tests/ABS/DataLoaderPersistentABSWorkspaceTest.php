@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactoryFactory;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
@@ -268,12 +269,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper = new ClientWrapper($client, null, null, '');
         $logger = new TestLogger();
         try {
-            new DataLoader(
-                $clientWrapper,
+            $workspaceFactory = new WorkspaceProviderFactoryFactory(
                 $logger,
-                $this->workingDir->getDataDir(),
-                new JobDefinition([], $component, $configurationId),
-                new OutputFilter()
+                $clientWrapper
+            );
+            $workspaceFactory->getWorkspaceProviderFactory(
+                'workspace-abs',
+                $component,
+                $configurationId
             );
         } catch (ApplicationException $e) {
             self::assertEquals(

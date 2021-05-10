@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "248cdf72ff852f497f80addf90984438",
+    "content-hash": "3728e7ecb6a622dcbb572641c12e73db",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.180.4",
+            "version": "3.180.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3e377fdfd0cda4e1412ac7aca93814d4f032d236"
+                "reference": "948a4defbe2a571cc4460725015b8e98b7060f2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3e377fdfd0cda4e1412ac7aca93814d4f032d236",
-                "reference": "3e377fdfd0cda4e1412ac7aca93814d4f032d236",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/948a4defbe2a571cc4460725015b8e98b7060f2d",
+                "reference": "948a4defbe2a571cc4460725015b8e98b7060f2d",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-05-06T18:13:26+00:00"
+            "time": "2021-05-07T18:12:43+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -2286,16 +2286,16 @@
         },
         {
             "name": "keboola/staging-provider",
-            "version": "dev-odin-PS-2159",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/staging-provider.git",
-                "reference": "d3b3b82cfc83335f9bbc5b7ba517cc18fbe4a8f4"
+                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/d3b3b82cfc83335f9bbc5b7ba517cc18fbe4a8f4",
-                "reference": "d3b3b82cfc83335f9bbc5b7ba517cc18fbe4a8f4",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/97b1ecc1773488176e9b811d466ac252e14223fd",
+                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd",
                 "shasum": ""
             },
             "require": {
@@ -2328,7 +2328,7 @@
                 "keboola",
                 "staging-provider"
             ],
-            "time": "2021-05-07T15:12:26+00:00"
+            "time": "2021-05-10T15:17:21+00:00"
         },
         {
             "name": "keboola/storage-api-client",
@@ -7247,18 +7247,9 @@
             "time": "2020-07-08T17:02:28+00:00"
         }
     ],
-    "aliases": [
-        {
-            "alias": "1.0.0",
-            "alias_normalized": "1.0.0.0",
-            "version": "dev-odin-PS-2159",
-            "package": "keboola/staging-provider"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "keboola/staging-provider": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
