@@ -429,8 +429,6 @@ class DataLoader implements DataLoaderInterface
     public function cleanWorkspace()
     {
         $cleanedProviders = [];
-        /* Find the workspace to cleanup - working only with inputStrategyFactory, but the workspaceproviders
-        are shared between input and output, so it's "ok" */
         foreach (array_merge($this->inputStrategyFactory->getStrategyMap(),
             $this->outputStrategyFactory->getStrategyMap()) as $stagingDefinition
         ) {
