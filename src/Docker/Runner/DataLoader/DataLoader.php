@@ -429,9 +429,11 @@ class DataLoader implements DataLoaderInterface
     public function cleanWorkspace()
     {
         $cleanedProviders = [];
-        foreach (array_merge($this->inputStrategyFactory->getStrategyMap(),
-            $this->outputStrategyFactory->getStrategyMap()) as $stagingDefinition
-        ) {
+        $maps = array_merge(
+            $this->inputStrategyFactory->getStrategyMap(),
+            $this->outputStrategyFactory->getStrategyMap()
+        );
+        foreach ($maps as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
                 if (!$stagingProvider instanceof WorkspaceStagingProvider) {
                     continue;
