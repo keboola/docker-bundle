@@ -33,6 +33,10 @@ class RunnerSynapseTest extends BaseRunnerTest
                 }
             }
         }
+    }
+
+    private function clearConfigs()
+    {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
             (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-synapse-test')
@@ -103,6 +107,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     {
         $this->clearBuckets();
         $this->createBuckets();
+        $this->clearConfigs();
         $temp = new Temp();
         $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
@@ -184,6 +189,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     public function testAbsWorkspaceMapping()
     {
         $this->clearFiles();
+        $this->clearConfigs();
         $temp = new Temp();
         $temp->initRunFolder();
         file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
@@ -258,6 +264,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     {
         $this->clearFiles();
         $this->clearBuckets();
+        $this->clearConfigs();
         $this->createBuckets();
         $temp = new Temp();
         $temp->initRunFolder();
@@ -348,6 +355,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     public function testAbsWorkspaceMappingOutput()
     {
         $this->clearBuckets();
+        $this->clearConfigs();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
             'data' => [
