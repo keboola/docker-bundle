@@ -11,9 +11,11 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
 class RunnerSynapseTest extends BaseRunnerTest
@@ -30,6 +32,26 @@ class RunnerSynapseTest extends BaseRunnerTest
                     throw $e;
                 }
             }
+        }
+    }
+
+    private function clearConfigs()
+    {
+        $componentsApi = new Components($this->client);
+        $configurations = $componentsApi->listComponentConfigurations(
+            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-synapse-test')
+        );
+        $workspacesApi = new Workspaces($this->client);
+        foreach ($configurations as $configuration) {
+            $workspaces = $componentsApi->listConfigurationWorkspaces(
+                (new ListConfigurationWorkspacesOptions())
+                    ->setComponentId('keboola.runner-workspace-synapse-test')
+                    ->setConfigurationId($configuration['id'])
+            );
+            foreach ($workspaces as $workspace) {
+                $workspacesApi->deleteWorkspace($workspace['id']);
+            }
+            $componentsApi->deleteConfiguration('keboola.runner-workspace-synapse-test', $configuration['id']);
         }
     }
 
@@ -85,6 +107,7 @@ class RunnerSynapseTest extends BaseRunnerTest
     {
         $this->clearBuckets();
         $this->createBuckets();
+        $this->clearConfigs();
         $temp = new Temp();
         $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
@@ -161,12 +184,12 @@ class RunnerSynapseTest extends BaseRunnerTest
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-synapse-runner-test.new-table'));
-        $components->deleteConfiguration('keboola.runner-workspace-synapse-test', $configId);
     }
 
     public function testAbsWorkspaceMapping()
     {
         $this->clearFiles();
+        $this->clearConfigs();
         $temp = new Temp();
         $temp->initRunFolder();
         file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
@@ -230,17 +253,18 @@ class RunnerSynapseTest extends BaseRunnerTest
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)));
 
-        // assert the workspace is removed
+        // assert the workspace is preserved
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+        self::assertCount(1, $components->listConfigurationWorkspaces($options));
     }
 
     public function testAbsWorkspaceMappingCombined()
     {
         $this->clearFiles();
         $this->clearBuckets();
+        $this->clearConfigs();
         $this->createBuckets();
         $temp = new Temp();
         $temp->initRunFolder();
@@ -321,16 +345,17 @@ class RunnerSynapseTest extends BaseRunnerTest
             sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)
         ));
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains('data/in/tables/mytable3.csvmanifest'));
-        // assert the workspace is removed
+        // assert the workspace is preserved
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+        self::assertCount(1, $components->listConfigurationWorkspaces($options));
     }
 
     public function testAbsWorkspaceMappingOutput()
     {
         $this->clearBuckets();
+        $this->clearConfigs();
         $componentData = [
             'id' => 'keboola.runner-workspace-abs-test',
             'data' => [
@@ -391,6 +416,6 @@ class RunnerSynapseTest extends BaseRunnerTest
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
-        self::assertCount(0, $components->listConfigurationWorkspaces($options));
+        self::assertCount(1, $components->listConfigurationWorkspaces($options));
     }
 }

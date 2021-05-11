@@ -21,17 +21,15 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
+use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\AbstractStagingProvider;
 use Keboola\StagingProvider\Provider\WorkspaceStagingProvider;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -138,13 +136,15 @@ class DataLoader implements DataLoaderInterface
         $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
 
         /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
-            we need need the base dir here */
+            we need the base dir here */
         $dataDirectory = dirname($this->dataDirectory);
 
-        $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
-            new Components($this->clientWrapper->getBasicClient()),
-            new Workspaces($this->clientWrapper->getBasicClient()),
-            $this->component->getId(),
+        $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory($this->logger, $this->clientWrapper);
+        /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
+            just input staging here (because if it is workspace, it must be the same as output mapping). */
+        $workspaceProviderFactory = $workspaceProviderFactoryFactory->getWorkspaceProviderFactory(
+            $this->getStagingStorageInput(),
+            $this->component,
             $this->configId
         );
         $inputProviderInitializer = new InputProviderInitializer(
@@ -428,15 +428,27 @@ class DataLoader implements DataLoaderInterface
 
     public function cleanWorkspace()
     {
-        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
-        foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
+        $cleanedProviders = [];
+        $maps = array_merge(
+            $this->inputStrategyFactory->getStrategyMap(),
+            $this->outputStrategyFactory->getStrategyMap()
+        );
+        foreach ($maps as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
                 if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                    continue;
+                }
+                if (in_array($stagingProvider, $cleanedProviders, true)) {
+                    continue;
+                }
+                // don't clean ABS workspace which is persistent if created for a config
+                if ($this->configId && ($stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType())) {
                     continue;
                 }
 
                 try {
                     $stagingProvider->cleanup();
+                    $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
                     // ignore errors if the cleanup fails because the workspace is already gone
                     if ($e->getStringCode() !== 'workspace.workspaceNotFound') {
