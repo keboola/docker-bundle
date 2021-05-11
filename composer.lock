@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.180.5",
+            "version": "3.180.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "948a4defbe2a571cc4460725015b8e98b7060f2d"
+                "reference": "1a836be14ba664ea11eb965dec77715e9e607013"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/948a4defbe2a571cc4460725015b8e98b7060f2d",
-                "reference": "948a4defbe2a571cc4460725015b8e98b7060f2d",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1a836be14ba664ea11eb965dec77715e9e607013",
+                "reference": "1a836be14ba664ea11eb965dec77715e9e607013",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-05-07T18:12:43+00:00"
+            "time": "2021-05-10T18:17:07+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1891,16 +1891,16 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "12.6.1",
+            "version": "12.7.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "2db6e1c73ee69d64ed82e5ff69f96d285a5f199e"
+                "reference": "27ef8aba7ea71199909a421e3d609b6f838c3673"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/2db6e1c73ee69d64ed82e5ff69f96d285a5f199e",
-                "reference": "2db6e1c73ee69d64ed82e5ff69f96d285a5f199e",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/27ef8aba7ea71199909a421e3d609b6f838c3673",
+                "reference": "27ef8aba7ea71199909a421e3d609b6f838c3673",
                 "shasum": ""
             },
             "require": {
@@ -1934,7 +1934,7 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2021-05-07T16:18:26+00:00"
+            "time": "2021-05-10T19:03:08+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
