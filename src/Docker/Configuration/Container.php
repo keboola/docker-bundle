@@ -79,7 +79,17 @@ class Container extends Configuration
                 ->arrayNode('table_files')
         ;
         OutputTableFile::configureNode($outputTableFile);
-
+        // validation of use_only_file_storage with table_files
+        $root->validate()
+            ->ifTrue(function ($v) {
+                if (!empty($v['runtime']['use_file_storage_only']) && empty($v['storage']['output']['table_files'])) {
+                    return true;
+                }
+                return false;
+            })
+            ->thenInvalid('table_files must be specified for use_file_storage_only_mode')
+            ->end()
+        ;
         // authorization
         $root->children()
             ->arrayNode("authorization")
@@ -140,7 +150,6 @@ class Container extends Configuration
                 ->end()
             ->end()
         ->end();
-
         return $treeBuilder;
     }
 }

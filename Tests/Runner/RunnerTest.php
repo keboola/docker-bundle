@@ -2884,4 +2884,64 @@ class RunnerTest extends BaseRunnerTest
         self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
+
+    public function testOutputTablesAsFilesWithMissingTableFiles()
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+        $componentData = [
+            'id' => 'keboola.runner-staging-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-staging-test',
+                    'tag' => '0.1.0',
+                ],
+                'staging_storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+            'features' => ['allow-use-file-storage-only'],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-staging-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('table_files must be specified for use_file_storage_only_mode');
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'storage' => [
+                        'output' => [
+                            'files' => [],
+                            'tables' => [],
+                        ],
+                    ],
+                    'parameters' => [
+                        'operation' => 'create-output-table-local',
+                        'filename' => 'my-table.csv',
+                        'includeManifest' => true,
+                    ],
+                    'runtime' => [
+                        'use_file_storage_only' => true,
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile()
+        );
+    }
 }
