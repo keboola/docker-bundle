@@ -2914,8 +2914,6 @@ class RunnerTest extends BaseRunnerTest
         $components->addConfiguration($configuration);
         $runner = $this->getRunner();
 
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('table_files must be specified for use_file_storage_only_mode');
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -2930,7 +2928,7 @@ class RunnerTest extends BaseRunnerTest
                     'parameters' => [
                         'operation' => 'create-output-table-local',
                         'filename' => 'my-table.csv',
-                        'includeManifest' => true,
+                        'includeManifest' => false,
                     ],
                     'runtime' => [
                         'use_file_storage_only' => true,
@@ -2943,5 +2941,19 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile()
         );
+
+        // wait for the file to show up in the listing
+        sleep(2);
+
+        // table should not exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.test-table'));
+
+        // but the file should exist
+        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:"componentId: keboola.runner-staging-test" AND tags:' .
+            sprintf('"configurationId: %s"', $configId)
+        ));
+        self::assertCount(1, $fileList);
+        self::assertEquals('my_table.csv', $fileList[0]['name']);
     }
 }
