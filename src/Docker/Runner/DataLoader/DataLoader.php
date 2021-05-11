@@ -21,6 +21,7 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
+use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -427,21 +428,27 @@ class DataLoader implements DataLoaderInterface
 
     public function cleanWorkspace()
     {
-        // don't clean ABS workspace which is persistent
-        if ($this->configId && ($this->getStagingStorageInput() === InputStrategyFactory::WORKSPACE_ABS)) {
-            return;
-        }
+        $cleanedProviders = [];
         /* Find the workspace to cleanup - working only with inputStrategyFactory, but the workspaceproviders
         are shared between input and output, so it's "ok" */
-        foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
+        foreach (array_merge($this->inputStrategyFactory->getStrategyMap(),
+            $this->outputStrategyFactory->getStrategyMap()) as $stagingDefinition
+        ) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
                 if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                    continue;
+                }
+                if (in_array($stagingProvider, $cleanedProviders, true)) {
+                    continue;
+                }
+                // don't clean ABS workspace which is persistent if created for a config
+                if ($this->configId && ($stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType())) {
                     continue;
                 }
 
                 try {
                     $stagingProvider->cleanup();
-                    return; // there is only one workspace for a job so far
+                    $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
                     // ignore errors if the cleanup fails because the workspace is already gone
                     if ($e->getStringCode() !== 'workspace.workspaceNotFound') {
