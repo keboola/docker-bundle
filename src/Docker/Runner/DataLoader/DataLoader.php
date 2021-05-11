@@ -220,6 +220,7 @@ class DataLoader implements DataLoaderInterface
         $this->logger->debug("Storing results.");
         $outputTablesConfig = [];
         $outputFilesConfig = [];
+        $outputTableFilesConfig = [];
 
         if (isset($this->storageConfig["output"]["tables"]) &&
             count($this->storageConfig["output"]["tables"])

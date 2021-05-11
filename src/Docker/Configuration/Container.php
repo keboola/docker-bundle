@@ -140,7 +140,6 @@ class Container extends Configuration
                 ->end()
             ->end()
         ->end();
-
         return $treeBuilder;
     }
 }
