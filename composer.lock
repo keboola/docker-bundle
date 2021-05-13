@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3728e7ecb6a622dcbb572641c12e73db",
+    "content-hash": "00427f1dc5f967b1d2682ad9bc10542f",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.180.6",
+            "version": "3.181.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "1a836be14ba664ea11eb965dec77715e9e607013"
+                "reference": "0829df420170e4994767860290a69487a18555f7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1a836be14ba664ea11eb965dec77715e9e607013",
-                "reference": "1a836be14ba664ea11eb965dec77715e9e607013",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/0829df420170e4994767860290a69487a18555f7",
+                "reference": "0829df420170e4994767860290a69487a18555f7",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,12 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-05-10T18:17:07+00:00"
+            "support": {
+                "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
+                "issues": "https://github.com/aws/aws-sdk-php/issues",
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.181.1"
+            },
+            "time": "2021-05-12T18:13:31+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -290,6 +295,10 @@
                 "docblock",
                 "parser"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/annotations/issues",
+                "source": "https://github.com/doctrine/annotations/tree/v1.4.0"
+            },
             "time": "2017-02-24T16:22:25+00:00"
         },
         {
@@ -360,6 +369,10 @@
                 "cache",
                 "caching"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/cache/issues",
+                "source": "https://github.com/doctrine/cache/tree/1.6.x"
+            },
             "time": "2017-07-22T12:49:21+00:00"
         },
         {
@@ -427,6 +440,10 @@
                 "collections",
                 "iterator"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/collections/issues",
+                "source": "https://github.com/doctrine/collections/tree/master"
+            },
             "time": "2017-01-03T10:49:41+00:00"
         },
         {
@@ -500,6 +517,10 @@
                 "persistence",
                 "spl"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/common/issues",
+                "source": "https://github.com/doctrine/common/tree/v2.7.3"
+            },
             "time": "2017-07-22T08:35:12+00:00"
         },
         {
@@ -876,6 +897,9 @@
                 "singularize",
                 "string"
             ],
+            "support": {
+                "source": "https://github.com/doctrine/inflector/tree/master"
+            },
             "time": "2015-11-06T14:35:42+00:00"
         },
         {
@@ -990,6 +1014,10 @@
                 "parser",
                 "php"
             ],
+            "support": {
+                "issues": "https://github.com/doctrine/lexer/issues",
+                "source": "https://github.com/doctrine/lexer/tree/1.0.2"
+            },
             "time": "2019-06-08T11:03:04+00:00"
         },
         {
@@ -1460,6 +1488,10 @@
                 "rest",
                 "web service"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/guzzle/issues",
+                "source": "https://github.com/guzzle/guzzle/tree/6.5"
+            },
             "time": "2020-06-16T21:01:06+00:00"
         },
         {
@@ -1511,6 +1543,10 @@
             "keywords": [
                 "promise"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/promises/issues",
+                "source": "https://github.com/guzzle/promises/tree/1.4.1"
+            },
             "time": "2021-03-07T09:25:29+00:00"
         },
         {
@@ -1582,6 +1618,10 @@
                 "uri",
                 "url"
             ],
+            "support": {
+                "issues": "https://github.com/guzzle/psr7/issues",
+                "source": "https://github.com/guzzle/psr7/tree/1.8.2"
+            },
             "time": "2021-04-26T09:17:50+00:00"
         },
         {
@@ -1624,6 +1664,10 @@
                 "hashing",
                 "password"
             ],
+            "support": {
+                "issues": "https://github.com/ircmaxell/password_compat/issues",
+                "source": "https://github.com/ircmaxell/password_compat/tree/v1.0"
+            },
             "time": "2014-11-20T16:49:30+00:00"
         },
         {
@@ -1796,6 +1840,10 @@
             ],
             "description": "Keboola CSV reader and writer",
             "homepage": "http://keboola.com",
+            "support": {
+                "issues": "https://github.com/keboola/php-csv/issues",
+                "source": "https://github.com/keboola/php-csv/tree/master"
+            },
             "time": "2016-04-21T20:46:22+00:00"
         },
         {
@@ -1891,22 +1939,22 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "12.7.0",
+            "version": "dev-pepa_PS-2036_branchWorkspace",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "27ef8aba7ea71199909a421e3d609b6f838c3673"
+                "reference": "e6a335c7f9496663f9bc426dc6432482732b76f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/27ef8aba7ea71199909a421e3d609b6f838c3673",
-                "reference": "27ef8aba7ea71199909a421e3d609b6f838c3673",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/e6a335c7f9496663f9bc426dc6432482732b76f8",
+                "reference": "e6a335c7f9496663f9bc426dc6432482732b76f8",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "keboola/storage-api-client": "^11.2",
-                "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
+                "keboola/storage-api-client": "^12.3",
+                "keboola/storage-api-php-client-branch-wrapper": "^1.1",
                 "symfony/config": "^2.8.52|^4.1",
                 "symfony/finder": "^2.8.52|^4.1",
                 "symfony/serializer": "^2.8.52|^4.1",
@@ -1934,7 +1982,11 @@
                 }
             ],
             "description": "Shared component for processing SAPI input mapping and exporting to files",
-            "time": "2021-05-10T19:03:08+00:00"
+            "support": {
+                "issues": "https://github.com/keboola/input-mapping/issues",
+                "source": "https://github.com/keboola/input-mapping/tree/pepa_PS-2036_branchWorkspace"
+            },
+            "time": "2021-05-12T17:50:52+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2079,6 +2131,10 @@
                 }
             ],
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
+            "support": {
+                "issues": "https://github.com/keboola/output-mapping/issues",
+                "source": "https://github.com/keboola/output-mapping/tree/14.5.1"
+            },
             "time": "2021-05-04T08:56:46+00:00"
         },
         {
@@ -2282,6 +2338,10 @@
                 }
             ],
             "description": "Column name sanitizer",
+            "support": {
+                "issues": "https://github.com/keboola/sanitizer/issues",
+                "source": "https://github.com/keboola/sanitizer/tree/0.1.0"
+            },
             "time": "2019-01-11T10:21:17+00:00"
         },
         {
@@ -2328,20 +2388,23 @@
                 "keboola",
                 "staging-provider"
             ],
+            "support": {
+                "source": "https://github.com/keboola/staging-provider/tree/1.1.0"
+            },
             "time": "2021-05-10T15:17:21+00:00"
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "11.7.0",
+            "version": "12.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "6e4fc1023c3c83fc840120895edebd9a4f0a7c92"
+                "reference": "cabf94cec2040b42c88583890121df71891c8017"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/6e4fc1023c3c83fc840120895edebd9a4f0a7c92",
-                "reference": "6e4fc1023c3c83fc840120895edebd9a4f0a7c92",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/cabf94cec2040b42c88583890121df71891c8017",
+                "reference": "cabf94cec2040b42c88583890121df71891c8017",
                 "shasum": ""
             },
             "require": {
@@ -2357,9 +2420,10 @@
             "require-dev": {
                 "apigen/apigen": "4.0.0-RC4",
                 "brianium/paratest": "2.*",
+                "ext-pdo": "*",
                 "ext-pdo_pgsql": "*",
                 "keboola/php-csv-db-import": "^2.2",
-                "keboola/table-backend-utils": "^0.6",
+                "keboola/table-backend-utils": "^0.7",
                 "phpcompatibility/php-compatibility": "*",
                 "phpstan/phpstan-shim": "^0.9.2",
                 "phpunit/phpunit": "^7.0",
@@ -2380,20 +2444,24 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2021-02-05T20:11:13+00:00"
+            "support": {
+                "issues": "https://github.com/keboola/storage-api-php-client/issues",
+                "source": "https://github.com/keboola/storage-api-php-client/tree/12.3.1"
+            },
+            "time": "2021-05-12T15:49:12+00:00"
         },
         {
             "name": "keboola/storage-api-php-client-branch-wrapper",
-            "version": "1.0.1",
+            "version": "1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client-branch-wrapper.git",
-                "reference": "77a1921400be57326ae3c4601bbac464bc4cf4c4"
+                "reference": "09a4517c2f6c14df3a20dda52990d5d655aa386f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client-branch-wrapper/zipball/77a1921400be57326ae3c4601bbac464bc4cf4c4",
-                "reference": "77a1921400be57326ae3c4601bbac464bc4cf4c4",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client-branch-wrapper/zipball/09a4517c2f6c14df3a20dda52990d5d655aa386f",
+                "reference": "09a4517c2f6c14df3a20dda52990d5d655aa386f",
                 "shasum": ""
             },
             "require": {
@@ -2428,7 +2496,11 @@
                 "keboola",
                 "storage api"
             ],
-            "time": "2021-03-25T14:45:25+00:00"
+            "support": {
+                "issues": "https://github.com/keboola/storage-api-php-client-branch-wrapper/issues",
+                "source": "https://github.com/keboola/storage-api-php-client-branch-wrapper/tree/1.1.0"
+            },
+            "time": "2021-05-12T16:46:09+00:00"
         },
         {
             "name": "keboola/syrup",
@@ -2617,6 +2689,10 @@
                 "sdk",
                 "storage"
             ],
+            "support": {
+                "issues": "https://github.com/Azure/azure-storage-blob-php/issues",
+                "source": "https://github.com/Azure/azure-storage-blob-php/tree/v1.5.2"
+            },
             "time": "2020-12-29T02:22:11+00:00"
         },
         {
@@ -2661,6 +2737,10 @@
                 "sdk",
                 "storage"
             ],
+            "support": {
+                "issues": "https://github.com/Azure/azure-storage-common-php/issues",
+                "source": "https://github.com/Azure/azure-storage-common-php/tree/v1.5.1"
+            },
             "time": "2020-12-28T07:59:51+00:00"
         },
         {
@@ -2733,6 +2813,10 @@
                 "logging",
                 "psr-3"
             ],
+            "support": {
+                "issues": "https://github.com/Seldaek/monolog/issues",
+                "source": "https://github.com/Seldaek/monolog/tree/1.26.0"
+            },
             "funding": [
                 {
                     "url": "https://github.com/Seldaek",
@@ -2800,6 +2884,10 @@
                 "json",
                 "jsonpath"
             ],
+            "support": {
+                "issues": "https://github.com/jmespath/jmespath.php/issues",
+                "source": "https://github.com/jmespath/jmespath.php/tree/2.6.0"
+            },
             "time": "2020-07-31T21:01:56+00:00"
         },
         {
@@ -2909,6 +2997,10 @@
                 "proxy pattern",
                 "service proxies"
             ],
+            "support": {
+                "issues": "https://github.com/Ocramius/ProxyManager/issues",
+                "source": "https://github.com/Ocramius/ProxyManager/tree/1.0.x"
+            },
             "time": "2015-08-09T04:28:19+00:00"
         },
         {
@@ -3021,6 +3113,11 @@
                 "pseudorandom",
                 "random"
             ],
+            "support": {
+                "email": "info@paragonie.com",
+                "issues": "https://github.com/paragonie/random_compat/issues",
+                "source": "https://github.com/paragonie/random_compat"
+            },
             "time": "2021-04-17T09:33:01+00:00"
         },
         {
@@ -3277,6 +3374,10 @@
                 "container-interop",
                 "psr"
             ],
+            "support": {
+                "issues": "https://github.com/php-fig/container/issues",
+                "source": "https://github.com/php-fig/container/tree/master"
+            },
             "time": "2017-02-14T16:28:37+00:00"
         },
         {
@@ -3327,6 +3428,9 @@
                 "request",
                 "response"
             ],
+            "support": {
+                "source": "https://github.com/php-fig/http-message/tree/master"
+            },
             "time": "2016-08-06T14:39:51+00:00"
         },
         {
@@ -3374,6 +3478,9 @@
                 "psr",
                 "psr-3"
             ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/1.1.4"
+            },
             "time": "2021-05-03T11:20:27+00:00"
         },
         {
@@ -3414,6 +3521,10 @@
                 }
             ],
             "description": "A polyfill for getallheaders.",
+            "support": {
+                "issues": "https://github.com/ralouphie/getallheaders/issues",
+                "source": "https://github.com/ralouphie/getallheaders/tree/develop"
+            },
             "time": "2019-03-08T08:55:37+00:00"
         },
         {
@@ -3674,6 +3785,10 @@
                 "promise",
                 "promises"
             ],
+            "support": {
+                "issues": "https://github.com/reactphp/promise/issues",
+                "source": "https://github.com/reactphp/promise/tree/v2.8.0"
+            },
             "time": "2020-05-12T15:16:56+00:00"
         },
         {
@@ -4160,6 +4275,10 @@
                 "mail",
                 "mailer"
             ],
+            "support": {
+                "issues": "https://github.com/swiftmailer/swiftmailer/issues",
+                "source": "https://github.com/swiftmailer/swiftmailer/tree/v5.4.12"
+            },
             "time": "2018-07-31T09:26:32+00:00"
         },
         {
@@ -4351,6 +4470,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-apcu/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4427,6 +4549,9 @@
                 "polyfill",
                 "portable"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-ctype/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4503,6 +4628,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-icu/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4588,6 +4716,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-idn/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4669,6 +4800,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-intl-normalizer/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4746,6 +4880,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4822,6 +4959,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php54/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4896,6 +5036,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php55/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -4970,6 +5113,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php56/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5047,6 +5193,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php70/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5120,6 +5269,9 @@
                 "portable",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-php72/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5190,6 +5342,9 @@
                 "polyfill",
                 "shim"
             ],
+            "support": {
+                "source": "https://github.com/symfony/polyfill-util/tree/v1.19.0"
+            },
             "funding": [
                 {
                     "url": "https://symfony.com/sponsor",
@@ -5265,6 +5420,10 @@
             ],
             "description": "Symfony Security Component - ACL (Access Control List)",
             "homepage": "https://symfony.com",
+            "support": {
+                "issues": "https://github.com/symfony/security-acl/issues",
+                "source": "https://github.com/symfony/security-acl/tree/master"
+            },
             "time": "2019-12-12T09:55:57+00:00"
         },
         {
@@ -5464,6 +5623,10 @@
             "keywords": [
                 "framework"
             ],
+            "support": {
+                "issues": "https://github.com/symfony/symfony/issues",
+                "source": "https://github.com/symfony/symfony/tree/v2.8.52"
+            },
             "time": "2019-11-13T08:36:42+00:00"
         },
         {
@@ -5528,6 +5691,10 @@
             "keywords": [
                 "templating"
             ],
+            "support": {
+                "issues": "https://github.com/twigphp/Twig/issues",
+                "source": "https://github.com/twigphp/Twig/tree/1.x"
+            },
             "time": "2020-02-11T05:59:23+00:00"
         },
         {
@@ -5627,6 +5794,10 @@
                 "code",
                 "zf2"
             ],
+            "support": {
+                "issues": "https://github.com/zendframework/zend-code/issues",
+                "source": "https://github.com/zendframework/zend-code/tree/release-2.6"
+            },
             "abandoned": "laminas/laminas-code",
             "time": "2016-04-20T17:26:42+00:00"
         },
@@ -5682,6 +5853,10 @@
                 "events",
                 "zf2"
             ],
+            "support": {
+                "issues": "https://github.com/zendframework/zend-eventmanager/issues",
+                "source": "https://github.com/zendframework/zend-eventmanager/tree/master"
+            },
             "abandoned": "laminas/laminas-eventmanager",
             "time": "2018-04-25T15:33:34+00:00"
         },
@@ -7195,6 +7370,11 @@
                 "phpcs",
                 "standards"
             ],
+            "support": {
+                "issues": "https://github.com/squizlabs/PHP_CodeSniffer/issues",
+                "source": "https://github.com/squizlabs/PHP_CodeSniffer",
+                "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
+            },
             "time": "2021-04-09T00:54:41+00:00"
         },
         {
@@ -7247,9 +7427,18 @@
             "time": "2020-07-08T17:02:28+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "keboola/input-mapping",
+            "version": "dev-pepa_PS-2036_branchWorkspace",
+            "alias": "12.8.0",
+            "alias_normalized": "12.8.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/input-mapping": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
@@ -7260,5 +7449,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.0.0"
 }
