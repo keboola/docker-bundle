@@ -13,7 +13,7 @@
         "ext-json": "*",
         "ext-zip": "*",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "dev-pepa_PS-2036_branchWorkspace as 12.8.0",
+        "keboola/input-mapping": "^12.8",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/object-encryptor": "^0.3",
         "keboola/output-mapping": "^14.5",

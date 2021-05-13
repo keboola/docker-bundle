@@ -7,7 +7,6 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -22,23 +21,21 @@ class BranchedWorkspaceTest extends BaseRunnerTest
     const BRANCH_NAME = 'workspace-test';
     const BUCKET_NAME = 'workspace-test';
     const TABLE_NAME = 'test-table';
+    const TABLE_DATA = [
+        ['id', 'text'],
+        ['test1', 'test1'],
+    ];
 
-    /**
-     * @doesNotPerformAssertion
-     */
     public function testConfigIsAvailableToJobWhenCreatedBeforeBranch()
     {
         $storageApi = $this->getClient();
-        $storageApiMaster = $this->getMasterClient();
+        $storageApiMaster = $this->createMasterClient();
 
         // prepare data
         $inBucketId = $this->cleanupAndCreateBucket($storageApi, self::BUCKET_NAME, $storageApi::STAGE_IN);
         $outBucketId = $this->cleanupAndCreateBucket($storageApi, self::BUCKET_NAME, $storageApi::STAGE_OUT);
 
-        $this->loadDataIntoTable($storageApi, $inBucketId, 'test-table', [
-            ['id', 'text'],
-            ['test1', 'test1'],
-        ]);
+        $this->loadDataIntoTable($storageApi, $inBucketId, self::TABLE_NAME, self::TABLE_DATA);
 
         // setup configuration outside branch
         $componentsApiForConfig = new Components($storageApi);
@@ -58,45 +55,53 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $storageApiWrapper = new ClientWrapper($storageApi, null, null, $branchId);
 
         // run testing job
-        $this->runCopyJob($storageApiWrapper, $configId, $inBucketId, $outBucketId, self::TABLE_NAME);
+        $jobDefinition = $this->createCopyJobDefinition($configId, $inBucketId, $outBucketId, self::TABLE_NAME);
+        $this->runJob($storageApiWrapper, $jobDefinition);
+
+        $branchOutBucketId = sprintf('%s.c-%s-%s', $storageApi::STAGE_OUT, $branchId, self::BUCKET_NAME);
+        self::assertSame(
+            self::TABLE_DATA,
+            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME)
+        );
     }
 
-    public function testConfigIsNotAvailableToJobWhenCreatedAfterBranch()
+    public function testBranchConfigIsAvailableToBranchJob()
     {
         $storageApi = $this->getClient();
-        $storageApiMaster = $this->getMasterClient();
+        $storageApiMaster = $this->createMasterClient();
 
         // prepare data
         $inBucketId = $this->cleanupAndCreateBucket($storageApi, self::BUCKET_NAME, $storageApi::STAGE_IN);
         $outBucketId = $this->cleanupAndCreateBucket($storageApi, self::BUCKET_NAME, $storageApi::STAGE_OUT);
 
-        $this->loadDataIntoTable($storageApi, $inBucketId, 'test-table', [
-            ['id', 'text'],
-            ['test1', 'test1'],
-        ]);
+        $this->loadDataIntoTable($storageApi, $inBucketId, self::TABLE_NAME, self::TABLE_DATA);
 
         // create branch
         $branchesApiMaster = new DevBranches($storageApiMaster);
         $branchId = $this->cleanupAndCreateBranch($branchesApiMaster, self::BRANCH_NAME);
         $storageApiWrapper = new ClientWrapper($storageApi, null, null, $branchId);
 
-        // setup configuration outside branch
-        $componentsApiForConfig = new Components($storageApi);
+        // setup configuration inside branch
+        $componentsApiForConfig = new Components($storageApiWrapper->getBranchClient());
         $configId = $this->generateConfigId();
 
-        $this->cleanupAndCreateConfiguration(
+        $this->createConfiguration(
             $componentsApiForConfig,
             (new Configuration())
                 ->setComponentId('keboola.runner-workspace-test')
-                ->setName($configId)
+                ->setName('runner-tests')
                 ->setConfigurationId($configId)
         );
 
         // run testing job
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage(sprintf('Failed to store state: Configuration %s not found', $configId));
+        $jobDefinition = $this->createCopyJobDefinition($configId, $inBucketId, $outBucketId, self::TABLE_NAME);
+        $this->runJob($storageApiWrapper, $jobDefinition);
 
-        $this->runCopyJob($storageApiWrapper, $configId, $inBucketId, $outBucketId, self::TABLE_NAME);
+        $branchOutBucketId = sprintf('%s.c-%s-%s', $storageApi::STAGE_OUT, $branchId, self::BUCKET_NAME);
+        self::assertSame(
+            self::TABLE_DATA,
+            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME)
+        );
     }
 
     private function generateConfigId()
@@ -165,7 +170,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $storageApi->createTableAsync($bucketId, $tableName, $csv);
     }
 
-    private function runCopyJob(ClientWrapper $storageApiWrapper, $configId, $inBucketId, $outBucketId, $tableName)
+    private function createCopyJobDefinition($configId, $inBucketId, $outBucketId, $tableName)
     {
         $configData = [
             'storage' => [
@@ -206,10 +211,10 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             ],
         ];
 
-        $this->runJob($storageApiWrapper, $configData, $componentData, $configId);
+        return new JobDefinition($configData, new Component($componentData), $configId, 'v123', []);
     }
 
-    private function runJob(ClientWrapper $storageApiWrapper, array $configData, array $componentData, $configId)
+    private function runJob(ClientWrapper $storageApiWrapper, JobDefinition $jobDefinition)
     {
         $runner = new Runner(
             $this->getEncryptorFactory(),
@@ -222,7 +227,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         );
 
         return $runner->run(
-            [new JobDefinition($configData, new Component($componentData), $configId, 'v123', [])],
+            [$jobDefinition],
             'run',
             'run',
             '123456',
@@ -233,15 +238,17 @@ class BranchedWorkspaceTest extends BaseRunnerTest
     /**
      * @return Client
      */
-    private function getMasterClient()
+    private function createMasterClient()
     {
-        $storageApiMaster = new Client(
-            [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN_MASTER,
-            ]
-        );
+        return new Client([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN_MASTER,
+        ]);
+    }
 
-        return $storageApiMaster;
+    private function loadDataFromTable(Client $storageApi, $bucketId, $tableName)
+    {
+        $csvData = $storageApi->getTableDataPreview($bucketId.'.'.$tableName);
+        return Client::parseCsv($csvData, false);
     }
 }

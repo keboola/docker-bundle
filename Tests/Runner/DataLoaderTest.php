@@ -42,7 +42,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     {
         self::expectException(UserException::class);
         self::expectExceptionMessage('Configuration ID not set');
-        $clientWrapper = new ClientWrapper($this->client, null, null);
+        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         new DataLoader(
             $clientWrapper,
             new NullLogger(),
@@ -114,7 +114,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientWrapper = new ClientWrapper($this->client, null, null); // TODO MAIN
+        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage($error);
         new DataLoader(

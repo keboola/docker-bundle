@@ -270,8 +270,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $logger = new TestLogger();
         try {
             $workspaceFactory = new WorkspaceProviderFactoryFactory(
-                $logger,
-                $clientWrapper
+                new Components($clientWrapper->getBranchClientIfAvailable()),
+                new Workspaces($clientWrapper->getBranchClientIfAvailable()),
+                $logger
             );
             $workspaceFactory->getWorkspaceProviderFactory(
                 'workspace-abs',
