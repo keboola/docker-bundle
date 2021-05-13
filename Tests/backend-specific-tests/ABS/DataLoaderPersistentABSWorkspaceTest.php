@@ -63,7 +63,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ->getMock();
         $client->expects($this->once())->method('apiDelete')->with(self::stringContains('workspaces/'));
         /** @var Client $client */
-        $clientWrapper = new ClientWrapper($client, null, null, '');
+        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -114,7 +114,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $configuration->setComponentId('keboola.runner-config-test');
         $componentsApi = new Components($this->client);
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
-        $clientWrapper = new ClientWrapper($client, null, null, '');
+        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -185,7 +185,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $configurationId,
             ['backend' => 'abs']
         );
-        $clientWrapper = new ClientWrapper($client, null, null, '');
+        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -266,12 +266,13 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ['backend' => 'abs']
         );
 
-        $clientWrapper = new ClientWrapper($client, null, null, '');
+        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
         $logger = new TestLogger();
         try {
             $workspaceFactory = new WorkspaceProviderFactoryFactory(
-                $logger,
-                $clientWrapper
+                new Components($clientWrapper->getBranchClientIfAvailable()),
+                new Workspaces($clientWrapper->getBranchClientIfAvailable()),
+                $logger
             );
             $workspaceFactory->getWorkspaceProviderFactory(
                 'workspace-abs',

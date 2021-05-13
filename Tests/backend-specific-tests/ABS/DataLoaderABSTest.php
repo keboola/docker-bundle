@@ -48,8 +48,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test-abs']));
         sleep(1);
 
-        $clientWrapper = new StorageClientWrapper($this->client, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $jobDefinition = new JobDefinition($config, $this->getNoDefaultBucketComponent());
         $dataLoader = new DataLoader(
             $clientWrapper,

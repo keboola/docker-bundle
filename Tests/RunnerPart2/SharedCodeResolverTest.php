@@ -59,7 +59,7 @@ class SharedCodeResolverTest extends TestCase
             ]),
             null,
             new NullLogger(),
-            ''
+            ClientWrapper::BRANCH_MAIN
         );
         $components = new Components($this->clientWrapper->getBasicClient());
         $listOptions = new ListComponentConfigurationsOptions();
@@ -296,13 +296,13 @@ class SharedCodeResolverTest extends TestCase
                 'secondCode' => ['code_content' => 'bar']
             ]
         );
+        $branchId = $this->createBranch($client, 'my-dev-branch');
         $this->clientWrapper = new ClientWrapper(
             $client,
             null,
-            new NullLogger()
+            new NullLogger(),
+            $branchId
         );
-        $branchId = $this->createBranch($this->clientWrapper, 'my-dev-branch');
-        $this->clientWrapper->setBranchId($branchId);
 
         // modify the dev branch shared code configuration to "dev-bar"
         $components = new Components($this->clientWrapper->getBranchClient());

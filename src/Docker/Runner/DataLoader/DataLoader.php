@@ -23,8 +23,10 @@ use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
@@ -139,7 +141,11 @@ class DataLoader implements DataLoaderInterface
             we need the base dir here */
         $dataDirectory = dirname($this->dataDirectory);
 
-        $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory($this->logger, $this->clientWrapper);
+        $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory(
+            new Components($this->clientWrapper->getBranchClientIfAvailable()),
+            new Workspaces($this->clientWrapper->getBranchClientIfAvailable()),
+            $this->logger
+        );
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         $workspaceProviderFactory = $workspaceProviderFactoryFactory->getWorkspaceProviderFactory(

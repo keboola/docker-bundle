@@ -1222,16 +1222,17 @@ class ApiControllerTest extends WebTestCase
         $result = $components->addConfiguration($configuration);
         $configId = $result['id'];
 
+        $client = new \Keboola\StorageApi\Client([
+            'token' => STORAGE_API_TOKEN_MASTER,
+            'url' => STORAGE_API_URL,
+        ]);
+        $branchId = $this->createBranch($client, 'resolve-branch');
         $clientWrapper = new ClientWrapper(
-            new \Keboola\StorageApi\Client([
-                'token' => STORAGE_API_TOKEN_MASTER,
-                'url' => STORAGE_API_URL,
-            ]),
+            $client,
             null,
-            new NullLogger()
+            new NullLogger(),
+            $branchId
         );
-        $branchId = $this->createBranch($clientWrapper, 'resolve-branch');
-        $clientWrapper->setBranchId($branchId);
 
         // modify the dev branch variable configuration to "dev-bar"
         $components = new Components($clientWrapper->getBranchClient());

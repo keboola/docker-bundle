@@ -144,8 +144,7 @@ abstract class BaseRunnerTest extends TestCase
             $storageClientStub = $this->client;
         }
         $this->usageFile = new NullUsageFile();
-        $clientWrapper = new ClientWrapper($storageClientStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($storageClientStub, null, null, ClientWrapper::BRANCH_MAIN);
         return new Runner(
             $this->encryptorFactory,
             $clientWrapper,

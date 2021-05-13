@@ -10,19 +10,28 @@ use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspace
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
-use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 
 class WorkspaceProviderFactoryFactory
 {
-    private $logger;
-    private $clientWrapper;
+    /** @var Components */
+    private $componentsApiClient;
 
-    public function __construct(LoggerInterface $logger, ClientWrapper $clientWrapper)
-    {
+    /** @var Workspaces */
+    private $workspacesApiClient;
+
+    /** @var LoggerInterface */
+    private $logger;
+
+    public function __construct(
+        Components $componentsApiClient,
+        Workspaces $workspacesApiClient,
+        LoggerInterface $logger
+    ) {
+        $this->componentsApiClient = $componentsApiClient;
+        $this->workspacesApiClient = $workspacesApiClient;
         $this->logger = $logger;
-        $this->clientWrapper = $clientWrapper;
     }
 
     public function getWorkspaceProviderFactory($stagingStorage, Component $component, $configId)
@@ -34,8 +43,8 @@ class WorkspaceProviderFactoryFactory
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
         } else {
             $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
-                new Components($this->clientWrapper->getBasicClient()),
-                new Workspaces($this->clientWrapper->getBasicClient()),
+                $this->componentsApiClient,
+                $this->workspacesApiClient,
                 $component->getId(),
                 $configId
             );
@@ -47,13 +56,13 @@ class WorkspaceProviderFactoryFactory
     private function getWorkspaceFactoryForPersistentAbsWorkspace(Component $component, $configId)
     {
         // ABS workspaces are persistent, but only if configId is present
-        $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $listOptions = (new ListConfigurationWorkspacesOptions())
             ->setComponentId($component->getId())
             ->setConfigurationId($configId);
-        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
+        $workspaces = $this->componentsApiClient->listConfigurationWorkspaces($listOptions);
+
         if (count($workspaces) === 0) {
-            $workspace = $componentsApi->createConfigurationWorkspace(
+            $workspace = $this->componentsApiClient->createConfigurationWorkspace(
                 $component->getId(),
                 $configId,
                 ['backend' => AbsWorkspaceStaging::getType()]
@@ -63,8 +72,7 @@ class WorkspaceProviderFactoryFactory
             $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
         } elseif (count($workspaces) === 1) {
             $workspaceId = $workspaces[0]['id'];
-            $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
-            $connectionString = $workspaceApi->resetWorkspacePassword($workspaceId)['connectionString'];
+            $connectionString = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
             $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
         } else {
             throw new ApplicationException(sprintf(
@@ -77,7 +85,7 @@ class WorkspaceProviderFactoryFactory
             ));
         }
         return new ExistingFilesystemWorkspaceProviderFactory(
-            new Workspaces($this->clientWrapper->getBasicClient()),
+            $this->workspacesApiClient,
             $workspaceId,
             $connectionString
         );

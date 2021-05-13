@@ -13,10 +13,10 @@
         "ext-json": "*",
         "ext-zip": "*",
         "keboola/gelf-server": "^2.0",
-        "keboola/input-mapping": "^12.6",
+        "keboola/input-mapping": "^12.8",
         "keboola/oauth-v2-php-client": "^2.2",
         "keboola/object-encryptor": "^0.3",
-        "keboola/output-mapping": "^14.0",
+        "keboola/output-mapping": "^14.5",
         "keboola/php-utils": "^2.0",
         "keboola/staging-provider": "^1.1",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
@@ -46,7 +46,8 @@
         "build-bootstrap": [
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ]
+        ],
+        "phpcs": "phpcs --standard=psr2 --ignore=vendor -n ."
     },
     "minimum-stability": "stable",
     "autoload": {

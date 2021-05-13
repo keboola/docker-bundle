@@ -67,7 +67,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $clientWrapper = new StorageClientWrapper($this->client, null, null);
+        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
@@ -123,8 +123,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->client->createBucket('docker-demo-testConfig-s3', 'in');
         $this->client->createTable('in.c-docker-demo-testConfig-s3', 'test', new CsvFile($filePath));
 
-        $clientWrapper = new StorageClientWrapper($this->client, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
