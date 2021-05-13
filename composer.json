@@ -46,7 +46,8 @@
         "build-bootstrap": [
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
             "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache"
-        ]
+        ],
+        "phpcs": "phpcs --standard=psr2 --ignore=vendor -n ."
     },
     "minimum-stability": "stable",
     "autoload": {
