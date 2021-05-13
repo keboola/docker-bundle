@@ -169,8 +169,7 @@ class StateFileTest extends TestCase
         $state = ['key' => 'fooBar'];
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -196,8 +195,7 @@ class StateFileTest extends TestCase
             ->method('apiPut');
         $testLogger = new TestLogger();
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -234,8 +232,7 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -293,8 +290,7 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -332,8 +328,7 @@ class StateFileTest extends TestCase
                 )
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -371,8 +366,7 @@ class StateFileTest extends TestCase
                 )
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -412,8 +406,7 @@ class StateFileTest extends TestCase
                 )
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -509,8 +502,7 @@ class StateFileTest extends TestCase
             ->willThrowException(new ClientException("Test", 404));
 
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -550,8 +542,7 @@ class StateFileTest extends TestCase
             ->willThrowException(new ClientException("Test", 888));
 
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -601,8 +592,7 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -655,8 +645,7 @@ class StateFileTest extends TestCase
                 })
             );
         /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null);
-        $clientWrapper->setBranchId('');
+        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,

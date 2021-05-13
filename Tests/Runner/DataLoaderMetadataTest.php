@@ -76,9 +76,9 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function createBranch($clientWrapper, $branchName)
+    public function createBranch(Client $client, $branchName)
     {
-        $branches = new DevBranches($clientWrapper->getBasicClient());
+        $branches = new DevBranches($client);
         foreach ($branches->listBranches() as $branch) {
             if ($branch['name'] === $branchName) {
                 $branches->deleteBranch($branch['id']);
@@ -104,9 +104,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN_MASTER,
         ]);
-        $clientWrapper = new ClientWrapper($this->client, null, null);
-        $branchId = $this->createBranch($clientWrapper, 'test-branch');
-        $clientWrapper->setBranchId($branchId);
+        $branchId = $this->createBranch($this->client, 'test-branch');
+        $clientWrapper = new ClientWrapper($this->client, null, null, $branchId);
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
