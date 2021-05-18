@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.181.2",
+            "version": "3.182.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "ca4839367aa57de005d52593081eab777b87a6b0"
+                "reference": "998e5caf1b1bb52516a32fb8084eb7006ab5ae7d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ca4839367aa57de005d52593081eab777b87a6b0",
-                "reference": "ca4839367aa57de005d52593081eab777b87a6b0",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/998e5caf1b1bb52516a32fb8084eb7006ab5ae7d",
+                "reference": "998e5caf1b1bb52516a32fb8084eb7006ab5ae7d",
                 "shasum": ""
             },
             "require": {
@@ -89,7 +89,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2021-05-14T18:16:31+00:00"
+            "time": "2021-05-17T18:14:44+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -2332,16 +2332,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "12.3.3",
+            "version": "12.3.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "9996352d6591bc0ceeabc3a04f96196cbe2e3fdc"
+                "reference": "78a50d0fa77dafad7bcf64c8ccbc0a3cc92c8dd3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/9996352d6591bc0ceeabc3a04f96196cbe2e3fdc",
-                "reference": "9996352d6591bc0ceeabc3a04f96196cbe2e3fdc",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/78a50d0fa77dafad7bcf64c8ccbc0a3cc92c8dd3",
+                "reference": "78a50d0fa77dafad7bcf64c8ccbc0a3cc92c8dd3",
                 "shasum": ""
             },
             "require": {
@@ -2381,7 +2381,7 @@
             ],
             "description": "Keboola Storage API PHP CLient",
             "homepage": "http://keboola.com",
-            "time": "2021-05-17T11:17:07+00:00"
+            "time": "2021-05-18T10:27:24+00:00"
         },
         {
             "name": "keboola/storage-api-php-client-branch-wrapper",
