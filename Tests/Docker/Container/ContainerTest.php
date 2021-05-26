@@ -41,7 +41,7 @@ class ContainerTest extends BaseContainerTest
     public function testRunCommandContainerWithoutRootUserFeature()
     {
         $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
-        self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
+        self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand('name'));
     }
 
     public function testRunCommandContainerWithoutSwap()
@@ -49,7 +49,7 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['no-swap'];
         $container = $this->getContainer($imageConfiguration, [], [], false);
-        self::assertContains(" --memory-swap '256m'", $container->getRunCommand("name"));
+        self::assertContains(" --memory-swap '256m'", $container->getRunCommand('name'));
     }
 
     public function testInspectCommand()
