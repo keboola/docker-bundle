@@ -34,14 +34,14 @@ class ContainerTest extends BaseContainerTest
             . " --label 'com.keboola.runner.jobId=12345678'"
             . " --label 'com.keboola.runner.runId=10.20.30'"
             . " --name 'name'"
-            . " '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:latest'";
+            . " '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation:1.4.0'";
         self::assertEquals($expected, $container->getRunCommand('name'));
     }
 
     public function testRunCommandContainerWithoutRootUserFeature()
     {
         $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
-        self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand("name"));
+        self::assertContains(" --user \$(id -u):\$(id -g)", $container->getRunCommand('name'));
     }
 
     public function testRunCommandContainerWithoutSwap()
@@ -49,7 +49,7 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['no-swap'];
         $container = $this->getContainer($imageConfiguration, [], [], false);
-        self::assertContains(" --memory-swap '256m'", $container->getRunCommand("name"));
+        self::assertContains(" --memory-swap '256m'", $container->getRunCommand('name'));
     }
 
     public function testInspectCommand()

@@ -8,4 +8,4 @@ RUN docker-php-ext-install mcrypt zip
 
 RUN cd \
   && curl -sS https://getcomposer.org/installer | php \
-  && ln -s /root/composer.phar /usr/local/bin/composer
+  && ln -s /root/composer.phar /usr/local/bin/composer 
