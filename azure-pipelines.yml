@@ -8,7 +8,7 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-stages: 
+stages:
   - stage: beforeTests
     displayName: 'Before Tests'
     jobs:
