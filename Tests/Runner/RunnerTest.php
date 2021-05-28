@@ -1985,25 +1985,25 @@ class RunnerTest extends BaseRunnerTest
                             'columns' => [
                                 [
                                     'value' => 'id',
-                                    'label' => 'id'
+                                    'label' => 'id',
                                 ],
                                 [
                                     'value' => 'col1',
-                                    'label' => 'col1'
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'label' => 'col1',
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 'output' => [
                     'tables' => [
                         [
                             'source' => 'sliced.csv',
-                            'destination' => 'in.c-runner-test.out'
-                        ]
-                    ]
-                ]
-            ]
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $runner = $this->getRunner();
         self::expectException(UserException::class);
@@ -2022,8 +2022,8 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'features' => [
-                'container-root-user'
-            ]
+                'container-root-user',
+            ],
         ];
 
         $config = [
@@ -2445,7 +2445,7 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'tags' => ['docker-runner-test'],
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
-                    ],
+                            ],
                         ],
                     ],
                     'output' => [
@@ -2837,7 +2837,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -2854,7 +2855,7 @@ class RunnerTest extends BaseRunnerTest
             'tags:"docker-runner-test" AND tags:"processed"'
         ));
         self::assertCount(1, $inputFileList);
-}
+    }
 
     public function testOutputTablesAsFiles()
     {
@@ -2914,7 +2915,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -2987,7 +2989,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         // wait for the file to show up in the listing
