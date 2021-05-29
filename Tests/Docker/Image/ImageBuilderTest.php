@@ -17,14 +17,14 @@ class ImageBuilderTest extends BaseImageTest
     public function tearDown()
     {
         parent::tearDown();
-        (new Process(
+        Process::fromShellCommandline(
             'sudo docker rmi -f $(sudo docker images -aq --filter \'label=com.keboola.docker.runner.origin=builder\')'
-        ))->run();
+        )->run();
     }
 
     public function testCreatePrivateRepo()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -57,7 +57,7 @@ class ImageBuilderTest extends BaseImageTest
         $image->prepare([]);
         self::assertContains('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -65,7 +65,7 @@ class ImageBuilderTest extends BaseImageTest
 
     public function testCreatePublicRepo()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -96,7 +96,7 @@ class ImageBuilderTest extends BaseImageTest
         $image->prepare([]);
         self::assertContains('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -178,7 +178,7 @@ class ImageBuilderTest extends BaseImageTest
 
     public function testCreatePrivateRepoViaParameters()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -237,7 +237,7 @@ class ImageBuilderTest extends BaseImageTest
         $image->prepare($configData);
         self::assertContains('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -333,7 +333,7 @@ class ImageBuilderTest extends BaseImageTest
 
     public function testQuayImage()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -364,14 +364,14 @@ class ImageBuilderTest extends BaseImageTest
         $image->prepare([]);
         self::assertContains('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 
     public function testECRImage()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -402,7 +402,7 @@ class ImageBuilderTest extends BaseImageTest
         $image->prepare([]);
         self::assertContains('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
