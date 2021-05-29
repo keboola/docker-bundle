@@ -396,7 +396,7 @@ class RunnerSynapseTest extends BaseRunnerTest
                             'tables' => [
                                 [
                                     'source' => 'my-table.csv',
-                                    "destination" => "out.c-synapse-runner-test.test-table",
+                                    'destination' => 'out.c-synapse-runner-test.test-table',
                                 ],
                             ],
                         ],
