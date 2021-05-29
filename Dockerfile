@@ -1,4 +1,4 @@
-FROM php:5.6-cli
+FROM php:7-cli
 ENV COMPOSER_ALLOW_SUPERUSER 1
 ARG DEBIAN_FRONTEND=noninteractive
 ARG COMPOSER_FLAGS="--prefer-dist --no-interaction"
@@ -36,7 +36,7 @@ RUN wget https://download.docker.com/linux/debian/gpg \
 # install extensions
 RUN docker-php-ext-install mcrypt pdo_mysql zip \
     && pecl config-set php_ini /usr/local/etc/php.ini \
-    && yes | pecl install xdebug-2.5.5 \
+    && yes | pecl install xdebug-2.9.8 \
     && docker-php-ext-enable xdebug
 
 WORKDIR /code/
