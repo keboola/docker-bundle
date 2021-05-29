@@ -176,7 +176,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $options = new ListConfigurationWorkspacesOptions();
@@ -249,7 +250,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)));
 
@@ -339,7 +341,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(
             sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)
@@ -407,7 +410,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $data = $this->client->getTableDataPreview('out.c-synapse-runner-test.test-table');
         self::assertEquals("\"first\",\"second\"\n\"1a\",\"2b\"\n", $data);
