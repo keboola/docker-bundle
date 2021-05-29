@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
 
 class Runner2Test extends BaseRunnerTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
     }
@@ -56,7 +56,7 @@ class Runner2Test extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
-        self::expectExceptionMessageRegExp('/Permission denied/');
+        self::expectExceptionMessageMatches('/Permission denied/');
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,

@@ -58,7 +58,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->clearBuckets();
@@ -78,7 +78,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clearBuckets();
         $component = new Components($this->getClient());
@@ -320,6 +320,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             []
         );
+        self::assertTrue(true);
     }
 
     public function testRunDisabled()
@@ -828,7 +829,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
         // the script logs all the input files, so fileId2 should be there, but not fileId1
         $this->assertTrue($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload'));
-        $this->assertFalse($this->getContainerHandler()->hasInfoThatContains($fileId1));
+        $this->assertFalse($this->getContainerHandler()->hasInfoThatContains((string) $fileId1));
 
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
         $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');

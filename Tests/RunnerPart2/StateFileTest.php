@@ -45,7 +45,7 @@ class StateFileTest extends TestCase
      */
     private $clientWrapper;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);

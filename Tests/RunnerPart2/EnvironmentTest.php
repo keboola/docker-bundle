@@ -14,7 +14,7 @@ class EnvironmentTest extends TestCase
      */
     private $tokenInfo;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->tokenInfo = [

@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\Temp\Temp;
-use Symfony\Component\HttpKernel\Log\NullLogger;
+use Psr\Log\NullLogger;
 
 class ImageBuildingTest extends BaseImageTest
 {
@@ -259,8 +259,8 @@ ENTRYPOINT php /home/run.php --data=/data';
             $reflection->invoke($image, $tempDir->getTmpFolder());
             self::fail('Missing parameter must cause exception.');
         } catch (BuildParameterException $e) {
-            self::assertContains('{{#password}}', $e->getMessage());
-            self::assertNotContains('{{otherParam}}', $e->getMessage());
+            self::assertStringContainsString('{{#password}}', $e->getMessage());
+            self::assertStringNotContainsString('{{otherParam}}', $e->getMessage());
         }
         self::assertEquals('fooBar', $image->getRepoPassword());
     }
