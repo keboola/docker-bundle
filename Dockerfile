@@ -34,7 +34,8 @@ RUN wget https://download.docker.com/linux/debian/gpg \
     && rm -rf /var/lib/apt/lists/*    
 
 # install extensions
-RUN docker-php-ext-install mcrypt pdo_mysql zip \
+RUN docker-php-ext-install zip
+RUN pecl channel-update pecl.php.net \
     && pecl config-set php_ini /usr/local/etc/php.ini \
     && yes | pecl install xdebug-2.9.8 \
     && docker-php-ext-enable xdebug
