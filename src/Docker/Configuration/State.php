@@ -10,8 +10,8 @@ class State extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('state');
+        $treeBuilder = new TreeBuilder('state');
+        $root = $treeBuilder->getRootNode();
         $root->children()
             ->arrayNode(StateFile::NAMESPACE_COMPONENT)->prototype("variable")->end()->end()
             ->arrayNode(StateFile::NAMESPACE_STORAGE)

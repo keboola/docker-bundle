@@ -1,12 +1,14 @@
 <?php
 
-namespace Keboola\DockerBundle\Docker;
+namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\VariableResolver;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\Runner\CreateBranchTrait;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\Components\Configuration as StorageConfiguration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;

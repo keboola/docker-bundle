@@ -53,7 +53,7 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestNotPulled()
     {
-        $command = new Process('sudo docker rmi ' . AWS_ECR_REGISTRY_URI . ':test-hash');
+        $command = Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI . ':test-hash');
         $command->run();
         $imageConfig = new Component([
             'data' => [

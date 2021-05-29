@@ -10,8 +10,8 @@ class Component extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('component');
+        $treeBuilder = new TreeBuilder('component');
+        $root = $treeBuilder->getRootNode();
         $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\Temp\Temp;
@@ -23,7 +23,7 @@ class WorkingDirectoryTest extends TestCase
             ->setConstructorArgs([$temp->getTmpFolder(), $logger])
             ->setMethods(['getNormalizeCommand'])
             ->getMock();
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
+        $uid = trim(Process::fromShellCommandline('id -u')->mustRun()->getOutput());
         $workingDir->expects(self::exactly(2))
             ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
