@@ -35,7 +35,7 @@ abstract class BaseDataLoaderTest extends TestCase
      */
     protected $temp;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

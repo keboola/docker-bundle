@@ -492,8 +492,8 @@ class RunnerTest extends BaseRunnerTest
         }
 
         // verify that the token is not passed by default
-        self::assertNotContains(STORAGE_API_TOKEN, $contents);
-        self::assertContains($configId, $contents);
+        self::assertStringNotContainsString(STORAGE_API_TOKEN, $contents);
+        self::assertStringContainsString($configId, $contents);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
         self::assertEquals(
@@ -989,7 +989,7 @@ class RunnerTest extends BaseRunnerTest
                 []
             );
         } catch (UserException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
                 '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
@@ -1083,7 +1083,7 @@ class RunnerTest extends BaseRunnerTest
                 []
             );
         } catch (UserException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": Load error',
                 $e->getMessage()
             );
@@ -1171,7 +1171,7 @@ class RunnerTest extends BaseRunnerTest
             );
             self::fail('Must fail with user error');
         } catch (UserException $e) {
-            self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
+            self::assertStringContainsString('child node "direction" at path "parameters" must be configured.', $e->getMessage());
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -1275,9 +1275,9 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertContains('files', $output);
-        self::assertContains('tables', $output);
-        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        self::assertStringContainsString('files', $output);
+        self::assertStringContainsString('tables', $output);
+        self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
@@ -1379,9 +1379,9 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertContains('files', $output);
-        self::assertContains('tables', $output);
-        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        self::assertStringContainsString('files', $output);
+        self::assertStringContainsString('tables', $output);
+        self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
@@ -2202,8 +2202,8 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertNotContains(STORAGE_API_TOKEN, $output);
-        self::assertContains('[hidden]', $output);
+        self::assertStringNotContainsString(STORAGE_API_TOKEN, $output);
+        self::assertStringContainsString('[hidden]', $output);
     }
 
     public function testExecutorStoreUsage()
@@ -2645,7 +2645,7 @@ class RunnerTest extends BaseRunnerTest
             );
             self::fail('Must fail');
         } catch (UserException $e) {
-            self::assertContains('One input and output mapping is required.', $e->getMessage());
+            self::assertStringContainsString('One input and output mapping is required.', $e->getMessage());
             $options = new ListConfigurationWorkspacesOptions();
             $options->setComponentId('keboola.runner-workspace-test');
             $options->setConfigurationId($configId);
@@ -2896,7 +2896,8 @@ class RunnerTest extends BaseRunnerTest
         ));
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
-        self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
+        self::assertTrue(in_array('foo', $fileList[0]['tags']));
+        self::assertTrue(in_array('docker-runner-test', $fileList[0]['tags']));
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 

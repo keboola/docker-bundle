@@ -20,7 +20,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderS3Test extends BaseDataLoaderTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->cleanup('-s3');

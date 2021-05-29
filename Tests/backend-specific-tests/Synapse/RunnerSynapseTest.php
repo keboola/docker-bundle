@@ -74,7 +74,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         ]);
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!RUN_SYNAPSE_TESTS) {
             self::markTestSkipped('Synapse test is disabled.');

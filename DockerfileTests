@@ -14,8 +14,7 @@ RUN apt-get update -q \
         software-properties-common \
         sudo \
         unzip \
-        vim \
-        zlib1g-dev \
+        libzip-dev \
         wget \
         iproute2 \
     && rm -rf /var/lib/apt/lists/*
