@@ -49,7 +49,7 @@ class NetworkTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains('64 bytes from', $process->getOutput());
+        self::assertStringContainsString('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkNone()
@@ -67,7 +67,7 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertContains('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
+            self::assertStringContainsString('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
         }
     }
 
@@ -79,7 +79,7 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertContains('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
+            self::assertStringContainsString('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
         }
     }
 
@@ -89,7 +89,7 @@ class NetworkTest extends BaseContainerTest
         $container = $this->getContainer($this->getBuilderImageConfiguration(), [], [], true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains('64 bytes from', $process->getOutput());
+        self::assertStringContainsString('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkBridgeOverrideFail()
@@ -101,7 +101,7 @@ class NetworkTest extends BaseContainerTest
         // parameter is not defined in image, must be ignored
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains('64 bytes from', $process->getOutput());
+        self::assertStringContainsString('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkNoneOverride()
@@ -112,7 +112,7 @@ class NetworkTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], [], true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains('64 bytes from', $process->getOutput());
+        self::assertStringContainsString('64 bytes from', $process->getOutput());
     }
 
     public function testNetworkInvalidOverride()
@@ -124,7 +124,7 @@ class NetworkTest extends BaseContainerTest
             $this->getContainer($imageConfiguration, [], [], true);
             self::fail('Invalid network must fail.');
         } catch (ApplicationException $e) {
-            self::assertContains('not supported', $e->getMessage());
+            self::assertStringContainsString('not supported', $e->getMessage());
         }
     }
 }

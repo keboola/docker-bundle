@@ -12,7 +12,7 @@ abstract class BaseImageTest extends TestCase
      */
     private $encryptorFactory;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);

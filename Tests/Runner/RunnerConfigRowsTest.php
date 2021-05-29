@@ -58,7 +58,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->clearBuckets();
@@ -78,7 +78,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         $this->clearBuckets();
         $component = new Components($this->getClient());
@@ -320,6 +320,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             []
         );
+        self::assertTrue(true);
     }
 
     public function testRunDisabled()

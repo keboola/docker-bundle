@@ -47,7 +47,7 @@ class VariableResolverTest extends TestCase
         return [$configId, $rowId];
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

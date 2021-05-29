@@ -29,8 +29,8 @@ class LoggerTest extends BaseContainerTest
         $process = $container->run();
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        self::assertContains('What is public is not [hidden]', $out);
-        self::assertContains('Message to stderr [hidden]', $err);
+        self::assertStringContainsString('What is public is not [hidden]', $out);
+        self::assertStringContainsString('Message to stderr [hidden]', $err);
         self::assertTrue($this->getLogHandler()->hasNoticeRecords());
         self::assertTrue($this->getLogHandler()->hasErrorRecords());
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('What is public is not [hidden]'));
@@ -70,7 +70,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -114,7 +114,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -158,7 +158,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -198,7 +198,7 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail("Must raise error");
         } catch (ApplicationException $e) {
-            self::assertContains('Host parameter is missing from GELF message', $e->getMessage());
+            self::assertStringContainsString('Host parameter is missing from GELF message', $e->getMessage());
         }
     }
 
@@ -234,7 +234,7 @@ class LoggerTest extends BaseContainerTest
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
         self::assertEquals('', $err);
-        self::assertContains("Client finished", $out);
+        self::assertStringContainsString("Client finished", $out);
         $records = $this->getContainerLogHandler()->getRecords();
         self::assertEquals(3, count($records));
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
@@ -294,7 +294,7 @@ class LoggerTest extends BaseContainerTest
         self::assertCount(2, $info);
         sort($info);
         self::assertEquals('An info message.', $info[0]);
-        self::assertContains('Client finished', $info[1]);
+        self::assertStringContainsString('Client finished', $info[1]);
         sort($error);
         self::assertCount(2, $error);
         self::assertEquals('An error message.', $error[0]);
@@ -368,7 +368,7 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail('Must raise exception');
         } catch (UserException $e) {
-            self::assertContains('Exception example', $e->getMessage());
+            self::assertStringContainsString('Exception example', $e->getMessage());
         }
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
@@ -376,12 +376,12 @@ class LoggerTest extends BaseContainerTest
         sort($info);
         self::assertEquals('A debug message.', $info[0]);
         self::assertEquals('An info message.', $info[1]);
-        self::assertContains('Installing collected packages: pygelf', $info[2]);
+        self::assertStringContainsString('Installing collected packages: pygelf', $info[2]);
         sort($error);
         self::assertCount(3, $error);
         self::assertEquals('A critical example.', $error[0]);
         self::assertEquals('An error message.', $error[1]);
-        self::assertContains('Exception example', $error[2]);
+        self::assertStringContainsString('Exception example', $error[2]);
         self::assertNotEmpty($structured->getResults());
         self::assertArrayHasKey('_file', $structured->getResults());
         self::assertArrayHasKey('_structure', $structured->getResults());
@@ -461,7 +461,7 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            self::assertContains('failed: (2) Script file /data/script.py', $e->getMessage());
+            self::assertStringContainsString('failed: (2) Script file /data/script.py', $e->getMessage());
         }
 
         $records = $this->getContainerLogHandler()->getRecords();
@@ -495,7 +495,7 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
         self::assertEquals(1, count($errors));
-        self::assertContains('first message to stdout', $infoText);
+        self::assertStringContainsString('first message to stdout', $infoText);
         self::assertEquals('first message to stderr', $errors[0]);
     }
 
@@ -544,12 +544,12 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            self::assertContains('message to stderr', $e->getMessage());
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('message to stderr', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
-        self::assertNotContains('message to stderr', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
+        self::assertStringNotContainsString('message to stderr', $contents);
     }
 
     public function testLogUserError()
@@ -571,14 +571,14 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (UserException $e) {
-            self::assertContains('message to stderr', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getMessage());
             self::assertGreaterThan(4000, strlen($e->getMessage()));
             self::assertLessThan(4050, strlen($e->getMessage()));
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
-        self::assertNotContains('message to stderr', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
+        self::assertStringNotContainsString('message to stderr', $contents);
     }
 
     public function testLogTimeout()
@@ -605,11 +605,11 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail('Must raise user exception');
         } catch (UserException $e) {
-            self::assertContains('container exceeded the timeout of', $e->getMessage());
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('container exceeded the timeout of', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
     }
 
     public function testRunnerLogs()

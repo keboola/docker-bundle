@@ -14,7 +14,7 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilderTest extends BaseImageTest
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         Process::fromShellCommandline(
@@ -55,7 +55,7 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
@@ -94,7 +94,7 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
@@ -132,7 +132,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
@@ -169,7 +169,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
@@ -235,7 +235,7 @@ class ImageBuilderTest extends BaseImageTest
         ];
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
@@ -272,7 +272,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Invalid repository must raise exception.');
         } catch (UserException $e) {
-            self::assertContains('Cannot access the repository', $e->getMessage());
+            self::assertStringContainsString('Cannot access the repository', $e->getMessage());
         }
     }
 
@@ -327,7 +327,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare($configData);
             $this->fail('Invalid repository address must fail');
         } catch (UserException $e) {
-            self::assertContains('Invalid repository address', $e->getMessage());
+            self::assertStringContainsString('Invalid repository address', $e->getMessage());
         }
     }
 
@@ -362,7 +362,7 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
@@ -400,7 +400,7 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();

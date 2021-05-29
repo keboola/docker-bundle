@@ -14,8 +14,8 @@ class ImageCreatorTest extends BaseRunnerTest
      * @var Client
      */
     protected $client;
-    
-    public function setUp()
+
+    public function setUp(): void
     {
         parent::setUp();
         $components = [
@@ -138,10 +138,10 @@ class ImageCreatorTest extends BaseRunnerTest
         $imageCreator = new ImageCreator($this->getEncryptorFactory()->getEncryptor(), new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         self::assertCount(3, $images);
-        self::assertContains('keboola.processor-decompress', $images[0]->getFullImageId());
+        self::assertStringContainsString('keboola.processor-decompress', $images[0]->getFullImageId());
         self::assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
-        self::assertContains('keboola.processor-iconv', $images[2]->getFullImageId());
-        self::assertFalse($images[0]->isMain());
+        self::assertStringContainsString('keboola.processor-iconv', $images[2]->getFullImageId());
+        self::assertFalse($images[0]->isMtestRunEmptyJobDefinitionsain());
         self::assertTrue($images[1]->isMain());
         self::assertFalse($images[2]->isMain());
     }

@@ -84,6 +84,7 @@ class ContainerConfigurationTest extends TestCase
                 "shared_code_row_ids" => ["345", "435"]
             ]
         ]);
+        self::assertTrue(true);
     }
 
     public function testConfigurationWithWorkspaceConnection()
@@ -157,6 +158,7 @@ class ContainerConfigurationTest extends TestCase
                 "shared_code_row_ids" => ["345", "435"]
             ]
         ]);
+        self::assertTrue(true);
     }
 
     public function testRuntimeConfiguration()
@@ -204,6 +206,7 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
+        self::assertTrue(true);
     }
 
     public function testConfigurationWithTableFiles()
@@ -225,5 +228,6 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
+        self::assertTrue(true);
     }
 }

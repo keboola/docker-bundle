@@ -17,7 +17,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
         $process = $container->run();
 
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains('Hello from Keboola Space Program', trim($process->getOutput()));
+        self::assertStringContainsString('Hello from Keboola Space Program', trim($process->getOutput()));
     }
 
     public function testFatal()
@@ -58,7 +58,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), $commandOptions, $script, true);
 
         $process = $container->run();
-        self::assertContains($value, $process->getOutput());
+        self::assertStringContainsString($value, $process->getOutput());
     }
 
     public function testTimeout()
@@ -83,7 +83,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
             self::fail('Must raise an exception');
         } catch (UserException $e) {
             $testDuration = time() - $testStartTime;
-            self::assertContains('timeout', $e->getMessage());
+            self::assertStringContainsString('timeout', $e->getMessage());
             // test should last longer than benchmark
             self::assertGreaterThan($benchmarkDuration, $testDuration);
             // test shouldn't last longer than the benchmark plus process timeout (plus a safety margin)

@@ -67,7 +67,7 @@ abstract class BaseContainerTest extends TestCase
      */
     private $storageClientStub;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
