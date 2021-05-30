@@ -9,8 +9,8 @@ class Variables extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('configuration');
+        $treeBuilder = new TreeBuilder('configuration');
+        $rootNode = $treeBuilder->getRootNode();
         $rootNode
             ->children()
                 ->arrayNode('variables')
