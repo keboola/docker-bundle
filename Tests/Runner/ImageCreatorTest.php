@@ -141,7 +141,7 @@ class ImageCreatorTest extends BaseRunnerTest
         self::assertStringContainsString('keboola.processor-decompress', $images[0]->getFullImageId());
         self::assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
         self::assertStringContainsString('keboola.processor-iconv', $images[2]->getFullImageId());
-        self::assertFalse($images[0]->isMtestRunEmptyJobDefinitionsain());
+        self::assertFalse($images[0]->isMain());
         self::assertTrue($images[1]->isMain());
         self::assertFalse($images[2]->isMain());
     }
