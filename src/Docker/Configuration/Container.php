@@ -13,8 +13,8 @@ class Container extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root("container");
+        $treeBuilder = new TreeBuilder('container');
+        $root = $treeBuilder->getRootNode();
         // System
         $root
             ->children()
