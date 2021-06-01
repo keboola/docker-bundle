@@ -272,7 +272,6 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info) {
-                var_dump($event);
                 if ($event->getType() == 'error') {
                     $error[] = $event->getMessage();
                 }
@@ -288,7 +287,6 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
 
-        var_dump($warn);
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
         self::assertCount(2, $info);
