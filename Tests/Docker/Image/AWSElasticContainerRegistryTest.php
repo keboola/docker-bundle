@@ -68,11 +68,11 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testDownloadedImage()
     {
-        (new Process('sudo docker rmi -f $(sudo docker images -aq ' . AWS_ECR_REGISTRY_URI . ')'))->run();
-        $process = new Process('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . ' | wc -l');
+        Process::fromShellCommandline('sudo docker rmi -f $(sudo docker images -aq ' . AWS_ECR_REGISTRY_URI . ')')->run();
+        $process = Process::fromShellCommandline('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . ' | wc -l');
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
-        
+
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
@@ -91,10 +91,10 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         array_shift($repoParts);
         self::assertEquals(implode('/', $repoParts) . ':latest', $image->getPrintableImageId());
 
-        $process = new Process('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . '| wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . '| wc -l');
         $process->run();
         self::assertEquals(1, trim($process->getOutput()));
-        (new Process('sudo docker rmi ' . AWS_ECR_REGISTRY_URI))->run();
+        Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI);
     }
 
     public function testGetAwsAccountId()
@@ -153,6 +153,6 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             [implode('/', $repoParts) . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getPrintableImageDigests()
         );
-        (new Process('sudo docker rmi ' . AWS_ECR_REGISTRY_URI))->run();
+        Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI)->run();
     }
 }

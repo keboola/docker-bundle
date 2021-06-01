@@ -23,7 +23,7 @@ use Psr\Log\Test\TestLogger;
 
 class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

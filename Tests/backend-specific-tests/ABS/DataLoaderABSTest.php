@@ -17,7 +17,7 @@ use Symfony\Component\Finder\Finder;
 
 class DataLoaderABSTest extends BaseDataLoaderTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->cleanup('-abs');

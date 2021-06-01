@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Image;
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Symfony\Component\Process\Process;
 
 class QuayIO extends Image
@@ -19,7 +19,7 @@ class QuayIO extends Image
     protected function pullImage()
     {
         $proxy = $this->getRetryProxy();
-        $process = new Process("sudo docker pull " . escapeshellarg($this->getFullImageId()));
+        $process = Process::fromShellCommandline("sudo docker pull " . escapeshellarg($this->getFullImageId()));
         $process->setTimeout(3600);
 
         try {

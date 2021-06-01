@@ -1,20 +1,18 @@
 <?php
 
-namespace Keboola\DockerBundle\Monolog\Handler;
+namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Exception\NoRequestException;
-use Keboola\DockerBundle\Exception\UserException;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
-use Keboola\StorageApi\Exception;
+use Monolog\Handler\AbstractHandler;
 use Monolog\Logger;
-use Symfony\Component\DependencyInjection\Container;
 
 /**
  * Class StorageApiHandler
  * @package Keboola\DockerBundle\Monolog\Handler
  */
-class StorageApiHandler extends \Monolog\Handler\AbstractHandler implements StorageApiHandlerInterface
+class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInterface
 {
     /**
      * @var array
@@ -27,21 +25,16 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler implements Stor
     protected $appName;
 
     /**
-     * @var \Keboola\StorageApi\Client
+     * @var Client
      */
     protected $storageApiClient;
 
     /**
-     * @var Container
-     */
-    private $container;
-
-    /**
      * StorageApiHandler constructor.
      * @param string $appName
-     * @param Container $container
+     * @param Client $client
      */
-    public function __construct($appName, Container $container)
+    public function __construct($appName, Client $client)
     {
         parent::__construct();
         $this->appName = $appName;
@@ -53,7 +46,7 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler implements Stor
         $this->verbosity[Logger::CRITICAL] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::ALERT] = self::VERBOSITY_CAMOUFLAGE;
         $this->verbosity[Logger::EMERGENCY] = self::VERBOSITY_CAMOUFLAGE;
-        $this->container = $container;
+        $this->storageApiClient = $client;
     }
 
     /**
@@ -74,27 +67,6 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler implements Stor
         return $this->verbosity;
     }
 
-    protected function initStorageApiClient()
-    {
-        try {
-            $this->storageApiClient = $this->container->get('syrup.storage_api')->getClientWithoutLogger();
-        } catch (\InvalidArgumentException $e) {
-            // Ignore when SAPI client is not initialized properly (yet).
-        } catch (\Keboola\Syrup\Exception\NoRequestException $e) {
-            // Ignore when no SAPI client setup
-        } catch (NoRequestException $e) {
-            // Ignore when no SAPI client setup
-        } catch (UserException $e) {
-            // Ignore when no SAPI client setup
-        } catch (\Keboola\Syrup\Exception\UserException $e) {
-            // Ignore when no SAPI client setup
-        } catch (\Keboola\ObjectEncryptor\Exception\UserException $e) {
-            // Ignore when no SAPI client setup
-        } catch (Exception $e) {
-            // Ignore when SAPI client setup is wrong
-        }
-    }
-
     /**
      * @inheritdoc
      */
@@ -104,9 +76,6 @@ class StorageApiHandler extends \Monolog\Handler\AbstractHandler implements Stor
             return false;
         }
 
-        if (!$this->storageApiClient) {
-            $this->initStorageApiClient();
-        }
         if (!$this->storageApiClient) {
             return false;
         }

@@ -2,7 +2,7 @@
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
-use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Monolog\Logger;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
@@ -10,8 +10,8 @@ class Component extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('component');
+        $treeBuilder = new TreeBuilder('component');
+        $root = $treeBuilder->getRootNode();
         $definition = $root->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 
@@ -58,14 +58,14 @@ class Component extends Configuration
                     ->arrayNode('verbosity')
                         ->prototype('scalar')->end()
                         ->defaultValue([
-                            Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
-                            Logger::INFO => StorageApiHandler::VERBOSITY_NORMAL,
-                            Logger::NOTICE => StorageApiHandler::VERBOSITY_NORMAL,
-                            Logger::WARNING => StorageApiHandler::VERBOSITY_NORMAL,
-                            Logger::ERROR => StorageApiHandler::VERBOSITY_NORMAL,
-                            Logger::CRITICAL => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
-                            Logger::ALERT => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
-                            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_CAMOUFLAGE,
+                            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_NONE,
+                            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_NORMAL,
+                            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NORMAL,
+                            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_NORMAL,
+                            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_NORMAL,
+                            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_CAMOUFLAGE,
+                            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_CAMOUFLAGE,
+                            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_CAMOUFLAGE,
                         ])
                     ->end()
                     ->scalarNode('gelf_server_type')

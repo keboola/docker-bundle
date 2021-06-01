@@ -3,8 +3,6 @@
 namespace Keboola\DockerBundle\Docker\Image;
 
 use Aws\Ecr\EcrClient;
-use Aws\Ecr\Exception\EcrException;
-use Aws\Exception\CredentialsException;
 use Aws\Result;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
@@ -99,7 +97,7 @@ class AWSElasticContainerRegistry extends Image
                 "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
                 "&& docker logout " . $this->getLogoutParams()
             );
-        $process = new Process($command);
+        $process = Process::fromShellCommandline($command);
         $process->setTimeout(3600);
         try {
             $proxy->call(function () use ($process) {

@@ -14,7 +14,7 @@ class Process extends \Symfony\Component\Process\Process
 
     public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60, array $options = array())
     {
-        parent::__construct($commandline, $cwd, $env, $input, $timeout, $options);
+        parent::__construct($commandline, $cwd, $env, $input, $timeout);
         $this->outputFilter = new NullFilter();
     }
 

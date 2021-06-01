@@ -19,7 +19,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends BaseDataLoaderTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->cleanup();
