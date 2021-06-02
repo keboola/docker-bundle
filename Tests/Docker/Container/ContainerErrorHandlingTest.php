@@ -133,9 +133,17 @@ class ContainerErrorHandlingTest extends BaseContainerTest
             true,
             ['runner.dummy.component.memoryLimitMBs' => ['value' => 10]]
         );
-        $this->expectException(OutOfMemoryException::class);
-        $this->expectExceptionMessage('Component out of memory (exceeded 10M)');
-        $container->run();
+
+        try {
+            $container->run();
+        } catch (OutOfMemoryException $e) {
+            self::assertSame('Component out of memory (exceeded 10M)', $e->getMessage());
+        } catch (\Exception $e) {
+            $status = $container->inspectContainer($container->getId());
+            var_dump($status);
+
+            throw $e;
+        }
     }
 
     public function testOutOfMemoryCrippledComponent()
