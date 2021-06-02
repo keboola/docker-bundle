@@ -27,6 +27,7 @@ class ConfigurationAdapterTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
+                            'use_view' => false,
                         ],
                     ],
                     'files' => [],
@@ -69,6 +70,7 @@ storage:
                 where_operator: eq
                 column_types: {  }
                 overwrite: false
+                use_view: false
         files: {  }
 parameters:
     primary_key_column: id
@@ -105,7 +107,8 @@ EOT;
                     "where_values": [],
                     "where_operator": "eq",
                     "column_types": [],
-                    "overwrite": false
+                    "overwrite": false,
+                    "use_view": false
                 }
             ],
             "files": []
@@ -207,7 +210,7 @@ EOT;
         $adapter->setConfig($this->getStructure());
         $adapter->writeToFile($root . "/config.json");
 
-        self::assertEquals(file_get_contents($root . "/config.json"), $this->getJsonConfigFileTemplate());
+        self::assertEquals($this->getJsonConfigFileTemplate(), file_get_contents($root . "/config.json"));
 
         $fs->remove($root . "/config.json");
         $fs->remove($root);
