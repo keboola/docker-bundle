@@ -66,6 +66,7 @@ class JobDefinitionParserTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
+                            'use_view' => false,
                         ],
                     ],
                     'files' => [],
@@ -160,6 +161,7 @@ class JobDefinitionParserTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
+                            'use_view' => false,
                         ],
                     ],
                     'files' => [],
@@ -278,6 +280,7 @@ class JobDefinitionParserTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
+                            'use_view' => false,
                         ],
                     ],
                     'files' => [],
@@ -373,6 +376,7 @@ class JobDefinitionParserTest extends TestCase
                             'where_operator' => 'eq',
                             'column_types' => [],
                             'overwrite' => false,
+                            'use_view' => false,
                         ],
                     ],
                     'files' => [],
@@ -409,6 +413,7 @@ class JobDefinitionParserTest extends TestCase
 
         $parser = new JobDefinitionParser();
         $parser->parseConfigData($this->getComponent(), $configData, '1234');
+
 
         self::assertCount(1, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
