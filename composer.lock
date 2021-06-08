@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ee721d24a0378d7fc9c30a21833c8c5",
+    "content-hash": "44f02fc04397dffa4e712807c6e35157",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2437,16 +2437,16 @@
         },
         {
             "name": "keboola/staging-provider",
-            "version": "1.1.0",
+            "version": "dev-pepa_PS-2249_workspaceBackend",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/staging-provider.git",
-                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd"
+                "reference": "392290da53b65294a36eca39e3d865a47fd15771"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/97b1ecc1773488176e9b811d466ac252e14223fd",
-                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/392290da53b65294a36eca39e3d865a47fd15771",
+                "reference": "392290da53b65294a36eca39e3d865a47fd15771",
                 "shasum": ""
             },
             "require": {
@@ -2480,9 +2480,9 @@
                 "staging-provider"
             ],
             "support": {
-                "source": "https://github.com/keboola/staging-provider/tree/1.1.0"
+                "source": "https://github.com/keboola/staging-provider/tree/pepa_PS-2249_workspaceBackend"
             },
-            "time": "2021-05-10T15:17:21+00:00"
+            "time": "2021-06-08T13:27:08+00:00"
         },
         {
             "name": "keboola/storage-api-client",
@@ -7733,7 +7733,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "keboola/staging-provider": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -18,7 +18,7 @@
         "keboola/object-encryptor": "^0.3",
         "keboola/output-mapping": "^14.5",
         "keboola/php-utils": "^2.0",
-        "keboola/staging-provider": "^1.1",
+        "keboola/staging-provider": "dev-pepa_PS-2249_workspaceBackend",
         "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
         "keboola/syrup": "^11.3",
         "mustache/mustache": "^2.13",

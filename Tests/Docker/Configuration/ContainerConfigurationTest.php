@@ -160,14 +160,22 @@ class ContainerConfigurationTest extends TestCase
 
     public function testRuntimeConfiguration()
     {
-        (new Configuration\Container())->parse([
+        $config = (new Configuration\Container())->parse([
             'config' => [
                 'runtime' => [
                     'safe' => true,
                     'image_tag' => '12.7.0',
+                    'backend' => [
+                        'type' => 'foo',
+                        'foo' => 'foo',
+                    ]
                 ],
             ],
         ]);
+
+        self::assertSame([
+            'type' => 'foo',
+        ], $config['runtime']['backend']);
     }
 
     public function testConfigurationWithTableFiles()
