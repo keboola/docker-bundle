@@ -2460,6 +2460,12 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
 
+        echo "\nFileId1: $fileId1";
+        echo "\nFileId2: $fileId2";
+
+        foreach ($this->getContainerHandler()->getRecords() as  $record) {
+            echo "\nlog message: " . $record['message'];
+        }
         // the script logs all the input files, so fileId2 should be there, but not fileId1
         $this->assertTrue($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload'));
         $this->assertFalse($this->getContainerHandler()->hasInfoThatContains($fileId1));
