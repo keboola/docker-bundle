@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
@@ -34,8 +35,12 @@ class WorkspaceProviderFactoryFactory
         $this->logger = $logger;
     }
 
-    public function getWorkspaceProviderFactory($stagingStorage, Component $component, $configId)
-    {
+    public function getWorkspaceProviderFactory(
+        $stagingStorage,
+        Component $component,
+        $configId,
+        array $backendConfig
+    ) {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_ABS)) {
@@ -46,7 +51,8 @@ class WorkspaceProviderFactoryFactory
                 $this->componentsApiClient,
                 $this->workspacesApiClient,
                 $component->getId(),
-                $configId
+                $configId,
+                $this->resolveWorkspaceBackendConfiguration($backendConfig)
             );
             $this->logger->info('Created a new ephemeral workspace.');
         }
@@ -89,5 +95,11 @@ class WorkspaceProviderFactoryFactory
             $workspaceId,
             $connectionString
         );
+    }
+
+    private function resolveWorkspaceBackendConfiguration(array $backendConfig)
+    {
+        $backendType = isset($backendConfig['type']) ? $backendConfig['type'] : null;
+        return new WorkspaceBackendConfig($backendType);
     }
 }

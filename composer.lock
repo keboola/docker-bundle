@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5ee721d24a0378d7fc9c30a21833c8c5",
+    "content-hash": "83aa3b63b9df6b5fc76118d6f453105d",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -2437,16 +2437,16 @@
         },
         {
             "name": "keboola/staging-provider",
-            "version": "1.1.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/staging-provider.git",
-                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd"
+                "reference": "5c1a8046950e6c70349fcf80a2e601323b9a8fcc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/97b1ecc1773488176e9b811d466ac252e14223fd",
-                "reference": "97b1ecc1773488176e9b811d466ac252e14223fd",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/5c1a8046950e6c70349fcf80a2e601323b9a8fcc",
+                "reference": "5c1a8046950e6c70349fcf80a2e601323b9a8fcc",
                 "shasum": ""
             },
             "require": {
@@ -2480,9 +2480,9 @@
                 "staging-provider"
             ],
             "support": {
-                "source": "https://github.com/keboola/staging-provider/tree/1.1.0"
+                "source": "https://github.com/keboola/staging-provider/tree/2.0.0"
             },
-            "time": "2021-05-10T15:17:21+00:00"
+            "time": "2021-06-11T09:28:41+00:00"
         },
         {
             "name": "keboola/storage-api-client",
@@ -7744,5 +7744,5 @@
     "platform-overrides": {
         "php": "5.6"
     },
-    "plugin-api-version": "2.0.0"
+    "plugin-api-version": "2.1.0"
 }

@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ContainerConfigurationTest extends TestCase
 {
@@ -160,11 +161,46 @@ class ContainerConfigurationTest extends TestCase
 
     public function testRuntimeConfiguration()
     {
-        (new Configuration\Container())->parse([
+        $config = (new Configuration\Container())->parse([
             'config' => [
                 'runtime' => [
                     'safe' => true,
                     'image_tag' => '12.7.0',
+                    'backend' => [
+                        'type' => 'foo',
+                    ]
+                ],
+            ],
+        ]);
+
+        self::assertSame([
+            'type' => 'foo',
+        ], $config['runtime']['backend']);
+    }
+
+    public function testRuntimeBackendConfigurationHasDefaultEmptyValue()
+    {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [],
+            ],
+        ]);
+
+        self::assertSame([], $config['runtime']['backend']);
+    }
+
+    public function testRuntimeBackendConfigurationDoesNotAcceptExtraKeys()
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Unrecognized option "bar" under "container.runtime.backend"');
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'backend' => [
+                        'type' => 'foo',
+                        'bar' => 'baz',
+                    ]
                 ],
             ],
         ]);
