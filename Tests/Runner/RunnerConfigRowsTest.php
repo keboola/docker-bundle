@@ -822,7 +822,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         echo "\nFileId1: $fileId1";
         echo "\nFileId2: $fileId2";
 
-        foreach ($this->getContainerHandler()->getRecords() as  $record) {
+        foreach ($this->getContainerHandler()->getRecords() as $record) {
             echo "\nlog message: " . $record['message'];
         }
         // the script logs all the input files, so fileId2 should be there, but not fileId1
