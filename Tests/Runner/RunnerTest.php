@@ -2468,7 +2468,7 @@ class RunnerTest extends BaseRunnerTest
         }
         // the script logs all the input files, so fileId2 should be there, but not fileId1
         $this->assertTrue($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId2 . '_upload'));
-        $this->assertFalse($this->getContainerHandler()->hasInfoThatContains($fileId1));
+        $this->assertFalse($this->getContainerHandler()->hasInfoThatContains('/data/in/files/' . $fileId1 . '_upload'));
 
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
         $outputTableInfo = $this->getClient()->getTable('in.c-runner-test.mytable-2');
