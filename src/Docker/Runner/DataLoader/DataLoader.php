@@ -151,7 +151,8 @@ class DataLoader implements DataLoaderInterface
         $workspaceProviderFactory = $workspaceProviderFactoryFactory->getWorkspaceProviderFactory(
             $this->getStagingStorageInput(),
             $this->component,
-            $this->configId
+            $this->configId,
+            isset($this->runtimeConfig['backend']) ? $this->runtimeConfig['backend'] : []
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,

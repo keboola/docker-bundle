@@ -277,7 +277,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $workspaceFactory->getWorkspaceProviderFactory(
                 'workspace-abs',
                 $component,
-                $configurationId
+                $configurationId,
+                []
             );
         } catch (ApplicationException $e) {
             self::assertEquals(
