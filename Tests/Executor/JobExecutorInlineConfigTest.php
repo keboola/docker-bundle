@@ -344,7 +344,7 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         yield 'no override' => [
             'requestConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedVersion' => '1.4.0',
+            'expectedVersion' => '1.6.0',
         ];
 
         yield 'request config' => [
@@ -393,9 +393,10 @@ class JobExecutorInlineConfigTest extends BaseExecutorTest
         $jobExecutor->execute($job);
 
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
-            sprintf('Using component tag: "%s"', '1.4.0')
+            sprintf('Using component tag: "%s"', '1.6.0')
         ));
     }
+
     public function testIncrementalTags()
     {
         $this->clearFiles();
