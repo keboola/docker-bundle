@@ -218,7 +218,7 @@ class Runner
         $component = $jobDefinition->getComponent();
         $this->loggersService->setComponentId($component->getId());
 
-        $temp = new Temp("docker");
+        $temp = new Temp();
         $temp->initRunFolder();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $usageFile->setDataDir($workingDirectory->getDataDir());
