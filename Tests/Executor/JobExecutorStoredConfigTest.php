@@ -256,7 +256,7 @@ class JobExecutorStoredConfigTest extends BaseExecutorTest
         yield 'no override' => [
             'storedConfigTag' => null,
             'requestParamsTag' => null,
-            'expectedVersion' => '1.4.0',
+            'expectedVersion' => '1.6.0',
         ];
 
         yield 'stored config' => [
