@@ -18,7 +18,7 @@ class ContainerUtf8SanitizationTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
-        self::assertContains("begin\n=Oend", $process->getOutput());
+        self::assertStringContainsString("begin\n=Oend", $process->getOutput());
     }
 
     public function testUserError()

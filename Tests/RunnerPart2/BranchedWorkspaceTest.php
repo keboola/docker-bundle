@@ -220,7 +220,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $this->getEncryptorFactory(),
             $storageApiWrapper,
             $this->getLoggersService(),
-            "dummy",
+            'dummy',
             ['cpu_count' => 2],
             RUNNER_MIN_LOG_PORT,
             RUNNER_MAX_LOG_PORT
@@ -231,7 +231,8 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             'run',
             'run',
             '123456',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 

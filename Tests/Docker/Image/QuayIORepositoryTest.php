@@ -13,9 +13,9 @@ class QuayIORepositoryTest extends BaseImageTest
 {
     public function testDownloadedImage()
     {
-        (new Process('sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)'))->run();
+        Process::fromShellCommandline('sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)')->run();
 
-        $process = new Process('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
         $imageConfig = new Component([
@@ -32,10 +32,10 @@ class QuayIORepositoryTest extends BaseImageTest
         self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
         self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
 
-        $process = new Process('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
         $process->run();
         self::assertEquals(1, trim($process->getOutput()));
 
-        (new Process('sudo docker rmi quay.io/keboola/docker-demo-app'))->run();
+        Process::fromShellCommandline('sudo docker rmi quay.io/keboola/docker-demo-app')->run();
     }
 }

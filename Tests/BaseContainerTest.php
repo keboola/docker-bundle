@@ -9,7 +9,6 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -63,7 +62,12 @@ abstract class BaseContainerTest extends TestCase
      */
     private $componentConfig;
 
-    public function setUp()
+    /**
+     * @var Client
+     */
+    private $storageClientStub;
+
+    protected function setUp(): void
     {
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
@@ -138,6 +142,11 @@ abstract class BaseContainerTest extends TestCase
         return $this->storageServiceStub;
     }
 
+    protected function getStorageClientStub()
+    {
+        return $this->storageClientStub;
+    }
+
     protected function getContainer(array $imageConfig, $commandOptions, array $contents, $prepare, $projectLimits = [])
     {
         $this->createScript($contents);
@@ -149,10 +158,10 @@ abstract class BaseContainerTest extends TestCase
                 return true;
             };
         }
-        $storageClientStub = $this->getMockBuilder(Client::class)
+        $this->storageClientStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $storageClientStub->expects($this->any())
+        $this->storageClientStub->expects($this->any())
             ->method('createEvent')
             ->with($this->callback($this->createEventCallback));
         $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
@@ -160,15 +169,9 @@ abstract class BaseContainerTest extends TestCase
             ->getMock();
         $this->storageServiceStub->expects(self::any())
             ->method("getClientWithoutLogger")
-            ->will(self::returnValue($storageClientStub));
-        $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $containerStub->expects(self::any())
-            ->method('get')
-            ->will(self::returnValue($this->storageServiceStub));
-        /** @var \Symfony\Component\DependencyInjection\Container $containerStub */
-        $sapiHandler = new StorageApiHandler('runner-tests', $containerStub);
+            ->will(self::returnValue($this->storageClientStub));
+
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
         $log = new Logger('runner-tests', [$this->testHandler]);
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);

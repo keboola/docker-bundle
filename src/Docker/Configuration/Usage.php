@@ -9,8 +9,8 @@ class Usage extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder;
-        $rootNode = $treeBuilder->root('usage');
+        $treeBuilder = new TreeBuilder('usage');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->prototype('array')

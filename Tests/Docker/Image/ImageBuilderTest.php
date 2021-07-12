@@ -14,17 +14,17 @@ use Symfony\Component\Process\Process;
 
 class ImageBuilderTest extends BaseImageTest
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
-        (new Process(
+        Process::fromShellCommandline(
             'sudo docker rmi -f $(sudo docker images -aq --filter \'label=com.keboola.docker.runner.origin=builder\')'
-        ))->run();
+        )->run();
     }
 
     public function testCreatePrivateRepo()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -55,9 +55,9 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -65,7 +65,7 @@ class ImageBuilderTest extends BaseImageTest
 
     public function testCreatePublicRepo()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -94,9 +94,9 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -132,7 +132,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
@@ -169,7 +169,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
         } catch (BuildParameterException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot access the repository https://bitbucket.org/keboola/private-test',
                 $e->getMessage()
             );
@@ -178,7 +178,7 @@ class ImageBuilderTest extends BaseImageTest
 
     public function testCreatePrivateRepoViaParameters()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -235,9 +235,9 @@ class ImageBuilderTest extends BaseImageTest
         ];
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
@@ -272,7 +272,7 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare([]);
             $this->fail('Invalid repository must raise exception.');
         } catch (UserException $e) {
-            self::assertContains('Cannot access the repository', $e->getMessage());
+            self::assertStringContainsString('Cannot access the repository', $e->getMessage());
         }
     }
 
@@ -327,13 +327,13 @@ class ImageBuilderTest extends BaseImageTest
             $image->prepare($configData);
             $this->fail('Invalid repository address must fail');
         } catch (UserException $e) {
-            self::assertContains('Invalid repository address', $e->getMessage());
+            self::assertStringContainsString('Invalid repository address', $e->getMessage());
         }
     }
 
     public function testQuayImage()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -362,16 +362,16 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }
 
     public function testECRImage()
     {
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
 
@@ -400,9 +400,9 @@ class ImageBuilderTest extends BaseImageTest
 
         $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
-        self::assertContains('builder-', $image->getFullImageId());
+        self::assertStringContainsString('builder-', $image->getFullImageId());
 
-        $process = new Process('sudo docker images | grep builder- | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         self::assertEquals($oldCount + 1, trim($process->getOutput()));
     }

@@ -3,7 +3,7 @@
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Keboola\DockerBundle\Monolog\Processor\DockerContainerProcessor;
 use Keboola\DockerBundle\Monolog\Processor\DockerProcessor;
 use Monolog\Logger;
@@ -21,7 +21,7 @@ class LoggersService
     private $containerLogger;
 
     /**
-     * @var StorageApiHandler
+     * @var StorageApiHandlerInterface
      */
     private $sapiHandler;
 
@@ -29,7 +29,7 @@ class LoggersService
     {
         $this->logger = $log;
         $this->containerLogger = $containerLog;
-        if ($sapiHandler && $sapiHandler instanceof StorageApiHandler) {
+        if ($sapiHandler && $sapiHandler instanceof StorageApiHandlerInterface) {
             $this->sapiHandler = $sapiHandler;
         }
 
@@ -41,9 +41,9 @@ class LoggersService
         // copy all handlers to ContainerLogger except storageHandler, which is overridden
         foreach ($this->logger->getHandlers() as $handler) {
             // set level of notice to none on runner level
-            if (is_a($handler, StorageApiHandler::class)) {
-                /** @var StorageApiHandler $handler */
-                $handler->setVerbosity([Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE]);
+            if ($handler instanceof StorageApiHandlerInterface) {
+                /** @var StorageApiHandlerInterface $handler */
+                $handler->setVerbosity([Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NONE]);
             } else {
                 $this->containerLogger->pushHandler($handler);
             }

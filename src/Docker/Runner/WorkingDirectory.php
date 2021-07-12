@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\Syrup\Job\Exception\InitializationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\UniformRandomBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
@@ -57,7 +57,7 @@ class WorkingDirectory
 
     public function getNormalizeCommand()
     {
-        $uid = trim((new Process('id -u'))->mustRun()->getOutput());
+        $uid = trim((Process::fromShellCommandline('id -u'))->mustRun()->getOutput());
         return "sudo docker run --rm --volume=" .
             $this->workingDir . ":/data alpine sh -c 'chown {$uid} /data -R && "
                 . "chmod -R u+wrX /data'";
@@ -73,14 +73,14 @@ class WorkingDirectory
                 function () use (&$process) {
                     $this->logger->notice("Normalizing working directory permissions");
                     $command = $this->getNormalizeCommand();
-                    $process = new Process($command);
+                    $process = Process::fromShellCommandline($command);
                     $process->setTimeout(120);
                     $process->run();
                 }
             );
         } catch (ProcessTimedOutException $e) {
-            throw new InitializationException(
-                "Could not normalize permissions. Job will restart."
+            throw new ApplicationException(
+                "Could not normalize permissions."
             );
         }
     }

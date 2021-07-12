@@ -2,37 +2,115 @@
 
 namespace Keboola\DockerBundle\Service;
 
+use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\UserException;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
-class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiService
+class StorageApiService
 {
-    /**
-     * @var Client
-     */
-    private $fasterPollingClient = null;
+    /** @var RequestStack */
+    protected $requestStack;
 
-    /**
-     * @var LoggerInterface
-     */
+    /** @var Request */
+    protected $request;
+
+    /** @var Client */
+    protected $client;
+
+    /** @var LoggerInterface */
     private $logger;
 
-    /**
-     * @var Client
-     */
-    private $clientWithoutLogger = null;
+    /** @var string */
+    protected $storageApiUrl;
+
+    /** @var array */
+    protected $tokenData;
+
+    /** @var Client */
+    private $clientWithoutLogger;
 
     public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
     {
-        parent::__construct($requestStack, $storageApiUrl);
+        $this->storageApiUrl = $storageApiUrl;
+        $this->requestStack = $requestStack;
         $this->logger = $logger;
+    }
+
+    protected function verifyClient(Client $client)
+    {
+        try {
+            $this->tokenData = $client->verifyToken();
+            return $client;
+        } catch (ClientException $e) {
+            if ($e->getCode() == 401) {
+                throw new UserException("Invalid StorageApi Token", $e);
+            } elseif ($e->getCode() < 500) {
+                throw new UserException($e->getMessage(), $e);
+            }
+            throw $e;
+        }
+    }
+
+    public function getBackoffTries($hostname)
+    {
+        // keep the backoff settings minimal for API servers
+        if (false === strstr($hostname, 'worker')) {
+            return 3;
+        }
+
+        return 11;
+    }
+
+    public function setClient(Client $client)
+    {
+        $this->client = $this->verifyClient($client);
+    }
+
+    public function getClient()
+    {
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$this->client) {
+            if (!$request) {
+                throw new UserException('No request set');
+            }
+
+            if (!$request->headers->has('X-StorageApi-Token')) {
+                throw new UserException('Missing StorageAPI token');
+            }
+            $this->setClient(new Client(
+                [
+                    'token' => $request->headers->get('X-StorageApi-Token'),
+                    'url' => $this->storageApiUrl,
+                    'userAgent' => explode('/', $request->getPathInfo())[1],
+                    'backoffMaxTries' => $this->getBackoffTries(gethostname()),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
+                    'logger' => $this->logger,
+                ]
+            ));
+            if ($request->headers->has('X-KBC-RunId')) {
+                $this->client->setRunId($request->headers->get('X-KBC-RunId'));
+            }
+        }
+        return $this->client;
+    }
+
+    public function getTokenData()
+    {
+        if ($this->tokenData === null) {
+            throw new ApplicationException('StorageApi Client was not initialized');
+        }
+        return $this->tokenData;
     }
 
     /**
      * @return \Closure
      */
-    public function getStepPollDelayFunction()
+    public static function getStepPollDelayFunction()
     {
         return function ($tries) {
             switch ($tries) {
@@ -46,39 +124,9 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
         };
     }
 
-    public function getLogger()
-    {
-        return $this->logger;
-    }
-
-    /**
-     * @return Client
-     */
-    public function getClient()
-    {
-        $client = parent::getClient();
-        if (!$this->fasterPollingClient) {
-            $clientWithFasterPolling = new Client(
-                [
-                    'token' => $client->token,
-                    'url' => $client->getApiUrl(),
-                    'userAgent' => $client->getUserAgent(),
-                    'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => $this->getStepPollDelayFunction(),
-                    'logger' => $this->logger
-                ]
-            );
-            if ($client->getRunId()) {
-                $clientWithFasterPolling->setRunId($client->getRunId());
-            }
-            $this->setFasterPollingClient($clientWithFasterPolling);
-        }
-        return $this->fasterPollingClient;
-    }
-
     public function getClientWithoutLogger()
     {
-        $client = parent::getClient();
+        $client = $this->getClient();
         if (!$this->clientWithoutLogger) {
             $this->clientWithoutLogger = new Client(
                 [
@@ -86,7 +134,7 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
                     'url' => $client->getApiUrl(),
                     'userAgent' => $client->getUserAgent(),
                     'backoffMaxTries' => $client->getBackoffMaxTries(),
-                    'jobPollRetryDelay' => $this->getStepPollDelayFunction(),
+                    'jobPollRetryDelay' => self::getStepPollDelayFunction(),
                 ]
             );
             if ($client->getRunId()) {
@@ -98,6 +146,6 @@ class StorageApiService extends \Keboola\Syrup\Service\StorageApi\StorageApiServ
 
     public function setFasterPollingClient(Client $client)
     {
-        $this->fasterPollingClient = $this->verifyClient($client);
+        $this->client = $this->verifyClient($client);
     }
 }

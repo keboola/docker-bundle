@@ -260,7 +260,7 @@ abstract class Image
     {
         if (empty($this->imageDigests)) {
             $command = "sudo docker inspect " . escapeshellarg($this->getFullImageId());
-            $process = new Process($command);
+            $process = Process::fromShellCommandline($command);
             $process->setTimeout(3600);
             try {
                 $process->mustRun();

@@ -7,10 +7,11 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFile;
+use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
+use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -22,8 +23,6 @@ use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\Syrup\Elasticsearch\JobMapper;
-use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 
@@ -261,7 +260,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertEquals(
             [
@@ -405,7 +405,8 @@ class RunnerTest extends BaseRunnerTest
             'test-action',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertEquals(
             [
@@ -475,7 +476,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -490,8 +492,8 @@ class RunnerTest extends BaseRunnerTest
         }
 
         // verify that the token is not passed by default
-        self::assertNotContains(STORAGE_API_TOKEN, $contents);
-        self::assertContains($configId, $contents);
+        self::assertStringNotContainsString(STORAGE_API_TOKEN, $contents);
+        self::assertStringContainsString($configId, $contents);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
         self::assertEquals(
@@ -533,7 +535,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals([
@@ -600,7 +603,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
@@ -647,7 +651,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -702,7 +707,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -759,7 +765,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $this->assertNotEmpty($output);
     }
@@ -816,7 +823,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $component = new Components($this->getClient());
@@ -897,7 +905,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $component = new Components($this->getClient());
@@ -976,10 +985,11 @@ class RunnerTest extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile()
+                new NullUsageFile(),
+                []
             );
         } catch (UserException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
                 '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
@@ -1069,10 +1079,11 @@ class RunnerTest extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile()
+                new NullUsageFile(),
+                []
             );
         } catch (UserException $e) {
-            self::assertContains(
+            self::assertStringContainsString(
                 'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": Load error',
                 $e->getMessage()
             );
@@ -1155,11 +1166,12 @@ class RunnerTest extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile()
+                new NullUsageFile(),
+                []
             );
             self::fail('Must fail with user error');
         } catch (UserException $e) {
-            self::assertContains('child node "direction" at path "parameters" must be configured.', $e->getMessage());
+            self::assertStringContainsString('child node "direction" at path "parameters" must be configured.', $e->getMessage());
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -1253,7 +1265,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -1262,9 +1275,9 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertContains('files', $output);
-        self::assertContains('tables', $output);
-        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        self::assertStringContainsString('files', $output);
+        self::assertStringContainsString('tables', $output);
+        self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
@@ -1356,7 +1369,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -1365,9 +1379,9 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertContains('files', $output);
-        self::assertContains('tables', $output);
-        self::assertNotContains('state', $output, "No state must've been passed to the processor");
+        self::assertStringContainsString('files', $output);
+        self::assertStringContainsString('tables', $output);
+        self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
@@ -1405,7 +1419,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $component = new Components($this->getClient());
@@ -1446,7 +1461,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $component = new Components($this->getClient());
@@ -1496,7 +1512,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         $metadataApi = new Metadata($this->getClient());
         $bucketMetadata = $metadataApi->listBucketMetadata('in.c-keboola-docker-demo-sync');
@@ -1550,7 +1567,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1604,7 +1622,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         self::assertTrue($this->getClient()->tableExists('in.c-keboola-docker-demo-sync-runner-configuration.sliced'));
@@ -1663,7 +1682,8 @@ class RunnerTest extends BaseRunnerTest
             'some-sync-action',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1722,7 +1742,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1759,7 +1780,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1791,7 +1813,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1826,7 +1849,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1862,7 +1886,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
     }
 
@@ -1901,7 +1926,7 @@ class RunnerTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         self::expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
-        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567', new NullUsageFile());
+        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567', new NullUsageFile(), []);
     }
 
     public function testExecutorInvalidInputMapping2()
@@ -1925,30 +1950,30 @@ class RunnerTest extends BaseRunnerTest
                             'columns' => [
                                 [
                                     'value' => 'id',
-                                    'label' => 'id'
+                                    'label' => 'id',
                                 ],
                                 [
                                     'value' => 'col1',
-                                    'label' => 'col1'
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'label' => 'col1',
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 'output' => [
                     'tables' => [
                         [
                             'source' => 'sliced.csv',
-                            'destination' => 'in.c-runner-test.out'
-                        ]
-                    ]
-                ]
-            ]
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         self::expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
-        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567', new NullUsageFile());
+        $runner->run($this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []), 'run', 'run', '1234567', new NullUsageFile(), []);
     }
 
     public function testExecutorSlicedFilesWithComponentRootUserFeature()
@@ -1962,8 +1987,8 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'features' => [
-                'container-root-user'
-            ]
+                'container-root-user',
+            ],
         ];
 
         $config = [
@@ -2004,7 +2029,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
@@ -2069,7 +2095,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
@@ -2117,7 +2144,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -2165,7 +2193,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -2173,26 +2202,14 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertNotContains(STORAGE_API_TOKEN, $output);
-        self::assertContains('[hidden]', $output);
+        self::assertStringNotContainsString(STORAGE_API_TOKEN, $output);
+        self::assertStringContainsString('[hidden]', $output);
     }
 
     public function testExecutorStoreUsage()
     {
         $this->clearConfigurations();
-        $job = new Job($this->getEncryptorFactory()->getEncryptor());
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['get', 'update'])
-            ->getMock();
-        $jobMapperStub->expects(self::once())
-            ->method('get')
-            ->with('987654')
-            ->willReturn($job);
-        $usageFile = new UsageFile();
-        $usageFile->setJobMapper($jobMapperStub);
-        $usageFile->setFormat('json');
-        $usageFile->setJobId('987654');
+        $usageFile = new TestUsageFile();
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -2218,32 +2235,21 @@ class RunnerTest extends BaseRunnerTest
         ];
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
-        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
-        self::assertEquals([
-            [
+        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, []);
+        self::assertEquals(
+            [[[
                 'metric' => 'kB',
                 'value' => 150
-            ]
-        ], $job->getUsage());
+            ]]],
+            $usageFile->getUsageData()
+        );
     }
 
     public function testExecutorStoreRowsUsage()
     {
         $this->clearConfigurations();
-        $job = new Job($this->getEncryptorFactory()->getEncryptor());
-        $jobMapperStub = self::getMockBuilder(JobMapper::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['get', 'update'])
-            ->getMock();
-        $jobMapperStub->expects(self::atLeastOnce())
-            ->method('get')
-            ->with('987654')
-            ->willReturn($job);
-        $usageFile = new UsageFile();
-        $usageFile->setFormat('json');
-        $usageFile->setJobId('987654');
-        $usageFile->setJobMapper($jobMapperStub);
-
+        $usageFile = new TestUsageFile();
+        /** @var UsageFileInterface $usageFile */
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
@@ -2282,17 +2288,20 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
-        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', $usageFile);
-        self::assertEquals([
+        $runner->run([$jobDefinition1, $jobDefinition2], 'run', 'run', '987654', $usageFile, []);
+        self::assertEquals(
             [
-                'metric' => 'kB',
-                'value' => 150
+                [[
+                    'metric' => 'kB',
+                    'value' => 150
+                ]],
+                [[
+                    'metric' => 'kB',
+                    'value' => 150
+                ]]
             ],
-            [
-                'metric' => 'kB',
-                'value' => 150
-            ]
-        ], $job->getUsage());
+            $usageFile->getUsageData()
+        );
     }
 
     /**
@@ -2325,7 +2334,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
-        $output = $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile);
+        $output = $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, []);
         self::assertCount(1, $output);
         self::assertEquals("Script file /data/script.py\nScript finished", $output[0]->getProcessOutput());
     }
@@ -2409,9 +2418,9 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'source' => 'mytable',
                                 'destination' => 'in.c-runner-test.mytable-2',
-                            ]
-                        ]
-                    ]
+                            ],
+                        ],
+                    ],
                 ],
                 'parameters' => [
                     'script' => [
@@ -2457,7 +2466,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         // the script logs all the input files, so fileId2 should be there, but not fileId1
@@ -2557,7 +2567,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $options = new ListConfigurationWorkspacesOptions();
@@ -2629,11 +2640,12 @@ class RunnerTest extends BaseRunnerTest
                 'run',
                 'run',
                 '1234567',
-                new NullUsageFile()
+                new NullUsageFile(),
+                []
             );
             self::fail('Must fail');
         } catch (UserException $e) {
-            self::assertContains('One input and output mapping is required.', $e->getMessage());
+            self::assertStringContainsString('One input and output mapping is required.', $e->getMessage());
             $options = new ListConfigurationWorkspacesOptions();
             $options->setComponentId('keboola.runner-workspace-test');
             $options->setConfigurationId($configId);
@@ -2705,7 +2717,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -2789,7 +2802,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -2866,7 +2880,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -2881,7 +2896,8 @@ class RunnerTest extends BaseRunnerTest
         ));
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
-        self::assertArraySubset(['foo', 'docker-runner-test'], $fileList[0]['tags']);
+        self::assertTrue(in_array('foo', $fileList[0]['tags']));
+        self::assertTrue(in_array('docker-runner-test', $fileList[0]['tags']));
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 
@@ -2939,7 +2955,8 @@ class RunnerTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            []
         );
 
         // wait for the file to show up in the listing

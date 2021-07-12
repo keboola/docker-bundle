@@ -1,4 +1,4 @@
-FROM php:5.6-apache
+FROM php:7-apache
 ENV DEBIAN_FRONTEND noninteractive
 ENV COMPOSER_ALLOW_SUPERUSER 1
 
@@ -14,8 +14,7 @@ RUN apt-get update -q \
         software-properties-common \
         sudo \
         unzip \
-        vim \
-        zlib1g-dev \
+        libzip-dev \
         wget \
         iproute2 \
     && rm -rf /var/lib/apt/lists/*
@@ -39,10 +38,12 @@ RUN useradd --create-home --shell /bin/bash --groups sudo php-remote \
     &&  echo "php-remote:php-remote" | chpasswd
 
 # install extensions
-RUN docker-php-ext-install mcrypt pdo_mysql zip \
+RUN docker-php-ext-install zip
+RUN pecl channel-update pecl.php.net \
     && pecl config-set php_ini /usr/local/etc/php.ini \
-    && yes | pecl install xdebug-2.5.5 \
-    && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini 
+    && yes | pecl install xdebug-2.9.8 \
+    && docker-php-ext-enable xdebug
+
 ENV APACHE_LOCK_DIR=/var/apache/lock/
 
 COPY ./docker-tests/ /buildcode/

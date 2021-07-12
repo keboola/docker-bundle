@@ -44,7 +44,7 @@ class BillingClientTest extends TestCase
     {
         self::expectException(BillingClientException::class);
         self::expectExceptionMessage(
-            'Invalid parameters when creating client: Value "-1" is invalid: This value should be 0 or more'
+            'Invalid parameters when creating client: Value "-1" is invalid: This value should be between 0 and 100'
         );
         new BillingClient(
             new NullLogger(),
@@ -58,7 +58,7 @@ class BillingClientTest extends TestCase
     {
         self::expectException(BillingClientException::class);
         self::expectExceptionMessage(
-            'Invalid parameters when creating client: Value "101" is invalid: This value should be 100 or less'
+            'Invalid parameters when creating client: Value "101" is invalid: This value should be between 0 and 100'
         );
         new BillingClient(
             new NullLogger(),
@@ -233,7 +233,7 @@ class BillingClientTest extends TestCase
             $client->getRemainingCredits();
             self::fail('Must throw exception');
         } catch (BillingClientException $e) {
-            self::assertContains('500 Internal Server Error', $e->getMessage());
+            self::assertStringContainsString('500 Internal Server Error', $e->getMessage());
         }
         self::assertCount(2, $requestHistory);
     }
@@ -259,7 +259,7 @@ class BillingClientTest extends TestCase
             $client->getRemainingCredits();
             self::fail('Must throw exception');
         } catch (BillingClientException $e) {
-            self::assertContains('500 Internal Server Error', $e->getMessage());
+            self::assertStringContainsString('500 Internal Server Error', $e->getMessage());
         }
         self::assertCount(4, $requestHistory);
     }

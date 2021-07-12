@@ -406,7 +406,7 @@ class ImageBuilder extends Image
     public function buildImage()
     {
         $this->logger->debug("Building image");
-        $process = new Process($this->getBuildCommand());
+        $process = Process::fromShellCommandline($this->getBuildCommand());
         // set some timeout to make sure that the parent image can be downloaded and Dockerfile can be built
         $process->setTimeout(3600);
         $process->run();

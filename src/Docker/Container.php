@@ -153,14 +153,14 @@ class Container
     public function cleanUp()
     {
         // Check if container not running
-        $process = new Process('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
+        $process = Process::fromShellCommandline('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
         $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
             throw new UserException("Container '{$this->id}' already running.");
         }
 
         // Check old containers, delete if found
-        $process = new Process('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
+        $process = Process::fromShellCommandline('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
         $process->mustRun();
         if (trim($process->getOutput()) !== '0') {
             $this->removeContainer($this->id);
@@ -173,7 +173,7 @@ class Container
      */
     public function run()
     {
-        $process = new Process($this->getRunCommand($this->id));
+        $process = Process::fromShellCommandline($this->getRunCommand($this->id));
         $process->setOutputFilter($this->outputFilter);
         $process->setTimeout(null);
 
@@ -246,7 +246,7 @@ class Container
             $this->maxLogPort,
             function ($port) use ($process, $containerName) {
                 // get IP address of host from container
-                $processIp = new Process($this->commandToGetHostIp);
+                $processIp = Process::fromShellCommandline($this->commandToGetHostIp);
                 $processIp->mustRun();
                 $hostIp = trim($processIp->getOutput());
 
@@ -437,7 +437,7 @@ class Container
      */
     public function removeContainer($containerId)
     {
-        $process = new Process($this->getRemoveCommand($containerId));
+        $process = Process::fromShellCommandline($this->getRemoveCommand($containerId));
         $process->setTimeout($this->dockerCliTimeout);
         $process->mustRun();
     }
@@ -449,7 +449,7 @@ class Container
     public function inspectContainer($containerId)
     {
         try {
-            $process = new Process($this->getInspectCommand($containerId));
+            $process = Process::fromShellCommandline($this->getInspectCommand($containerId));
             $process->setTimeout($this->dockerCliTimeout);
             $process->mustRun();
             $inspect = json_decode($process->getOutput(), true);

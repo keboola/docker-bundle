@@ -5,9 +5,10 @@ namespace Keboola\DockerBundle\Tests\Docker\Container;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
-use Keboola\DockerBundle\Monolog\Handler\StorageApiHandler;
+use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
+use Keboola\DockerBundle\Tests\StorageApiHandler;
 use Keboola\StorageApi\Event;
 use Monolog\Handler\TestHandler;
 use Symfony\Bridge\Monolog\Logger;
@@ -28,8 +29,8 @@ class LoggerTest extends BaseContainerTest
         $process = $container->run();
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
-        self::assertContains('What is public is not [hidden]', $out);
-        self::assertContains('Message to stderr [hidden]', $err);
+        self::assertStringContainsString('What is public is not [hidden]', $out);
+        self::assertStringContainsString('Message to stderr [hidden]', $err);
         self::assertTrue($this->getLogHandler()->hasNoticeRecords());
         self::assertTrue($this->getLogHandler()->hasErrorRecords());
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('What is public is not [hidden]'));
@@ -69,7 +70,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -113,7 +114,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -157,7 +158,7 @@ class LoggerTest extends BaseContainerTest
         $out = $process->getOutput();
         $err = $process->getErrorOutput();
         self::assertEquals('', $err);
-        self::assertContains('Client finished', $out);
+        self::assertStringContainsString('Client finished', $out);
 
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
@@ -197,7 +198,7 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail("Must raise error");
         } catch (ApplicationException $e) {
-            self::assertContains('Host parameter is missing from GELF message', $e->getMessage());
+            self::assertStringContainsString('Host parameter is missing from GELF message', $e->getMessage());
         }
     }
 
@@ -233,7 +234,7 @@ class LoggerTest extends BaseContainerTest
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
         self::assertEquals('', $err);
-        self::assertContains("Client finished", $out);
+        self::assertStringContainsString("Client finished", $out);
         $records = $this->getContainerLogHandler()->getRecords();
         self::assertEquals(3, count($records));
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
@@ -291,7 +292,7 @@ class LoggerTest extends BaseContainerTest
         self::assertCount(2, $info);
         sort($info);
         self::assertEquals('An info message.', $info[0]);
-        self::assertContains('Client finished', $info[1]);
+        self::assertStringContainsString('Client finished', $info[1]);
         sort($error);
         self::assertCount(2, $error);
         self::assertEquals('An error message.', $error[0]);
@@ -328,14 +329,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::INFO => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::NOTICE => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::WARNING => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::ERROR => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::CRITICAL => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::ALERT => StorageApiHandler::VERBOSITY_VERBOSE,
-            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_VERBOSE,
+            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
         ];
 
         $error = [];
@@ -365,7 +366,7 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail('Must raise exception');
         } catch (UserException $e) {
-            self::assertContains('Exception example', $e->getMessage());
+            self::assertStringContainsString('Exception example', $e->getMessage());
         }
         self::assertCount(1, $warn);
         self::assertEquals('A warning message with [hidden] secret.', $warn[0]);
@@ -373,12 +374,12 @@ class LoggerTest extends BaseContainerTest
         sort($info);
         self::assertEquals('A debug message.', $info[0]);
         self::assertEquals('An info message.', $info[1]);
-        self::assertContains('Installing collected packages: pygelf', $info[2]);
+        self::assertStringContainsString('Installing collected packages: pygelf', $info[2]);
         sort($error);
         self::assertCount(3, $error);
         self::assertEquals('A critical example.', $error[0]);
         self::assertEquals('An error message.', $error[1]);
-        self::assertContains('Exception example', $error[2]);
+        self::assertStringContainsString('Exception example', $error[2]);
         self::assertNotEmpty($structured->getResults());
         self::assertArrayHasKey('_file', $structured->getResults());
         self::assertArrayHasKey('_structure', $structured->getResults());
@@ -412,14 +413,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandler::VERBOSITY_NONE,
-            Logger::INFO => StorageApiHandler::VERBOSITY_NONE,
-            Logger::NOTICE => StorageApiHandler::VERBOSITY_NONE,
-            Logger::WARNING => StorageApiHandler::VERBOSITY_NONE,
-            Logger::ERROR => StorageApiHandler::VERBOSITY_NONE,
-            Logger::CRITICAL => StorageApiHandler::VERBOSITY_NONE,
-            Logger::ALERT => StorageApiHandler::VERBOSITY_NONE,
-            Logger::EMERGENCY => StorageApiHandler::VERBOSITY_NONE,
+            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_NONE,
+            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_NONE,
         ];
         $records = [];
         $this->setCreateEventCallback(
@@ -458,7 +459,7 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            self::assertContains('failed: (2) Script file /data/script.py', $e->getMessage());
+            self::assertStringContainsString('failed: (2) Script file /data/script.py', $e->getMessage());
         }
 
         $records = $this->getContainerLogHandler()->getRecords();
@@ -492,7 +493,7 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
         self::assertEquals(1, count($errors));
-        self::assertContains('first message to stdout', $infoText);
+        self::assertStringContainsString('first message to stdout', $infoText);
         self::assertEquals('first message to stderr', $errors[0]);
     }
 
@@ -541,12 +542,12 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (ApplicationException $e) {
-            self::assertContains('message to stderr', $e->getMessage());
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('message to stderr', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
-        self::assertNotContains('message to stderr', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
+        self::assertStringNotContainsString('message to stderr', $contents);
     }
 
     public function testLogUserError()
@@ -568,14 +569,14 @@ class LoggerTest extends BaseContainerTest
         try {
             $container->run();
         } catch (UserException $e) {
-            self::assertContains('message to stderr', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getMessage());
             self::assertGreaterThan(4000, strlen($e->getMessage()));
             self::assertLessThan(4050, strlen($e->getMessage()));
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
-        self::assertNotContains('message to stderr', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
+        self::assertStringNotContainsString('message to stderr', $contents);
     }
 
     public function testLogTimeout()
@@ -602,11 +603,11 @@ class LoggerTest extends BaseContainerTest
             $container->run();
             self::fail('Must raise user exception');
         } catch (UserException $e) {
-            self::assertContains('container exceeded the timeout of', $e->getMessage());
-            self::assertContains('message to stderr', $e->getData()['errorOutput']);
-            self::assertContains('message to stdout', $e->getData()['output']);
+            self::assertStringContainsString('container exceeded the timeout of', $e->getMessage());
+            self::assertStringContainsString('message to stderr', $e->getData()['errorOutput']);
+            self::assertStringContainsString('message to stdout', $e->getData()['output']);
         }
-        self::assertContains('message to stdout', $contents);
+        self::assertStringContainsString('message to stdout', $contents);
     }
 
     public function testRunnerLogs()
@@ -631,14 +632,7 @@ class LoggerTest extends BaseContainerTest
         $this->getContainer($this->getImageConfiguration(), [], [], false);
         $testHandler = new TestHandler();
         $containerTestHandler = new TestHandler();
-        $containerStub = $this->getMockBuilder(\Symfony\Component\DependencyInjection\Container::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $containerStub->expects(self::any())
-            ->method('get')
-            ->will(self::returnValue($this->getStorageApiService()));
-        /** @var \Symfony\Component\DependencyInjection\Container $containerStub */
-        $sapiHandler = new StorageApiHandler('runner-tests', $containerStub);
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
         $log = new Logger('runner-tests', [$testHandler, $sapiHandler]);
         $containerLog = new ContainerLogger('container-tests', [$containerTestHandler]);
         $logService = new LoggersService($log, $containerLog, $sapiHandler);

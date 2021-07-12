@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ImageConfigurationTest extends TestCase
 {
@@ -107,10 +108,6 @@ class ImageConfigurationTest extends TestCase
         self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.definition.type": Invalid image type "whatever".
-     */
     public function testWrongDefinitionType()
     {
         $config = [
@@ -120,13 +117,11 @@ class ImageConfigurationTest extends TestCase
             ],
             "memory" => "64m"
         ];
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Invalid configuration for path "component.definition.type": Invalid image type "whatever".');
         (new Configuration\Component())->parse(["config" => $config]);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".
-     */
     public function testWrongConfigurationFormat()
     {
         $config = [
@@ -137,13 +132,11 @@ class ImageConfigurationTest extends TestCase
             "memory" => "64m",
             "configuration_format" => "fail"
         ];
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".');
         (new Configuration\Component())->parse(["config" => $config]);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Unrecognized option "unknown" under "component"
-     */
     public function testExtraConfigurationField()
     {
         $config = [
@@ -153,13 +146,11 @@ class ImageConfigurationTest extends TestCase
             ],
             "unknown" => []
         ];
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "unknown" under "component"');
         (new Configuration\Component())->parse(["config" => $config]);
     }
 
-    /**
-     * @expectedException \Symfony\Component\Config\Definition\Exception\InvalidConfigurationException
-     * @expectedExceptionMessage Invalid configuration for path "component.network": Invalid network type "whatever".
-     */
     public function testWrongNetworkType()
     {
         $config = [
@@ -170,6 +161,8 @@ class ImageConfigurationTest extends TestCase
             "memory" => "64m",
             "network" => "whatever"
         ];
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Invalid configuration for path "component.network": Invalid network type "whatever".');
         (new Configuration\Component())->parse(["config" => $config]);
     }
 

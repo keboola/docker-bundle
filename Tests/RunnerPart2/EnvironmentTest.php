@@ -1,6 +1,6 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -14,7 +14,7 @@ class EnvironmentTest extends TestCase
      */
     private $tokenInfo;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->tokenInfo = [

@@ -232,7 +232,7 @@ class ComponentTest extends TestCase
                 ],
             ]);
         } catch (ApplicationException $e) {
-            self::assertContains('Invalid repository_type', $e->getMessage());
+            self::assertStringContainsString('Invalid repository_type', $e->getMessage());
         }
     }
 
