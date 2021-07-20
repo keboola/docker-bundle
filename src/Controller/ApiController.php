@@ -84,6 +84,12 @@ class ApiController extends BaseApiController
             if (!empty($tokenInfo['admin']['role']) && ($tokenInfo['admin']['role'] === 'readOnly')) {
                 throw new UserException('As a readOnly user you cannot run a job.');
             }
+            if (in_array('queuev2', $tokenInfo['owner']['features'])) {
+                throw new UserException(
+                    'This project was migrated to new Queue API, ' .
+                    'use the new API https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.0.0'
+                );
+            }
             if (isset($params['configData'])) {
                 // Encrypt configData
                 /** @var ObjectEncryptorFactory $encryptorFactory */

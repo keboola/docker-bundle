@@ -4,16 +4,19 @@ namespace Keboola\DockerBundle\Tests\Controller;
 
 use Elasticsearch\Client;
 use Keboola\DockerBundle\Controller\ApiController;
+use Keboola\DockerBundle\Service\StorageApiService;
 use Keboola\DockerBundle\Tests\Runner\CreateBranchTrait;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\BaseWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentProjectWrapper;
 use Keboola\ObjectEncryptor\Legacy\Wrapper\ComponentWrapper as LegacyComponentWrapper;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
+use Keboola\Syrup\Exception\UserException;
 use Keboola\Syrup\Job\Metadata\JobInterface;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -113,6 +116,64 @@ class ApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals(202, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals('waiting', $response['status']);
+    }
+
+    public function testRunQueueV2()
+    {
+        $clientMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([['token' => STORAGE_API_TOKEN, 'url' => STORAGE_API_URL]])
+            ->setMethods(['verifyToken'])
+            ->getMock();
+        $clientMock->method('verifyToken')
+            ->willReturn([
+                "id" => "27978",
+                "isMasterToken" => true,
+                "owner" => [
+                    "id" => 578,
+                    "name" => "Odinuv Sandbox",
+                    "features" => [
+                        "transformation-config-storage",
+                        "queuev2",
+                    ],
+                ],
+                'admin' => [
+                    'role' => 'admin',
+                    'id' => 56,
+                ],
+            ]);
+        $storageServiceMock = $this->getMockBuilder(StorageApiService::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getClient'])
+            ->getMock();
+        $storageServiceMock->method('getClient')
+            ->willReturn($clientMock);
+
+        self::$container->set('syrup.storage_api', $storageServiceMock);
+
+        $request = Request::create(
+            "/docker/docker-config-encrypt-verify/run",
+            'POST',
+            $parameters = [
+                "component" => "docker-config-encrypt-verify",
+                "action" => 'run'
+            ],
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "configData": {
+                    "#foo": "bar"
+                }
+            }'
+        );
+        self::$container->get('request_stack')->push($request);
+
+        $ctrl = new ApiController();
+        $ctrl->setContainer(self::$container);
+        $ctrl->preExecute($request);
+        self::expectException(UserException::class);
+        self::expectExceptionMessage('This project was migrated to new Queue API');
+        $ctrl->runAction($request);
     }
 
     public function testRunBranch()
@@ -686,7 +747,7 @@ class ApiControllerTest extends WebTestCase
         $elasticClient->search();
 
         // get current project id
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $tokenInfo = $storageClient->verifyToken();
         $projectId = $tokenInfo['owner']['id'];
 
@@ -796,7 +857,7 @@ class ApiControllerTest extends WebTestCase
         $elasticClient->search();
 
         // get current project id
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $tokenInfo = $storageClient->verifyToken();
         $projectId = $tokenInfo['owner']['id'];
 
@@ -1099,7 +1160,7 @@ class ApiControllerTest extends WebTestCase
 
     private function createSharedConfigurations()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.variables');
@@ -1130,7 +1191,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testResolveVariables()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
 
@@ -1202,7 +1263,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testResolveVariablesBranch()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
 
@@ -1222,7 +1283,7 @@ class ApiControllerTest extends WebTestCase
         $result = $components->addConfiguration($configuration);
         $configId = $result['id'];
 
-        $client = new \Keboola\StorageApi\Client([
+        $client = new StorageApiClient([
             'token' => STORAGE_API_TOKEN_MASTER,
             'url' => STORAGE_API_URL,
         ]);
@@ -1324,7 +1385,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testResolveVariablesInline()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
 
@@ -1413,7 +1474,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testResolveVariablesRows()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
 
@@ -1497,7 +1558,7 @@ class ApiControllerTest extends WebTestCase
 
     public function testResolveVariablesMissingVariables()
     {
-        $storageClient = new \Keboola\StorageApi\Client(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
+        $storageClient = new StorageApiClient(['url' => STORAGE_API_URL, 'token' => STORAGE_API_TOKEN]);
         $components = new Components($storageClient);
         list($variablesId, $variableValuesId, $sharedCodeId, $sharedCodeRowId) = $this->createSharedConfigurations();
 
