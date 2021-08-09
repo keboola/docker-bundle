@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Exception;
 
-class UserException extends ApplicationException
+use Keboola\CommonExceptions\UserExceptionInterface;
+
+class UserException extends ApplicationException implements UserExceptionInterface
 {
 }
