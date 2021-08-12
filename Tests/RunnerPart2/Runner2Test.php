@@ -57,6 +57,7 @@ class Runner2Test extends BaseRunnerTest
         self::expectException(UserException::class);
         // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
         self::expectExceptionMessageMatches('/Permission denied/');
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -68,7 +69,8 @@ class Runner2Test extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
     }
 

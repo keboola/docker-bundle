@@ -226,14 +226,17 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             RUNNER_MAX_LOG_PORT
         );
 
-        return $runner->run(
+        $outputs = [];
+        $runner->run(
             [$jobDefinition],
             'run',
             'run',
             '123456',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
+        return $outputs;
     }
 
     /**

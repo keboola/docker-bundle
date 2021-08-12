@@ -144,6 +144,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         self::assertFalse($this->client->tableExists('out.c-synapse-runner-test.new-table'));
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -177,7 +178,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
 
         $options = new ListConfigurationWorkspacesOptions();
@@ -227,6 +229,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $components->addConfiguration($configuration);
         $runner = $this->getRunner();
 
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -251,7 +254,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)));
 
@@ -312,6 +316,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $components->addConfiguration($configuration);
         $runner = $this->getRunner();
 
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -342,7 +347,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(
             sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)
@@ -386,6 +392,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         $components->addConfiguration($configuration);
         $runner = $this->getRunner();
 
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -411,7 +418,8 @@ class RunnerSynapseTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         $data = $this->client->getTableDataPreview('out.c-synapse-runner-test.test-table');
         self::assertEquals("\"first\",\"second\"\n\"1a\",\"2b\"\n", $data);
