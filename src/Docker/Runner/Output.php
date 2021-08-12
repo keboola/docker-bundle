@@ -18,7 +18,7 @@ class Output
      */
     private $output;
     /**
-     * @var string
+     * @var ?string
      */
     private $configVersion;
     /**
@@ -76,15 +76,15 @@ class Output
     }
 
     /**
-     * @param string $configVersion
+     * @param ?string $configVersion
      */
-    public function setConfigVersion(string $configVersion): void
+    public function setConfigVersion(?string $configVersion): void
     {
         $this->configVersion = $configVersion;
     }
 
     /**
-     * @return string
+     * @return ?string
      */
     public function getConfigVersion()
     {
