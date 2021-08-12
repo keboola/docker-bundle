@@ -215,8 +215,9 @@ class Runner
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
             . ", row id: " . $jobDefinition->getRowId() . ", state: " . json_encode($jobDefinition->getState())
         );
-        $outputs[] = new Output();
-        $outputs[count($outputs)-1]->setConfigVersion($jobDefinition->getConfigVersion());
+        $currentOutput = new Output();
+        $outputs[] = $currentOutput;
+        $currentOutput->setConfigVersion($jobDefinition->getConfigVersion());
         $component = $jobDefinition->getComponent();
         $this->loggersService->setComponentId($component->getId());
 
@@ -268,7 +269,7 @@ class Runner
             $this->loggersService->getLog(),
             $jobDefinition->getRowId()
         );
-        $outputs[count($outputs)-1]->setStateFile($stateFile);
+        $currentOutput->setStateFile($stateFile);
 
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),
@@ -309,7 +310,7 @@ class Runner
                 $mode,
                 $inputTableStateList,
                 $inputFileStateList,
-                $outputs[count($outputs)-1]
+                $currentOutput
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
