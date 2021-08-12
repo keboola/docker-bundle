@@ -154,13 +154,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
         $jobDefinition2 = new JobDefinition($config, $this->getComponent());
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -214,13 +216,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
         $jobDefinition2 = new JobDefinition($config, $componentData);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -268,13 +272,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ], $this->getComponent(), 'my-config', 1, [], 'row-2');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            ['row-2']
+            ['row-2'],
+            $outputs
         );
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -299,26 +305,30 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $runner = $this->getRunner();
         self::expectException(UserException::class);
         self::expectExceptionMessage('None of rows "row-2" was found.');
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            ['row-2']
+            ['row-2'],
+            $outputs
         );
     }
 
     public function testRunEmptyJobDefinitions()
     {
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             [],
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue(true);
     }
@@ -365,13 +375,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
@@ -433,13 +445,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            ['disabled-row']
+            ['disabled-row'],
+            $outputs
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
             'Force running disabled configuration: my-config, version: 1, row: disabled-row'
@@ -491,13 +505,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         $metadata = new Metadata($this->getClient());
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable'));
@@ -552,13 +568,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $jobDefinition1 = new JobDefinition($config, $this->getComponent(), 'runner-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($config, $this->getComponent(), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -630,13 +648,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
         $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             [$jobDefinition1, $jobDefinition2],
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
 
         $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
@@ -694,13 +714,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
-        $outputs = $runner->run(
+        $outputs = [];
+        $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
         self::assertCount(2, $outputs);
         self::assertCount(1, $outputs[0]->getImages());
@@ -819,13 +841,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinitions = [$jobDefinition1];
         $runner = $this->getRunner();
+        $outputs = [];
         $runner->run(
             $jobDefinitions,
             'run',
             'run',
             '1234567',
             new NullUsageFile(),
-            ['row-1']
+            ['row-1'],
+            $outputs
         );
 
         // the script logs all the input files, so fileId2 should be there, but not fileId1

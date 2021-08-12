@@ -7,42 +7,42 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
          bootstrap="bootstrap.php">
 
     <php>
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
 
-    <testsuite name="base-tests">
-        <directory>Tests</directory>
-        <exclude>Tests/Command</exclude>
-        <exclude>Tests/Controller</exclude>
-        <exclude>Tests/Runner</exclude>
-        <exclude>Tests/RunnerPart2</exclude>
-        <exclude>Tests/Executor</exclude>
-        <exclude>Tests/Docker/Container</exclude>
-        <exclude>Tests/backend-specific-tests</exclude>
-    </testsuite>
-    <testsuite name="runner-tests">
-        <directory>Tests/Runner</directory>
-    </testsuite>
-    <testsuite name="runner-tests-2">
-        <directory>Tests/RunnerPart2</directory>
-    </testsuite>
-    <testsuite name="container-tests">
-        <directory>Tests/Docker/Container</directory>
-    </testsuite>
-    <testsuite name="s3-tests">
-        <directory>Tests/backend-specific-tests/S3</directory>
-    </testsuite>
-    <testsuite name="abs-tests">
-        <directory>Tests/backend-specific-tests/ABS</directory>
-    </testsuite>
-    <testsuite name="synapse-tests">
-        <directory>Tests/backend-specific-tests/Synapse</directory>
-    </testsuite>
-
+    <testsuites>
+	    <testsuite name="base-tests">
+	        <directory>Tests</directory>
+	        <exclude>Tests/Command</exclude>
+	        <exclude>Tests/Controller</exclude>
+	        <exclude>Tests/Runner</exclude>
+	        <exclude>Tests/RunnerPart2</exclude>
+	        <exclude>Tests/Executor</exclude>
+	        <exclude>Tests/Docker/Container</exclude>
+	        <exclude>Tests/backend-specific-tests</exclude>
+	    </testsuite>
+	    <testsuite name="runner-tests">
+	        <directory>Tests/Runner</directory>
+	    </testsuite>
+	    <testsuite name="runner-tests-2">
+	        <directory>Tests/RunnerPart2</directory>
+	    </testsuite>
+	    <testsuite name="container-tests">
+	        <directory>Tests/Docker/Container</directory>
+	    </testsuite>
+	    <testsuite name="s3-tests">
+	        <directory>Tests/backend-specific-tests/S3</directory>
+	    </testsuite>
+	    <testsuite name="abs-tests">
+	        <directory>Tests/backend-specific-tests/ABS</directory>
+	    </testsuite>
+	    <testsuite name="synapse-tests">
+	        <directory>Tests/backend-specific-tests/Synapse</directory>
+	    </testsuite>
+	</testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">.</directory>

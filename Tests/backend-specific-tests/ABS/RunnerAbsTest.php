@@ -86,6 +86,7 @@ class RunnerAbsTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         self::assertFalse($this->client->tableExists('out.c-runner-test.new-table'));
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -112,7 +113,8 @@ class RunnerAbsTest extends BaseRunnerTest
             'run',
             '1234567',
             new NullUsageFile(),
-            []
+            [],
+            $outputs
         );
 
         $records = $this->getContainerHandler()->getRecords();
