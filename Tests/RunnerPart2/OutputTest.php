@@ -30,5 +30,11 @@ class OutputTest extends TestCase
         );
         self::assertEquals('123', $output->getConfigVersion());
         self::assertSame($stateFileMock, $output->getStateFile());
+        self::assertNull($output->getInputFileStateList());
+        self::assertNull($output->getInputTableStateList());
+        self::assertNull($output->getDataLoader());
+        self::assertNull($output->getTableQueue());
+        $output->setConfigVersion(null);
+        self::assertNull($output->getConfigVersion());
     }
 }
