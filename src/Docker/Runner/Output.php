@@ -44,18 +44,11 @@ class Output
     private $dataLoader;
 
     /**
-     * Output constructor.
-     *
      * @param array $images
-     * @param string $output
-     * @param $configVersion
      */
-    public function __construct(array $images, $output, $configVersion, $stateFile)
+    public function setImages(array $images): void
     {
         $this->images = $images;
-        $this->output = $output;
-        $this->configVersion = $configVersion;
-        $this->stateFile = $stateFile;
     }
 
     /**
@@ -67,11 +60,27 @@ class Output
     }
 
     /**
+     * @param string $output
+     */
+    public function setOutput(string $output): void
+    {
+        $this->output = $output;
+    }
+
+    /**
      * @return string
      */
     public function getProcessOutput()
     {
         return $this->output;
+    }
+
+    /**
+     * @param string $configVersion
+     */
+    public function setConfigVersion(string $configVersion): void
+    {
+        $this->configVersion = $configVersion;
     }
 
     /**
@@ -133,6 +142,14 @@ class Output
     public function getTableQueue()
     {
         return $this->tableQueue;
+    }
+
+    /**
+     * @param StateFile $stateFile
+     */
+    public function setStateFile(StateFile $stateFile): void
+    {
+        $this->stateFile = $stateFile;
     }
 
     public function getStateFile()

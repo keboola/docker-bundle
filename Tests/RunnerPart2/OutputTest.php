@@ -15,7 +15,11 @@ class OutputTest extends TestCase
             ['id' => 'apples', 'digests' => ['foo', 'baz']],
             ['id' => 'oranges', 'digests' => ['bar']]
         ];
-        $output = new Output($images, 'bazBar', '123', $stateFileMock);
+        $output = new Output();
+        $output->setImages($images);
+        $output->setOutput('bazBar');
+        $output->setConfigVersion('123');
+        $output->setStateFile($stateFileMock);
         self::assertEquals('bazBar', $output->getProcessOutput());
         self::assertEquals(
             [
