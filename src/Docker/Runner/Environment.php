@@ -3,9 +3,7 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use Keboola\Syrup\Exception\UserException;
 
 class Environment
 {
@@ -87,7 +85,8 @@ class Environment
             'KBC_DATADIR' => '/data/',
             'KBC_CONFIGID' => $this->configId,
             'KBC_COMPONENTID' => $this->component->getId(),
-            'KBC_STACKID' => $this->stackId
+            'KBC_STACKID' => $this->stackId,
+            'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
         ];
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
