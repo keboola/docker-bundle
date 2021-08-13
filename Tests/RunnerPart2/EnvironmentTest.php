@@ -22,7 +22,8 @@ class EnvironmentTest extends TestCase
             'id' => '123',
             'owner' => [
                 'id' => '321',
-                'name' => 'some person',
+                'name' => 'some project',
+                'fileStorageProvider' => 'aws',
             ],
             'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
         ];
@@ -68,6 +69,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_TOKENID', $envs);
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
+        self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
     }
 
     public function testExecutorForwardToken()
@@ -115,6 +117,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
+        self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
     }
 
     public function testExecutorForwardTokenAndDetails()
@@ -146,6 +149,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_TOKENID', $envs);
         self::assertArrayHasKey('KBC_TOKENDESC', $envs);
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
+        self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
     }
 
     public function testExecutorForwardDetails()
@@ -181,6 +185,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_TOKENDESC', $envs);
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
+        self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
     }
 
     public function testExecutorForwardDetailsSaml()
@@ -220,5 +225,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_TOKENDESC', $envs);
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertEquals('boo', $envs['KBC_REALUSER']);
+        self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
     }
 }

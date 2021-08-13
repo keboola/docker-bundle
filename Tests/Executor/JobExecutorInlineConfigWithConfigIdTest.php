@@ -32,7 +32,7 @@ class JobExecutorInlineConfigWithConfigIdTest extends BaseExecutorTest
             ->will(self::returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']], 'components' => [$componentData]]));
         $clientMock->expects(self::any())
             ->method('verifyToken')
-            ->willReturn(['owner' => ['id' => '321', 'name' => 'Name', 'features' => []], 'id' => '123', 'description' => 'Description']);
+            ->willReturn(['owner' => ['id' => '321', 'name' => 'Name', 'features' => [], 'fileStorageProvider' => 'aws'], 'id' => '123', 'description' => 'Description']);
         $this->setClientMock($clientMock);
 
         $data = [
