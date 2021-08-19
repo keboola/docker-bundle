@@ -25,6 +25,7 @@ stages:
     jobs:
       - job: baseTests
         displayName: 'Base Tests'
+        condition: eq('true', 'false')
         steps:
           - script: |
               docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests --debug
@@ -52,6 +53,7 @@ stages:
 
       - job: containerTests
         displayName: 'Container Tests'
+        condition: eq('true', 'false')
         pool:
           name: 'Default'
         steps:
@@ -86,7 +88,7 @@ stages:
         steps:
           - script: |
               docker-compose build --pull
-              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests --debug --filter testOutputTablesWithInvalidColumnNames
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -113,6 +115,7 @@ stages:
 
       - job: runnerTestsPart2
         displayName: 'Runner Tests Part 2'
+        condition: eq('true', 'false')
         pool:
           name: 'Default'
         steps:
@@ -145,6 +148,7 @@ stages:
 
       - job: executorTests
         displayName: 'Executor Tests'
+        condition: eq('true', 'false')
         steps:
           - script: |
               docker-compose run tests ./vendor/bin/phpunit --testsuite executor-tests --debug
@@ -174,6 +178,7 @@ stages:
 
       - job: s3Tests
         displayName: 'S3 Tests'
+        condition: eq('true', 'false')
         steps:
           - script: |
               docker-compose run tests ./vendor/bin/phpunit --testsuite s3-tests --debug
@@ -203,6 +208,7 @@ stages:
 
       - job: absTests
         displayName: 'ABS Tests'
+        condition: eq('true', 'false')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite abs-tests --debug
@@ -232,6 +238,7 @@ stages:
 
       - job: synapseTests
         displayName: 'Synapse Tests'
+        condition: eq('true', 'false')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
