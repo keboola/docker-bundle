@@ -2966,7 +2966,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.snowflake-transformation',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.snowflake-transformation',
                     'tag' => '0.5.0',
                 ],
                 'staging_storage' => [
@@ -2990,14 +2990,21 @@ class RunnerTest extends BaseRunnerTest
                 $componentData,
                 $configId,
                 [
-                    'storage' => [
-                        'output' => [
-                            'files' => [],
-                            'tables' => [],
-                        ],
-                    ],
                     'parameters' => [
-
+                        'blocks' => [
+                            [
+                                'name' => 'first block',
+                                'codes' => [
+                                    [
+                                        'name' => 'first code',
+                                        'script' => [
+                                            'CREATE TABLE "column_test" ("oid" VARCHAR, "_underscore_" VARCHAR);',
+                                            'INSERT INTO "column_test" ("oid", "_underscore_") VALUES (\'hello\', \'world\');',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
                     ],
                     'storage' => [
                         'input' => [],
@@ -3020,18 +3027,7 @@ class RunnerTest extends BaseRunnerTest
             new NullUsageFile()
         );
 
-        // wait for the file to show up in the listing
-        sleep(2);
-
         // table should not exist
-        self::assertFalse($this->client->tableExists('out.c-runner-test.test-table'));
-
-        // but the file should exist
-        $fileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
-            'tags:"componentId: keboola.runner-staging-test" AND tags:' .
-            sprintf('"configurationId: %s"', $configId)
-        ));
-        self::assertCount(1, $fileList);
-        self::assertEquals('my_table.csv', $fileList[0]['name']);
+        self::assertFalse($this->client->tableExists('out.c-runner-test.column-test'));
     }
 }
