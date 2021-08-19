@@ -2998,8 +2998,8 @@ class RunnerTest extends BaseRunnerTest
                                     [
                                         'name' => 'first code',
                                         'script' => [
-                                            'CREATE TABLE "column_test" (oid VARCHAR, normal VARCHAR);',
-                                            'INSERT INTO "column_test" (oid, normal) VALUES (\'hello\', \'world\');',
+                                            'CREATE TABLE "column_test" (oid INTEGER, normal VARCHAR);',
+                                            'INSERT INTO "column_test" (oid, normal) VALUES (1, \'world\');',
                                         ],
                                     ],
                                 ],
