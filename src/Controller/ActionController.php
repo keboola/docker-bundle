@@ -101,7 +101,7 @@ class ActionController extends BaseApiController
                 $this->container->getParameter('oauth_api.url'),
                 $this->container->getParameter('instance_limits')
             );
-            $this->container->get('logger')->info("Running Docker container '{$component['id']}'.", $configData);
+            $this->container->get('logger')->info("Running Docker container '{$component['id']}'.");
             $jobDefinition = new JobDefinition($configData, new Component($component));
             $usageFile = new NullUsageFile();
             $outputs = $runner->run([$jobDefinition], $request->get("action"), 'run', 0, $usageFile);
