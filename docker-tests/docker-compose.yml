@@ -9,7 +9,8 @@ services:
     image: elasticsearch:2.4
     tty: true
     stdin_open: true
-    network_mode: bridge
+    networks:
+      - default_network
     ports:
       - "9200:9200"
 
@@ -18,7 +19,8 @@ services:
     image: mysql:5.7
     tty: true
     stdin_open: true
-    network_mode: bridge
+    networks:
+      - default_network
     ports:
       - "3306:3306"
     volumes:
@@ -43,7 +45,8 @@ services:
       dockerfile: ./DockerfileTests
     tty: true
     stdin_open: true  
-    network_mode: bridge
+    networks:
+      - default_network
     environment:
       - DOCKER_HOST
       - AWS_ACCESS_KEY_ID
@@ -58,3 +61,6 @@ services:
     links:
       - database
       - elastic
+
+networks:
+  default_network:
