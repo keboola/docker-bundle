@@ -953,6 +953,16 @@ class RunnerTest extends BaseRunnerTest
                     '   print("foo,foo\n1,2", file=out_table)',
                 ],
             ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-1.csv',
+                            'destination' => 'out.c-runner-test.my-table-1',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $configurationRow->setConfiguration($configData1);
         $component->addConfigurationRow($configurationRow);
@@ -980,8 +990,8 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
-                '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: "foo"',
+                'Cannot upload file "out.c-runner-test.my-table-1.csv" to table ' .
+                '"out.c-runner-test.my-table-1" in Storage API: There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
             );
         }
@@ -1027,6 +1037,16 @@ class RunnerTest extends BaseRunnerTest
                     '   print("foo,bar\n1,2,3", file=out_table)',
                 ],
             ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-1.csv',
+                            'destination' => 'out.c-runner-test.my-table-1',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $configurationRow->setConfiguration($configData1);
         $component->addConfigurationRow($configurationRow);
@@ -1043,6 +1063,16 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow2": "fooBar2"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-2.csv',
+                            'destination' => 'out.c-runner-test.my-table-2',
+                        ],
+                    ],
                 ],
             ],
         ];
