@@ -41,6 +41,10 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
+            json_encode(['destination' => 'sliced'])
+        );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
@@ -100,6 +104,11 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
+            json_encode(['destination' => 'sliced'])
+        );
+
         $this->client = new Client([
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN_MASTER,
@@ -148,6 +157,10 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
+            json_encode(['destination' => 'sliced'])
         );
         $dataLoader = $this->getDataLoader([], 'testRow');
         $tableQueue = $dataLoader->storeOutput();
@@ -248,7 +261,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $dataLoader = $this->getDataLoader($config);
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
-        $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
+        $tableMetadata = $this->metadata->listTableMetadata('in.c-runner-test.out');
         $expectedTableMetadata = [
             'system' => [
                 'KBC.createdBy.configuration.id' => 'testConfig',
@@ -263,7 +276,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         ];
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
-        $idColMetadata = $this->metadata->listColumnMetadata('in.c-docker-demo-testConfig.sliced.id');
+        $idColMetadata = $this->metadata->listColumnMetadata('in.c-runner-test.out.id');
         $expectedColumnMetadata = [
             'docker-demo' => [
                 'column.key.one' => 'column value one id',
@@ -346,6 +359,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testExecutorManifestMetadataCombined()
     {
+        self::markTestSkipped('TODO');
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',

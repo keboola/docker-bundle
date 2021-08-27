@@ -9,8 +9,6 @@ services:
     image: elasticsearch:2.4
     tty: true
     stdin_open: true
-    networks:
-      - default_network
     ports:
       - "9200:9200"
 
@@ -19,8 +17,6 @@ services:
     image: mysql:5.7
     tty: true
     stdin_open: true
-    networks:
-      - default_network
     ports:
       - "3306:3306"
     volumes:
@@ -32,7 +28,7 @@ services:
       - MYSQL_USER=syrup
       - MYSQL_PASSWORD=syrup
       - LANG=en_US.UTF-8
-    entrypoint: 
+    entrypoint:
       - "docker-entrypoint.sh"
       - "--sql-mode=ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
       - "--character-set-server=utf8"
@@ -40,13 +36,11 @@ services:
 
   runner:
     container_name: test_runner_php
-    build: 
+    build:
       context: .
       dockerfile: ./DockerfileTests
     tty: true
-    stdin_open: true  
-    networks:
-      - default_network
+    stdin_open: true
     environment:
       - DOCKER_HOST
       - AWS_ACCESS_KEY_ID
@@ -61,6 +55,3 @@ services:
     links:
       - database
       - elastic
-
-networks:
-  default_network:

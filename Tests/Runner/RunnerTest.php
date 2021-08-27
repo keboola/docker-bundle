@@ -557,7 +557,6 @@ class RunnerTest extends BaseRunnerTest
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
         $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
-        $this->getClient()->setTableAttribute('in.c-runner-test.test', 'attr1', 'val1');
         unset($csv);
 
         $configurationData = [
@@ -574,9 +573,12 @@ class RunnerTest extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'from shutil import copyfile',
+                    'import json',
                     'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced.csv")',
-                ]
-            ]
+                    'with open("/data/out/tables/sliced.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "sliced"}, out_file)',
+                ],
+            ],
         ];
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -856,6 +858,8 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow1": "fooBar1"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "out.c-runner-test.my-table-1"}, out_file)',
                 ],
             ],
         ];
@@ -873,6 +877,8 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow2": "fooBar2"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "out.c-runner-test.my-table-2"}, out_file)',
                 ],
             ],
         ];
@@ -1593,7 +1599,6 @@ class RunnerTest extends BaseRunnerTest
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
         $this->getClient()->createTableAsync('in.c-runner-test', 'test', $csv);
-        $this->getClient()->setTableAttribute('in.c-runner-test.test', 'attr1', 'val1');
         $configurationData = [
             'storage' => [
                 'input' => [
@@ -1607,8 +1612,11 @@ class RunnerTest extends BaseRunnerTest
             ],
             'parameters' => [
                 'script' => [
+                    'import json',
                     'from shutil import copyfile',
                     'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced")',
+                    'with open("/data/out/tables/sliced.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "sliced"}, out_file)',
                 ],
             ],
         ];
