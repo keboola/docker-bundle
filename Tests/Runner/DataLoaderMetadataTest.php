@@ -359,7 +359,6 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testExecutorManifestMetadataCombined()
     {
-        self::markTestSkipped('TODO');
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
@@ -398,6 +397,14 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
                                 'value' => 'table value four',
                             ],
                         ],
+                        'column_metadata' => [
+                            'id' => [
+                                [
+                                    'key' => 'column.key.two',
+                                    'value' => 'a new column value two id',
+                                ],
+                            ],
+                        ],
                     ],
                 ],
             ],
@@ -422,7 +429,12 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
 
         $idColMetadata = $this->metadata->listColumnMetadata('in.c-docker-demo-testConfig.sliced.id');
-        $expectedColumnMetadata = [];
+        $expectedColumnMetadata = [
+            'docker-demo' => [
+                'column.key.one' => 'column value one id',
+                'column.key.two' => 'a new column value two id',
+            ],
+        ];
         self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 }
