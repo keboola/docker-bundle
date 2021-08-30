@@ -33,6 +33,15 @@ defined('STORAGE_API_TOKEN_SYNAPSE')
 defined('RUN_SYNAPSE_TESTS')
 || define('RUN_SYNAPSE_TESTS', getenv('RUN_SYNAPSE_TESTS') ?: '0');
 
+defined('STORAGE_API_URL_EXASOL')
+|| define('STORAGE_API_URL_EXASOL', getenv('STORAGE_API_URL_EXASOL') ?: 'sapi_url');
+
+defined('STORAGE_API_TOKEN_EXASOL')
+|| define('STORAGE_API_TOKEN_EXASOL', getenv('STORAGE_API_TOKEN_EXASOL') ?: 'your_token');
+
+defined('RUN_EXASOL_TESTS')
+|| define('RUN_EXASOL_TESTS', getenv('RUN_EXASOL_TESTS') ?: '0');
+
 defined('GIT_PRIVATE_USERNAME')
     || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ?: 'username');
 

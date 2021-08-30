@@ -84,11 +84,15 @@ class Component extends Configuration
                 ->addDefaultsIfNotSet()
                 ->children()
                     ->enumNode('input')
-                        ->values(['local', 's3', 'abs', 'none', 'workspace-snowflake', 'workspace-redshift', 'workspace-synapse', 'workspace-abs'])
+                        ->values(['local', 's3', 'abs', 'none', 'workspace-snowflake', 'workspace-redshift',
+                            'workspace-synapse', 'workspace-abs', 'workspace-exasol'
+                        ])
                         ->defaultValue('local')
                     ->end()
                     ->enumNode('output')
-                        ->values(['local', 'none', 'workspace-snowflake', 'workspace-redshift', 'workspace-synapse', 'workspace-abs'])
+                        ->values(['local', 'none', 'workspace-snowflake', 'workspace-redshift',
+                            'workspace-synapse', 'workspace-abs', 'workspace-exasol'
+                        ])
                         ->defaultValue('local')
                     ->end()
                 ->end()
