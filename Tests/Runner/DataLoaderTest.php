@@ -37,7 +37,10 @@ class DataLoaderTest extends BaseDataLoaderTest
             json_encode(['destination' => 'sliced'])
         );
         $dataLoader = $this->getDataLoader([]);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+
+        $tableQueue->waitForAll();
         self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
     }
