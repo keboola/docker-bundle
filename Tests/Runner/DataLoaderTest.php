@@ -32,8 +32,15 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
+            json_encode(['destination' => 'sliced'])
+        );
         $dataLoader = $this->getDataLoader([]);
-        $dataLoader->storeOutput();
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+
+        $tableQueue->waitForAll();
         self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
     }

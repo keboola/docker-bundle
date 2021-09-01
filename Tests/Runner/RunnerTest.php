@@ -586,9 +586,12 @@ class RunnerTest extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'from shutil import copyfile',
+                    'import json',
                     'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced.csv")',
-                ]
-            ]
+                    'with open("/data/out/tables/sliced.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "sliced"}, out_file)',
+                ],
+            ],
         ];
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -883,6 +886,8 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow1": "fooBar1"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-1.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "out.c-runner-test.my-table-1"}, out_file)',
                 ],
             ],
         ];
@@ -900,6 +905,8 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow2": "fooBar2"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                    'with open("/data/out/tables/out.c-runner-test.my-table-2.csv.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "out.c-runner-test.my-table-2"}, out_file)',
                 ],
             ],
         ];
@@ -958,7 +965,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingEarlyError()
+    public function testSynchronousOutputMappingErrorsAreReported()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -981,6 +988,16 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow1": "fooBar1"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-1.csv", "w") as out_table:',
                     '   print("foo,foo\n1,2", file=out_table)',
+                ],
+            ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-1.csv',
+                            'destination' => 'out.c-runner-test.my-table-1',
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -1013,8 +1030,7 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertStringContainsString(
-                'Cannot upload file \'out.c-runner-test.my-table-1.csv\' to table ' .
-                '\'out.c-runner-test.my-table-1\' in Storage API: There are duplicate columns in CSV file: "foo"',
+                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
             );
         }
@@ -1034,7 +1050,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingLateError()
+    public function testAsynchronousOutputMappingErrorsAreReported()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1060,6 +1076,16 @@ class RunnerTest extends BaseRunnerTest
                     '   print("foo,bar\n1,2,3", file=out_table)',
                 ],
             ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-1.csv',
+                            'destination' => 'out.c-runner-test.my-table-1',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $configurationRow->setConfiguration($configData1);
         $component->addConfigurationRow($configurationRow);
@@ -1076,6 +1102,16 @@ class RunnerTest extends BaseRunnerTest
                     '   json.dump({"bazRow2": "fooBar2"}, state_file)',
                     'with open("/data/out/tables/out.c-runner-test.my-table-2.csv", "w") as out_table:',
                     '   print("foo,bar\n1,2", file=out_table)',
+                ],
+            ],
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'out.c-runner-test.my-table-2.csv',
+                            'destination' => 'out.c-runner-test.my-table-2',
+                        ],
+                    ],
                 ],
             ],
         ];
@@ -1132,8 +1168,6 @@ class RunnerTest extends BaseRunnerTest
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state'][StateFile::NAMESPACE_COMPONENT]);
         self::assertArrayNotHasKey('bazRow2', $row2['state'][StateFile::NAMESPACE_COMPONENT]);
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 Storage jobs'));
         $this->clearConfigurations();
     }
@@ -1634,8 +1668,11 @@ class RunnerTest extends BaseRunnerTest
             ],
             'parameters' => [
                 'script' => [
+                    'import json',
                     'from shutil import copyfile',
                     'copyfile("/data/in/tables/source.csv", "/data/out/tables/sliced")',
+                    'with open("/data/out/tables/sliced.manifest", "w") as out_file:',
+                    '   json.dump({"destination": "sliced"}, out_file)',
                 ],
             ],
         ];
