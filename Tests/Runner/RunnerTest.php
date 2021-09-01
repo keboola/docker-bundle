@@ -934,7 +934,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingEarlyError()
+    public function testSynchronousOutputMappingErrorsAreReported()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -996,8 +996,7 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertContains(
-                'Cannot upload file "out.c-runner-test.my-table-1.csv" to table ' .
-                '"out.c-runner-test.my-table-1" in Storage API: There are duplicate columns in CSV file: "foo"',
+                'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
             );
         }
@@ -1017,7 +1016,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRowsOutputMappingLateError()
+    public function testAsynchronousOutputMappingErrorsAreReported()
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1132,8 +1131,6 @@ class RunnerTest extends BaseRunnerTest
         $row2 = $rows[1];
         self::assertArrayNotHasKey('bazRow1', $row1['state'][StateFile::NAMESPACE_COMPONENT]);
         self::assertArrayNotHasKey('bazRow2', $row2['state'][StateFile::NAMESPACE_COMPONENT]);
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
-        self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 Storage jobs'));
         $this->clearConfigurations();
     }
