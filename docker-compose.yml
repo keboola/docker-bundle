@@ -34,3 +34,12 @@ services:
   host-tests: 
     <<: *tests
     network_mode: host
+
+  local-tests:
+    <<: *tests
+    ports: 
+      - "22:22"
+    volumes:
+      - .:/code/
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tmp/:/tmp/
