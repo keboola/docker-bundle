@@ -13,8 +13,8 @@
         "keboola/php-utils": "^2.3.1",
         "keboola/oauth-v2-php-client": "^2.3.0",
         "keboola/gelf-server": "^2.0.0",
-        "keboola/input-mapping": "^12.9.0",
-        "keboola/output-mapping": "^14.9",
+        "keboola/input-mapping": "dev-odin-PS-2620 as 12.12",
+        "keboola/output-mapping": "dev-erik-PS-2619 as 14.8",
         "keboola/staging-provider": "^2.0",
         "symfony/validator": "^4.1",
         "symfony/http-foundation": "^4.1",
@@ -22,7 +22,8 @@
         "vkartaviy/retry": "^0.2",
         "keboola/object-encryptor": "^0.3",
         "mustache/mustache": "^2.13",
-        "keboola/common-exceptions": "^1.0"
+        "keboola/common-exceptions": "^1.0",
+        "keboola/storage-api-client": "dev-odin-PS-2620 as 12.4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
