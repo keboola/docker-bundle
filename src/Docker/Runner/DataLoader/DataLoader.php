@@ -187,6 +187,7 @@ class DataLoader implements DataLoaderInterface
     {
         $reader = new Reader($this->inputStrategyFactory);
         $inputTableResult = new InputTableResult();
+        $inputTableResult->setInputTableStateList(new InputTableStateList([]));
         $resultInputFilesStateList = new InputFileStateList([]);
 
         $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
