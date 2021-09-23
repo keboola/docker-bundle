@@ -3,21 +3,21 @@
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\InputMapping\Table\Result as InputTableResult;
 
 class StorageState
 {
+    /** @var InputTableResult */
+    private $inputTableResult;
+
     /** @var InputFileStateList */
     private $inputFileStateList;
 
-    /** @var InputTableStateList */
-    private $inputTableStateList;
-
     public function __construct(
-        InputTableStateList $inputTableStateList,
+        InputTableResult $inputTableResult,
         InputFileStateList $inputFileStateList
     ) {
-        $this->inputTableStateList = $inputTableStateList;
+        $this->inputTableResult = $inputTableResult;
         $this->inputFileStateList = $inputFileStateList;
     }
 
@@ -30,10 +30,10 @@ class StorageState
     }
 
     /**
-     * @return InputTableStateList
+     * @return InputTableResult
      */
-    public function getInputTableStateList()
+    public function getInputTableResult()
     {
-        return $this->inputTableStateList;
+        return $this->inputTableResult;
     }
 }

@@ -4,7 +4,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 
 class Output
@@ -29,10 +29,7 @@ class Output
      * @var StateFile
      */
     private $stateFile;
-    /**
-     * @var InputTableStateList
-     */
-    private $inputTableStateList;
+
     /**
      * @var InputFileStateList
      */
@@ -42,6 +39,9 @@ class Output
      * @var DataLoaderInterface
      */
     private $dataLoader;
+
+    /** @var InputTableResult */
+    private $inputTableResult;
 
     /**
      * @param array $images
@@ -100,11 +100,11 @@ class Output
     }
 
     /**
-     * @param InputTableStateList $inputTableStateList
+     * @param InputTableResult $inputTableResult
      */
-    public function setInputTableStateList(InputTableStateList $inputTableStateList)
+    public function setInputTableResult(InputTableResult $inputTableResult)
     {
-        $this->inputTableStateList = $inputTableStateList;
+        $this->inputTableResult = $inputTableResult;
     }
 
     /**
@@ -121,11 +121,11 @@ class Output
     }
 
     /**
-     * @return InputTableStateList
+     * @return InputTableResult
      */
-    public function getInputTableStateList()
+    public function getInputTableResult()
     {
-        return $this->inputTableStateList;
+        return $this->inputTableResult;
     }
 
     /**

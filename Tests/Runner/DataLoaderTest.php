@@ -12,6 +12,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\InputMapping\Table\Result;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
@@ -327,7 +328,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new OutputFilter()
         );
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
-        self::assertInstanceOf(InputTableStateList::class, $storageState->getInputTableStateList());
+        self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
         self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
     }
 }

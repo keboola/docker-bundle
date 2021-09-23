@@ -379,7 +379,7 @@ class Runner
         foreach ($outputs as $output) {
             if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($jobDefinition->getComponentId(), $jobDefinition->getConfigId())) {
                 $output->getStateFile()->persistState(
-                    $output->getInputTableStateList(),
+                    $output->getInputTableResult()->getInputTableStateList(),
                     $output->getInputFileStateList()
                 );
             }
@@ -452,7 +452,7 @@ class Runner
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
         $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode, $output);
-        $output->setInputTableStateList($storageState->getInputTableStateList());
+        $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
         $output->setDataLoader($dataLoader);
 
