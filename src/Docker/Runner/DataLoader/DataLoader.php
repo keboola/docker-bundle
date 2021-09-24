@@ -190,7 +190,7 @@ class DataLoader implements DataLoaderInterface
         $inputTableResult->setInputTableStateList(new InputTableStateList([]));
         $resultInputFilesStateList = new InputFileStateList([]);
 
-        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
+        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping(), false);
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
