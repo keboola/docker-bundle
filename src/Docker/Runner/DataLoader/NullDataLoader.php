@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\InputMapping\Table\Result;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
 
@@ -25,7 +26,7 @@ class NullDataLoader implements DataLoaderInterface
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList
     ) {
-        return new StorageState(new InputTableStateList([]), new InputFileStateList([]));
+        return new StorageState(new Result(), new InputFileStateList([]));
     }
 
     public function storeOutput()

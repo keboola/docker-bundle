@@ -16,6 +16,7 @@ use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\InputMapping\Table\Options\ReaderOptions;
+use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
@@ -185,13 +186,15 @@ class DataLoader implements DataLoaderInterface
     public function loadInputData(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
     {
         $reader = new Reader($this->inputStrategyFactory);
-        $resultInputTablesStateList = new InputTableStateList([]);
+        $inputTableResult = new InputTableResult();
+        $inputTableResult->setInputTableStateList(new InputTableStateList([]));
         $resultInputFilesStateList = new InputFileStateList([]);
-        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
+
+        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping(), false);
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
-                $resultInputTablesStateList = $reader->downloadTables(
+                $inputTableResult = $reader->downloadTables(
                     new InputTableOptionsList($this->storageConfig['input']['tables']),
                     $inputTableStateList,
                     'data/in/tables/',
@@ -215,7 +218,8 @@ class DataLoader implements DataLoaderInterface
         } catch (InvalidInputException $e) {
             throw new UserException($e->getMessage(), $e);
         }
-        return new StorageState($resultInputTablesStateList, $resultInputFilesStateList);
+
+        return new StorageState($inputTableResult, $resultInputFilesStateList);
     }
 
     /**

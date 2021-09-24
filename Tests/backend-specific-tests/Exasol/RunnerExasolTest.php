@@ -63,7 +63,7 @@ class RunnerExasolTest extends BaseRunnerTest
         ]);
     }
 
-    public function setUp()
+    public function setUp(): void
     {
         if (!RUN_EXASOL_TESTS) {
             self::markTestSkipped('Exasol test is disabled.');
