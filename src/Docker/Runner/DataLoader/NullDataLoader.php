@@ -27,7 +27,7 @@ class NullDataLoader implements DataLoaderInterface
         InputFileStateList $inputFileStateList
     ) {
         $result = new Result();
-        //$result->setInputTableStateList(new InputTableStateList([]));
+        $result->setInputTableStateList(new InputTableStateList([]));
         return new StorageState($result, new InputFileStateList([]));
     }
 
