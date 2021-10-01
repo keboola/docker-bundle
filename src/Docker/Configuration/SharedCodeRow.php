@@ -14,7 +14,14 @@ class SharedCodeRow extends Configuration
         $rootNode
             ->children()
                 ->scalarNode('variables_id')->end()
-                ->scalarNode('code_content')->isRequired()->cannotBeEmpty()->end()
+                ->variableNode('code_content')
+                    ->validate()
+                        ->ifTrue(function ($v) {
+                            return (false === is_string($v) && false === is_array($v)) || empty($v);
+                        })
+                        ->thenInvalid('code_content must be either string or array and cannot be empty')
+                    ->end()
+                ->end()
             ->end();
         return $treeBuilder;
     }
