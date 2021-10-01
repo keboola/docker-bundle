@@ -30,6 +30,9 @@
     <testsuite name="runner-tests-2">
         <directory>Tests/RunnerPart2</directory>
     </testsuite>
+    <testsuite name="shared-code-resolver-test">
+        <file>Tests/RunnerPart2/SharedCodeResolverTest.php</file>
+    </testsuite>
     <testsuite name="container-tests">
         <directory>Tests/Docker/Container</directory>
     </testsuite>

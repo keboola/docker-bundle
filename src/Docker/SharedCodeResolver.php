@@ -69,7 +69,10 @@ class SharedCodeResolver
                 foreach ($sharedCodeRowIds as $sharedCodeRowId) {
                     $sharedCodeConfiguration = $components->getConfigurationRow(self::KEBOOLA_SHARED_CODE, $sharedCodeId, $sharedCodeRowId);
                     $sharedCodeConfiguration = (new SharedCodeRow())->parse(array('config' => $sharedCodeConfiguration['configuration']));
-                    $context->pushValue($sharedCodeRowId, $sharedCodeConfiguration['code_content']);
+                    $context->pushValue(
+                        $sharedCodeRowId,
+                        $sharedCodeConfiguration['code_content']
+                    );
                 }
             } catch (ClientException $e) {
                 throw new UserException('Shared code configuration cannot be read: ' . $e->getMessage(), $e);
@@ -81,17 +84,11 @@ class SharedCodeResolver
                 implode(', ', $context->getKeys())
             ));
 
-            $newConfiguration = json_decode(
-                $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
-                true
-            );
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new UserException(
-                    'Shared code replacement resulted in invalid configuration, error: ' . json_last_error_msg()
-                );
-            }
+            $config = $jobDefinition->getConfiguration();
+            $this->arrayWalkRecursive($config, $context);
+
             $newJobDefinitions[] = new JobDefinition(
-                $newConfiguration,
+                $config,
                 $jobDefinition->getComponent(),
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getConfigVersion(),
@@ -101,5 +98,61 @@ class SharedCodeResolver
             );
         }
         return $newJobDefinitions;
+    }
+
+    public function arrayWalkRecursive(&$configuration, $context)
+    {
+        /*
+            //- když je node scalar, uděláme replacement a dostaneme array
+            //- když je node scalar, neuděláme replacement a dostaneme scalar
+            - když je node array of scalars, uděláme replacement a dostaneme array of scalars
+            - když je node array of scalars, neuděláme replacement a dostaneme array of scalars
+            - když je node array of non-scalars, recurse
+        */
+        foreach ($configuration as $node => &$value) {
+            if (is_array($value)) {
+                if ($this->isScalarArray($value)) {
+                    $value = $this->renderSharedCode($value, $context);
+                } else {
+                    $this->arrayWalkRecursive($value, $context);
+                }
+            } // else it's a scalar, leave as is
+        }
+    }
+
+    private function isScalarArray($array)
+    {
+        foreach ($array as $key => $value) {
+            if (!is_scalar($value) || !is_int($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param array $nodes
+     * @param SharedCodeContext $context
+     * @return array|mixed|string|string[]|null
+     */
+    private function renderSharedCode($nodes, $context)
+    {
+        $renderedNodes = [];
+        foreach ($nodes as $node) {
+            $occurrences = preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
+            if ($occurrences === 0) {
+                $renderedNodes[] = $node;
+            } else {
+                foreach ($matches[1] as $index => $match) {
+                    $match = trim($match);
+                    if (isset($context->$match)) {
+                        $renderedNodes = array_merge($renderedNodes, $context->$match);
+                    } else {
+                        $renderedNodes[] = $matches[0][$index];
+                    }
+                }
+            }
+        }
+        return $renderedNodes;
     }
 }
