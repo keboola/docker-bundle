@@ -30,7 +30,7 @@ stages:
         steps:
           - script: |
               docker-compose build --pull
-              docker-compose run tests /code/phpunit.sh runner-tests-2
+              docker-compose run tests /code/phpunit.sh shared-code-resolver-test
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
