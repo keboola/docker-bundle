@@ -69,7 +69,11 @@ class SharedCodeResolver
                 foreach ($sharedCodeRowIds as $sharedCodeRowId) {
                     $sharedCodeConfiguration = $components->getConfigurationRow(self::KEBOOLA_SHARED_CODE, $sharedCodeId, $sharedCodeRowId);
                     $sharedCodeConfiguration = (new SharedCodeRow())->parse(array('config' => $sharedCodeConfiguration['configuration']));
-                    $context->pushValue($sharedCodeRowId, $sharedCodeConfiguration['code_content']);
+                    // context value must always be serialized
+                    $context->pushValue(
+                        $sharedCodeRowId,
+                        is_array($sharedCodeConfiguration['code_content']) ? json_encode($sharedCodeConfiguration['code_content']) : $sharedCodeConfiguration['code_content']
+                    );
                 }
             } catch (ClientException $e) {
                 throw new UserException('Shared code configuration cannot be read: ' . $e->getMessage(), $e);
@@ -86,7 +90,7 @@ class SharedCodeResolver
                 $item = json_decode(
                     $this->moustache->render(
                         json_encode($node),
-                        is_array($context) ? json_encode($context) : $context
+                        $context
                     ),
                     true
                 );
