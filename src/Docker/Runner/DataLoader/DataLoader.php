@@ -197,7 +197,7 @@ class DataLoader implements DataLoaderInterface
                     'data/in/tables/',
                     $this->getStagingStorageInput(),
                     $readerOptions
-                );
+                )->getInputTableStateList();
             }
             if (isset($this->storageConfig['input']['files']) &&
                 count($this->storageConfig['input']['files'])

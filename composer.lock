@@ -4,23 +4,74 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ceec63cfcb6067c6294b8c7934267ccb",
+    "content-hash": "4c350d434ff01dc5a03ca2075bce9ff8",
     "packages": [
         {
-            "name": "aws/aws-sdk-php",
-            "version": "3.191.6",
+            "name": "aws/aws-crt-php",
+            "version": "v1.0.2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "3b01e0c7c1d9858e5d2f0ee9aa216d621f731765"
+                "url": "https://github.com/awslabs/aws-crt-php.git",
+                "reference": "3942776a8c99209908ee0b287746263725685732"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3b01e0c7c1d9858e5d2f0ee9aa216d621f731765",
-                "reference": "3b01e0c7c1d9858e5d2f0ee9aa216d621f731765",
+                "url": "https://api.github.com/repos/awslabs/aws-crt-php/zipball/3942776a8c99209908ee0b287746263725685732",
+                "reference": "3942776a8c99209908ee0b287746263725685732",
                 "shasum": ""
             },
             "require": {
+                "php": ">=5.5"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8.35|^5.4.3"
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "src/"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "AWS SDK Common Runtime Team",
+                    "email": "aws-sdk-common-runtime@amazon.com"
+                }
+            ],
+            "description": "AWS Common Runtime for PHP",
+            "homepage": "http://aws.amazon.com/sdkforphp",
+            "keywords": [
+                "amazon",
+                "aws",
+                "crt",
+                "sdk"
+            ],
+            "support": {
+                "issues": "https://github.com/awslabs/aws-crt-php/issues",
+                "source": "https://github.com/awslabs/aws-crt-php/tree/v1.0.2"
+            },
+            "time": "2021-09-03T22:57:30+00:00"
+        },
+        {
+            "name": "aws/aws-sdk-php",
+            "version": "3.197.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aws/aws-sdk-php.git",
+                "reference": "e3353c1d908295b4a804e13da6b2d6bfeec2732b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e3353c1d908295b4a804e13da6b2d6bfeec2732b",
+                "reference": "e3353c1d908295b4a804e13da6b2d6bfeec2732b",
+                "shasum": ""
+            },
+            "require": {
+                "aws/aws-crt-php": "^1.0.2",
                 "ext-json": "*",
                 "ext-pcre": "*",
                 "ext-simplexml": "*",
@@ -92,22 +143,22 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.191.6"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.197.1"
             },
-            "time": "2021-08-27T18:14:01+00:00"
+            "time": "2021-10-06T18:26:50+00:00"
         },
         {
             "name": "composer/ca-bundle",
-            "version": "1.2.10",
+            "version": "1.2.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/ca-bundle.git",
-                "reference": "9fdb22c2e97a614657716178093cd1da90a64aa8"
+                "reference": "0b072d51c5a9c6f3412f7ea3ab043d6603cb2582"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/9fdb22c2e97a614657716178093cd1da90a64aa8",
-                "reference": "9fdb22c2e97a614657716178093cd1da90a64aa8",
+                "url": "https://api.github.com/repos/composer/ca-bundle/zipball/0b072d51c5a9c6f3412f7ea3ab043d6603cb2582",
+                "reference": "0b072d51c5a9c6f3412f7ea3ab043d6603cb2582",
                 "shasum": ""
             },
             "require": {
@@ -119,7 +170,7 @@
                 "phpstan/phpstan": "^0.12.55",
                 "psr/log": "^1.0",
                 "symfony/phpunit-bridge": "^4.2 || ^5",
-                "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0"
+                "symfony/process": "^2.5 || ^3.0 || ^4.0 || ^5.0 || ^6.0"
             },
             "type": "library",
             "extra": {
@@ -154,7 +205,7 @@
             "support": {
                 "irc": "irc://irc.freenode.org/composer",
                 "issues": "https://github.com/composer/ca-bundle/issues",
-                "source": "https://github.com/composer/ca-bundle/tree/1.2.10"
+                "source": "https://github.com/composer/ca-bundle/tree/1.2.11"
             },
             "funding": [
                 {
@@ -170,7 +221,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-06-07T13:58:28+00:00"
+            "time": "2021-09-25T20:32:43+00:00"
         },
         {
             "name": "defuse/php-encryption",
@@ -1604,16 +1655,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.8.2",
+            "version": "1.8.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "dc960a912984efb74d0a90222870c72c87f10c91"
+                "reference": "1afdd860a2566ed3c2b0b4a3de6e23434a79ec85"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/dc960a912984efb74d0a90222870c72c87f10c91",
-                "reference": "dc960a912984efb74d0a90222870c72c87f10c91",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/1afdd860a2566ed3c2b0b4a3de6e23434a79ec85",
+                "reference": "1afdd860a2566ed3c2b0b4a3de6e23434a79ec85",
                 "shasum": ""
             },
             "require": {
@@ -1651,12 +1702,33 @@
             ],
             "authors": [
                 {
+                    "name": "Graham Campbell",
+                    "email": "hello@gjcampbell.co.uk",
+                    "homepage": "https://github.com/GrahamCampbell"
+                },
+                {
                     "name": "Michael Dowling",
                     "email": "mtdowling@gmail.com",
                     "homepage": "https://github.com/mtdowling"
                 },
                 {
+                    "name": "George Mponos",
+                    "email": "gmponos@gmail.com",
+                    "homepage": "https://github.com/gmponos"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com",
+                    "homepage": "https://github.com/Nyholm"
+                },
+                {
+                    "name": "Márk Sági-Kazár",
+                    "email": "mark.sagikazar@gmail.com",
+                    "homepage": "https://github.com/sagikazarmark"
+                },
+                {
                     "name": "Tobias Schultze",
+                    "email": "webmaster@tubo-world.de",
                     "homepage": "https://github.com/Tobion"
                 }
             ],
@@ -1673,9 +1745,23 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/1.8.2"
+                "source": "https://github.com/guzzle/psr7/tree/1.8.3"
             },
-            "time": "2021-04-26T09:17:50+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/GrahamCampbell",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/Nyholm",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/guzzlehttp/psr7",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-10-05T13:56:00+00:00"
         },
         {
             "name": "ircmaxell/password-compat",
@@ -2011,21 +2097,21 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "12.11.0",
+            "version": "13.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "605252b6a0115de22e175383ac2b3c72eb319d66"
+                "reference": "8f1401e3081d2433781bc916b6d81a3ee1425ce5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/605252b6a0115de22e175383ac2b3c72eb319d66",
-                "reference": "605252b6a0115de22e175383ac2b3c72eb319d66",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/8f1401e3081d2433781bc916b6d81a3ee1425ce5",
+                "reference": "8f1401e3081d2433781bc916b6d81a3ee1425ce5",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
-                "keboola/storage-api-client": "^12.3",
+                "keboola/storage-api-client": "^12.5",
                 "keboola/storage-api-php-client-branch-wrapper": "^1.1",
                 "symfony/config": "^2.8.52|^4.1",
                 "symfony/finder": "^2.8.52|^4.1",
@@ -2056,9 +2142,9 @@
             "description": "Shared component for processing SAPI input mapping and exporting to files",
             "support": {
                 "issues": "https://github.com/keboola/input-mapping/issues",
-                "source": "https://github.com/keboola/input-mapping/tree/12.11.0"
+                "source": "https://github.com/keboola/input-mapping/tree/13.0.0"
             },
-            "time": "2021-08-24T11:57:22+00:00"
+            "time": "2021-09-24T05:34:07+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -2162,25 +2248,25 @@
         },
         {
             "name": "keboola/output-mapping",
-            "version": "14.10.1",
+            "version": "15.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/output-mapping.git",
-                "reference": "2987b210051f1c69b540f580cce1ad94cb395c28"
+                "reference": "85e76565bda8dd28f69072be5f510d1e6e1fee2b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/2987b210051f1c69b540f580cce1ad94cb395c28",
-                "reference": "2987b210051f1c69b540f580cce1ad94cb395c28",
+                "url": "https://api.github.com/repos/keboola/output-mapping/zipball/85e76565bda8dd28f69072be5f510d1e6e1fee2b",
+                "reference": "85e76565bda8dd28f69072be5f510d1e6e1fee2b",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/guzzle": "^6.5.5",
-                "keboola/input-mapping": "^12.11",
+                "keboola/input-mapping": "^13.0",
                 "keboola/sanitizer": "^0.1",
-                "keboola/storage-api-client": "^12.4",
-                "keboola/storage-api-php-client-branch-wrapper": "^1.0.0",
+                "keboola/storage-api-client": "^12.5",
+                "keboola/storage-api-php-client-branch-wrapper": "^1.1",
                 "microsoft/azure-storage-blob": "^1.5",
                 "monolog/monolog": "^1.25.5|^2.0",
                 "symfony/config": "^2.8.52|^4.1",
@@ -2213,9 +2299,9 @@
             "description": "Shared component for processing SAPI output mapping and importing data to KBC",
             "support": {
                 "issues": "https://github.com/keboola/output-mapping/issues",
-                "source": "https://github.com/keboola/output-mapping/tree/14.10.1"
+                "source": "https://github.com/keboola/output-mapping/tree/15.0.1"
             },
-            "time": "2021-09-14T06:25:25+00:00"
+            "time": "2021-10-06T18:27:32+00:00"
         },
         {
             "name": "keboola/php-encryption",
@@ -2438,22 +2524,22 @@
         },
         {
             "name": "keboola/staging-provider",
-            "version": "2.2.0",
+            "version": "2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/staging-provider.git",
-                "reference": "c417d921a3b938f36475ee77bc022a6c3f18f607"
+                "reference": "fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/c417d921a3b938f36475ee77bc022a6c3f18f607",
-                "reference": "c417d921a3b938f36475ee77bc022a6c3f18f607",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56",
+                "reference": "fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56",
                 "shasum": ""
             },
             "require": {
-                "keboola/input-mapping": "^12.11",
-                "keboola/output-mapping": "^14.7",
-                "keboola/storage-api-client": "^11.2|^12.0",
+                "keboola/input-mapping": "^13.0",
+                "keboola/output-mapping": "^15.0",
+                "keboola/storage-api-client": "^12.0",
                 "php": ">=5.6"
             },
             "require-dev": {
@@ -2481,22 +2567,22 @@
                 "staging-provider"
             ],
             "support": {
-                "source": "https://github.com/keboola/staging-provider/tree/2.2.0"
+                "source": "https://github.com/keboola/staging-provider/tree/2.3.0"
             },
-            "time": "2021-08-25T09:17:33+00:00"
+            "time": "2021-09-24T06:57:00+00:00"
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "12.4.0",
+            "version": "12.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "a8701c9cfd9a4924d107f29d5062f0b795e4ca75"
+                "reference": "5aeca21cee8040e3a22fec707b623ad928a018d8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/a8701c9cfd9a4924d107f29d5062f0b795e4ca75",
-                "reference": "a8701c9cfd9a4924d107f29d5062f0b795e4ca75",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/5aeca21cee8040e3a22fec707b623ad928a018d8",
+                "reference": "5aeca21cee8040e3a22fec707b623ad928a018d8",
                 "shasum": ""
             },
             "require": {
@@ -2516,7 +2602,7 @@
                 "ext-pdo_pgsql": "*",
                 "keboola/php-csv-db-import": "^2.2",
                 "keboola/retry": "^0.5.0",
-                "keboola/table-backend-utils": "^0.14",
+                "keboola/table-backend-utils": "^0.16",
                 "phpcompatibility/php-compatibility": "*",
                 "phpstan/phpstan-shim": "^0.9.2",
                 "phpunit/phpunit": "^7.0",
@@ -2539,9 +2625,9 @@
             "homepage": "http://keboola.com",
             "support": {
                 "issues": "https://github.com/keboola/storage-api-php-client/issues",
-                "source": "https://github.com/keboola/storage-api-php-client/tree/12.4.0"
+                "source": "https://github.com/keboola/storage-api-php-client/tree/12.5.0"
             },
-            "time": "2021-08-26T14:02:50+00:00"
+            "time": "2021-09-22T14:14:19+00:00"
         },
         {
             "name": "keboola/storage-api-php-client-branch-wrapper",
