@@ -153,12 +153,12 @@ class SharedCodeResolverTest extends TestCase
                     ], [
                         'name' => 'block 1 - code 2',
                         'script' => [
-                            '{{first_code}}'
+                            '{{secondCode}}'
                         ],
                     ], [
-                        'name' => 'block 1 - code 2',
+                        'name' => 'block 1 - code 3',
                         'script' => [
-                            '{{secondCode}}'
+                            '{{first_code}}'
                         ],
                     ]],
                 ]],
@@ -183,16 +183,13 @@ class SharedCodeResolverTest extends TestCase
                         ], [
                             'name' => 'block 1 - code 2',
                             'script' => [
+                                'bar',
+                            ],
+                        ], [
+                            'name' => 'block 1 - code 3',
+                            'script' => [
                                 'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id;',
                                 'CREATE TABLE {{tab3}} AS SELECT * FROM {{tab1}}',
-                            ],
-                        ]],
-                    ], [
-                        'name' => 'block 2',
-                        'codes' => [[
-                            'name' => 'block 2 - code 1',
-                            'script' => [
-                                'bar',
                             ],
                         ]],
                     ]],
@@ -247,7 +244,7 @@ class SharedCodeResolverTest extends TestCase
 
         self::expectException(UserException::class);
         /** @var JobDefinition $newJobDefinition */
-        $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+        $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
     }
 
     public function testResolveSharedCodeNoConfiguration()

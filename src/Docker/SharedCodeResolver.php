@@ -72,7 +72,7 @@ class SharedCodeResolver
                     // context value must always be serialized
                     $context->pushValue(
                         $sharedCodeRowId,
-                        is_array($sharedCodeConfiguration['code_content']) ? json_encode($sharedCodeConfiguration['code_content']) : $sharedCodeConfiguration['code_content']
+                        $sharedCodeConfiguration['code_content']
                     );
                 }
             } catch (ClientException $e) {
@@ -87,11 +87,19 @@ class SharedCodeResolver
 
             $config = $jobDefinition->getConfiguration();
             array_walk_recursive($config, function (&$node) use ($context) {
+                echo "NODE\n";
+                var_dump($node);
+                echo "\n";
+
+                $nodeAsString = $this->renderSharedCode(
+                    json_encode($node),
+                    $context
+                );
+                echo "NODE STRING\n";
+                var_dump($nodeAsString);
+                echo "\n";
                 $node = json_decode(
-                    $this->moustache->render(
-                        json_encode($node),
-                        $context
-                    ),
+                    $nodeAsString,
                     true
                 );
                 if (json_last_error() !== JSON_ERROR_NONE) {
@@ -114,5 +122,23 @@ class SharedCodeResolver
             );
         }
         return $newJobDefinitions;
+    }
+
+    /**
+     * @param string $node
+     * @param SharedCodeContext $context
+     * @return array|mixed|string|string[]|null
+     */
+    private function renderSharedCode($node, $context) {
+        echo "\nNODE\n";
+        var_export($node);
+        preg_match('/\{\{(.*)\}\}/', $node, $matches);
+        echo "\nMATCHES\n";
+        var_export($matches);
+        foreach ($matches as $match) {
+            echo "\ngetting value for " . $match . "\n";
+            $node = preg_replace('/(\{\{' . $match . '\}\})/', $context->__get($match), $node);
+        }
+        return $node;
     }
 }
