@@ -161,7 +161,7 @@ class SharedCodeResolverTest extends TestCase
                             '{{secondCode}}'
                         ],
                     ]],
-                ],
+                ]],
             ],
         ];
         $logger = new TestLogger();
