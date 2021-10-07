@@ -124,6 +124,132 @@ class SharedCodeResolverTest extends TestCase
         );
     }
 
+    public function testResolveSharedCodeMultipleQueries()
+    {
+        list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
+            $this->clientWrapper->getBasicClient(),
+            [
+                'first_code' => [
+                    'code_content' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id;',
+                        'CREATE TABLE {{tab3}} AS SELECT * FROM {{tab1}}',
+                    ],
+                ],
+                'secondCode' => ['code_content' => 'bar']
+            ]
+        );
+        $configuration = [
+            'shared_code_id' => $sharedConfigurationId,
+            'shared_code_row_ids' => $sharedCodeRowIds,
+            'parameters' => [
+                'blocks' => [[
+                    'name' => 'block 1',
+                    'codes' => [[
+                        'name' => 'block 1 - code 1',
+                        'script' => [
+                            'some script line 1',
+                            'some script line 2',
+                        ],
+                    ], [
+                        'name' => 'block 1 - code 2',
+                        'script' => [
+                            '{{first_code}}'
+                        ],
+                    ], [
+                        'name' => 'block 1 - code 2',
+                        'script' => [
+                            '{{secondCode}}'
+                        ],
+                    ]],
+                ],
+            ],
+        ];
+        $logger = new TestLogger();
+        $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+        /** @var JobDefinition $newJobDefinition */
+        $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+        self::assertEquals(
+            [
+                'parameters' => [
+                    'blocks' => [[
+                        'name' => 'block 1',
+                        'codes' => [[
+                            'name' => 'block 1 - code 1',
+                            'script' => [
+                                'some script line 1',
+                                'some script line 2',
+                            ],
+                        ], [
+                            'name' => 'block 1 - code 2',
+                            'script' => [
+                                'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id;',
+                                'CREATE TABLE {{tab3}} AS SELECT * FROM {{tab1}}',
+                            ],
+                        ]],
+                    ], [
+                        'name' => 'block 2',
+                        'codes' => [[
+                            'name' => 'block 2 - code 1',
+                            'script' => [
+                                'bar',
+                            ],
+                        ]],
+                    ]],
+                ],
+                'storage' => [],
+                'shared_code_id' => $sharedConfigurationId,
+                'shared_code_row_ids' => [0 => 'first_code', 1 => 'secondCode'],
+                'processors' => [
+                    'before' => [],
+                    'after' => [],
+                ],
+            ],
+            $newJobDefinition->getConfiguration()
+        );
+        self::assertTrue(
+            $logger->hasInfoThatContains('Loaded shared code snippets with ids: "first_code, secondCode".')
+        );
+    }
+
+    public function testResolveSharedCodeMultipleQueriesInvalidConfiguration()
+    {
+        list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
+            $this->clientWrapper->getBasicClient(),
+            [
+                'first_code' => [
+                    'code_content' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id;',
+                        'CREATE TABLE {{tab3}} AS SELECT * FROM {{tab1}}',
+                    ],
+                ],
+                'secondCode' => ['code_content' => '{{bar}}']
+            ]
+        );
+        $configuration = [
+            'shared_code_id' => $sharedConfigurationId,
+            'shared_code_row_ids' => $sharedCodeRowIds,
+            'parameters' => [
+                'blocks' => [[
+                    'name' => 'block 1',
+                    'codes' => [[
+                        'name' => 'block 1 - code 1',
+                        'script' => [
+                            'foo is {{ foo }} and {{non-existent}} and {{first_code}} and {{ secondCode }} .',
+                        ],
+                    ]],
+                ]],
+            ],
+        ];
+        $logger = new TestLogger();
+        $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
+        $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
+
+        self::expectException(UserException::class);
+        /** @var JobDefinition $newJobDefinition */
+        $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+    }
+
     public function testResolveSharedCodeNoConfiguration()
     {
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
