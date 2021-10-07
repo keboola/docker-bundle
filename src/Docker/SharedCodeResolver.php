@@ -81,15 +81,24 @@ class SharedCodeResolver
                 implode(', ', $context->getKeys())
             ));
 
-            $newConfiguration = json_decode(
-                $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
-                true
-            );
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new UserException(
-                    'Shared code replacement resulted in invalid configuration, error: ' . json_last_error_msg()
+            $config = $jobDefinition->getConfiguration();
+            array_walk_recursive($config, function (&$node, $key) use ($context) {
+                $item = json_decode(
+                    $this->moustache->render(
+                        json_encode($node),
+                        is_array($context) ? json_encode($context) : $context
+                    ),
+                    true
                 );
-            }
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    throw new UserException(
+                        'Shared code replacement resulted in invalid configuration, error: ' . json_last_error_msg()
+                    );
+                }
+            });
+            var_dump($config);
+            $newConfiguration = $config;
+
             $newJobDefinitions[] = new JobDefinition(
                 $newConfiguration,
                 $jobDefinition->getComponent(),
