@@ -86,8 +86,8 @@ class SharedCodeResolver
             ));
 
             $config = $jobDefinition->getConfiguration();
-            array_walk_recursive($config, function (&$node, $key) use ($context) {
-                $item = json_decode(
+            array_walk_recursive($config, function (&$node) use ($context) {
+                $node = json_decode(
                     $this->moustache->render(
                         json_encode($node),
                         $context
@@ -100,7 +100,7 @@ class SharedCodeResolver
                     );
                 }
             });
-            var_dump($config);
+            var_export($config);
             $newConfiguration = $config;
 
             $newJobDefinitions[] = new JobDefinition(
