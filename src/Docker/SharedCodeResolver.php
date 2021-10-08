@@ -86,12 +86,15 @@ class SharedCodeResolver
             ));
 
             $config = $jobDefinition->getConfiguration();
+            $this->array_walk_recursive($config, $context);
+            /*
             array_walk_recursive($config, function (&$node) use ($context) {
                 $node = $this->renderSharedCode(
                     $node,
                     $context
                 );
             });
+            */
             $newConfiguration = $config;
 
             $newJobDefinitions[] = new JobDefinition(
@@ -107,23 +110,59 @@ class SharedCodeResolver
         return $newJobDefinitions;
     }
 
+    public function array_walk_recursive(&$configuration, $context)
+    {
+        /*
+            //- když je node scalar, uděláme replacement a dostaneme array
+            //- když je node scalar, neuděláme replacement a dostaneme scalar
+            - když je node array of scalars, uděláme replacement a dostaneme array of scalars
+            - když je node array of scalars, neuděláme replacement a dostaneme array of scalars
+            - když je node array of non-scalars, recurse
+        */
+        foreach ($configuration as $node => &$value) {
+            if (is_array($value)) {
+                if ($this->is_scalar_array($value)) {
+                    $value = $this->renderSharedCode($value, $context);
+                } else {
+                    $this->array_walk_recursive($value, $context);
+                }
+            } // else it's a scalar, leave as is
+        }
+    }
+
+    private function is_scalar_array($array)
+    {
+        foreach ($array as $key => $value) {
+            if (!is_scalar($value) || !is_int($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /**
      * @param string $node
      * @param SharedCodeContext $context
      * @return array|mixed|string|string[]|null
      */
-    private function renderSharedCode($node, $context) {
-        $occurrences = preg_match_all('/{{([ a-z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
-        if ($occurrences === 0) {
-            return $node;
-        }
-        foreach ($matches[1] as $index => $match) {
-            $match = trim($match);
-            if (isset($context->$match)) {
-                //$node = preg_replace('/' . preg_quote($matches[0][$index], '/') . '/', $context->$match, $node);
-                $node = $context->$match;
+    private function renderSharedCode(array $nodes, $context) {
+        $ret = [];
+        foreach ($nodes as $node) {
+            $occurrences = preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
+            if ($occurrences === 0) {
+                $ret[] = $node;
+            } else {
+                foreach ($matches[1] as $index => $match) {
+                    $match = trim($match);
+                    if (isset($context->$match)) {
+                        //$node = preg_replace('/' . preg_quote($matches[0][$index], '/') . '/', $context->$match, $node);
+                        $ret = array_merge($ret, $context->$match);
+                    } else {
+                        $ret[] = $matches[0][$index];
+                    }
+                }
             }
         }
-        return $node;
+        return $ret;
     }
 }
