@@ -96,7 +96,7 @@ class SharedCodeResolver
      * @param array $configuration
      * @param SharedCodeContext $context
      */
-    public function replaceSharedCodeInConfiguration(&$configuration, $context)
+    private function replaceSharedCodeInConfiguration(&$configuration, $context)
     {
         foreach ($configuration as &$value) {
             if (is_array($value)) {

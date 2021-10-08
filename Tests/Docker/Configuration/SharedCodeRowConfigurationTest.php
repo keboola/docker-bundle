@@ -9,12 +9,14 @@ class SharedCodeRowConfigurationTest extends TestCase
 {
     public function testSharedCodeRowConfiguration()
     {
-        (new Configuration\SharedCodeRow())->parse([
+        $configuration = [
             'configuration' => [
                 'variables_id' => 123,
                 'code_content' => ['some {{script}} line 1', '{{some}} script line 2 '],
             ],
-        ]);
+        ];
+        $result = (new Configuration\SharedCodeRow())->parse($configuration);
+        self::assertEquals($configuration['configuration'], $result);
     }
 
     public function testSharedCodeRowConfigurationStringToArray()
