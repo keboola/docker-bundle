@@ -87,28 +87,11 @@ class SharedCodeResolver
 
             $config = $jobDefinition->getConfiguration();
             array_walk_recursive($config, function (&$node) use ($context) {
-                echo "NODE\n";
-                var_dump($node);
-                echo "\n";
-
-                $nodeAsString = $this->renderSharedCode(
-                    json_encode($node),
+                $node = $this->renderSharedCode(
+                    $node,
                     $context
                 );
-                echo "NODE STRING\n";
-                var_dump($nodeAsString);
-                echo "\n";
-                $node = json_decode(
-                    $nodeAsString,
-                    true
-                );
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    throw new UserException(
-                        'Shared code replacement resulted in invalid configuration, error: ' . json_last_error_msg()
-                    );
-                }
             });
-            var_export($config);
             $newConfiguration = $config;
 
             $newJobDefinitions[] = new JobDefinition(
@@ -137,7 +120,8 @@ class SharedCodeResolver
         foreach ($matches[1] as $index => $match) {
             $match = trim($match);
             if (isset($context->$match)) {
-                $node = preg_replace('/' . preg_quote($matches[0][$index], '/') . '/', $context->$match, $node);
+                //$node = preg_replace('/' . preg_quote($matches[0][$index], '/') . '/', $context->$match, $node);
+                $node = $context->$match;
             }
         }
         return $node;

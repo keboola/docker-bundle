@@ -86,8 +86,8 @@ class SharedCodeResolverTest extends TestCase
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),
             [
-                'first_code' => ['code_content' => 'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id'],
-                'secondCode' => ['code_content' => 'bar']
+                'first_code' => ['code_content' => ['SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id']],
+                'secondCode' => ['code_content' => ['bar']]
             ]
         );
         $configuration = [
@@ -105,9 +105,9 @@ class SharedCodeResolverTest extends TestCase
         self::assertEquals(
             [
                 'parameters' => [
-                    'some_parameter' =>
-                        'foo is {{ foo }} and {{ non-existent }} and ' .
-                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id and bar .',
+                    'some_parameter' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                    ],
                 ],
                 'storage' => [],
                 'shared_code_id' => $sharedConfigurationId,

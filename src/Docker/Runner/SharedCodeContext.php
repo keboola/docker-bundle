@@ -23,10 +23,6 @@ class SharedCodeContext
 
     public function __get($name)
     {
-        if (isset($this->values[$name])) {
-            return $this->values[$name];
-        } else {
-            return '{{ ' . $name . ' }}';
-        }
+        return $this->values[$name];
     }
 }
