@@ -8,23 +8,17 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Mustache_Engine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class SharedCodeResolver
 {
+    const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
+
     /**
      * @var ClientWrapper
      */
     private $clientWrapper;
-
-    const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
-
-    /**
-     * @var Mustache_Engine
-     */
-    private $moustache;
 
     /**
      * @var LoggerInterface
@@ -34,15 +28,13 @@ class SharedCodeResolver
     public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
         $this->clientWrapper = $clientWrapper;
-        $this->moustache = new Mustache_Engine([
-            'escape' => function ($string) {
-                return trim(json_encode($string), '"');
-            },
-            'strict_callables' => true,
-        ]);
         $this->logger = $logger;
     }
 
+    /**
+     * @param JobDefinition[] $jobDefinitions
+     * @return JobDefinition[]
+     */
     public function resolveSharedCode(array $jobDefinitions)
     {
         /** @var JobDefinition $jobDefinition */
@@ -85,7 +77,7 @@ class SharedCodeResolver
             ));
 
             $config = $jobDefinition->getConfiguration();
-            $this->arrayWalkRecursive($config, $context);
+            $this->replaceSharedCodeInConfiguration($config, $context);
 
             $newJobDefinitions[] = new JobDefinition(
                 $config,
@@ -100,27 +92,28 @@ class SharedCodeResolver
         return $newJobDefinitions;
     }
 
-    public function arrayWalkRecursive(&$configuration, $context)
+    /**
+     * @param array $configuration
+     * @param SharedCodeContext $context
+     */
+    public function replaceSharedCodeInConfiguration(&$configuration, $context)
     {
-        /*
-            //- když je node scalar, uděláme replacement a dostaneme array
-            //- když je node scalar, neuděláme replacement a dostaneme scalar
-            - když je node array of scalars, uděláme replacement a dostaneme array of scalars
-            - když je node array of scalars, neuděláme replacement a dostaneme array of scalars
-            - když je node array of non-scalars, recurse
-        */
-        foreach ($configuration as $node => &$value) {
+        foreach ($configuration as &$value) {
             if (is_array($value)) {
-                if ($this->isScalarArray($value)) {
-                    $value = $this->renderSharedCode($value, $context);
+                if ($this->isScalarOrdinalArray($value)) {
+                    $value = $this->replaceSharedCodeInArray($value, $context);
                 } else {
-                    $this->arrayWalkRecursive($value, $context);
+                    $this->replaceSharedCodeInConfiguration($value, $context);
                 }
-            } // else it's a scalar, leave as is
+            } // else it's a scalar, leave as is - shared code is replaced only in arrays
         }
     }
 
-    private function isScalarArray($array)
+    /**
+     * @param $array
+     * @return bool
+     */
+    private function isScalarOrdinalArray($array)
     {
         foreach ($array as $key => $value) {
             if (!is_scalar($value) || !is_int($key)) {
@@ -133,9 +126,9 @@ class SharedCodeResolver
     /**
      * @param array $nodes
      * @param SharedCodeContext $context
-     * @return array|mixed|string|string[]|null
+     * @return array
      */
-    private function renderSharedCode($nodes, $context)
+    private function replaceSharedCodeInArray($nodes, $context)
     {
         $renderedNodes = [];
         foreach ($nodes as $node) {
