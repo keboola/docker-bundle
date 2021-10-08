@@ -76,11 +76,11 @@ class SharedCodeResolver
                 implode(', ', $context->getKeys())
             ));
 
-            $config = $jobDefinition->getConfiguration();
-            $this->replaceSharedCodeInConfiguration($config, $context);
+            $newConfiguration = $jobDefinition->getConfiguration();
+            $this->replaceSharedCodeInConfiguration($newConfiguration, $context);
 
             $newJobDefinitions[] = new JobDefinition(
-                $config,
+                $newConfiguration,
                 $jobDefinition->getComponent(),
                 $jobDefinition->getConfigId(),
                 $jobDefinition->getConfigVersion(),
