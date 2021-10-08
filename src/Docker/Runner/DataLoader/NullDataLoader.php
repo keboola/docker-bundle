@@ -47,4 +47,9 @@ class NullDataLoader implements DataLoaderInterface
     public function cleanWorkspace()
     {
     }
+
+    public function getWorkspaceBackendSize(): ?string
+    {
+        return null;
+    }
 }

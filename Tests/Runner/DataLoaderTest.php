@@ -44,6 +44,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $tableQueue->waitForAll();
         self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
+        self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testNoConfigDefaultBucketException()
@@ -213,6 +214,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
+        self::assertNotNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testBranchMappingDisabled()
