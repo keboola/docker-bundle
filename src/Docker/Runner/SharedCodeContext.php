@@ -18,7 +18,7 @@ class SharedCodeContext
 
     public function __isset($name)
     {
-        return true;
+        return isset($this->values[$name]);
     }
 
     public function __get($name)

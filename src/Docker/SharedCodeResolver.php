@@ -130,14 +130,15 @@ class SharedCodeResolver
      * @return array|mixed|string|string[]|null
      */
     private function renderSharedCode($node, $context) {
-        echo "\nNODE\n";
-        var_export($node);
-        preg_match('/\{\{(.*)\}\}/', $node, $matches);
-        echo "\nMATCHES\n";
-        var_export($matches);
-        foreach ($matches as $match) {
-            echo "\ngetting value for " . $match . "\n";
-            $node = preg_replace('/(\{\{' . $match . '\}\})/', $context->__get($match), $node);
+        $occurrences = preg_match_all('/{{([ a-z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
+        if ($occurrences === 0) {
+            return $node;
+        }
+        foreach ($matches[1] as $index => $match) {
+            $match = trim($match);
+            if (isset($context->$match)) {
+                $node = preg_replace('/' . preg_quote($matches[0][$index], '/') . '/', $context->$match, $node);
+            }
         }
         return $node;
     }
