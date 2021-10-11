@@ -86,15 +86,26 @@ class SharedCodeResolverTest extends TestCase
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),
             [
-                'first_code' => ['code_content' => 'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id'],
-                'secondCode' => ['code_content' => 'bar']
+                'first_code' => ['code_content' => ['SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id']],
+                // bwd compatible shared code configuration where the code is not array
+                'secondCode' => ['code_content' => 'bar'],
             ]
         );
         $configuration = [
             'shared_code_id' => $sharedConfigurationId,
             'shared_code_row_ids' => $sharedCodeRowIds,
             'parameters' => [
-                'some_parameter' => 'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .'
+                'simple_code' => ['{{secondCode}}'],
+                'multiple_codes' => ['{{ first_code }}', 'and {{ secondCode }}.'],
+                'non_replaced_code' => '{{secondCode}}',
+                'child' => [
+                    'also_non_replaced' => '{{secondCode}}',
+                ],
+                'mixed array' => [
+                    '{{secondCode}}',
+                    'keyed' => '{{secondCode}}',
+                    '{{first_code}}',
+                ],
             ],
         ];
         $logger = new TestLogger();
@@ -105,13 +116,24 @@ class SharedCodeResolverTest extends TestCase
         self::assertEquals(
             [
                 'parameters' => [
-                    'some_parameter' =>
-                        'foo is {{ foo }} and {{ non-existent }} and ' .
-                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id and bar .',
+                    'simple_code' => ['bar'],
+                    'multiple_codes' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'bar',
+                    ],
+                    'non_replaced_code' => '{{secondCode}}',
+                    'child' => [
+                        'also_non_replaced' => '{{secondCode}}',
+                    ],
+                    'mixed array' => [
+                        '{{secondCode}}',
+                        'keyed' => '{{secondCode}}',
+                        '{{first_code}}',
+                    ],
                 ],
                 'storage' => [],
                 'shared_code_id' => $sharedConfigurationId,
-                'shared_code_row_ids' => [0 => 'first_code', 1 => 'secondCode'],
+                'shared_code_row_ids' => ['first_code', 'secondCode'],
                 'processors' => [
                     'before' => [],
                     'after' => [],
@@ -151,7 +173,7 @@ class SharedCodeResolverTest extends TestCase
                         'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .',
                 ],
                 'storage' => [],
-                'shared_code_row_ids' => [0 => 'first_code', 1 => 'secondCode'],
+                'shared_code_row_ids' => ['first_code', 'secondCode'],
                 'processors' => [
                 ],
             ],
@@ -292,8 +314,8 @@ class SharedCodeResolverTest extends TestCase
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),
             [
-                'first_code' => ['code_content' => 'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id'],
-                'secondCode' => ['code_content' => 'bar']
+                'first_code' => ['code_content' => ['SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id']],
+                'secondCode' => ['code_content' => ['bar']]
             ]
         );
         $branchId = $this->createBranch($client, 'my-dev-branch');
@@ -311,14 +333,16 @@ class SharedCodeResolverTest extends TestCase
         $configuration->setConfigurationId($sharedConfigurationId);
         $newRow = new ConfigurationRow($configuration);
         $newRow->setRowId($sharedCodeRowIds[1]);
-        $newRow->setConfiguration(['code_content' => 'dev-bar']);
+        $newRow->setConfiguration(['code_content' => ['dev-bar']]);
         $components->updateConfigurationRow($newRow);
 
         $configuration = [
             'shared_code_id' => $sharedConfigurationId,
             'shared_code_row_ids' => $sharedCodeRowIds,
             'parameters' => [
-                'some_parameter' => 'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .'
+                'some_parameter' => 'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .',
+                'some_other_parameter' =>
+                    ['foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .']
             ],
         ];
         $logger = new TestLogger();
@@ -330,8 +354,13 @@ class SharedCodeResolverTest extends TestCase
             [
                 'parameters' => [
                     'some_parameter' =>
-                        'foo is {{ foo }} and {{ non-existent }} and ' .
-                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id and dev-bar .',
+                        'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .',
+                    'some_other_parameter' => [
+                        '{{ foo }}',
+                        '{{non-existent}}',
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'dev-bar',
+                    ],
                 ],
                 'storage' => [],
                 'shared_code_id' => $sharedConfigurationId,

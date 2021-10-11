@@ -14,7 +14,14 @@ class SharedCodeRow extends Configuration
         $rootNode
             ->children()
                 ->scalarNode('variables_id')->end()
-                ->scalarNode('code_content')->isRequired()->cannotBeEmpty()->end()
+                ->arrayNode('code_content')
+                    ->beforeNormalization()
+                    ->ifString()
+                        // phpcs:ignore
+                        ->then( function ($v) { return [$v]; } )
+                    ->end()
+                    ->prototype("scalar")->end()
+                ->end()
             ->end();
         return $treeBuilder;
     }
