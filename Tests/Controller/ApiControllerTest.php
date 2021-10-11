@@ -129,11 +129,11 @@ class ApiControllerTest extends WebTestCase
         $client = $this->createClient();
         $client->request(
             'POST',
-            '/docker/cleveranalytics.app-cleveranalytics-mapboxtilesupdater/run',
+            '/docker/keboola.ex-google-adwords-reports-v201809/run',
             [],
             [],
             ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
-            '{"config": "a-very-long-configuration-name"}'
+            '{"config": "1111111"}'
         );
         $response = json_decode($client->getResponse()->getContent(), true);
         $this->assertArrayHasKey('status', $response);
