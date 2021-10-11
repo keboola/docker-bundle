@@ -58,16 +58,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.197.1",
+            "version": "3.198.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "e3353c1d908295b4a804e13da6b2d6bfeec2732b"
+                "reference": "79bf3298bd2893eb0b4614c2463e9f675d07118b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/e3353c1d908295b4a804e13da6b2d6bfeec2732b",
-                "reference": "e3353c1d908295b4a804e13da6b2d6bfeec2732b",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/79bf3298bd2893eb0b4614c2463e9f675d07118b",
+                "reference": "79bf3298bd2893eb0b4614c2463e9f675d07118b",
                 "shasum": ""
             },
             "require": {
@@ -143,9 +143,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.197.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.198.1"
             },
-            "time": "2021-10-06T18:26:50+00:00"
+            "time": "2021-10-08T18:28:30+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1600,16 +1600,16 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "1.4.1",
+            "version": "1.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "8e7d04f1f6450fef59366c399cfad4b9383aa30d"
+                "reference": "136a635e2b4a49b9d79e9c8fee267ffb257fdba0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/8e7d04f1f6450fef59366c399cfad4b9383aa30d",
-                "reference": "8e7d04f1f6450fef59366c399cfad4b9383aa30d",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/136a635e2b4a49b9d79e9c8fee267ffb257fdba0",
+                "reference": "136a635e2b4a49b9d79e9c8fee267ffb257fdba0",
                 "shasum": ""
             },
             "require": {
@@ -1621,7 +1621,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.4-dev"
+                    "dev-master": "1.5-dev"
                 }
             },
             "autoload": {
@@ -1638,9 +1638,24 @@
             ],
             "authors": [
                 {
+                    "name": "Graham Campbell",
+                    "email": "hello@gjcampbell.co.uk",
+                    "homepage": "https://github.com/GrahamCampbell"
+                },
+                {
                     "name": "Michael Dowling",
                     "email": "mtdowling@gmail.com",
                     "homepage": "https://github.com/mtdowling"
+                },
+                {
+                    "name": "Tobias Nyholm",
+                    "email": "tobias.nyholm@gmail.com",
+                    "homepage": "https://github.com/Nyholm"
+                },
+                {
+                    "name": "Tobias Schultze",
+                    "email": "webmaster@tubo-world.de",
+                    "homepage": "https://github.com/Tobion"
                 }
             ],
             "description": "Guzzle promises library",
@@ -1649,9 +1664,23 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/1.4.1"
+                "source": "https://github.com/guzzle/promises/tree/1.5.0"
             },
-            "time": "2021-03-07T09:25:29+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/GrahamCampbell",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/Nyholm",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/guzzlehttp/promises",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2021-10-07T13:05:22+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -2524,16 +2553,16 @@
         },
         {
             "name": "keboola/staging-provider",
-            "version": "2.3.0",
+            "version": "2.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/staging-provider.git",
-                "reference": "fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56"
+                "reference": "57e77193c9de2f15b4ed5a82333b3f87aa849ca5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56",
-                "reference": "fc45f7d052f0e1823c7ac2f1d58b7de0aca6df56",
+                "url": "https://api.github.com/repos/keboola/staging-provider/zipball/57e77193c9de2f15b4ed5a82333b3f87aa849ca5",
+                "reference": "57e77193c9de2f15b4ed5a82333b3f87aa849ca5",
                 "shasum": ""
             },
             "require": {
@@ -2567,22 +2596,22 @@
                 "staging-provider"
             ],
             "support": {
-                "source": "https://github.com/keboola/staging-provider/tree/2.3.0"
+                "source": "https://github.com/keboola/staging-provider/tree/2.4.0"
             },
-            "time": "2021-09-24T06:57:00+00:00"
+            "time": "2021-10-08T08:54:42+00:00"
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "12.5.0",
+            "version": "12.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "5aeca21cee8040e3a22fec707b623ad928a018d8"
+                "reference": "bb6323f9fd47829b24fd43c920ecdd187d372a16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/5aeca21cee8040e3a22fec707b623ad928a018d8",
-                "reference": "5aeca21cee8040e3a22fec707b623ad928a018d8",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/bb6323f9fd47829b24fd43c920ecdd187d372a16",
+                "reference": "bb6323f9fd47829b24fd43c920ecdd187d372a16",
                 "shasum": ""
             },
             "require": {
@@ -2625,9 +2654,9 @@
             "homepage": "http://keboola.com",
             "support": {
                 "issues": "https://github.com/keboola/storage-api-php-client/issues",
-                "source": "https://github.com/keboola/storage-api-php-client/tree/12.5.0"
+                "source": "https://github.com/keboola/storage-api-php-client/tree/12.6.0"
             },
-            "time": "2021-09-22T14:14:19+00:00"
+            "time": "2021-10-11T07:46:25+00:00"
         },
         {
             "name": "keboola/storage-api-php-client-branch-wrapper",
@@ -2836,16 +2865,16 @@
         },
         {
             "name": "microsoft/azure-storage-blob",
-            "version": "1.5.2",
+            "version": "1.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Azure/azure-storage-blob-php.git",
-                "reference": "2475330963372d519387cb8135d6a9cfd42272da"
+                "reference": "9aec3e152dab8cd9ec64fd89ed71129a0402c4be"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Azure/azure-storage-blob-php/zipball/2475330963372d519387cb8135d6a9cfd42272da",
-                "reference": "2475330963372d519387cb8135d6a9cfd42272da",
+                "url": "https://api.github.com/repos/Azure/azure-storage-blob-php/zipball/9aec3e152dab8cd9ec64fd89ed71129a0402c4be",
+                "reference": "9aec3e152dab8cd9ec64fd89ed71129a0402c4be",
                 "shasum": ""
             },
             "require": {
@@ -2878,22 +2907,22 @@
             ],
             "support": {
                 "issues": "https://github.com/Azure/azure-storage-blob-php/issues",
-                "source": "https://github.com/Azure/azure-storage-blob-php/tree/v1.5.2"
+                "source": "https://github.com/Azure/azure-storage-blob-php/tree/v1.5.3"
             },
-            "time": "2020-12-29T02:22:11+00:00"
+            "time": "2021-10-09T03:13:46+00:00"
         },
         {
             "name": "microsoft/azure-storage-common",
-            "version": "1.5.1",
+            "version": "1.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Azure/azure-storage-common-php.git",
-                "reference": "e5738035891546075bd369954e8af121d65ebd6d"
+                "reference": "8ca7b1bf4c9ca7c663e75a02a0035b05b37196a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Azure/azure-storage-common-php/zipball/e5738035891546075bd369954e8af121d65ebd6d",
-                "reference": "e5738035891546075bd369954e8af121d65ebd6d",
+                "url": "https://api.github.com/repos/Azure/azure-storage-common-php/zipball/8ca7b1bf4c9ca7c663e75a02a0035b05b37196a0",
+                "reference": "8ca7b1bf4c9ca7c663e75a02a0035b05b37196a0",
                 "shasum": ""
             },
             "require": {
@@ -2926,9 +2955,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Azure/azure-storage-common-php/issues",
-                "source": "https://github.com/Azure/azure-storage-common-php/tree/v1.5.1"
+                "source": "https://github.com/Azure/azure-storage-common-php/tree/v1.5.2"
             },
-            "time": "2020-12-28T07:59:51+00:00"
+            "time": "2021-10-09T03:03:47+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -7801,16 +7830,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.6.0",
+            "version": "3.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "ffced0d2c8fa8e6cdc4d695a743271fab6c38625"
+                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/ffced0d2c8fa8e6cdc4d695a743271fab6c38625",
-                "reference": "ffced0d2c8fa8e6cdc4d695a743271fab6c38625",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/f268ca40d54617c6e06757f83f699775c9b3ff2e",
+                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e",
                 "shasum": ""
             },
             "require": {
@@ -7853,7 +7882,7 @@
                 "source": "https://github.com/squizlabs/PHP_CodeSniffer",
                 "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
             },
-            "time": "2021-04-09T00:54:41+00:00"
+            "time": "2021-10-11T04:00:11+00:00"
         },
         {
             "name": "webmozart/assert",
