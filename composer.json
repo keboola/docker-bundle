@@ -15,7 +15,7 @@
         "keboola/gelf-server": "^2.0.0",
         "keboola/input-mapping": "^13.0",
         "keboola/output-mapping": "^15.0",
-        "keboola/staging-provider": "^2.0",
+        "keboola/staging-provider": "^2.4",
         "symfony/validator": "^4.1",
         "symfony/http-foundation": "^4.1",
         "symfony/monolog-bridge": "^4.1",

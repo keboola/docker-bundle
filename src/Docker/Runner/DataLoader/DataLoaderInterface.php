@@ -42,4 +42,6 @@ interface DataLoaderInterface
     public function getWorkspaceCredentials();
 
     public function cleanWorkspace();
+
+    public function getWorkspaceBackendSize(): ?string;
 }
