@@ -116,6 +116,13 @@ class ApiController extends BaseApiController
             if (isset($params['config']) && !is_scalar($params['config'])) {
                 throw new UserException("Body parameter 'config' is not a number.");
             }
+            if (strlen($lockName) >= 64) {
+                if (isset($params['config']) && is_scalar($params['config'])) {
+                    $lockName = $job->getProject()['id'] . '-' . sha1($params['component'] . $params['config']);
+                } else {
+                    $lockName = $job->getProject()['id'] . '-' . sha1($params['component'] . uniqid());
+                }
+            }
             $job->setLockName($lockName);
         } catch (ClientException $e) {
             throw new UserException($e->getMessage(), $e);

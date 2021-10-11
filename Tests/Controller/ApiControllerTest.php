@@ -17,6 +17,7 @@ use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Syrup\Elasticsearch\JobMapper;
 use Keboola\Syrup\Exception\UserException;
+use Keboola\Syrup\Job\Metadata\Job;
 use Keboola\Syrup\Job\Metadata\JobInterface;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -116,6 +117,33 @@ class ApiControllerTest extends WebTestCase
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals(202, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
         $this->assertEquals('waiting', $response['status']);
+
+        $jobMapper = static::$kernel->getContainer()->get('syrup.elasticsearch.current_component_job_mapper');
+        /** @var Job $job */
+        $job = $jobMapper->get($response['id']);
+        $this->assertRegExp('#^docker\-[0-9]{1,4}-keboola\.r\-transformation\-dummy#', $job->getLockName());
+    }
+
+    public function testRunLongComponent()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/cleveranalytics.app-cleveranalytics-mapboxtilesupdater/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{"config": "a-very-long-configuration-name"}'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode(), $client->getResponse()->getContent());
+        $this->assertEquals('waiting', $response['status']);
+
+        $jobMapper = static::$kernel->getContainer()->get('syrup.elasticsearch.current_component_job_mapper');
+        /** @var Job $job */
+        $job = $jobMapper->get($response['id']);
+        $this->assertRegExp('#^[0-9]{1,4}\-[a-f0-9]+$#', $job->getLockName());
     }
 
     public function testRunQueueV2()
@@ -373,6 +401,37 @@ class ApiControllerTest extends WebTestCase
         $this->assertEquals(202, $client->getResponse()->getStatusCode());
         $this->assertArrayHasKey('status', $response);
         $this->assertEquals('waiting', $response['status']);
+
+        $jobMapper = static::$kernel->getContainer()->get('syrup.elasticsearch.current_component_job_mapper');
+        /** @var Job $job */
+        $job = $jobMapper->get($response['id']);
+        $this->assertRegExp('#^docker\-[0-9]{1,4}-keboola\.r\-transformation\-[0-9a-f]+#', $job->getLockName());
+    }
+
+    public function testRunConfigDataLongComponent()
+    {
+        $client = $this->createClient();
+        $client->request(
+            'POST',
+            '/docker/cleveranalytics.app-cleveranalytics-mapboxtilesupdater/run',
+            [],
+            [],
+            ['HTTP_X-StorageApi-Token' => STORAGE_API_TOKEN],
+            '{
+                "configData": {
+                    "foo": "bar"
+                }
+            }'
+        );
+        $response = json_decode($client->getResponse()->getContent(), true);
+        $this->assertEquals(202, $client->getResponse()->getStatusCode());
+        $this->assertArrayHasKey('status', $response);
+        $this->assertEquals('waiting', $response['status']);
+
+        $jobMapper = static::$kernel->getContainer()->get('syrup.elasticsearch.current_component_job_mapper');
+        /** @var Job $job */
+        $job = $jobMapper->get($response['id']);
+        $this->assertRegExp('#^[0-9]{1,4}\-[a-f0-9]+$#', $job->getLockName());
     }
 
     public function testBodyOverload()
