@@ -141,7 +141,7 @@ class SharedCodeResolver
                     if (isset($context->$match)) {
                         $renderedNodes = array_merge($renderedNodes, $context->$match);
                     } else {
-                        $renderedNodes[] = $matches[0][$index];
+                        $renderedNodes[] = $node;
                     }
                 }
             }
