@@ -81,7 +81,7 @@ class SharedCodeResolverTest extends TestCase
         );
     }
 
-    public function testResolveSharedCode()
+    public function testResolveSharedCodeDev()
     {
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),

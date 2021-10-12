@@ -131,26 +131,24 @@ class SharedCodeResolver
     private function replaceSharedCodeInArray($nodes, $context)
     {
         $renderedNodes = [];
-        $regex = '/{{\s?(';
-        foreach ($context->getKeys() as $index => $key) {
-            if ($index > 0) {
-                $regex .= '|';
-            }
-            $regex .= trim($key);
-        }
-        $regex .= ')\s?}}/';
         foreach ($nodes as $node) {
-            $occurrences = preg_match_all($regex, $node, $matches, PREG_PATTERN_ORDER);
+            $occurrences = preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
             if ($occurrences === 0) {
                 $renderedNodes[] = $node;
             } else {
-                foreach ($matches[1] as $index => $match) {
+                $contextMatches = [];
+                foreach ($matches[1] as $match) {
                     $match = trim($match);
                     if (isset($context->$match)) {
-                        $renderedNodes = array_merge($renderedNodes, $context->$match);
-                    } else {
-                        $renderedNodes[] = $matches[0][$index];
+                        $contextMatches[] = $context->$match;
                     }
+                }
+                if (count($contextMatches) > 0) {
+                    foreach ($contextMatches as $contextMatch) {
+                        $renderedNodes = array_merge($renderedNodes, $contextMatch);
+                    }
+                } else {
+                    $renderedNodes[] = $node;
                 }
             }
         }
