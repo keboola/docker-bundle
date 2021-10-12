@@ -106,7 +106,7 @@ class SharedCodeResolverTest extends TestCase
                     'keyed' => '{{secondCode}}',
                     '{{first_code}}',
                 ],
-                'Some Inline Variable' => ['some text {{some_var}} some text'],
+                'Some Inline Variable' => ['some text {{some_var}} some text {{some_other_var}}'],
             ],
         ];
         $logger = new TestLogger();
@@ -131,7 +131,7 @@ class SharedCodeResolverTest extends TestCase
                         'keyed' => '{{secondCode}}',
                         '{{first_code}}',
                     ],
-                    'Some Inline Variable' => ['some text {{some_var}} some text'],
+                    'Some Inline Variable' => ['some text {{some_var}} some text {{some_other_var}}'],
                 ],
                 'storage' => [],
                 'shared_code_id' => $sharedConfigurationId,
