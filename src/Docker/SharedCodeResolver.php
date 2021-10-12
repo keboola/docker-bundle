@@ -132,17 +132,16 @@ class SharedCodeResolver
     {
         $renderedNodes = [];
         foreach ($nodes as $node) {
-            $occurrences = preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
-            if ($occurrences === 0) {
+            preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
+            $matches = $matches[1];
+            array_walk($matches, function (&$v) { $v = trim($v);});
+            $filteredMatches = array_intersect($context->getKeys(), $matches);
+            if (count($filteredMatches) === 0) {
                 $renderedNodes[] = $node;
             } else {
-                foreach ($matches[1] as $index => $match) {
+                foreach ($filteredMatches as $match) {
                     $match = trim($match);
-                    if (isset($context->$match)) {
-                        $renderedNodes = array_merge($renderedNodes, $context->$match);
-                    } else {
-                        $renderedNodes[] = $matches[0][$index];
-                    }
+                    $renderedNodes = array_merge($renderedNodes, $context->$match);
                 }
             }
         }
