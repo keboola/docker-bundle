@@ -134,7 +134,12 @@ class SharedCodeResolver
         foreach ($nodes as $node) {
             preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
             $matches = $matches[1];
-            array_walk($matches, function (&$v) { $v = trim($v);});
+            array_walk(
+                $matches,
+                function (&$v) {
+                    $v = trim($v);
+                }
+            );
             $filteredMatches = array_intersect($context->getKeys(), $matches);
             if (count($filteredMatches) === 0) {
                 $renderedNodes[] = $node;

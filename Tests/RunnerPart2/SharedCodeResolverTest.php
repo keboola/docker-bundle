@@ -107,7 +107,14 @@ class SharedCodeResolverTest extends TestCase
                     '{{first_code}}',
                 ],
                 'Some Inline Variable' => ['some text {{some_var}} some text {{some_other_var}}'],
-                'Some Inline Variables With Code' => ['some text {{some_var}} some text {{some_other_var}} and {{first_code}}'],
+                'Variables With Code' => ['some text {{some_var}} some text {{some_other_var}} and {{first_code}}'],
+                'Variables With 2 Codes' => [
+                    'some text {{some_var}} some text {{some_other_var}} and {{first_code}} and {{secondCode}}'
+                ],
+                'Variables With 3 Codes' => [
+                    'some text {{some_var}} some text {{some_other_var}} and {{first_code}} and {{secondCode}}',
+                    '{{first_code}}'
+                ],
             ],
         ];
         $logger = new TestLogger();
@@ -135,7 +142,16 @@ class SharedCodeResolverTest extends TestCase
                     'Some Inline Variable' => [
                         'some text {{some_var}} some text {{some_other_var}}',
                     ],
-                    'Some Inline Variables With Code' => [
+                    'Variables With Code' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                    ],
+                    'Variables With 2 Codes' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'bar',
+                    ],
+                    'Variables With 3 Codes' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'bar',
                         'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
                     ],
                 ],
