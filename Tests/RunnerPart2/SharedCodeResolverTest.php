@@ -106,6 +106,15 @@ class SharedCodeResolverTest extends TestCase
                     'keyed' => '{{secondCode}}',
                     '{{first_code}}',
                 ],
+                'Some Inline Variable' => ['some text {{some_var}} some text {{some_other_var}}'],
+                'Variables With Code' => ['some text {{some_var}} some text {{some_other_var}} and {{first_code}}'],
+                'Variables With 2 Codes' => [
+                    'some text {{some_var}} some text {{some_other_var}} and {{first_code}} and {{secondCode}}'
+                ],
+                'Variables With 3 Codes' => [
+                    'some text {{some_var}} some text {{some_other_var}} and {{first_code}} and {{secondCode}}',
+                    '{{first_code}}'
+                ],
             ],
         ];
         $logger = new TestLogger();
@@ -129,6 +138,21 @@ class SharedCodeResolverTest extends TestCase
                         '{{secondCode}}',
                         'keyed' => '{{secondCode}}',
                         '{{first_code}}',
+                    ],
+                    'Some Inline Variable' => [
+                        'some text {{some_var}} some text {{some_other_var}}',
+                    ],
+                    'Variables With Code' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                    ],
+                    'Variables With 2 Codes' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'bar',
+                    ],
+                    'Variables With 3 Codes' => [
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
+                        'bar',
+                        'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
                     ],
                 ],
                 'storage' => [],
@@ -356,8 +380,6 @@ class SharedCodeResolverTest extends TestCase
                     'some_parameter' =>
                         'foo is {{ foo }} and {{non-existent}} and {{ first_code }} and {{ secondCode }} .',
                     'some_other_parameter' => [
-                        '{{ foo }}',
-                        '{{non-existent}}',
                         'SELECT * FROM {{tab1}} LEFT JOIN {{tab2}} ON b.a_id = a.id',
                         'dev-bar',
                     ],
