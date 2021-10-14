@@ -18,15 +18,11 @@ class SharedCodeContext
 
     public function __isset($name)
     {
-        return true;
+        return isset($this->values[$name]);
     }
 
     public function __get($name)
     {
-        if (isset($this->values[$name])) {
-            return $this->values[$name];
-        } else {
-            return '{{ ' . $name . ' }}';
-        }
+        return $this->values[$name];
     }
 }
