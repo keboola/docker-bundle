@@ -8,23 +8,17 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Mustache_Engine;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class SharedCodeResolver
 {
+    const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
+
     /**
      * @var ClientWrapper
      */
     private $clientWrapper;
-
-    const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
-
-    /**
-     * @var Mustache_Engine
-     */
-    private $moustache;
 
     /**
      * @var LoggerInterface
@@ -34,15 +28,13 @@ class SharedCodeResolver
     public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
         $this->clientWrapper = $clientWrapper;
-        $this->moustache = new Mustache_Engine([
-            'escape' => function ($string) {
-                return trim(json_encode($string), '"');
-            },
-            'strict_callables' => true,
-        ]);
         $this->logger = $logger;
     }
 
+    /**
+     * @param JobDefinition[] $jobDefinitions
+     * @return JobDefinition[]
+     */
     public function resolveSharedCode(array $jobDefinitions)
     {
         /** @var JobDefinition $jobDefinition */
@@ -69,7 +61,10 @@ class SharedCodeResolver
                 foreach ($sharedCodeRowIds as $sharedCodeRowId) {
                     $sharedCodeConfiguration = $components->getConfigurationRow(self::KEBOOLA_SHARED_CODE, $sharedCodeId, $sharedCodeRowId);
                     $sharedCodeConfiguration = (new SharedCodeRow())->parse(array('config' => $sharedCodeConfiguration['configuration']));
-                    $context->pushValue($sharedCodeRowId, $sharedCodeConfiguration['code_content']);
+                    $context->pushValue(
+                        $sharedCodeRowId,
+                        $sharedCodeConfiguration['code_content']
+                    );
                 }
             } catch (ClientException $e) {
                 throw new UserException('Shared code configuration cannot be read: ' . $e->getMessage(), $e);
@@ -81,15 +76,9 @@ class SharedCodeResolver
                 implode(', ', $context->getKeys())
             ));
 
-            $newConfiguration = json_decode(
-                $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
-                true
-            );
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new UserException(
-                    'Shared code replacement resulted in invalid configuration, error: ' . json_last_error_msg()
-                );
-            }
+            $newConfiguration = $jobDefinition->getConfiguration();
+            $this->replaceSharedCodeInConfiguration($newConfiguration, $context);
+
             $newJobDefinitions[] = new JobDefinition(
                 $newConfiguration,
                 $jobDefinition->getComponent(),
@@ -101,5 +90,66 @@ class SharedCodeResolver
             );
         }
         return $newJobDefinitions;
+    }
+
+    /**
+     * @param array $configuration
+     * @param SharedCodeContext $context
+     */
+    private function replaceSharedCodeInConfiguration(&$configuration, $context)
+    {
+        foreach ($configuration as &$value) {
+            if (is_array($value)) {
+                if ($this->isScalarOrdinalArray($value)) {
+                    $value = $this->replaceSharedCodeInArray($value, $context);
+                } else {
+                    $this->replaceSharedCodeInConfiguration($value, $context);
+                }
+            } // else it's a scalar, leave as is - shared code is replaced only in arrays
+        }
+    }
+
+    /**
+     * @param $array
+     * @return bool
+     */
+    private function isScalarOrdinalArray($array)
+    {
+        foreach ($array as $key => $value) {
+            if (!is_scalar($value) || !is_int($key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * @param array $nodes
+     * @param SharedCodeContext $context
+     * @return array
+     */
+    private function replaceSharedCodeInArray($nodes, $context)
+    {
+        $renderedNodes = [];
+        foreach ($nodes as $node) {
+            preg_match_all('/{{([ a-zA-Z0-9_-]+)}}/', $node, $matches, PREG_PATTERN_ORDER);
+            $matches = $matches[1];
+            array_walk(
+                $matches,
+                function (&$v) {
+                    $v = trim($v);
+                }
+            );
+            $filteredMatches = array_intersect($context->getKeys(), $matches);
+            if (count($filteredMatches) === 0) {
+                $renderedNodes[] = $node;
+            } else {
+                foreach ($filteredMatches as $match) {
+                    $match = trim($match);
+                    $renderedNodes = array_merge($renderedNodes, $context->$match);
+                }
+            }
+        }
+        return $renderedNodes;
     }
 }

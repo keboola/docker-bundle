@@ -9,12 +9,19 @@ class SharedCodeRow extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder('configuration');
-        $rootNode = $treeBuilder->getRootNode();
+        $treeBuilder = new TreeBuilder;
+        $rootNode = $treeBuilder->root('configuration');
         $rootNode
             ->children()
                 ->scalarNode('variables_id')->end()
-                ->scalarNode('code_content')->isRequired()->cannotBeEmpty()->end()
+                ->arrayNode('code_content')
+                    ->beforeNormalization()
+                    ->ifString()
+                        // phpcs:ignore
+                        ->then( function ($v) { return [$v]; } )
+                    ->end()
+                    ->prototype("scalar")->end()
+                ->end()
             ->end();
         return $treeBuilder;
     }
