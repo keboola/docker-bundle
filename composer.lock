@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4c350d434ff01dc5a03ca2075bce9ff8",
+    "content-hash": "17b7f5e65cf3b5a7dc33af43a97fe700",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -58,16 +58,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.198.1",
+            "version": "3.198.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "79bf3298bd2893eb0b4614c2463e9f675d07118b"
+                "reference": "d235e1ed93a34f0e290589c85cf97dd963a721c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/79bf3298bd2893eb0b4614c2463e9f675d07118b",
-                "reference": "79bf3298bd2893eb0b4614c2463e9f675d07118b",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/d235e1ed93a34f0e290589c85cf97dd963a721c9",
+                "reference": "d235e1ed93a34f0e290589c85cf97dd963a721c9",
                 "shasum": ""
             },
             "require": {
@@ -143,9 +143,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.198.1"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.198.8"
             },
-            "time": "2021-10-08T18:28:30+00:00"
+            "time": "2021-10-19T18:15:41+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -2602,16 +2602,16 @@
         },
         {
             "name": "keboola/storage-api-client",
-            "version": "12.6.0",
+            "version": "12.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/storage-api-php-client.git",
-                "reference": "bb6323f9fd47829b24fd43c920ecdd187d372a16"
+                "reference": "538ad3719729214bf140bbbefd035447b972c309"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/bb6323f9fd47829b24fd43c920ecdd187d372a16",
-                "reference": "bb6323f9fd47829b24fd43c920ecdd187d372a16",
+                "url": "https://api.github.com/repos/keboola/storage-api-php-client/zipball/538ad3719729214bf140bbbefd035447b972c309",
+                "reference": "538ad3719729214bf140bbbefd035447b972c309",
                 "shasum": ""
             },
             "require": {
@@ -2654,9 +2654,9 @@
             "homepage": "http://keboola.com",
             "support": {
                 "issues": "https://github.com/keboola/storage-api-php-client/issues",
-                "source": "https://github.com/keboola/storage-api-php-client/tree/12.6.0"
+                "source": "https://github.com/keboola/storage-api-php-client/tree/12.6.1"
             },
-            "time": "2021-10-11T07:46:25+00:00"
+            "time": "2021-10-15T13:03:33+00:00"
         },
         {
             "name": "keboola/storage-api-php-client-branch-wrapper",
