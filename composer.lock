@@ -58,16 +58,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.199.0",
+            "version": "3.199.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "2233d15e5d434b0a259eaacae5a86b3ba19945cd"
+                "reference": "edc87cdd32545eb443b2b11070cbcdc29ecc8d95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/2233d15e5d434b0a259eaacae5a86b3ba19945cd",
-                "reference": "2233d15e5d434b0a259eaacae5a86b3ba19945cd",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/edc87cdd32545eb443b2b11070cbcdc29ecc8d95",
+                "reference": "edc87cdd32545eb443b2b11070cbcdc29ecc8d95",
                 "shasum": ""
             },
             "require": {
@@ -143,9 +143,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.199.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.199.2"
             },
-            "time": "2021-10-20T18:14:51+00:00"
+            "time": "2021-10-22T18:14:43+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1600,16 +1600,16 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "136a635e2b4a49b9d79e9c8fee267ffb257fdba0"
+                "reference": "fe752aedc9fd8fcca3fe7ad05d419d32998a06da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/136a635e2b4a49b9d79e9c8fee267ffb257fdba0",
-                "reference": "136a635e2b4a49b9d79e9c8fee267ffb257fdba0",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/fe752aedc9fd8fcca3fe7ad05d419d32998a06da",
+                "reference": "fe752aedc9fd8fcca3fe7ad05d419d32998a06da",
                 "shasum": ""
             },
             "require": {
@@ -1664,7 +1664,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/promises/issues",
-                "source": "https://github.com/guzzle/promises/tree/1.5.0"
+                "source": "https://github.com/guzzle/promises/tree/1.5.1"
             },
             "funding": [
                 {
@@ -1680,7 +1680,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-10-07T13:05:22+00:00"
+            "time": "2021-10-22T20:56:57+00:00"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -2126,16 +2126,16 @@
         },
         {
             "name": "keboola/input-mapping",
-            "version": "13.1.0",
+            "version": "13.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/input-mapping.git",
-                "reference": "c39df627252653b71f2e1d7afefdb3f3dd203fdf"
+                "reference": "157a80b6688dc135f5f0e9b72837c0ebc354e191"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/c39df627252653b71f2e1d7afefdb3f3dd203fdf",
-                "reference": "c39df627252653b71f2e1d7afefdb3f3dd203fdf",
+                "url": "https://api.github.com/repos/keboola/input-mapping/zipball/157a80b6688dc135f5f0e9b72837c0ebc354e191",
+                "reference": "157a80b6688dc135f5f0e9b72837c0ebc354e191",
                 "shasum": ""
             },
             "require": {
@@ -2171,9 +2171,9 @@
             "description": "Shared component for processing SAPI input mapping and exporting to files",
             "support": {
                 "issues": "https://github.com/keboola/input-mapping/issues",
-                "source": "https://github.com/keboola/input-mapping/tree/13.1.0"
+                "source": "https://github.com/keboola/input-mapping/tree/13.2.0"
             },
-            "time": "2021-10-11T15:03:40+00:00"
+            "time": "2021-10-25T10:57:10+00:00"
         },
         {
             "name": "keboola/oauth-v2-php-client",
@@ -7779,7 +7779,6 @@
                 "issues": "https://github.com/sebastianbergmann/resource-operations/issues",
                 "source": "https://github.com/sebastianbergmann/resource-operations/tree/master"
             },
-            "abandoned": true,
             "time": "2015-07-28T20:34:47+00:00"
         },
         {
