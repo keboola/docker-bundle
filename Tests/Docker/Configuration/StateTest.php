@@ -21,11 +21,32 @@ class StateTest extends TestCase
 
     public function testComponentState()
     {
+        // symfony key normalization https://symfony.com/doc/4.4/components/config/definition.html#normalization
         $state = [
-            StateFile::NAMESPACE_COMPONENT => ["key" => "foo"]
+            StateFile::NAMESPACE_COMPONENT => [
+                'first-component' => [
+                    'sample-data' => 1,
+                ],
+                'second_component' => [
+                    'sample_data' => 2,
+                ],
+                'third-other_component' => [
+                    'sample_da-ta' => 3,
+                ],
+            ],
         ];
         $expected = [
-            StateFile::NAMESPACE_COMPONENT => ["key" => "foo"]
+            StateFile::NAMESPACE_COMPONENT => [
+                'first_component' => [
+                    'sample-data' => 1,
+                ],
+                'second_component' => [
+                    'sample_data' => 2,
+                ],
+                'third-other_component' => [
+                    'sample_da-ta' => 3,
+                ],
+            ],
         ];
         $processed = (new Configuration\State())->parse(["state" => $state]);
         self::assertEquals($expected, $processed);
