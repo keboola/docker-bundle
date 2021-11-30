@@ -13,7 +13,11 @@ class State extends Configuration
         $treeBuilder = new TreeBuilder('state');
         $root = $treeBuilder->getRootNode();
         $root->children()
-            ->arrayNode(StateFile::NAMESPACE_COMPONENT)->prototype("variable")->end()->end()
+            ->arrayNode(StateFile::NAMESPACE_COMPONENT)
+                ->normalizeKeys(false)
+                ->prototype("variable")
+                ->end()
+            ->end()
             ->arrayNode(StateFile::NAMESPACE_STORAGE)
                 ->children()
                     ->arrayNode(StateFile::NAMESPACE_INPUT)
