@@ -7,58 +7,30 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 
 class Environment
 {
-    /**
-     * @var string
-     */
-    private $configId;
+    private ?string $configId;
+    private array $configParameters;
+    private array $tokenInfo;
+    private ?string $runId;
+    private string $url;
+    private Component $component;
+    private string $stackId;
+    private ?string $configRowId;
+    private string $token;
+    private ?string $branchId;
+    private ?string $mlflowAbsConnectionString;
 
-    /**
-     * @var array
-     */
-    private $configParameters;
-
-    /**
-     * @var array
-     */
-    private $tokenInfo;
-
-    /**
-     * @var string
-     */
-    private $runId;
-
-    /**
-     * @var string
-     */
-    private $url;
-
-    /**
-     * @var Component
-     */
-    private $component;
-
-    /**
-     * @var string
-     */
-    private $stackId;
-
-    /**
-     * @var string
-     */
-    private $configRowId;
-
-    /**
-     * @var string
-     */
-    private $token;
-
-    /**
-     * @var string
-     */
-    private $branchId;
-
-    public function __construct($configId, $configRowId, Component $component, array $config, array $tokenInfo, $runId, $url, $token, $branchId)
-    {
+    public function __construct(
+        ?string $configId,
+        ?string $configRowId,
+        Component $component,
+        array $config,
+        array $tokenInfo,
+        ?string $runId,
+        string $url,
+        string $token,
+        ?string $branchId,
+        ?string $mlflowAbsConnectionString = null
+    ) {
         if ($configId) {
             $this->configId = $configId;
         } else {
@@ -74,6 +46,7 @@ class Environment
         $this->token = $token;
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
+        $this->mlflowAbsConnectionString = $mlflowAbsConnectionString;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
@@ -106,6 +79,10 @@ class Environment
         }
         if ($this->branchId) {
             $envs['KBC_BRANCHID'] = (string) $this->branchId;
+        }
+
+        if ($this->mlflowAbsConnectionString !== null) {
+            $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->mlflowAbsConnectionString;
         }
         return $envs;
     }

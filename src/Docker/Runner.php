@@ -26,6 +26,7 @@ use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -37,80 +38,44 @@ class Runner
 
     const MODE_RUN = 'run';
 
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
+    private ObjectEncryptorFactory $encryptorFactory;
+    private ClientWrapper $clientWrapper;
+    private Credentials $oauthClient;
+    private Credentials $oauthClient3;
+    private SandboxesApiClient $sandboxesApiClient;
+    private LoggersService $loggersService;
+    private string $commandToGetHostIp;
+    private int $minLogPort;
+    private int $maxLogPort;
+    private array $instanceLimits;
 
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
-
-    /**
-     * @var Credentials
-     */
-    private $oauthClient;
-
-    /**
-     * @var Credentials
-     */
-    private $oauthClient3;
-
-    /**
-     * @var LoggersService
-     */
-    private $loggersService;
-
-    /**
-     * @var string
-     */
-    private $commandToGetHostIp;
-
-    /**
-     * @var int
-     */
-    private $minLogPort;
-
-    /**
-     * @var int
-     */
-    private $maxLogPort;
-
-    /**
-     * @var array
-     */
-    private $instanceLimits;
-
-    /**
-     * Runner constructor.
-     * @param ObjectEncryptorFactory $encryptorFactory
-     * @param ClientWrapper $clientWrapper
-     * @param LoggersService $loggersService
-     * @param string $oauthApiUrl
-     * @param array $instanceLimits
-     * @param int $minLogPort
-     * @param int $maxLogPort
-     */
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
-        $oauthApiUrl,
+        string $oauthApiUrl,
         array $instanceLimits,
-        $minLogPort = 12202,
-        $maxLogPort = 13202
+        int $minLogPort = 12202,
+        int $maxLogPort = 13202
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
         $this->clientWrapper = $clientWrapper;
-        $this->oauthClient = new Credentials($this->clientWrapper->getBasicClient()->getTokenString(), [
+
+        $storageApiClient = $clientWrapper->getBasicClient();
+        $storageApiToken = $storageApiClient->getTokenString();
+
+        $this->oauthClient = new Credentials($storageApiToken, [
             'url' => $oauthApiUrl
         ]);
-        $this->oauthClient3 = new Credentials($this->clientWrapper->getBasicClient()->getTokenString(), [
+        $this->oauthClient3 = new Credentials($storageApiToken, [
             'url' => $this->getOauthUrlV3()
         ]);
+        $this->sandboxesApiClient = new SandboxesApiClient(
+            $storageApiClient->getServiceUrl('sandboxes'),
+            $storageApiToken
+        );
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
@@ -501,6 +466,13 @@ class Runner
         $imageDigests = [];
         $newState = [];
         $output->setOutput('');
+
+        $mlflowAbsConnectionString = null;
+        if ($component->allowMlflowArtifactsAccess()) {
+            $sandboxesProject = $this->sandboxesApiClient->getProject();
+            $mlflowAbsConnectionString = $sandboxesProject->getMlflowAbsConnectionString();
+        }
+
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
@@ -520,7 +492,8 @@ class Runner
                 $this->clientWrapper->getBasicClient()->getRunId(),
                 $this->clientWrapper->getBasicClient()->getApiUrl(),
                 $this->clientWrapper->getBasicClient()->getTokenString(),
-                $this->clientWrapper->getBranchId()
+                $this->clientWrapper->getBranchId(),
+                $mlflowAbsConnectionString
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),

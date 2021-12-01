@@ -12,6 +12,7 @@ use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
+use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
 use Keboola\StorageApi\Client;
@@ -29,6 +30,8 @@ use Monolog\Logger;
 
 class RunnerTest extends BaseRunnerTest
 {
+    use ReflectionPropertyAccessTestCase;
+
     private function clearBuckets()
     {
         foreach (['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'] as $bucket) {
@@ -104,15 +107,22 @@ class RunnerTest extends BaseRunnerTest
     public function testGetOauthUrl()
     {
         $clientMock = self::getMockBuilder(Client::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['indexAction', 'verifyToken'])
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['indexAction', 'verifyToken', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
-            ->will(self::returnValue(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+            ->willReturn(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
         $clientMock->expects(self::any())
             ->method('verifyToken')
             ->willReturn([]);
+        $clientMock->expects(self::any())
+            ->method('getServiceUrl')
+            ->with('sandboxes')
+            ->willReturn('https://sandboxes.someurl');
         $this->setClientMock($clientMock);
         $runner = $this->getRunner();
 
@@ -173,11 +183,15 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction'])
+            ->setMethods(['indexAction', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
-            ->will(self::returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+            ->willReturn(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
+        $clientMock->expects(self::any())
+            ->method('getServiceUrl')
+            ->with('sandboxes')
+            ->willReturn('https://sandboxes.someurl');
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
@@ -344,11 +358,15 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction'])
+            ->setMethods(['indexAction', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
-            ->will(self::returnValue(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]));
+            ->willReturn(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
+        $clientMock->expects(self::any())
+            ->method('getServiceUrl')
+            ->with('sandboxes')
+            ->willReturn('https://sandboxes.someurl');
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
@@ -1276,11 +1294,15 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction'])
+            ->setMethods(['indexAction', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
             ->will(self::returnValue($index));
+        $clientMock->expects(self::any())
+            ->method('getServiceUrl')
+            ->with('sandboxes')
+            ->willReturn('https://sandboxes.someurl');
         $this->setClientMock($clientMock);
 
         $configData = [
@@ -1382,12 +1404,16 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction'])
+            ->setMethods(['indexAction', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
             ->method('indexAction')
             ->will(self::returnValue($index));
         $this->setClientMock($clientMock);
+        $clientMock->expects(self::any())
+            ->method('getServiceUrl')
+            ->with('sandboxes')
+            ->willReturn('https://sandboxes.someurl');
 
         $configData = [
             'parameters' => [
