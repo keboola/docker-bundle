@@ -80,7 +80,7 @@ class Runner2Test extends BaseRunnerTest
         );
     }
 
-    public function testStorageFilesOutputProcessed(): void
+    public function testMlflowAbsConnectionStringIsPassedToComponent(): void
     {
         $configId = uniqid('runner-test-');
         $configuration = new Configuration();
