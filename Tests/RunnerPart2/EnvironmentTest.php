@@ -51,7 +51,8 @@ class EnvironmentTest extends TestCase
             123,
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            '1234'
+            '1234',
+            'connection-string'
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -70,6 +71,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
+        self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
     }
 
     public function testExecutorForwardToken()
@@ -98,7 +100,8 @@ class EnvironmentTest extends TestCase
             123,
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-            ''
+            '',
+            null
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -118,6 +121,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
+        self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
     }
 
     public function testExecutorForwardTokenAndDetails()
@@ -133,7 +137,18 @@ class EnvironmentTest extends TestCase
                 'forward_token_details' => true,
             ],
         ]);
-        $environment = new Environment('config-test-id', null, $component, [], $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '');
+        $environment = new Environment(
+            'config-test-id',
+            null,
+            $component,
+            [],
+            $this->tokenInfo,
+            123,
+            STORAGE_API_URL,
+            '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '',
+            null
+        );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -150,6 +165,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_TOKENDESC', $envs);
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
+        self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
     }
 
     public function testExecutorForwardDetails()
@@ -169,7 +185,18 @@ class EnvironmentTest extends TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment('config-test-id', null, $component, $parameters, $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '');
+        $environment = new Environment(
+            'config-test-id',
+            null,
+            $component,
+            $parameters,
+            $this->tokenInfo,
+            123,
+            STORAGE_API_URL,
+            '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '',
+            'connection-string'
+        );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -209,7 +236,18 @@ class EnvironmentTest extends TestCase
             'myVariable' => 'fooBar',
             'KBC_CONFIGID' => 'barFoo',
         ];
-        $environment = new Environment('config-test-id', null, $component, $parameters, $this->tokenInfo, 123, STORAGE_API_URL, '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', '');
+        $environment = new Environment(
+            'config-test-id',
+            null,
+            $component,
+            $parameters,
+            $this->tokenInfo,
+            123,
+            STORAGE_API_URL,
+            '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '',
+            null
+        );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
@@ -226,5 +264,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertEquals('boo', $envs['KBC_REALUSER']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
+        self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
     }
 }

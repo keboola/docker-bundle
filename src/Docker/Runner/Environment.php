@@ -29,7 +29,7 @@ class Environment
         string $url,
         string $token,
         ?string $branchId,
-        ?string $mlflowAbsConnectionString = null
+        ?string $mlflowAbsConnectionString
     ) {
         if ($configId) {
             $this->configId = $configId;
