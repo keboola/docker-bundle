@@ -11,6 +11,8 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\Sandboxes\Api\Project;
+use Keboola\StorageApi\Client;
+use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 
@@ -90,15 +92,35 @@ class Runner2Test extends BaseRunnerTest
         $components = new Components($this->client);
         $components->addConfiguration($configuration);
 
+        // set project feature
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'fileStorageProvider' => 'local',
+                'features' => ['sandboxes-python-mlflow'],
+            ],
+        ]);
+        $this->setClientMock($storageApiMock);
+
         $sandboxesApiMock = $this->createMock(SandboxesApiClient::class);
         $sandboxesApiMock->method('getProject')->willReturn(Project::fromArray([
             'id' => 'my-project',
+            'mlflowUri' => 'https://mlflow', // fake URI to check in logs
             'mlflowAbsConnectionString' => 'connection-string', // fake connection string to check in logs
             'createdTimestamp' => '1638368340',
         ]));
 
         $runner = $this->getRunner();
-        self::setPrivatePropertyValue($runner, 'sandboxesApiClient', $sandboxesApiMock);
+        $mlflowProjectResolver = self::getPrivatePropertyValue($runner, 'mlflowProjectResolver');
+        self::setPrivatePropertyValue($mlflowProjectResolver, 'sandboxesApiClient', $sandboxesApiMock);
 
         $componentData = [
             'id' => 'keboola.runner-config-test',
@@ -113,7 +135,7 @@ class Runner2Test extends BaseRunnerTest
                     'output' => 'local',
                 ],
             ],
-            'features' => ['mlflow-artifacts-access'],
+            'features' => ['mlflow-artifacts-access'], // set component feature
         ];
 
         /** @var Output[] $outputs */
@@ -143,6 +165,86 @@ class Runner2Test extends BaseRunnerTest
             'Environment "AZURE_STORAGE_CONNECTION_STRING" has value "connection-string".',
             $containerOutput
         );
+        self::assertContains(
+            'Environment "MLFLOW_TRACKING_URI" has value "https://mlflow".',
+            $containerOutput
+        );
+    }
+
+    public function testComponentRunsIfSandboxProjectDoesNotExist(): void
+    {
+        $configId = uniqid('runner-test-');
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-config-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components = new Components($this->client);
+        $components->addConfiguration($configuration);
+
+        // set project feature
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'fileStorageProvider' => 'local',
+                'features' => ['sandboxes-python-mlflow'],
+            ],
+        ]);
+        $this->setClientMock($storageApiMock);
+
+
+        $runner = $this->getRunner();
+
+        $componentData = [
+            'id' => 'keboola.runner-config-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-config-test',
+                    'tag' => '0.0.16',
+                ],
+                'staging_storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+            'features' => ['mlflow-artifacts-access'], // set component feature
+        ];
+
+        /** @var Output[] $outputs */
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                [
+                    'parameters' => [
+                        'operation' => 'dump-env',
+                    ],
+                ],
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            [],
+            $outputs
+        );
+
+        $containerOutput = $outputs[0]->getProcessOutput();
+        $containerOutput = explode("\n", $containerOutput);
+
+        // check the component ran but no connection string was passed
+        self::assertContains('Environment "KBC_PROJECTID" has value "1234".', $containerOutput);
+        self::assertNotContains('Environment "AZURE_STORAGE_CONNECTION_STRING"', $containerOutput);
     }
 
     /**
