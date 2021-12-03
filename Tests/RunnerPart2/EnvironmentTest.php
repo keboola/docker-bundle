@@ -52,7 +52,8 @@ class EnvironmentTest extends TestCase
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
-            'connection-string'
+            'connection-string',
+            'mlflow-uri'
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -72,6 +73,7 @@ class EnvironmentTest extends TestCase
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
+        self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
     }
 
     public function testExecutorForwardToken()
@@ -101,6 +103,7 @@ class EnvironmentTest extends TestCase
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
+            null,
             null
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
@@ -122,6 +125,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
+        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
     }
 
     public function testExecutorForwardTokenAndDetails()
@@ -147,6 +151,7 @@ class EnvironmentTest extends TestCase
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
+            null,
             null
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
@@ -166,6 +171,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
+        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
     }
 
     public function testExecutorForwardDetails()
@@ -195,7 +201,8 @@ class EnvironmentTest extends TestCase
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            'connection-string'
+            'connection-string',
+            'mlflow-uri'
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -213,6 +220,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
+        self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
     }
 
     public function testExecutorForwardDetailsSaml()
@@ -246,6 +254,7 @@ class EnvironmentTest extends TestCase
             STORAGE_API_URL,
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
+            null,
             null
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter());
@@ -265,5 +274,6 @@ class EnvironmentTest extends TestCase
         self::assertEquals('boo', $envs['KBC_REALUSER']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
+        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
     }
 }
