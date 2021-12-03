@@ -467,10 +467,13 @@ class Runner
         $newState = [];
         $output->setOutput('');
 
-        $mlflowAbsConnectionString = null;
+        $absConnectionString = null;
+        $mlflowUri = null;
         if ($component->allowMlflowArtifactsAccess()) {
             $sandboxesProject = $this->sandboxesApiClient->getProject();
-            $mlflowAbsConnectionString = $sandboxesProject->getMlflowAbsConnectionString();
+
+            $absConnectionString = $sandboxesProject->getMlflowAbsConnectionString();
+            $mlflowUri = $sandboxesProject->getMlflowUri();
         }
 
         foreach ($images as $priority => $image) {
@@ -493,7 +496,8 @@ class Runner
                 $this->clientWrapper->getBasicClient()->getApiUrl(),
                 $this->clientWrapper->getBasicClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
-                $mlflowAbsConnectionString
+                $absConnectionString,
+                $mlflowUri
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),

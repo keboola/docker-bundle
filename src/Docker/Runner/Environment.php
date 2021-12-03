@@ -17,7 +17,8 @@ class Environment
     private ?string $configRowId;
     private string $token;
     private ?string $branchId;
-    private ?string $mlflowAbsConnectionString;
+    private ?string $absConnectionString;
+    private ?string $mlflowUri;
 
     public function __construct(
         ?string $configId,
@@ -29,7 +30,8 @@ class Environment
         string $url,
         string $token,
         ?string $branchId,
-        ?string $mlflowAbsConnectionString
+        ?string $absConnectionString,
+        ?string $mlflowUri
     ) {
         if ($configId) {
             $this->configId = $configId;
@@ -46,7 +48,8 @@ class Environment
         $this->token = $token;
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
-        $this->mlflowAbsConnectionString = $mlflowAbsConnectionString;
+        $this->absConnectionString = $absConnectionString;
+        $this->mlflowUri = $mlflowUri;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
@@ -81,9 +84,14 @@ class Environment
             $envs['KBC_BRANCHID'] = (string) $this->branchId;
         }
 
-        if ($this->mlflowAbsConnectionString !== null) {
-            $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->mlflowAbsConnectionString;
+        if ($this->absConnectionString !== null) {
+            $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->absConnectionString;
         }
+
+        if ($this->mlflowUri !== null) {
+            $envs['MLFLOW_TRACKING_URI'] = $this->mlflowUri;
+        }
+
         return $envs;
     }
 }
