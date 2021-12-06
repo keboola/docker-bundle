@@ -9,6 +9,7 @@ use Keboola\Sandboxes\Api\Exception\ClientException;
 use Keboola\Sandboxes\Api\Project;
 use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Options\IndexOptions;
+use Psr\Log\LoggerInterface;
 
 class MlflowProjectResolver
 {
@@ -16,11 +17,16 @@ class MlflowProjectResolver
 
     private StorageApiClient $storageApiClient;
     private SandboxesApiClient $sandboxesApiClient;
+    private LoggerInterface $logger;
 
-    public function __construct(StorageApiClient $storageApiClient, SandboxesApiClient $sandboxesApiClient)
-    {
+    public function __construct(
+        StorageApiClient $storageApiClient,
+        SandboxesApiClient $sandboxesApiClient,
+        LoggerInterface $logger
+    ) {
         $this->storageApiClient = $storageApiClient;
         $this->sandboxesApiClient = $sandboxesApiClient;
+        $this->logger = $logger;
     }
 
     public function getMlflowProjectIfAvailable(Component $component, array $tokenInfo): ?Project
@@ -45,11 +51,13 @@ class MlflowProjectResolver
         try {
             return $this->sandboxesApiClient->getProject();
         } catch (ClientException $e) {
-            if ($e->getCode() === 404) {
-                return null;
-            }
-
-            throw $e;
+            $this->logger->warning(
+                'Failed to fetch MLflow project details. Access to MLflow artifacts will not be enabled!',
+                [
+                    'exception' => $e,
+                ]
+            );
+            return null;
         }
     }
 }

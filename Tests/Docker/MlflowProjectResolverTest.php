@@ -10,13 +10,27 @@ use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\Sandboxes\Api\Exception\ClientException;
 use Keboola\Sandboxes\Api\Project;
 use Keboola\StorageApi\Client as StorageApiClient;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 class MlflowProjectResolverTest extends TestCase
 {
     private const PROJECT_MLFLOW_FEATURE = 'sandboxes-python-mlflow';
     private const STACK_MLFLOW_FEATURE = 'sandboxes-python-mlflow';
     private const COMPONENT_MLFLOW_FEATURE = 'mlflow-artifacts-access';
+
+    private TestHandler $logsHandler;
+    private LoggerInterface $logger;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->logsHandler = new TestHandler();
+        $this->logger = new Logger('tests', [$this->logsHandler]);
+    }
 
     /**
      * @dataProvider provideGetProjectDependingOnFeaturesTestData
@@ -53,7 +67,7 @@ class MlflowProjectResolverTest extends TestCase
             ]
         ];
 
-        $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient);
+        $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient, $this->logger);
         $project = $resolver->getMlflowProjectIfAvailable($component, $tokenInfo);
 
         self::assertSame($returnsProject, $project !== null);
@@ -148,9 +162,12 @@ class MlflowProjectResolverTest extends TestCase
             ]
         ];
 
-        $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient);
+        $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient, $this->logger);
         $project = $resolver->getMlflowProjectIfAvailable($component, $tokenInfo);
 
         self::assertNull($project);
+        self::assertTrue($this->logsHandler->hasWarning(
+            'Failed to fetch MLflow project details. Access to MLflow artifacts will not be enabled!'
+        ));
     }
 }

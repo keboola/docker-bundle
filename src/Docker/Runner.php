@@ -77,7 +77,11 @@ class Runner
         $this->oauthClient3 = new Credentials($storageApiToken, [
             'url' => $this->getOauthUrlV3()
         ]);
-        $this->mlflowProjectResolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient);
+        $this->mlflowProjectResolver = new MlflowProjectResolver(
+            $storageApiClient,
+            $sandboxesApiClient,
+            $loggersService->getLog()
+        );
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
