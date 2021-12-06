@@ -42,7 +42,7 @@ class Runner
     private ClientWrapper $clientWrapper;
     private Credentials $oauthClient;
     private Credentials $oauthClient3;
-    private SandboxesApiClient $sandboxesApiClient;
+    private MlflowProjectResolver $mlflowProjectResolver;
     private LoggersService $loggersService;
     private string $commandToGetHostIp;
     private int $minLogPort;
@@ -66,15 +66,21 @@ class Runner
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
 
+        $sandboxesApiClient = new SandboxesApiClient(
+            $storageApiClient->getServiceUrl('sandboxes'),
+            $storageApiToken
+        );
+
         $this->oauthClient = new Credentials($storageApiToken, [
             'url' => $oauthApiUrl
         ]);
         $this->oauthClient3 = new Credentials($storageApiToken, [
             'url' => $this->getOauthUrlV3()
         ]);
-        $this->sandboxesApiClient = new SandboxesApiClient(
-            $storageApiClient->getServiceUrl('sandboxes'),
-            $storageApiToken
+        $this->mlflowProjectResolver = new MlflowProjectResolver(
+            $storageApiClient,
+            $sandboxesApiClient,
+            $loggersService->getLog()
         );
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
@@ -449,8 +455,21 @@ class Runner
      * @param Output $output
      * @throws ClientException
      */
-    private function runImages($jobId, $configId, $rowId, Component $component, UsageFileInterface $usageFile, WorkingDirectory $workingDirectory, ImageCreator $imageCreator, ConfigFile $configFile, StateFile $stateFile, OutputFilterInterface $outputFilter, DataLoaderInterface $dataLoader, $mode, $output)
-    {
+    private function runImages(
+        $jobId,
+        $configId,
+        $rowId,
+        Component $component,
+        UsageFileInterface $usageFile,
+        WorkingDirectory $workingDirectory,
+        ImageCreator $imageCreator,
+        ConfigFile $configFile,
+        StateFile $stateFile,
+        OutputFilterInterface $outputFilter,
+        DataLoaderInterface $dataLoader,
+        $mode,
+        $output
+    ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
@@ -465,15 +484,15 @@ class Runner
         $counter = 0;
         $imageDigests = [];
         $newState = [];
-        $output->setOutput('');
-
         $absConnectionString = null;
         $mlflowUri = null;
-        if ($component->allowMlflowArtifactsAccess()) {
-            $sandboxesProject = $this->sandboxesApiClient->getProject();
+        $output->setOutput('');
 
-            $absConnectionString = $sandboxesProject->getMlflowAbsConnectionString();
-            $mlflowUri = $sandboxesProject->getMlflowUri();
+
+        $mlflowProject = $this->mlflowProjectResolver->getMlflowProjectIfAvailable($component, $tokenInfo);
+        if ($mlflowProject !== null) {
+            $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
+            $mlflowUri = $mlflowProject->getMlflowUri();
         }
 
         foreach ($images as $priority => $image) {
