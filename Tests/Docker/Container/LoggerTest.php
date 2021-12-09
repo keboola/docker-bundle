@@ -193,12 +193,19 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
-        try {
-            $container->run();
-            self::fail("Must raise error");
-        } catch (ApplicationException $e) {
-            self::assertContains('Host parameter is missing from GELF message', $e->getMessage());
+        $container->run();
+        self::assertTrue($this->getLogHandler()->hasNoticeThatContains('Missing required field from event.'));
+        $failedEvent = null;
+        foreach ($this->getLogHandler()->getRecords() as $record) {
+            if (strpos($record['message'], 'Missing required field from event.') !== false) {
+                $failedEvent = $record;
+            }
         }
+        self::assertEquals(
+            ['version', 'short_message', 'timestamp', 'level', 'source'],
+            array_keys($failedEvent['context'])
+        );
+        self::assertEquals('A sample info message (pygelf)', $failedEvent['context']['short_message']);
     }
 
     public function testGelfLogInvalidMessage()
