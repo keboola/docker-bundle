@@ -276,24 +276,29 @@ class Container
                     $containerId = $inspect['Id'];
                 }
                 // host is shortened containerId
-                if (empty($event['host'])) {
-                    throw new ApplicationException('Host parameter is missing from GELF message.');
+                if (empty($event['host']) ||
+                    empty($event['level']) ||
+                    empty($event['timestamp']) ||
+                    empty($event['short_message'])
+                ) {
+                    $this->logger->notice("Missing required field from event.", $event);
+                    return;
                 }
                 if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
                     $this->logger->notice("Invalid container host " . $event['host'], $event);
-                } else {
-                    array_walk_recursive($event, function (&$value) {
-                        $value = $this->outputFilter->filter($value);
-                    });
-                    $this->containerLogger->addRawRecord(
-                        $event['level'],
-                        $event['timestamp'],
-                        $event['short_message'],
-                        $event
-                    );
-                    if ($event['level'] <= 4) {
-                        $this->lastError = $event['short_message'];
-                    }
+                    return;
+                }
+                array_walk_recursive($event, function (&$value) {
+                    $value = $this->outputFilter->filter($value);
+                });
+                $this->containerLogger->addRawRecord(
+                    $event['level'],
+                    $event['timestamp'],
+                    $event['short_message'],
+                    $event
+                );
+                if ($event['level'] <= 4) {
+                    $this->lastError = $event['short_message'];
                 }
             },
             null,
