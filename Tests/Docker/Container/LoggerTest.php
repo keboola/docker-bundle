@@ -196,17 +196,14 @@ class LoggerTest extends BaseContainerTest
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
         self::assertTrue($this->getLogHandler()->hasNoticeThatContains('Missing required field from event.'));
-        $failedEvent = null;
-        foreach ($this->getLogHandler()->getRecords() as $record) {
-            if (strpos($record['message'], 'Missing required field from event.') !== false) {
-                $failedEvent = $record;
-            }
-        }
-        self::assertEquals(
-            ['version', 'short_message', 'timestamp', 'level', 'source'],
-            array_keys($failedEvent['context'])
-        );
-        self::assertEquals('A sample info message (pygelf)', $failedEvent['context']['short_message']);
+        self::assertTrue($this->getLogHandler()->hasRecordThatPasses(
+            function (array $record) {
+                return ($record['message'] === 'Missing required field from event.') &&
+                    (array_keys($record['context']) === ['version', 'short_message', 'timestamp', 'level', 'source']) &&
+                    ($record['context']['short_message'] === 'A sample info message (pygelf)');
+            },
+            \Monolog\Logger::NOTICE
+        ));
     }
 
     public function testGelfLogInvalidMessage()

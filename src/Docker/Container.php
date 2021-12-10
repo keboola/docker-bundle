@@ -281,7 +281,6 @@ class Container
                     empty($event['timestamp']) ||
                     empty($event['short_message'])
                 ) {
-                    //throw new ApplicationException('Host parameter is missi from GELF message.');
                     $this->logger->notice("Missing required field from event.", $event);
                     return;
                 }
