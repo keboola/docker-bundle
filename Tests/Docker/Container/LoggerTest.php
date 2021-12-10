@@ -195,7 +195,6 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
-        self::assertTrue($this->getLogHandler()->hasNoticeThatContains('Missing required field from event.'));
         self::assertTrue($this->getLogHandler()->hasRecordThatPasses(
             function (array $record) {
                 return ($record['message'] === 'Missing required field from event.') &&
