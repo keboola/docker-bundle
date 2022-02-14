@@ -244,7 +244,7 @@ class Container
         $server->start(
             $this->minLogPort,
             $this->maxLogPort,
-            function ($port) use ($process, $containerName) {
+            function ($port) use ($process) {
                 // get IP address of host from container
                 $processIp = Process::fromShellCommandline($this->commandToGetHostIp);
                 $processIp->mustRun();
@@ -256,7 +256,6 @@ class Container
                         ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
                     )
                 );
-                $process->setCommandLine($this->getRunCommand($containerName));
                 $process->start();
             },
             function (&$terminated) use ($process) {

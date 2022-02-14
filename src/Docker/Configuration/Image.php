@@ -11,8 +11,8 @@ class Image extends Configuration
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $root = $treeBuilder->root('image');
+        $treeBuilder = new TreeBuilder('image');
+        $root = $treeBuilder->getRootNode();
         self::configureNode($root);
         return $treeBuilder;
     }
