@@ -90,7 +90,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         self::expectException(UserException::class);
-        self::expectExceptionMessage('Invalid type for path "container.storage.output.tables.0.primary_key". Expected array, but got string');
+        self::expectExceptionMessage('Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"');
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
