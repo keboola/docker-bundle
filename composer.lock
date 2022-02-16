@@ -58,16 +58,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.208.4",
+            "version": "3.209.24",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "46376c60570103b55d9440142356995bd6d37c39"
+                "reference": "ce68bfc141863a25f4b870f10cfa996312fb1813"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/46376c60570103b55d9440142356995bd6d37c39",
-                "reference": "46376c60570103b55d9440142356995bd6d37c39",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/ce68bfc141863a25f4b870f10cfa996312fb1813",
+                "reference": "ce68bfc141863a25f4b870f10cfa996312fb1813",
                 "shasum": ""
             },
             "require": {
@@ -111,12 +111,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Aws\\": "src/"
-                },
                 "files": [
                     "src/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Aws\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -143,9 +143,9 @@
             "support": {
                 "forum": "https://forums.aws.amazon.com/forum.jspa?forumID=80",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.208.4"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.209.24"
             },
-            "time": "2021-12-09T19:19:02+00:00"
+            "time": "2022-02-14T19:15:07+00:00"
         },
         {
             "name": "composer/ca-bundle",
@@ -1563,12 +1563,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "GuzzleHttp\\": "src/"
-                },
                 "files": [
                     "src/functions_include.php"
-                ]
+                ],
+                "psr-4": {
+                    "GuzzleHttp\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -1718,12 +1718,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "GuzzleHttp\\Psr7\\": "src/"
-                },
                 "files": [
                     "src/functions_include.php"
-                ]
+                ],
+                "psr-4": {
+                    "GuzzleHttp\\Psr7\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -2220,33 +2220,32 @@
         },
         {
             "name": "keboola/object-encryptor",
-            "version": "0.3.1",
+            "version": "0.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/keboola/object-encryptor.git",
-                "reference": "9e386444df0cce1bf1eb9ecf6a37ba8528a5297b"
+                "reference": "06b74afd3e91053f8ad91792327e0c7781bd1e95"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/9e386444df0cce1bf1eb9ecf6a37ba8528a5297b",
-                "reference": "9e386444df0cce1bf1eb9ecf6a37ba8528a5297b",
+                "url": "https://api.github.com/repos/keboola/object-encryptor/zipball/06b74afd3e91053f8ad91792327e0c7781bd1e95",
+                "reference": "06b74afd3e91053f8ad91792327e0c7781bd1e95",
                 "shasum": ""
             },
             "require": {
-                "aws/aws-sdk-php": "^3.45",
-                "defuse/php-encryption": "^2.1",
+                "aws/aws-sdk-php": "^3.209",
+                "defuse/php-encryption": "^2.3",
                 "ext-zlib": "*",
                 "keboola-legacy/php-encryption": "^0.2",
-                "keboola/azure-key-vault-client": "^1.0",
+                "keboola/azure-key-vault-client": "^1.2",
                 "keboola/php-encryption": "^0.2",
                 "php": ">=5.6",
                 "phpseclib/mcrypt_compat": "^1.0",
                 "vkartaviy/retry": "^0.2.2"
             },
             "require-dev": {
-                "codeclimate/php-test-reporter": "^0.4",
-                "phpunit/phpunit": "^5.7|^6.5|^7.3",
-                "squizlabs/php_codesniffer": "^3.1"
+                "php-parallel-lint/php-parallel-lint": "^1.3",
+                "phpunit/phpunit": "^5.7|^6.5|^7.3"
             },
             "type": "library",
             "autoload": {
@@ -2271,9 +2270,9 @@
                 "json"
             ],
             "support": {
-                "source": "https://github.com/keboola/object-encryptor/tree/0.3.1"
+                "source": "https://github.com/keboola/object-encryptor/tree/0.4.0"
             },
-            "time": "2020-07-31T08:34:05+00:00"
+            "time": "2022-02-14T13:35:02+00:00"
         },
         {
             "name": "keboola/output-mapping",
@@ -2639,12 +2638,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Keboola\\StorageApi": "src/"
-                },
                 "files": [
                     "src/Keboola/StorageApi/createSimpleJobPollDelay.php"
-                ]
+                ],
+                "psr-0": {
+                    "Keboola\\StorageApi": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -2832,12 +2831,12 @@
                 }
             },
             "autoload": {
-                "psr-0": {
-                    "Assetic": "src/"
-                },
                 "files": [
                     "src/functions.php"
-                ]
+                ],
+                "psr-0": {
+                    "Assetic": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -3077,12 +3076,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "JmesPath\\": "src/"
-                },
                 "files": [
                     "src/JmesPath.php"
-                ]
+                ],
+                "psr-4": {
+                    "JmesPath\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -3108,16 +3107,16 @@
         },
         {
             "name": "mustache/mustache",
-            "version": "v2.13.0",
+            "version": "v2.14.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/bobthecow/mustache.php.git",
-                "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4"
+                "reference": "579ffa5c96e1d292c060b3dd62811ff01ad8c24e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/e95c5a008c23d3151d59ea72484d4f72049ab7f4",
-                "reference": "e95c5a008c23d3151d59ea72484d4f72049ab7f4",
+                "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/579ffa5c96e1d292c060b3dd62811ff01ad8c24e",
+                "reference": "579ffa5c96e1d292c060b3dd62811ff01ad8c24e",
                 "shasum": ""
             },
             "require": {
@@ -3152,9 +3151,9 @@
             ],
             "support": {
                 "issues": "https://github.com/bobthecow/mustache.php/issues",
-                "source": "https://github.com/bobthecow/mustache.php/tree/master"
+                "source": "https://github.com/bobthecow/mustache.php/tree/v2.14.1"
             },
-            "time": "2019-11-23T21:40:31+00:00"
+            "time": "2022-01-21T06:08:36+00:00"
         },
         {
             "name": "ocramius/proxy-manager",
@@ -3225,25 +3224,24 @@
         },
         {
             "name": "paragonie/constant_time_encoding",
-            "version": "v1.0.4",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paragonie/constant_time_encoding.git",
-                "reference": "2132f0f293d856026d7d11bd81b9f4a23a1dc1f6"
+                "reference": "317718fb438e60151f72b20404f040cb5ae1d494"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paragonie/constant_time_encoding/zipball/2132f0f293d856026d7d11bd81b9f4a23a1dc1f6",
-                "reference": "2132f0f293d856026d7d11bd81b9f4a23a1dc1f6",
+                "url": "https://api.github.com/repos/paragonie/constant_time_encoding/zipball/317718fb438e60151f72b20404f040cb5ae1d494",
+                "reference": "317718fb438e60151f72b20404f040cb5ae1d494",
                 "shasum": ""
             },
             "require": {
-                "php": "^5.3|^7"
+                "php": "^5.3|^7|^8"
             },
             "require-dev": {
                 "paragonie/random_compat": "^1.4|^2",
-                "phpunit/phpunit": "4.*|5.*",
-                "vimeo/psalm": "^0.3|^1"
+                "phpunit/phpunit": ">= 4"
             },
             "type": "library",
             "autoload": {
@@ -3289,7 +3287,7 @@
                 "issues": "https://github.com/paragonie/constant_time_encoding/issues",
                 "source": "https://github.com/paragonie/constant_time_encoding"
             },
-            "time": "2018-04-30T17:57:16+00:00"
+            "time": "2022-01-17T05:23:46+00:00"
         },
         {
             "name": "paragonie/random_compat",
@@ -3347,21 +3345,21 @@
         },
         {
             "name": "phpseclib/mcrypt_compat",
-            "version": "1.0.12",
+            "version": "1.0.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/mcrypt_compat.git",
-                "reference": "1fab24bc53edf9b49268162e7bfb4ce5c16ed4e3"
+                "reference": "c1f0014fb7d9af09f35cf10b1e2753094a8e401d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/mcrypt_compat/zipball/1fab24bc53edf9b49268162e7bfb4ce5c16ed4e3",
-                "reference": "1fab24bc53edf9b49268162e7bfb4ce5c16ed4e3",
+                "url": "https://api.github.com/repos/phpseclib/mcrypt_compat/zipball/c1f0014fb7d9af09f35cf10b1e2753094a8e401d",
+                "reference": "c1f0014fb7d9af09f35cf10b1e2753094a8e401d",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.3",
-                "phpseclib/phpseclib": ">=2.0.11 <3.0.0"
+                "phpseclib/phpseclib": ">=2.0.36 <3.0.0"
             },
             "provide": {
                 "ext-mcrypt": "5.6.40"
@@ -3410,20 +3408,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-11-29T01:15:33+00:00"
+            "time": "2022-01-30T10:30:53+00:00"
         },
         {
             "name": "phpseclib/phpseclib",
-            "version": "2.0.35",
+            "version": "2.0.36",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "4e16cf3f5f927a7d3f5317820af795c0366c0420"
+                "reference": "a97547126396548c224703a267a30af1592be146"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/4e16cf3f5f927a7d3f5317820af795c0366c0420",
-                "reference": "4e16cf3f5f927a7d3f5317820af795c0366c0420",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/a97547126396548c224703a267a30af1592be146",
+                "reference": "a97547126396548c224703a267a30af1592be146",
                 "shasum": ""
             },
             "require": {
@@ -3503,7 +3501,7 @@
             ],
             "support": {
                 "issues": "https://github.com/phpseclib/phpseclib/issues",
-                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.35"
+                "source": "https://github.com/phpseclib/phpseclib/tree/2.0.36"
             },
             "funding": [
                 {
@@ -3519,7 +3517,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2021-11-28T23:30:39+00:00"
+            "time": "2022-01-30T08:48:36+00:00"
         },
         {
             "name": "pimple/pimple",
@@ -4039,32 +4037,32 @@
         },
         {
             "name": "react/promise",
-            "version": "v2.8.0",
+            "version": "v2.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/promise.git",
-                "reference": "f3cff96a19736714524ca0dd1d4130de73dbbbc4"
+                "reference": "234f8fd1023c9158e2314fa9d7d0e6a83db42910"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/promise/zipball/f3cff96a19736714524ca0dd1d4130de73dbbbc4",
-                "reference": "f3cff96a19736714524ca0dd1d4130de73dbbbc4",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/234f8fd1023c9158e2314fa9d7d0e6a83db42910",
+                "reference": "234f8fd1023c9158e2314fa9d7d0e6a83db42910",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.4.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^7.0 || ^6.5 || ^5.7 || ^4.8.36"
+                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.36"
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "React\\Promise\\": "src/"
-                },
                 "files": [
                     "src/functions_include.php"
-                ]
+                ],
+                "psr-4": {
+                    "React\\Promise\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4073,7 +4071,23 @@
             "authors": [
                 {
                     "name": "Jan Sorgalla",
-                    "email": "jsorgalla@gmail.com"
+                    "email": "jsorgalla@gmail.com",
+                    "homepage": "https://sorgalla.com/"
+                },
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@clue.engineering",
+                    "homepage": "https://clue.engineering/"
+                },
+                {
+                    "name": "Cees-Jan Kiewiet",
+                    "email": "reactphp@ceesjankiewiet.nl",
+                    "homepage": "https://wyrihaximus.net/"
+                },
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "homepage": "https://cboden.dev/"
                 }
             ],
             "description": "A lightweight implementation of CommonJS Promises/A for PHP",
@@ -4083,9 +4097,19 @@
             ],
             "support": {
                 "issues": "https://github.com/reactphp/promise/issues",
-                "source": "https://github.com/reactphp/promise/tree/v2.8.0"
+                "source": "https://github.com/reactphp/promise/tree/v2.9.0"
             },
-            "time": "2020-05-12T15:16:56+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/WyriHaximus",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-02-11T10:27:51+00:00"
         },
         {
             "name": "react/promise-timer",
@@ -4111,12 +4135,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "React\\Promise\\Timer\\": "src/"
-                },
                 "files": [
                     "src/functions_include.php"
-                ]
+                ],
+                "psr-4": {
+                    "React\\Promise\\Timer\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -4835,12 +4859,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Apcu\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Apcu\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -5076,12 +5100,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Intl\\Idn\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Idn\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -5161,12 +5185,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Intl\\Normalizer\\": ""
-                },
                 "files": [
                     "bootstrap.php"
                 ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Intl\\Normalizer\\": ""
+                },
                 "classmap": [
                     "Resources/stubs"
                 ]
@@ -5245,12 +5269,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Mbstring\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Mbstring\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -5635,12 +5659,12 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Symfony\\Polyfill\\Php72\\": ""
-                },
                 "files": [
                     "bootstrap.php"
-                ]
+                ],
+                "psr-4": {
+                    "Symfony\\Polyfill\\Php72\\": ""
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -5882,6 +5906,7 @@
                 "issues": "https://github.com/symfony/swiftmailer-bundle/issues",
                 "source": "https://github.com/symfony/swiftmailer-bundle/tree/2.6"
             },
+            "abandoned": "symfony/mailer",
             "time": "2017-10-19T01:06:41+00:00"
         },
         {
@@ -5988,13 +6013,13 @@
             },
             "autoload": {
                 "psr-4": {
-                    "Symfony\\Bridge\\Doctrine\\": "src/Symfony/Bridge/Doctrine/",
-                    "Symfony\\Bridge\\Monolog\\": "src/Symfony/Bridge/Monolog/",
-                    "Symfony\\Bridge\\ProxyManager\\": "src/Symfony/Bridge/ProxyManager/",
-                    "Symfony\\Bridge\\Swiftmailer\\": "src/Symfony/Bridge/Swiftmailer/",
-                    "Symfony\\Bridge\\Twig\\": "src/Symfony/Bridge/Twig/",
                     "Symfony\\Bundle\\": "src/Symfony/Bundle/",
-                    "Symfony\\Component\\": "src/Symfony/Component/"
+                    "Symfony\\Component\\": "src/Symfony/Component/",
+                    "Symfony\\Bridge\\Twig\\": "src/Symfony/Bridge/Twig/",
+                    "Symfony\\Bridge\\Monolog\\": "src/Symfony/Bridge/Monolog/",
+                    "Symfony\\Bridge\\Doctrine\\": "src/Symfony/Bridge/Doctrine/",
+                    "Symfony\\Bridge\\Swiftmailer\\": "src/Symfony/Bridge/Swiftmailer/",
+                    "Symfony\\Bridge\\ProxyManager\\": "src/Symfony/Bridge/ProxyManager/"
                 },
                 "classmap": [
                     "src/Symfony/Component/Intl/Resources/stubs"
@@ -6411,12 +6436,12 @@
             },
             "type": "library",
             "autoload": {
-                "psr-4": {
-                    "DeepCopy\\": "src/DeepCopy/"
-                },
                 "files": [
                     "src/DeepCopy/deep_copy.php"
-                ]
+                ],
+                "psr-4": {
+                    "DeepCopy\\": "src/DeepCopy/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -6470,13 +6495,13 @@
                 }
             },
             "autoload": {
-                "psr-4": {
-                    "Humbug\\": "src/"
-                },
                 "files": [
                     "src/function.php",
                     "src/functions.php"
-                ]
+                ],
+                "psr-4": {
+                    "Humbug\\": "src/"
+                }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -7841,16 +7866,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.6.1",
+            "version": "3.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e"
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/f268ca40d54617c6e06757f83f699775c9b3ff2e",
-                "reference": "f268ca40d54617c6e06757f83f699775c9b3ff2e",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/5e4e71592f69da17871dba6e80dd51bce74a351a",
+                "reference": "5e4e71592f69da17871dba6e80dd51bce74a351a",
                 "shasum": ""
             },
             "require": {
@@ -7893,7 +7918,7 @@
                 "source": "https://github.com/squizlabs/PHP_CodeSniffer",
                 "wiki": "https://github.com/squizlabs/PHP_CodeSniffer/wiki"
             },
-            "time": "2021-10-11T04:00:11+00:00"
+            "time": "2021-12-12T21:44:58+00:00"
         },
         {
             "name": "webmozart/assert",
