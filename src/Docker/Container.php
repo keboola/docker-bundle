@@ -173,18 +173,16 @@ class Container
      */
     public function run()
     {
-        $process = Process::fromShellCommandline($this->getRunCommand($this->id));
-        $process->setOutputFilter($this->outputFilter);
-        $process->setTimeout(null);
-
         // create container
         $startTime = time();
         try {
             $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
             if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
-                $this->runWithLogger($process, $this->id);
+                $process = $this->runWithLogger($this->id);
             } else {
-                $this->runWithoutLogger($process);
+                $process = Process::fromShellCommandline($this->getRunCommand($this->id));
+                $process->setOutputFilter($this->outputFilter);
+                $process->setTimeout(null);                $this->runWithoutLogger($process);
             }
             $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 
@@ -237,14 +235,15 @@ class Container
      * @param Process $process
      * @param $containerName
      */
-    private function runWithLogger(Process $process, $containerName)
+    private function runWithLogger($containerName)
     {
         $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
         $containerId = '';
+        $process = null;
         $server->start(
             $this->minLogPort,
             $this->maxLogPort,
-            function ($port) use ($process) {
+            function ($port) use (&$process) {
                 // get IP address of host from container
                 $processIp = Process::fromShellCommandline($this->commandToGetHostIp);
                 $processIp->mustRun();
@@ -256,9 +255,12 @@ class Container
                         ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
                     )
                 );
+                $process = Process::fromShellCommandline($this->getRunCommand($this->id));
+                $process->setOutputFilter($this->outputFilter);
+                $process->setTimeout(null);
                 $process->start();
             },
-            function (&$terminated) use ($process) {
+            function (&$terminated) use (&$process) {
                 if (!$process->isRunning()) {
                     $terminated = true;
                     if (trim($process->getOutput()) != '') {
@@ -305,6 +307,7 @@ class Container
                 $this->containerLogger->error("Invalid message: " . $event);
             }
         );
+        return $process;
     }
 
     /**
