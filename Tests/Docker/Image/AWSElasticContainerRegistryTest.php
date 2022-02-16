@@ -61,7 +61,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             $image->prepare([]);
             self::fail('Must raise an exception');
         } catch (LoginFailedException $e) {
-            self::assertContains('Error executing "GetAuthorizationToken"', $e->getMessage());
+            self::assertStringContainsString('Error executing "GetAuthorizationToken"', $e->getMessage());
             self::assertTrue($logger->hasNoticeThatContains('Retrying AWS GetCredentials'));
         }
     }
