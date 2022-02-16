@@ -182,7 +182,8 @@ class Container
             } else {
                 $process = Process::fromShellCommandline($this->getRunCommand($this->id));
                 $process->setOutputFilter($this->outputFilter);
-                $process->setTimeout(null);                $this->runWithoutLogger($process);
+                $process->setTimeout(null);
+                $this->runWithoutLogger($process);
             }
             $this->logger->notice("Docker process {$this->getImage()->getFullImageId()} finished.");
 

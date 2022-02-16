@@ -58,4 +58,3 @@ class Process extends \Symfony\Component\Process\Process
         return WtfWarningFilter::filter($this->outputFilter->filter($value));
     }
 }
-
