@@ -87,7 +87,7 @@ class ApiController extends BaseApiController
             if (in_array('queuev2', $tokenInfo['owner']['features'])) {
                 throw new UserException(
                     'This project was migrated to new Queue API, ' .
-                    'use the new API https://app.swaggerhub.com/apis-docs/keboola/job-queue-api/1.0.0'
+                    'use the new API https://app.swaggerhub.com/apis-docs/keboola/job-queue-api'
                 );
             }
             if (isset($params['configData'])) {
