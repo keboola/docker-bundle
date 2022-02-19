@@ -5,9 +5,11 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
-use Keboola\Syrup\Exception\UserException;
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 
@@ -113,16 +115,12 @@ class ImageCreator
      */
     protected function getComponent($id)
     {
-        // Check list of components
-        $components = $this->storageClient->indexAction();
-        foreach ($components["components"] as $c) {
-            if ($c["id"] == $id) {
-                $component = $c;
-            }
+        $componentsApi = new Components($this->storageClient);
+        try {
+            $component = $componentsApi->getComponent($id);
+            return new Component($component);
+        } catch (ClientException $e) {
+            throw new UserException(sprintf('Cannot get component "%s": %s.', $id, $e->getMessage()), $e);
         }
-        if (!isset($component)) {
-            throw new UserException("Component '{$id}' not found.");
-        }
-        return new Component($component);
     }
 }
