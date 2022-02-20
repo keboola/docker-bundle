@@ -104,14 +104,11 @@ class Runner
      */
     private function getOauthUrlV3()
     {
-        $services = $this->clientWrapper->getBasicClient()
-            ->indexAction((new IndexOptions())->setExclude(['components']))['services'];
-        foreach ($services as $service) {
-            if ($service['id'] == 'oauth') {
-                return $service['url'];
-            }
+        try {
+            return $this->clientWrapper->getBasicClient()->getServiceUrl('oauth');
+        } catch (ClientException $e) {
+            throw new ApplicationException(sprintf('The "oauth" service not found: %s', $e->getMessage()), $e);
         }
-        throw new ApplicationException('The oauth service not found.');
     }
 
     /**

@@ -111,18 +111,20 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction', 'verifyToken', 'getServiceUrl'])
+            ->setMethods(['verifyToken', 'getServiceUrl'])
             ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->willReturn(['services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
         $clientMock->expects(self::any())
             ->method('verifyToken')
             ->willReturn([]);
-        $clientMock->expects(self::any())
+        $clientMock
             ->method('getServiceUrl')
-            ->with('sandboxes')
-            ->willReturn('https://sandboxes.someurl');
+            ->withConsecutive(['sandboxes'], ['oauth'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl',
+                'https://someurl'
+            );
+
         $this->setClientMock($clientMock);
         $runner = $this->getRunner();
 
@@ -183,15 +185,30 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction', 'getServiceUrl'])
+            ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->willReturn(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
-        $clientMock->expects(self::any())
+        $clientMock
             ->method('getServiceUrl')
-            ->with('sandboxes')
-            ->willReturn('https://sandboxes.someurl');
+            ->withConsecutive(['sandboxes'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl'
+            );
+        $clientMock
+            ->method('apiGet')
+            ->willReturnCallback(function ($url, $filename) use ($components) {
+                if ($url === 'components/keboola.processor-last-file') {
+                    return $components[0];
+                } elseif ($url === 'components/keboola.processor-iconv') {
+                    return $components[1];
+                } elseif ($url === 'components/keboola.processor-move-files') {
+                    return $components[2];
+                } elseif ($url === 'components/keboola.processor-decompress') {
+                    return $components[3];
+                } else {
+                    return $this->client->apiGet($url, $filename);
+                }
+            });
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
@@ -358,15 +375,24 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction', 'getServiceUrl'])
+            ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->willReturn(['components' => $components, 'services' => [['id' => 'oauth', 'url' => 'https://someurl']]]);
-        $clientMock->expects(self::any())
+        $clientMock
             ->method('getServiceUrl')
-            ->with('sandboxes')
-            ->willReturn('https://sandboxes.someurl');
+            ->withConsecutive(['sandboxes'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl'
+            );
+        $clientMock
+            ->method('apiGet')
+            ->willReturnCallback(function ($url, $filename) use ($components) {
+                if ($url === 'components/keboola.processor-decompress') {
+                    return $components[0];
+                } else {
+                    return $this->client->apiGet($url, $filename);
+                }
+            });
 
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
@@ -1260,49 +1286,52 @@ class RunnerTest extends BaseRunnerTest
     public function testExecutorAfterProcessorNoState()
     {
         $this->clearConfigurations();
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $index = [
-            'components' => [
-                $componentData,
-                [
-                    'id' => 'keboola.processor-dumpy',
-                    'data' => [
-                        'definition' => [
-                            'type' => 'aws-ecr',
-                            'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                            'tag' => 'latest',
-                        ],
+        $components = [
+            [
+                'id' => 'keboola.docker-demo-sync',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     ],
                 ],
             ],
-            'services' => [
-                [
-                    'id' => 'oauth', 'url' => 'https://someurl'
+            [
+                'id' => 'keboola.processor-dumpy',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                        'tag' => 'latest',
+                    ],
                 ],
-            ],
+            ]
         ];
         $clientMock = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction', 'getServiceUrl'])
+            ->setMethods(['getServiceUrl', 'apiGet'])
             ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->will(self::returnValue($index));
-        $clientMock->expects(self::any())
+        $clientMock
+            ->method('apiGet')
+            ->willReturnCallback(function ($url, $filename) use ($components) {
+                if ($url === 'components/keboola.docker-demo-sync') {
+                    return $components[0];
+                } elseif ($url === 'components/keboola.processor-dumpy') {
+                    return $components[1];
+                } else {
+                    return $this->client->apiGet($url, $filename);
+                }
+            });
+        $clientMock
             ->method('getServiceUrl')
-            ->with('sandboxes')
-            ->willReturn('https://sandboxes.someurl');
+            ->withConsecutive(['sandboxes'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl'
+            );
         $this->setClientMock($clientMock);
 
         $configData = [
@@ -1340,7 +1369,7 @@ class RunnerTest extends BaseRunnerTest
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
-                $componentData,
+                $components[0],
                 'runner-configuration',
                 $configData,
                 []
@@ -1370,32 +1399,24 @@ class RunnerTest extends BaseRunnerTest
     public function testExecutorBeforeProcessorNoState()
     {
         $this->clearConfigurations();
-        $componentData = [
-            'id' => 'keboola.docker-demo-sync',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-        $index = [
-            'components' => [
-                $componentData,
-                [
-                    'id' => 'keboola.processor-dumpy',
-                    'data' => [
-                        'definition' => [
-                            'type' => 'aws-ecr',
-                            'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                            'tag' => 'latest',
-                        ],
+        $components = [
+            [
+                'id' => 'keboola.docker-demo-sync',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     ],
                 ],
             ],
-            'services' => [
-                [
-                    'id' => 'oauth', 'url' => 'https://someurl'
+            [
+                'id' => 'keboola.processor-dumpy',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                        'tag' => 'latest',
+                    ],
                 ],
             ],
         ];
@@ -1404,16 +1425,26 @@ class RunnerTest extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->setMethods(['indexAction', 'getServiceUrl'])
+            ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
-        $clientMock->expects(self::any())
-            ->method('indexAction')
-            ->will(self::returnValue($index));
-        $this->setClientMock($clientMock);
-        $clientMock->expects(self::any())
+        $clientMock
             ->method('getServiceUrl')
-            ->with('sandboxes')
-            ->willReturn('https://sandboxes.someurl');
+            ->withConsecutive(['sandboxes'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl'
+            );
+        $clientMock
+            ->method('apiGet')
+            ->willReturnCallback(function ($url, $filename) use ($components) {
+                if ($url === 'components/keboola.docker-demo-sync') {
+                    return $components[0];
+                } elseif ($url === 'components/keboola.processor-dumpy') {
+                    return $components[1];
+                } else {
+                    return $this->client->apiGet($url, $filename);
+                }
+            });
 
         $configData = [
             'parameters' => [
@@ -1439,7 +1470,8 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $component = new Components($this->getClient());
+        $this->setClientMock($clientMock);
+        $component = new Components($clientMock);
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
@@ -1450,7 +1482,7 @@ class RunnerTest extends BaseRunnerTest
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
-                $componentData,
+                $components[0],
                 'runner-configuration',
                 $configData,
                 []
