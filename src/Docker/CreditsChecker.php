@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Options\IndexOptions;
 use Psr\Log\NullLogger;
+use Throwable;
 
 class CreditsChecker
 {
@@ -18,13 +19,11 @@ class CreditsChecker
 
     private function getBillingServiceUrl()
     {
-        $index = $this->client->indexAction((new IndexOptions())->setExclude(['components']));
-        foreach ($index['services'] as $service) {
-            if ($service['id'] == 'billing') {
-                return $service['url'];
-            }
+        try {
+            return $this->client->getServiceUrl('billing');
+        } catch (Throwable $e) {
+            return null;
         }
-        return null;
     }
 
     public function getBillingClient($url, $token)
