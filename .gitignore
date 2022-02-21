@@ -13,3 +13,4 @@ config.php
 /composer.lock
 /.env
 /docker-tests/.env
+/.phpunit.result.cache

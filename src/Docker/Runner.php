@@ -29,6 +29,7 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\IndexOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 
@@ -103,13 +104,11 @@ class Runner
      */
     private function getOauthUrlV3()
     {
-        $services = $this->clientWrapper->getBasicClient()->indexAction()['services'];
-        foreach ($services as $service) {
-            if ($service['id'] == 'oauth') {
-                return $service['url'];
-            }
+        try {
+            return $this->clientWrapper->getBasicClient()->getServiceUrl('oauth');
+        } catch (ClientException $e) {
+            throw new ApplicationException(sprintf('The "oauth" service not found: %s', $e->getMessage()), $e);
         }
-        throw new ApplicationException('The oauth service not found.');
     }
 
     /**

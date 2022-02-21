@@ -44,8 +44,11 @@ class ImageCreatorTest extends BaseRunnerTest
             ->disableOriginalConstructor()
             ->getMock();
         $this->client->expects($this->any())
-            ->method('indexAction')
-            ->will($this->returnValue(['components' => $components]));
+            ->method('apiGet')
+            ->willReturnOnConsecutiveCalls(
+                $components[0],
+                $components[1]
+            );
         $this->getEncryptorFactory()->setComponentId('keboola.docker-demo');
     }
 
