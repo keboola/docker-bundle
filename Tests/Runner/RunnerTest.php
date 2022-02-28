@@ -2777,7 +2777,7 @@ class RunnerTest extends BaseRunnerTest
         $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
 
-    public function testWorkspaceMappingCleanup()
+    public function testWorkspaceMappingCleanupComponentError()
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -2846,6 +2846,95 @@ class RunnerTest extends BaseRunnerTest
             self::fail('Must fail');
         } catch (UserException $e) {
             self::assertStringContainsString('One input and output mapping is required.', $e->getMessage());
+            $options = new ListConfigurationWorkspacesOptions();
+            $options->setComponentId('keboola.runner-workspace-test');
+            $options->setConfigurationId($configId);
+            self::assertCount(0, $components->listConfigurationWorkspaces($options));
+            self::assertFalse($this->client->tableExists('out.c-runner-test.new-table'));
+            $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
+        }
+    }
+
+    public function testWorkspaceMappingCleanupMappingError()
+    {
+        $this->clearBuckets();
+        $this->createBuckets();
+        $temp = new Temp();
+        $temp->initRunFolder();
+        $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
+        $csv->writeRow(['id', 'text']);
+        $csv->writeRow(['test1', 'test1']);
+        $this->getClient()->createTableAsync('in.c-runner-test', 'mytable', $csv);
+        unset($csv);
+
+        $componentData = [
+            'id' => 'keboola.runner-workspace-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
+                    'tag' => 'latest',
+                ],
+                'staging_storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ];
+
+        $configId = uniqid('runner-test-');
+        $components = new Components($this->client);
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.runner-workspace-test');
+        $configuration->setName('runner-tests');
+        $configuration->setConfigurationId($configId);
+        $components->addConfiguration($configuration);
+        $runner = $this->getRunner();
+
+        try {
+            $outputs = [];
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    $configId,
+                    [
+                        'storage' => [
+                            'input' => [
+                                'tables' => [
+                                    [
+                                        'source' => 'in.c-runner-test.mytable',
+                                        'destination' => 'local-table',
+                                    ],
+                                ],
+                            ],
+                            'output' => [
+                                'tables' => [
+                                    [
+                                        'source' => 'local-table-new-table',
+                                        'destination' => 'in.c-runner-test.new-table',
+                                    ],
+                                ],
+                            ],
+                        ],
+                        'parameters' => [
+                            'operation' => 'copy-snowflake-error',
+                        ],
+                    ],
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs
+            );
+            self::fail('Must fail');
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Some columns are missing in the csv file. Missing columns: invalid_column',
+                $e->getMessage()
+            );
             $options = new ListConfigurationWorkspacesOptions();
             $options->setComponentId('keboola.runner-workspace-test');
             $options->setConfigurationId($configId);
