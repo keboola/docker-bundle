@@ -171,9 +171,10 @@ abstract class BaseContainerTest extends TestCase
             ->method("getClientWithoutLogger")
             ->will(self::returnValue($this->storageClientStub));
 
+        $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
         $log = new Logger('runner-tests', [$this->testHandler]);
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
-        $this->logService = new LoggersService($log, $containerLog, null);
+        $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
         $image = ImageFactory::getImage(
             $this->encryptorFactory->getEncryptor(),
             $log,
