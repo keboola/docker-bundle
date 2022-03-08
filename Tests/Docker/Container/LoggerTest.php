@@ -636,7 +636,7 @@ class LoggerTest extends BaseContainerTest
         $testHandler = new TestHandler();
         $containerTestHandler = new TestHandler();
         $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
-        $log = new Logger('runner-tests', [$testHandler]);
+        $log = new Logger('runner-tests', [$testHandler, $sapiHandler]);
         $containerLog = new ContainerLogger('container-tests', [$containerTestHandler]);
         $logService = new LoggersService($log, $containerLog, $sapiHandler);
         $logService->getLog()->notice('Test Notice');
