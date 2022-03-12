@@ -22,10 +22,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     /**
      * Transform metadata into a key-value array
-     * @param $metadata
-     * @return array
      */
-    private function getMetadataValues($metadata)
+    private function getMetadataValues(array $metadata): array
     {
         $result = [];
         foreach ($metadata as $item) {

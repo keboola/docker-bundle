@@ -27,6 +27,7 @@ class ContainerConfigurationTest extends TestCase
                         ]
                     ],
                     "output" => [
+                        'default_bucket' => 'in.c-my-bucket',
                         "tables" => [
                             [
                                 "source" => "test.csv",

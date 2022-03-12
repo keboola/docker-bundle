@@ -69,8 +69,9 @@ class Container extends Configuration
 
         $outputTable = $output
             ->children()
-                ->arrayNode("tables")
-                    ->prototype("array")
+                ->scalarNode('default_bucket')->end()
+                ->arrayNode('tables')
+                    ->prototype('array')
         ;
         OutputTable::configureNode($outputTable);
 

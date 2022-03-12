@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
@@ -43,6 +44,35 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         $tableQueue->waitForAll();
         self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
+        self::assertEquals([], $dataLoader->getWorkspaceCredentials());
+        self::assertNull($dataLoader->getWorkspaceBackendSize());
+    }
+
+    public function testExecutorDefaultBucketOverride()
+    {
+        try {
+            $this->client->dropBucket('in.c-test-override', ['force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+        }
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
+            json_encode(['destination' => 'sliced'])
+        );
+        $dataLoader = $this->getDataLoader(['output' => ['default_bucket' => 'in.c-test-override']]);
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+
+        $tableQueue->waitForAll();
+        self::assertFalse($this->client->tableExists('in.c-test-demo-testConfig.sliced'));
+        self::assertTrue($this->client->tableExists('in.c-test-override.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
         self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
