@@ -20,12 +20,12 @@ use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
+use Keboola\OutputMapping\Writer\AbstractWriter;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Exception;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -41,59 +41,18 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var string
-     */
-    private $dataDirectory;
-
-    /**
-     * @var array
-     */
-    private $storageConfig;
-
-    /**
-     * @var array
-     */
-    private $runtimeConfig;
-
-    /**
-     * @var string
-     */
-    private $defaultBucketName;
-
-    /**
-     * @var Component
-     */
-    private $component;
-
-    /**
-     * @var string
-     */
-    private $configId;
-
-    /**
-     * @var string
-     */
-    private $configRowId;
-
-    /** @var OutputFilterInterface */
-    private $outputFilter;
-
-    /** @var InputStrategyFactory */
-    private $inputStrategyFactory;
-
-    /** @var OutputStrategyFactory */
-    private $outputStrategyFactory;
+    private ClientWrapper $clientWrapper;
+    private LoggerInterface $logger;
+    private string $dataDirectory;
+    private array $storageConfig;
+    private array $runtimeConfig;
+    private string $defaultBucketName;
+    private Component $component;
+    private ?string $configId;
+    private ?string $configRowId;
+    private OutputFilterInterface $outputFilter;
+    private InputStrategyFactory $inputStrategyFactory;
+    private OutputStrategyFactory $outputStrategyFactory;
 
     /**
      * DataLoader constructor.
@@ -115,13 +74,16 @@ class DataLoader implements DataLoaderInterface
         $this->logger = $logger;
         $this->dataDirectory = $dataDirectory;
         $configuration = $jobDefinition->getConfiguration();
-        $this->storageConfig = isset($configuration['storage']) ? $configuration['storage'] : [];
-        $this->runtimeConfig = isset($configuration['runtime']) ? $configuration['runtime'] : [];
+        $this->storageConfig = $configuration['storage'] ?? [];
+        $this->runtimeConfig = $configuration['runtime'] ?? [];
         $this->component = $jobDefinition->getComponent();
         $this->outputFilter = $outputFilter;
         $this->configId = $jobDefinition->getConfigId();
         $this->configRowId = $jobDefinition->getRowId();
-        $this->defaultBucketName = $this->getDefaultBucket();
+        $this->defaultBucketName = (string) ($this->storageConfig['output']['default_bucket'] ?? '');
+        if ($this->defaultBucketName === '') {
+            $this->defaultBucketName = $this->getDefaultBucket();
+        }
         $this->validateStagingSetting();
 
         $this->inputStrategyFactory = new InputStrategyFactory(
@@ -153,7 +115,7 @@ class DataLoader implements DataLoaderInterface
             $this->getStagingStorageInput(),
             $this->component,
             $this->configId,
-            isset($this->runtimeConfig['backend']) ? $this->runtimeConfig['backend'] : []
+            $this->runtimeConfig['backend'] ?? []
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
@@ -178,12 +140,8 @@ class DataLoader implements DataLoaderInterface
 
     /**
      * Download source files
-     * @param InputTableStateList $inputTableStateList
-     * @param InputFileStateList $inputFileStateList
-     * @return StorageState
-     * @throws Exception
      */
-    public function loadInputData(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
+    public function loadInputData(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList): StorageState
     {
         $reader = new Reader($this->inputStrategyFactory);
         $inputTableResult = new InputTableResult();
@@ -222,11 +180,7 @@ class DataLoader implements DataLoaderInterface
         return new StorageState($inputTableResult, $resultInputFilesStateList);
     }
 
-    /**
-     * @return LoadTableQueue|null
-     * @throws \Exception
-     */
-    public function storeOutput()
+    public function storeOutput(): ?LoadTableQueue
     {
         $this->logger->debug("Storing results.");
         $outputTablesConfig = [];
@@ -253,18 +207,18 @@ class DataLoader implements DataLoaderInterface
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
 
         $commonSystemMetadata = [
-            TableWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
-            TableWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
+            AbstractWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
+            AbstractWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
         ];
         if ($this->configRowId) {
-            $commonSystemMetadata[TableWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
+            $commonSystemMetadata[AbstractWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
         $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
         if ($this->clientWrapper->hasBranch()) {
-            $tableSystemMetadata[TableWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+            $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
 
-        $fileSystemMetadata[TableWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
+        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -313,7 +267,7 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function useFileStorageOnly()
+    private function useFileStorageOnly(): bool
     {
         return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
     }
@@ -336,7 +290,7 @@ class DataLoader implements DataLoaderInterface
         return null;
     }
 
-    public function getWorkspaceCredentials()
+    public function getWorkspaceCredentials(): array
     {
         // this returns the first workspace found, which is ok so far because there can only be one
         // (ensured in validateStagingSetting())
@@ -407,7 +361,7 @@ class DataLoader implements DataLoaderInterface
         $fs->remove($zipFileName);
     }
 
-    protected function getDefaultBucket()
+    protected function getDefaultBucket(): string
     {
         if ($this->component->hasDefaultBucket()) {
             if (!$this->configId) {
@@ -419,30 +373,30 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function getStagingStorageInput()
+    private function getStagingStorageInput(): string
     {
         if (($stagingStorage = $this->component->getStagingStorage()) !== null) {
             if (isset($stagingStorage['input'])) {
                 return $stagingStorage['input'];
             }
         }
-        return OutputStrategyFactory::LOCAL;
+        return InputStrategyFactory::LOCAL;
     }
 
-    private function getStagingStorageOutput()
+    private function getStagingStorageOutput(): string
     {
         if (($stagingStorage = $this->component->getStagingStorage()) !== null) {
             if (isset($stagingStorage['output'])) {
                 return $stagingStorage['output'];
             }
         }
-        return OutputStrategyFactory::LOCAL;
+        return InputStrategyFactory::LOCAL;
     }
 
-    private function validateStagingSetting()
+    private function validateStagingSetting(): void
     {
-        $workspaceTypes = [OutputStrategyFactory::WORKSPACE_ABS, OutputStrategyFactory::WORKSPACE_REDSHIFT,
-            OutputStrategyFactory::WORKSPACE_SNOWFLAKE, OutputStrategyFactory::WORKSPACE_SYNAPSE];
+        $workspaceTypes = [InputStrategyFactory::WORKSPACE_ABS, InputStrategyFactory::WORKSPACE_REDSHIFT,
+            InputStrategyFactory::WORKSPACE_SNOWFLAKE, InputStrategyFactory::WORKSPACE_SYNAPSE];
         if (in_array($this->getStagingStorageInput(), $workspaceTypes)
             && in_array($this->getStagingStorageOutput(), $workspaceTypes)
             && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
@@ -455,7 +409,7 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    public function cleanWorkspace()
+    public function cleanWorkspace(): void
     {
         $cleanedProviders = [];
         $maps = array_merge(
