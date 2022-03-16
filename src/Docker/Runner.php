@@ -315,9 +315,6 @@ class Runner
             }
         }
 
-        if (($mode !== self::MODE_RUN) && ($mode !== self::MODE_DEBUG)) {
-            throw new UserException("Invalid run mode: $mode");
-        }
         $outputs = [];
         $counter = 0;
         foreach ($jobDefinitions as $jobDefinition) {
