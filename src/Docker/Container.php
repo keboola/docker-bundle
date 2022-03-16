@@ -413,6 +413,7 @@ class Container
             . " --name " . escapeshellarg($containerId)
             . (!$this->getImage()->getSourceComponent()->runAsRoot() ? ' --user $(id -u):$(id -g)' : "")
             . " " . escapeshellarg($this->getImage()->getFullImageId());
+        $this->logger->notice($command);
         return $command;
     }
 
