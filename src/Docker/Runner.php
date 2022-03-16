@@ -193,7 +193,11 @@ class Runner
 
         $temp = new Temp();
         $temp->initRunFolder();
-        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
+        if ($mode === 'j2jRun') {
+            $workingDirectory = new WorkingDirectory('/tmpj2j/', $this->loggersService->getLog());
+        } else {
+            $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
+        }
         $usageFile->setDataDir($workingDirectory->getDataDir());
 
         $configData = $jobDefinition->getConfiguration();
