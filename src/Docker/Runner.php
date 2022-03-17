@@ -580,7 +580,11 @@ class Runner
             }
             $counter++;
             if ($counter < count($images)) {
-                $workingDirectory->moveOutputToInput();
+                if ($mode !== 'j2jRun') {
+                    $workingDirectory->moveOutputToInput();
+                    //} else {
+                    //$workingDirectory->copyOutputToInput();
+                }
             }
         }
         $stateFile->stashState($newState);

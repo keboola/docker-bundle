@@ -148,4 +148,45 @@ class WorkingDirectory
 
         $fs->mkdir($structure);
     }
+
+    public function copyOutputToInput()
+    {
+        // delete input
+        $fs = new Filesystem();
+        $structure = [
+            $this->workingDir . "/data/in/tables",
+            $this->workingDir . "/data/in/files",
+            $this->workingDir . "/data/in/user",
+            $this->workingDir . "/data/in",
+            $this->workingDir . "/tmp",
+        ];
+        $finder = new Finder();
+        $finder->files()->in($structure);
+        $fs->remove($finder);
+        $fs->remove($structure);
+
+        // delete state file
+        $fs->remove($this->workingDir . "/data/out/state.json");
+        $fs->remove($this->workingDir . "/data/out/state.yml");
+
+        // rename
+        $fs->rename(
+            $this->workingDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'out',
+            $this->workingDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'in'
+        );
+
+        // create empty output
+        $fs = new Filesystem();
+        $fs->mkdir($this->workingDir);
+
+        $structure = [
+            $this->workingDir . "/tmp",
+            $this->workingDir . "/data/out",
+            $this->workingDir . "/data/out/tables",
+            $this->workingDir . "/data/out/files",
+            $this->workingDir . "/data/in/user",
+        ];
+
+        $fs->mkdir($structure);
+    }
 }
