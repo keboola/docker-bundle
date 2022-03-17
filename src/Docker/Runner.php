@@ -303,7 +303,7 @@ class Runner
      * @param Output[] $outputs
      * @param string $workspaceId
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds, array &$outputs, $workspaceId)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds, array &$outputs, $workspaceId = null)
     {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
