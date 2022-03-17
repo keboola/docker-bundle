@@ -178,8 +178,9 @@ class Runner
      * @param string $jobId
      * @param UsageFileInterface $usageFile
      * @param Output[] $outputs
+     * @param string $workspaceId
      */
-    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile, array &$outputs)
+    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile, array &$outputs, string $workspaceId = null)
     {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -194,7 +195,7 @@ class Runner
         $temp = new Temp();
         $temp->initRunFolder();
         if ($mode === 'j2jRun') {
-            $workingDirectory = new WorkingDirectory('/tmp/j2j', $this->loggersService->getLog());
+            $workingDirectory = new WorkingDirectory('/tmp/j2j' . $workspaceId, $this->loggersService->getLog());
         } else {
             $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         }
@@ -211,7 +212,7 @@ class Runner
             $component->getConfigurationFormat()
         );
 
-        if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
+        if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none') && ($mode !== 'j2jRun')) {
             $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
                 $this->clientWrapper,
