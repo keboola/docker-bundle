@@ -438,7 +438,9 @@ class Runner
         }
 
         // finalize
-        $workingDirectory->dropWorkingDir();
+        if ($mode !== 'j2jRun') {
+            $workingDirectory->dropWorkingDir();
+        }
         return $output;
     }
 
