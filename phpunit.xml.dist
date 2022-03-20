@@ -48,6 +48,9 @@
     <testsuite name="exasol-tests">
         <directory>Tests/backend-specific-tests/Exasol</directory>
     </testsuite>
+    <testsuite name="redshift-tests">
+        <directory>Tests/backend-specific-tests/Redshift</directory>
+    </testsuite>
 
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

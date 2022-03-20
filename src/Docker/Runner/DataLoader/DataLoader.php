@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\Definition;
+use Keboola\InputMapping\Staging\StrategyFactory;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
@@ -21,7 +22,9 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
+use Keboola\StagingProvider\Provider\StagingProviderInterface;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
@@ -187,7 +190,11 @@ class DataLoader implements DataLoaderInterface
         $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
         $resultInputFilesStateList = new InputFileStateList([]);
-        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
+        $readerOptions = new ReaderOptions(
+            !$this->component->allowBranchMapping(),
+            // preserve is true unless on Redshift workspace (which is reusable)
+            $this->getStagingStorageInput() !== StrategyFactory::WORKSPACE_REDSHIFT
+        );
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
@@ -448,8 +455,8 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspace which is persistent if created for a config
-                if ($this->configId && ($stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType())) {
+                // don't clean ABS workspaces or Redshift workspaces which are persistent if created for a config
+                if ($this->configId && $this->isPersistentWorkspace($stagingProvider)) {
                     continue;
                 }
 
@@ -464,5 +471,11 @@ class DataLoader implements DataLoaderInterface
                 }
             }
         }
+    }
+
+    private function isPersistentWorkspace(StagingProviderInterface $stagingProvider)
+    {
+        return $stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType()
+            || $stagingProvider->getStaging()->getType() === RedshiftWorkspaceStaging::getType();
     }
 }

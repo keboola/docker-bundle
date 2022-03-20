@@ -122,6 +122,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
 
     public function testOutOfMemoryOverride()
     {
+        self::markTestSkipped('Unstable');
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['memory'] = '32m';
         $imageConfiguration['id'] = 'dummy.component';
