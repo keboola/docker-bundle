@@ -21,7 +21,9 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
+use Keboola\StagingProvider\Provider\StagingProviderInterface;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Exception;
@@ -448,8 +450,8 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspace which is persistent if created for a config
-                if ($this->configId && ($stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType())) {
+                // don't clean ABS workspaces or Redshift workspaces which are persistent if created for a config
+                if ($this->configId && $this->isPersistentWorkspace($stagingProvider)) {
                     continue;
                 }
 
@@ -464,5 +466,11 @@ class DataLoader implements DataLoaderInterface
                 }
             }
         }
+    }
+
+    private function isPersistentWorkspace(StagingProviderInterface $stagingProvider)
+    {
+        return $stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType()
+            || $stagingProvider->getStaging()->getType() === RedshiftWorkspaceStaging::getType();
     }
 }
