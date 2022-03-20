@@ -48,7 +48,7 @@ class WorkspaceProviderFactoryFactory
         if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
-        } else if $configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_REDSHIFT)) {
+        } else if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_REDSHIFT)) {
             // Redshift workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentRedshiftWorkspace($component, $configId);
         } else {
@@ -64,7 +64,7 @@ class WorkspaceProviderFactoryFactory
         return $workspaceProviderFactory;
     }
 
-    private function getWorkspaceFactoryForRedshiftWorkspace(Component $component, $configId)
+    private function getWorkspaceFactoryForPersistentRedshiftWorkspace(Component $component, $configId)
     {
         $listOptions = (new ListConfigurationWorkspacesOptions())
             ->setComponentId($component->getId())
