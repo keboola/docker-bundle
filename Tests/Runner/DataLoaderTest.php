@@ -12,7 +12,12 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
+use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -212,6 +217,126 @@ class DataLoaderTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
+    }
+
+    public function testWorkspaceRedshiftNoPreserve()
+    {
+        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
+        try {
+            $clientWrapper->getBasicClient()->dropBucket(
+                'in.c-testWorkspaceRedshiftNoPreserve',
+                ['force' => true]
+            );
+        } catch (ClientException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+        }
+        $clientWrapper->getBasicClient()->createBucket(
+            'testWorkspaceRedshiftNoPreserve',
+            'in',
+            'description',
+            'redshift'
+        );
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->temp->getTmpFolder() . '/data.csv',
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+        );
+        $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
+        $clientWrapper->getBasicClient()->createTable('in.c-testWorkspaceRedshiftNoPreserve', 'test', $csv);
+
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-redshift',
+                    'output' => 'workspace-redshift',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-testWorkspaceRedshiftNoPreserve.test',
+                            'destination' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $configuration = new Configuration();
+        $configuration->setName('testWorkspaceRedshiftNoPreserve');
+        $configuration->setComponentId('docker-demo');
+        $configuration->setConfiguration($config);
+        $componentsApi = new Components($clientWrapper->getBasicClient());
+        $configId = $componentsApi->addConfiguration($configuration)['id'];
+
+        // create redshift workspace and load a table into it
+        $workspace = $componentsApi->createConfigurationWorkspace(
+            'docker-demo',
+            $configId,
+            ['backend' => 'redshift']
+        );
+        $workspaceApi = new Workspaces($clientWrapper->getBasicClient());
+        $workspaceApi->loadWorkspaceData(
+            $workspace['id'],
+            [
+                'input' => [
+                    [
+                        'source' => 'in.c-testWorkspaceRedshiftNoPreserve.test',
+                        'destination' => 'original',
+                    ],
+                ],
+            ]
+        );
+        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component, $configId),
+            new OutputFilter()
+        );
+        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $credentials = $dataLoader->getWorkspaceCredentials();
+        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
+        self::assertNotEmpty($credentials['user']);
+
+        $workspaces = $componentsApi->listConfigurationWorkspaces(
+            (new ListConfigurationWorkspacesOptions())
+                ->setComponentId('docker-demo')
+                ->setConfigurationId($configId)
+        );
+        self::assertCount(1, $workspaces);
+
+        // the workspace should be the same
+        self::assertSame($workspace['connection']['user'], $credentials['user']);
+        self::assertSame($workspace['connection']['schema'], $credentials['schema']);
+
+        // but the original table does not exist (workspace was cleared)
+        try {
+            $clientWrapper->getBasicClient()->writeTableAsyncDirect(
+                'in.c-testWorkspaceRedshiftNoPreserve.test',
+                ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'original']
+            );
+            self::fail('Must throw exception');
+        } catch (ClientException $e) {
+            self::assertContains('Table "original" not found in schema', $e->getMessage());
+        }
+
+        // the loaded table exists
+        $clientWrapper->getBasicClient()->writeTableAsyncDirect(
+            'in.c-testWorkspaceRedshiftNoPreserve.test',
+            ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'test']
+        );
     }
 
     public function testBranchMappingDisabled()

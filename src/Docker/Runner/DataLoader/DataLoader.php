@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\Definition;
+use Keboola\InputMapping\Staging\StrategyFactory;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
@@ -189,7 +190,11 @@ class DataLoader implements DataLoaderInterface
         $reader = new Reader($this->inputStrategyFactory);
         $resultInputTablesStateList = new InputTableStateList([]);
         $resultInputFilesStateList = new InputFileStateList([]);
-        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping());
+        $readerOptions = new ReaderOptions(
+            !$this->component->allowBranchMapping(),
+            // preserve is true unless on Redshift workspace (which is reusable)
+            $this->getStagingStorageInput() !== StrategyFactory::WORKSPACE_REDSHIFT
+        );
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
