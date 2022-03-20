@@ -8,6 +8,7 @@ use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
 use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
+use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingDatabaseWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
@@ -47,6 +48,9 @@ class WorkspaceProviderFactoryFactory
         if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
+        } else if $configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_REDSHIFT)) {
+            // Redshift workspaces are persistent, but only if configId is present
+            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentRedshiftWorkspace($component, $configId);
         } else {
             $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
                 $this->componentsApiClient,
@@ -74,11 +78,11 @@ class WorkspaceProviderFactoryFactory
                 ['backend' => RedshiftWorkspaceStaging::getType()]
             );
             $workspaceId = $workspace['id'];
-            $connectionString = $workspace['connection']['connectionString'];
+            $password = $workspace['connection']['password'];
             $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
         } elseif (count($workspaces) === 1) {
             $workspaceId = $workspaces[0]['id'];
-            $connectionString = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
+            $password = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
             $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
         } else {
             throw new ApplicationException(sprintf(
@@ -90,10 +94,10 @@ class WorkspaceProviderFactoryFactory
                 $component->getId()
             ));
         }
-        return new ExistingFilesystemWorkspaceProviderFactory(
+        return new ExistingDatabaseWorkspaceProviderFactory(
             $this->workspacesApiClient,
             $workspaceId,
-            $connectionString
+            $password
         );
     }
 
