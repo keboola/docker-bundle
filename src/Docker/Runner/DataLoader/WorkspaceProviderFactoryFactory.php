@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
 use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
 use Keboola\StorageApi\Components;
@@ -46,6 +47,8 @@ class WorkspaceProviderFactoryFactory
         if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
+        } else if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_REDSHIFT)) {
+            $workspaceProviderFactory = $this->getWorkspaceFactoryForRedshiftWorkspace($component, $configId);
         } else {
             $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
                 $this->componentsApiClient,
@@ -57,6 +60,43 @@ class WorkspaceProviderFactoryFactory
             $this->logger->info('Created a new ephemeral workspace.');
         }
         return $workspaceProviderFactory;
+    }
+
+    private function getWorkspaceFactoryForRedshiftWorkspace(Component $component, $configId)
+    {
+        $listOptions = (new ListConfigurationWorkspacesOptions())
+            ->setComponentId($component->getId())
+            ->setConfigurationId($configId);
+        $workspaces = $this->componentsApiClient->listConfigurationWorkspaces($listOptions);
+
+        if (count($workspaces) === 0) {
+            $workspace = $this->componentsApiClient->createConfigurationWorkspace(
+                $component->getId(),
+                $configId,
+                ['backend' => RedshiftWorkspaceStaging::getType()]
+            );
+            $workspaceId = $workspace['id'];
+            $connectionString = $workspace['connection']['connectionString'];
+            $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
+        } elseif (count($workspaces) === 1) {
+            $workspaceId = $workspaces[0]['id'];
+            $connectionString = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
+            $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
+        } else {
+            throw new ApplicationException(sprintf(
+                'Multiple workspaces (total %s) found (IDs: %s, %s) for configuration "%s" of component "%s".',
+                count($workspaces),
+                $workspaces[0]['id'],
+                $workspaces[1]['id'],
+                $configId,
+                $component->getId()
+            ));
+        }
+        return new ExistingFilesystemWorkspaceProviderFactory(
+            $this->workspacesApiClient,
+            $workspaceId,
+            $connectionString
+        );
     }
 
     private function getWorkspaceFactoryForPersistentAbsWorkspace(Component $component, $configId)
