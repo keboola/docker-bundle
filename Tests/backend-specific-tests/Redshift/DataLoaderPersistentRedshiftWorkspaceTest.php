@@ -28,8 +28,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         parent::setUp();
 
         $this->client = new Client([
-            'url' => STORAGE_API_URL_SYNAPSE,
-            'token' => STORAGE_API_TOKEN_SYNAPSE,
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
         ]);
         $this->metadata = new Metadata($this->client);
         $this->temp = new Temp();
@@ -56,8 +56,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -76,8 +76,11 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
-        self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
+        self::assertEquals(
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
+            array_keys($credentials)
+        );
+        self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         self::assertTrue($logger->hasInfoThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
@@ -101,8 +104,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -127,8 +130,11 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
-        self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
+        self::assertEquals(
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
+            array_keys($credentials)
+        );
+        self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
@@ -167,8 +173,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -198,8 +204,11 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
-        self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
+        self::assertEquals(
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
+            array_keys($credentials)
+        );
+        self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
@@ -224,7 +233,80 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ));
     }
 
-    public function testRedshiftWorkspaceConfigMultipleWorkspace()
+//    public function testRedshiftWorkspaceConfigMultipleWorkspace()
+//    {
+//        $component = new Component([
+//            'id' => 'keboola.runner-config-test',
+//            'data' => [
+//                'definition' => [
+//                    'type' => 'dockerhub',
+//                    'uri' => 'keboola/docker-demo',
+//                    'tag' => 'master'
+//                ],
+//                'staging-storage' => [
+//                    'input' => 'workspace-redshift',
+//                    'output' => 'workspace-redshift',
+//                ],
+//            ],
+//        ]);
+//        $client = self::getMockBuilder(Client::class)
+//            ->setConstructorArgs([[
+//                'url' => STORAGE_API_URL,
+//                'token' => STORAGE_API_TOKEN,
+//            ]])
+//            ->setMethods(['apiDelete'])
+//            ->getMock();
+//        $client->expects(self::never())->method('apiDelete');
+//        /** @var Client $client */
+//        $configuration = new Configuration();
+//        $configuration->setConfiguration([]);
+//        $configuration->setName('test-dataloader');
+//        $configuration->setComponentId('keboola.runner-config-test');
+//        $componentsApi = new Components($this->client);
+//        $configurationId = $componentsApi->addConfiguration($configuration)['id'];
+//        $workspace1 = $componentsApi->createConfigurationWorkspace(
+//            'keboola.runner-config-test',
+//            $configurationId,
+//            ['backend' => 'redshift']
+//        );
+//        $workspace2 = $componentsApi->createConfigurationWorkspace(
+//            'keboola.runner-config-test',
+//            $configurationId,
+//            ['backend' => 'redshift']
+//        );
+//
+//        $clientWrapper = new ClientWrapper($client, null, null, '');
+//        $logger = new TestLogger();
+//        try {
+//            $workspaceFactory = new WorkspaceProviderFactoryFactory(
+//                new Components($client),
+//                new Workspaces($client),
+//                $logger
+//            );
+//            $workspaceFactory->getWorkspaceProviderFactory(
+//                'workspace-redshift',
+//                $component,
+//                $configurationId,
+//                ['type' => 'redshift']
+//            );
+//        } catch (ApplicationException $e) {
+//            self::assertEquals(
+//                sprintf(
+//                    'Multiple workspaces (total 2) found (IDs: %s, %s) for configuration "%s" of component "%s".',
+//                    $workspace1['id'],
+//                    $workspace2['id'],
+//                    $configurationId,
+//                    'keboola.runner-config-test'
+//                ),
+//                $e->getMessage()
+//            );
+//            $workspacesApi = new Workspaces($this->client);
+//            $workspacesApi->deleteWorkspace($workspace1['id']);
+//            $workspacesApi->deleteWorkspace($workspace2['id']);
+//        }
+//    }
+
+    public function testRedshiftWorkspaceConfigMultipleWorkspaceVariant2()
     {
         $component = new Component([
             'id' => 'keboola.runner-config-test',
@@ -242,8 +324,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -268,30 +350,40 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
 
         $clientWrapper = new ClientWrapper($client, null, null, '');
         $logger = new TestLogger();
-        try {
-            $workspaceFactory = new WorkspaceProviderFactoryFactory(
-                $logger,
-                $clientWrapper
-            );
-            $workspaceFactory->getWorkspaceProviderFactory(
-                'workspace-redshift',
-                $component,
-                $configurationId
-            );
-        } catch (ApplicationException $e) {
-            self::assertEquals(
-                sprintf(
-                    'Multiple workspaces (total 2) found (IDs: %s, %s) for configuration "%s" of component "%s".',
-                    $workspace1['id'],
-                    $workspace2['id'],
-                    $configurationId,
-                    'keboola.runner-config-test'
-                ),
-                $e->getMessage()
-            );
-            $workspacesApi = new Workspaces($this->client);
-            $workspacesApi->deleteWorkspace($workspace1['id']);
-            $workspacesApi->deleteWorkspace($workspace2['id']);
-        }
+
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition([], $component, $configurationId),
+            new OutputFilter()
+        );
+        $dataLoader->storeOutput();
+
+        $this->assertTrue($logger->hasWarning(
+            sprintf(
+                'Multiple workspaces (total 2) found (IDs: %s) for configuration "%s" of component "%s", using "%s".',
+                implode(',', [$workspace1['id'], $workspace2['id']]),
+                $configurationId,
+                'keboola.runner-config-test',
+                $workspace1['id']
+            )
+        ));
+        $credentials = $dataLoader->getWorkspaceCredentials();
+        self::assertEquals(
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
+            array_keys($credentials)
+        );
+        self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
+        $workspaces = $componentsApi->listConfigurationWorkspaces(
+            (new ListConfigurationWorkspacesOptions())
+                ->setComponentId('keboola.runner-config-test')
+                ->setConfigurationId($configurationId)
+        );
+        self::assertCount(2, $workspaces);
+
+        $workspacesApi = new Workspaces($this->client);
+        $workspacesApi->deleteWorkspace($workspace1['id']);
+        $workspacesApi->deleteWorkspace($workspace2['id']);
     }
 }

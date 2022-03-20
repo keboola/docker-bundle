@@ -52,6 +52,7 @@ services:
     ports:
       - "800:80"
       - "220:22"
+      - "12202:12202"
     links:
       - database
       - elastic
