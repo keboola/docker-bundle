@@ -14,6 +14,7 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 
 class BranchedWorkspaceTest extends BaseRunnerTest
@@ -26,7 +27,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         ['test1', 'test1'],
     ];
 
-    public function testConfigIsAvailableToJobWhenCreatedBeforeBranch()
+    public function testConfigIsAvailableToJobWhenCreatedBeforeBranch(): void
     {
         $storageApi = $this->getClient();
         $storageApiMaster = $this->createMasterClient();
@@ -52,7 +53,11 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         // create branch
         $branchesApiMaster = new DevBranches($storageApiMaster);
         $branchId = $this->cleanupAndCreateBranch($branchesApiMaster, self::BRANCH_NAME);
-        $storageApiWrapper = new ClientWrapper($storageApi, null, null, $branchId);
+        $storageApiWrapper = new ClientWrapper(new ClientOptions(
+            $storageApi->getApiUrl(),
+            $storageApi->getTokenString(),
+            $branchId
+        ));
 
         // run testing job
         $jobDefinition = $this->createCopyJobDefinition($configId, $inBucketId, $outBucketId, self::TABLE_NAME);
@@ -79,7 +84,11 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         // create branch
         $branchesApiMaster = new DevBranches($storageApiMaster);
         $branchId = $this->cleanupAndCreateBranch($branchesApiMaster, self::BRANCH_NAME);
-        $storageApiWrapper = new ClientWrapper($storageApi, null, null, $branchId);
+        $storageApiWrapper = new ClientWrapper(new ClientOptions(
+            $storageApi->getApiUrl(),
+            $storageApi->getTokenString(),
+            $branchId
+        ));
 
         // setup configuration inside branch
         $componentsApiForConfig = new Components($storageApiWrapper->getBranchClient());

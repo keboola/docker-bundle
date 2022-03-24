@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -91,9 +92,15 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testDefaultSystemMetadataBranch()
     {
-        foreach ($this->client->listBuckets() as $bucket) {
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER
+            )
+        );
+        foreach ($clientWrapper->getBasicClient()->listBuckets() as $bucket) {
             if (preg_match('/^in\.c\-[0-9]+\-docker\-demo\-testConfig$/', $bucket['id'])) {
-                $this->client->dropBucket($bucket['id'], ['force' => true]);
+                $clientWrapper->getBasicClient()->dropBucket($bucket['id'], ['force' => true]);
             }
         }
 
@@ -107,12 +114,14 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             json_encode(['destination' => 'sliced'])
         );
 
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN_MASTER,
-        ]);
-        $branchId = $this->createBranch($this->client, 'test-branch');
-        $clientWrapper = new ClientWrapper($this->client, null, null, $branchId);
+        $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'test-branch');
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER,
+                $branchId
+            )
+        );
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),

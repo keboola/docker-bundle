@@ -10,8 +10,8 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApiBranch\ClientWrapper as StorageClientWrapper;
 use Psr\Log\NullLogger;
+use SplFileInfo;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 
@@ -43,15 +43,22 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $this->client->createBucket('docker-demo-testConfig-abs', 'in');
-        $this->client->createTable('in.c-docker-demo-testConfig-abs', 'test', new CsvFile($filePath));
-        $this->client->uploadFile($filePath, (new FileUploadOptions())->setTags(['docker-demo-test-abs']));
+
+        $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig-abs', 'in');
+        $this->clientWrapper->getBasicClient()->createTable(
+            'in.c-docker-demo-testConfig-abs',
+            'test',
+            new CsvFile($filePath)
+        );
+        $this->clientWrapper->getBasicClient()->uploadFile(
+            $filePath,
+            (new FileUploadOptions())->setTags(['docker-demo-test-abs'])
+        );
         sleep(1);
 
-        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $jobDefinition = new JobDefinition($config, $this->getNoDefaultBucketComponent());
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
@@ -69,7 +76,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
 
         $this->assertEquals(1, $finder->count());
 
-        /** @var \SplFileInfo $file */
+        /** @var SplFileInfo $file */
         foreach ($finder as $file) {
             $this->assertEquals(
                 "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",

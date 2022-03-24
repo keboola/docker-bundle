@@ -12,6 +12,7 @@ use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -21,29 +22,10 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends TestCase
 {
-    /**
-     * @var Client
-     */
-    protected $client;
-
-    /**
-     * @var Temp
-     */
-    private $temp;
-    /**
-     * @var string
-     */
-    private $dataDir;
-
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
+    private Temp $temp;
+    private string $dataDir;
+    private ObjectEncryptorFactory $encryptorFactory;
+    private ClientWrapper $clientWrapper;
 
     public function setUp(): void
     {
@@ -59,11 +41,10 @@ class StateFileTest extends TestCase
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'in');
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'out');
 
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-        $this->clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
+        $this->clientWrapper = new ClientWrapper(new ClientOptions(
+            STORAGE_API_URL,
+            STORAGE_API_TOKEN,
+        ));
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
@@ -106,7 +87,7 @@ class StateFileTest extends TestCase
     {
         self::expectException(UserException::class);
         self::expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
-        $stateFile = new StateFile(
+        new StateFile(
             $this->dataDir,
             $this->clientWrapper,
             $this->encryptorFactory,
@@ -165,11 +146,10 @@ class StateFileTest extends TestCase
                 )
             );
 
-
         $state = ['key' => 'fooBar'];
         $testLogger = new TestLogger();
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -194,8 +174,9 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPut');
         $testLogger = new TestLogger();
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -231,8 +212,9 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -255,8 +237,9 @@ class StateFileTest extends TestCase
             ->getMock();
         $sapiStub->expects(self::never())
             ->method('apiPut');
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -289,8 +272,9 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -327,8 +311,9 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -365,8 +350,9 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -405,8 +391,9 @@ class StateFileTest extends TestCase
                     ])]
                 )
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -501,8 +488,9 @@ class StateFileTest extends TestCase
             )
             ->willThrowException(new ClientException("Test", 404));
 
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -541,8 +529,9 @@ class StateFileTest extends TestCase
             )
             ->willThrowException(new ClientException("Test", 888));
 
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -591,8 +580,9 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -644,8 +634,9 @@ class StateFileTest extends TestCase
                     return true;
                 })
             );
-        /** @var Client $sapiStub */
-        $clientWrapper = new ClientWrapper($sapiStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
