@@ -42,10 +42,12 @@
 	    <testsuite name="synapse-tests">
 	        <directory>Tests/backend-specific-tests/Synapse</directory>
 	    </testsuite>
-    <testsuite name="exasol-tests">
-        <directory>Tests/backend-specific-tests/Exasol</directory>
-    </testsuite>
-
+		<testsuite name="exasol-tests">
+			<directory>Tests/backend-specific-tests/Exasol</directory>
+		</testsuite>
+		<testsuite name="redshift-tests">
+			<directory>Tests/backend-specific-tests/Redshift</directory>
+		</testsuite>
 	</testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

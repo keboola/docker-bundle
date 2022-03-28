@@ -23,7 +23,9 @@ use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\Writer\AbstractWriter;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
+use Keboola\StagingProvider\Provider\StagingProviderInterface;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -147,8 +149,15 @@ class DataLoader implements DataLoaderInterface
         $inputTableResult = new InputTableResult();
         $inputTableResult->setInputTableStateList(new InputTableStateList([]));
         $resultInputFilesStateList = new InputFileStateList([]);
+        $readerOptions = new ReaderOptions(
+            !$this->component->allowBranchMapping(),
+            /* preserve is true only for ABS Workspaces which are persistent (shared across runs) (preserve = true).
+                Redshift workspaces are reusable, but still cleaned up before each run (preserve = false). Other
+                workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
+            */
+            $this->getStagingStorageInput() === InputStrategyFactory::WORKSPACE_ABS
+        );
 
-        $readerOptions = new ReaderOptions(!$this->component->allowBranchMapping(), false);
         try {
             if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
                 $this->logger->debug('Downloading source tables.');
@@ -294,7 +303,7 @@ class DataLoader implements DataLoaderInterface
     {
         // this returns the first workspace found, which is ok so far because there can only be one
         // (ensured in validateStagingSetting())
-        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
+        // working only with inputStrategyFactory, but the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
                 if (!$stagingProvider instanceof WorkspaceStagingProvider) {
@@ -424,8 +433,8 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspace which is persistent if created for a config
-                if ($this->configId && ($stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType())) {
+                // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
+                if ($this->configId && $this->isReusableWorkspace($stagingProvider)) {
                     continue;
                 }
 
@@ -440,5 +449,11 @@ class DataLoader implements DataLoaderInterface
                 }
             }
         }
+    }
+
+    private function isReusableWorkspace(StagingProviderInterface $stagingProvider): bool
+    {
+        return $stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType()
+            || $stagingProvider->getStaging()->getType() === RedshiftWorkspaceStaging::getType();
     }
 }
