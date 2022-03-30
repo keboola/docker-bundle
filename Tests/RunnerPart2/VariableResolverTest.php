@@ -13,25 +13,18 @@ use Keboola\StorageApi\Options\Components\Configuration as StorageConfiguration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 
 class VariableResolverTest extends TestCase
 {
     use CreateBranchTrait;
 
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
+    private ClientWrapper $clientWrapper;
+    private Component $component;
 
-    /**
-     * @var Component
-     */
-    private $component;
-
-    private function createVariablesConfiguration(Client $client, array $data, array $rowData)
+    private function createVariablesConfiguration(Client $client, array $data, array $rowData): array
     {
         $components = new Components($client);
         $configuration = new StorageConfiguration();
@@ -52,13 +45,10 @@ class VariableResolverTest extends TestCase
         parent::setUp();
 
         $this->clientWrapper = new ClientWrapper(
-            new Client([
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]),
-            null,
-            new NullLogger(),
-            ClientWrapper::BRANCH_MAIN
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN,
+            )
         );
         $components = new Components($this->clientWrapper->getBasicClient());
         $listOptions = new ListComponentConfigurationsOptions();
@@ -80,7 +70,7 @@ class VariableResolverTest extends TestCase
         );
     }
 
-    public function testResolveVariablesValuesId()
+    public function testResolveVariablesValuesId(): void
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -115,9 +105,9 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesValuesData()
+    public function testResolveVariablesValuesData(): void
     {
-        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+        list ($vConfigurationId,) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
@@ -154,7 +144,7 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesDefaultValues()
+    public function testResolveVariablesDefaultValues(): void
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -191,7 +181,7 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesDefaultValuesOverride()
+    public function testResolveVariablesDefaultValuesOverride(): void
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -228,7 +218,7 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesDefaultValuesOverrideData()
+    public function testResolveVariablesDefaultValuesOverrideData(): void
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -269,7 +259,7 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesNoValues()
+    public function testResolveVariablesNoValues(): void
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -292,7 +282,7 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
     }
 
-    public function testResolveVariablesInvalidDefaultValues()
+    public function testResolveVariablesInvalidDefaultValues(): void
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -315,7 +305,7 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
     }
 
-    public function testResolveVariablesInvalidProvidedValues()
+    public function testResolveVariablesInvalidProvidedValues(): void
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -337,7 +327,7 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
     }
 
-    public function testResolveVariablesInvalidProvidedArguments()
+    public function testResolveVariablesInvalidProvidedArguments(): void
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -363,7 +353,7 @@ class VariableResolverTest extends TestCase
         )[0];
     }
 
-    public function testResolveVariablesNonExistentVariableConfiguration()
+    public function testResolveVariablesNonExistentVariableConfiguration(): void
     {
         $configuration = [
             'variables_id' => 'non-existent',
@@ -380,7 +370,7 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
     }
 
-    public function testResolveVariablesInvalidVariableConfiguration()
+    public function testResolveVariablesInvalidVariableConfiguration(): void
     {
         list ($vConfigurationId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -402,7 +392,7 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
     }
 
-    public function testResolveVariablesNoVariables()
+    public function testResolveVariablesNoVariables(): void
     {
         $component = new Component(
             [
@@ -437,7 +427,7 @@ class VariableResolverTest extends TestCase
         self::assertFalse($logger->hasInfoThatContains('Replacing variables using default values with ID:'));
     }
 
-    public function testInvalidValuesConfiguration()
+    public function testInvalidValuesConfiguration(): void
     {
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -456,9 +446,9 @@ class VariableResolverTest extends TestCase
         $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
     }
 
-    public function testResolveVariablesSpecialCharacterReplacement()
+    public function testResolveVariablesSpecialCharacterReplacement(): void
     {
-        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+        list ($vConfigurationId,) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
@@ -495,9 +485,9 @@ class VariableResolverTest extends TestCase
         self::assertTrue($logger->hasInfoThatContains('Replaced values for variables: "foo".'));
     }
 
-    public function testResolveVariablesSpecialCharacterNonEscapedReplacement()
+    public function testResolveVariablesSpecialCharacterNonEscapedReplacement(): void
     {
-        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+        list ($vConfigurationId,) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
@@ -519,9 +509,9 @@ class VariableResolverTest extends TestCase
         )[0];
     }
 
-    public function testResolveVariablesMissingValues()
+    public function testResolveVariablesMissingValues(): void
     {
-        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+        list ($vConfigurationId,) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string'], ['name' => 'goo', 'type' => 'string']]],
             []
@@ -543,9 +533,9 @@ class VariableResolverTest extends TestCase
         );
     }
 
-    public function testResolveVariablesMissingValuesInBody()
+    public function testResolveVariablesMissingValuesInBody(): void
     {
-        list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
+        list ($vConfigurationId,) = $this->createVariablesConfiguration(
             $this->clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             []
@@ -567,27 +557,30 @@ class VariableResolverTest extends TestCase
         );
     }
 
-    public function testResolveVariablesValuesBranch()
+    public function testResolveVariablesValuesBranch(): void
     {
-        $client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN_MASTER,
-        ]);
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER
+            )
+        );
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
-            $client,
+            $clientWrapper->getBasicClient(),
             ['variables' => [['name' => 'foo', 'type' => 'string']]],
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
         );
-        $branchId = $this->createBranch($client, 'my-dev-branch');
-        $this->clientWrapper = new ClientWrapper(
-            $client,
-            null,
-            new NullLogger(),
-            $branchId
+        $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'my-dev-branch');
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER,
+                $branchId
+            )
         );
 
         // modify the dev branch variable configuration to "dev-bar"
-        $components = new Components($this->clientWrapper->getBranchClient());
+        $components = new Components($clientWrapper->getBranchClient());
         $configuration = new StorageConfiguration();
         $configuration->setComponentId('keboola.variables');
         $configuration->setConfigurationId($vConfigurationId);
@@ -601,7 +594,7 @@ class VariableResolverTest extends TestCase
             'parameters' => ['some_parameter' => 'foo is {{ foo }}.'],
         ];
         $logger = new TestLogger();
-        $variableResolver = new VariableResolver($this->clientWrapper, $logger);
+        $variableResolver = new VariableResolver($clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];

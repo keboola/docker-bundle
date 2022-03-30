@@ -62,8 +62,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects($this->once())->method('apiDelete')->with(self::stringContains('workspaces/'));
-        /** @var Client $client */
-        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($client);
+        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -107,14 +108,15 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
-        /** @var Client $client */
         $configuration = new Configuration();
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
         $configuration->setComponentId('keboola.runner-config-test');
         $componentsApi = new Components($this->client);
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
-        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($client);
+        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -173,7 +175,6 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
-        /** @var Client $client */
         $configuration = new Configuration();
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
@@ -185,7 +186,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $configurationId,
             ['backend' => 'abs']
         );
-        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($client);
+        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -248,7 +251,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
-        /** @var Client $client */
+
         $configuration = new Configuration();
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
@@ -266,7 +269,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             ['backend' => 'abs']
         );
 
-        $clientWrapper = new ClientWrapper($client, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($client);
+        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
         $logger = new TestLogger();
         try {
             $workspaceFactory = new WorkspaceProviderFactoryFactory(

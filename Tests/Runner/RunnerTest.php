@@ -2855,7 +2855,7 @@ class RunnerTest extends BaseRunnerTest
         }
     }
 
-    public function testWorkspaceMappingCleanupMappingError()
+    public function testWorkspaceMappingCleanupMappingError(): void
     {
         $this->clearBuckets();
         $this->createBuckets();

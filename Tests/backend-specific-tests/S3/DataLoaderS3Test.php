@@ -13,10 +13,10 @@ use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
-use Keboola\StorageApiBranch\ClientWrapper as StorageClientWrapper;
 use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
+use ZipArchive;
 
 class DataLoaderS3Test extends BaseDataLoaderTest
 {
@@ -26,7 +26,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->cleanup('-s3');
     }
 
-    private function getS3StagingComponent()
+    private function getS3StagingComponent(): Component
     {
         return new Component([
             'id' => 'docker-demo',
@@ -43,7 +43,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         ]);
     }
 
-    public function testStoreArchive()
+    public function testStoreArchive(): void
     {
         $config = [
             'input' => [
@@ -67,9 +67,8 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
@@ -77,7 +76,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         );
         $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
         sleep(1);
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test-s3']));
+        $files = $this->clientWrapper->getBasicClient()->listFiles(
+            (new ListFilesOptions())->setTags(['docker-demo-test-s3'])
+        );
         self::assertCount(1, $files);
 
         $temp = new Temp();
@@ -85,7 +86,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $target = $temp->getTmpFolder() . '/tmp-download.zip';
         $this->downloadFile($files[0]['id'], $target);
 
-        $zipArchive = new \ZipArchive();
+        $zipArchive = new ZipArchive();
         $zipArchive->open($target);
         self::assertEquals(8, $zipArchive->numFiles);
         $items = [];
@@ -103,7 +104,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         );
     }
 
-    public function testLoadInputDataS3()
+    public function testLoadInputDataS3(): void
     {
         $config = [
             'input' => [
@@ -120,12 +121,15 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $filePath,
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $this->client->createBucket('docker-demo-testConfig-s3', 'in');
-        $this->client->createTable('in.c-docker-demo-testConfig-s3', 'test', new CsvFile($filePath));
+        $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig-s3', 'in');
+        $this->clientWrapper->getBasicClient()->createTable(
+            'in.c-docker-demo-testConfig-s3',
+            'test',
+            new CsvFile($filePath)
+        );
 
-        $clientWrapper = new StorageClientWrapper($this->client, null, null, StorageClientWrapper::BRANCH_MAIN);
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
@@ -141,7 +145,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->assertS3info($manifest);
     }
 
-    private function assertS3info($manifest)
+    private function assertS3info($manifest): void
     {
         self::assertArrayHasKey('s3', $manifest);
         self::assertArrayHasKey('isSliced', $manifest['s3']);
@@ -158,14 +162,17 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         }
     }
 
-    private function downloadFile($fileId, $targetFile)
+    private function downloadFile($fileId, $targetFile): void
     {
-        $fileInfo = $this->client->getFile($fileId, (new GetFileOptions())->setFederationToken(true));
+        $fileInfo = $this->clientWrapper->getBasicClient()->getFile(
+            $fileId,
+            (new GetFileOptions())->setFederationToken(true)
+        );
         // Initialize S3Client with credentials from Storage API
         $s3Client = new S3Client([
             'version' => '2006-03-01',
             'region' => $fileInfo['region'],
-            'retries' => $this->client->getAwsRetries(),
+            'retries' => $this->clientWrapper->getClientOptionsReadOnly()->getAwsRetries(),
             'credentials' => [
                 'key' => $fileInfo['credentials']['AccessKeyId'],
                 'secret' => $fileInfo['credentials']['SecretAccessKey'],

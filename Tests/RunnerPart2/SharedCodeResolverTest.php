@@ -10,25 +10,18 @@ use Keboola\StorageApi\Options\Components\Configuration as StorageConfiguration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 
 class SharedCodeResolverTest extends TestCase
 {
     use CreateBranchTrait;
 
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
+    private ClientWrapper $clientWrapper;
+    private Component $component;
 
-    /**
-     * @var Component
-     */
-    private $component;
-
-    private function createSharedCodeConfiguration(Client $client, array $rowDatas)
+    private function createSharedCodeConfiguration(Client $client, array $rowDatas): array
     {
         $components = new Components($client);
         $configuration = new StorageConfiguration();
@@ -53,13 +46,10 @@ class SharedCodeResolverTest extends TestCase
         parent::setUp();
 
         $this->clientWrapper = new ClientWrapper(
-            new Client([
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
-            ]),
-            null,
-            new NullLogger(),
-            ClientWrapper::BRANCH_MAIN
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN,
+            )
         );
         $components = new Components($this->clientWrapper->getBasicClient());
         $listOptions = new ListComponentConfigurationsOptions();
@@ -81,7 +71,7 @@ class SharedCodeResolverTest extends TestCase
         );
     }
 
-    public function testResolveSharedCode()
+    public function testResolveSharedCode(): void
     {
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -120,7 +110,6 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
         self::assertEquals(
             [
@@ -188,7 +177,6 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
         self::assertEquals(
             [
@@ -226,7 +214,6 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
         self::assertEquals(
             [
@@ -330,10 +317,12 @@ class SharedCodeResolverTest extends TestCase
 
     public function testResolveSharedCodeBranch()
     {
-        $client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN_MASTER,
-        ]);
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER
+            )
+        );
 
         list ($sharedConfigurationId, $sharedCodeRowIds) = $this->createSharedCodeConfiguration(
             $this->clientWrapper->getBasicClient(),
@@ -342,16 +331,17 @@ class SharedCodeResolverTest extends TestCase
                 'secondCode' => ['code_content' => ['bar']]
             ]
         );
-        $branchId = $this->createBranch($client, 'my-dev-branch');
-        $this->clientWrapper = new ClientWrapper(
-            $client,
-            null,
-            new NullLogger(),
-            $branchId
+        $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'my-dev-branch');
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN_MASTER,
+                $branchId
+            )
         );
 
         // modify the dev branch shared code configuration to "dev-bar"
-        $components = new Components($this->clientWrapper->getBranchClient());
+        $components = new Components($clientWrapper->getBranchClient());
         $configuration = new StorageConfiguration();
         $configuration->setComponentId('keboola.shared-code');
         $configuration->setConfigurationId($sharedConfigurationId);
@@ -370,9 +360,8 @@ class SharedCodeResolverTest extends TestCase
             ],
         ];
         $logger = new TestLogger();
-        $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
+        $sharedCodeResolver = new SharedCodeResolver($clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
         $newJobDefinition = $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
         self::assertEquals(
             [

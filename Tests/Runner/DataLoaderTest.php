@@ -15,7 +15,6 @@ use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
-use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -43,7 +42,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNotNull($tableQueue);
 
         $tableQueue->waitForAll();
-        self::assertTrue($this->client->tableExists('in.c-docker-demo-testConfig.sliced'));
+        self::assertTrue(
+            $this->clientWrapper->getBasicClient()->tableExists('in.c-docker-demo-testConfig.sliced')
+        );
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
         self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
@@ -51,7 +52,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testExecutorDefaultBucketOverride()
     {
         try {
-            $this->client->dropBucket('in.c-test-override', ['force' => true]);
+            $this->clientWrapper->getBasicClient()->dropBucket('in.c-test-override', ['force' => true]);
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -71,8 +72,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNotNull($tableQueue);
 
         $tableQueue->waitForAll();
-        self::assertFalse($this->client->tableExists('in.c-test-demo-testConfig.sliced'));
-        self::assertTrue($this->client->tableExists('in.c-test-override.sliced'));
+        self::assertFalse($this->clientWrapper->getBasicClient()->tableExists('in.c-test-demo-testConfig.sliced'));
+        self::assertTrue($this->clientWrapper->getBasicClient()->tableExists('in.c-test-override.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
         self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
@@ -81,9 +82,8 @@ class DataLoaderTest extends BaseDataLoaderTest
     {
         self::expectException(UserException::class);
         self::expectExceptionMessage('Configuration ID not set');
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
@@ -118,11 +118,10 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         self::expectException(UserException::class);
         self::expectExceptionMessage('Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"');
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
@@ -153,11 +152,10 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage($error);
         new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
@@ -165,7 +163,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
     }
 
-    public function invalidStagingProvider()
+    public function invalidStagingProvider(): array
     {
         return [
             'snowflake-redshift' => [
@@ -216,7 +214,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         ];
     }
 
-    public function testWorkspace()
+    public function testWorkspace(): void
     {
         $component = new Component([
             'id' => 'docker-demo',
@@ -232,9 +230,8 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
@@ -247,11 +244,10 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNotNull($dataLoader->getWorkspaceBackendSize());
     }
 
-    public function testBranchMappingDisabled()
+    public function testBranchMappingDisabled(): void
     {
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
-        $clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
-        $metadata = new Metadata($clientWrapper->getBasicClient());
+        $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
+        $metadata = new Metadata($this->clientWrapper->getBasicClient());
         $metadata->postBucketMetadata(
             'in.c-docker-demo-testConfig',
             'system',
@@ -289,7 +285,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         ];
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
@@ -305,16 +301,15 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testBranchMappingEnabled()
     {
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
-        $clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
+        $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->temp->getTmpFolder() . '/data.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
-        $clientWrapper->getBasicClient()->createTable('in.c-docker-demo-testConfig', 'test', $csv);
-        $metadata = new Metadata($clientWrapper->getBasicClient());
+        $this->clientWrapper->getBasicClient()->createTable('in.c-docker-demo-testConfig', 'test', $csv);
+        $metadata = new Metadata($this->clientWrapper->getBasicClient());
         $metadata->postBucketMetadata(
             'in.c-docker-demo-testConfig',
             'system',
@@ -353,7 +348,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         ];
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),

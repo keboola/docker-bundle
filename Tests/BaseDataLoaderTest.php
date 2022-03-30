@@ -7,67 +7,61 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
 abstract class BaseDataLoaderTest extends TestCase
 {
-    /**
-     * @var Client
-     */
-    protected $client;
-    /**
-     * @var WorkingDirectory
-     */
-    protected $workingDir;
-    /**
-     * @var Metadata
-     */
-    protected $metadata;
-    /**
-     * @var Temp
-     */
-    protected $temp;
+    protected ClientWrapper $clientWrapper;
+    protected WorkingDirectory $workingDir;
+    protected Metadata $metadata;
+    protected Temp $temp;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-        $this->metadata = new Metadata($this->client);
+        $this->clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                STORAGE_API_URL,
+                STORAGE_API_TOKEN
+            )
+        );
+        $this->metadata = new Metadata($this->clientWrapper->getBasicClient());
         $this->temp = new Temp();
         $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
     }
 
-    protected function cleanup($suffix = '')
+    protected function cleanup($suffix = ''): void
     {
         try {
-            $this->client->dropBucket('in.c-docker-demo-testConfig' . $suffix, ['force' => true]);
+            $this->clientWrapper->getBasicClient()->dropBucket(
+                'in.c-docker-demo-testConfig' . $suffix,
+                ['force' => true]
+            );
         } catch (ClientException $e) {
             if ($e->getCode() != 404) {
                 throw $e;
             }
         }
-        $files = $this->client->listFiles((new ListFilesOptions())->setTags(['docker-demo-test' . $suffix]));
+        $files = $this->clientWrapper->getBasicClient()->listFiles(
+            (new ListFilesOptions())->setTags(['docker-demo-test' . $suffix])
+        );
         foreach ($files as $file) {
-            $this->client->deleteFile($file['id']);
+            $this->clientWrapper->getBasicClient()->deleteFile($file['id']);
         }
     }
 
-    protected function getDataLoader(array $storageConfig, $configRow = null)
+    protected function getDataLoader(array $storageConfig, $configRow = null): DataLoader
     {
-        $clientWrapper = new ClientWrapper($this->client, null, null, ClientWrapper::BRANCH_MAIN);
         $config = ['storage' => $storageConfig];
         $jobDefinition = new JobDefinition(
             $config,
@@ -78,7 +72,7 @@ abstract class BaseDataLoaderTest extends TestCase
             $configRow
         );
         return new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
@@ -86,7 +80,7 @@ abstract class BaseDataLoaderTest extends TestCase
         );
     }
 
-    protected function getDefaultBucketComponent()
+    protected function getDefaultBucketComponent(): Component
     {
         // use the docker-demo component for testing
         return new Component([
@@ -102,7 +96,7 @@ abstract class BaseDataLoaderTest extends TestCase
         ]);
     }
 
-    protected function getNoDefaultBucketComponent()
+    protected function getNoDefaultBucketComponent(): Component
     {
         return new Component([
             'id' => 'docker-demo',

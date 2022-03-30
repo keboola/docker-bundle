@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -136,7 +137,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function getRunner()
+    protected function getRunner(): Runner
     {
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
@@ -144,7 +145,9 @@ abstract class BaseRunnerTest extends TestCase
             $storageClientStub = $this->client;
         }
         $this->usageFile = new NullUsageFile();
-        $clientWrapper = new ClientWrapper($storageClientStub, null, null, ClientWrapper::BRANCH_MAIN);
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
+        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
         return new Runner(
             $this->encryptorFactory,
             $clientWrapper,

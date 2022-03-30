@@ -130,6 +130,7 @@ class RunnerExasolTest extends BaseRunnerTest
         $runner = $this->getRunner();
 
         self::assertFalse($this->client->tableExists('out.c-exasol-runner-test.new-table'));
+        $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
@@ -162,7 +163,9 @@ class RunnerExasolTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            [],
+            $outputs
         );
 
         $options = new ListConfigurationWorkspacesOptions();
