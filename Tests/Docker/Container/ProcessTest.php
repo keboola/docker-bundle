@@ -114,14 +114,11 @@ PHP
 
     public function testFilterLargeOutput(): void
     {
-        var_dump(memory_get_peak_usage(true));
-        ini_set('memory_limit', (memory_get_peak_usage(true) / (10**6)) + 100 . 'm');
-
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
 
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
+fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
+fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 PHP
         );
         $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
@@ -133,13 +130,11 @@ PHP
 
     public function testFilterLargeOutputCallback(): void
     {
-        var_dump(memory_get_peak_usage(true));
-        ini_set('memory_limit', (memory_get_peak_usage(true) / (10**6)) + 100 . 'm');
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
 
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
+fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
+fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 PHP
         );
         $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
