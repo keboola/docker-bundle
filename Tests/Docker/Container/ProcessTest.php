@@ -120,8 +120,8 @@ PHP
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
 
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
+fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
+fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
 PHP
         );
         $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
@@ -138,8 +138,8 @@ PHP
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
 
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
+fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
+fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 50*(10**6)) . PHP_EOL);
 PHP
         );
         $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
