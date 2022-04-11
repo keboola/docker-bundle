@@ -95,16 +95,10 @@ class WorkingDirectory
         return $this->workingDir . "/tmp";
     }
 
-    public function dropWorkingDir()
+    public function dropWorkingDir(): void
     {
         $fs = new Filesystem();
-        $finder = new Finder();
-        $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'data');
-        $fs->remove($finder);
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'data');
-        $finder = new Finder();
-        $finder->files()->in($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
-        $fs->remove($finder);
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
     }
 
