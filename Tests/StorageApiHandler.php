@@ -70,7 +70,7 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
     /**
      * @inheritdoc
      */
-    public function handle(array $record)
+    public function handle(array $record): bool
     {
         if (($this->verbosity[$record['level']] == self::VERBOSITY_NONE) || empty($record['message'])) {
             return false;
