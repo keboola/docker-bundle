@@ -102,21 +102,15 @@ class WorkingDirectory
         $fs->remove($this->workingDir . DIRECTORY_SEPARATOR . 'tmp');
     }
 
-    public function moveOutputToInput()
+    public function moveOutputToInput(): void
     {
-        // delete input
         $fs = new Filesystem();
-        $structure = [
-            $this->workingDir . "/data/in/tables",
-            $this->workingDir . "/data/in/files",
-            $this->workingDir . "/data/in/user",
+
+        // delete input
+        $fs->remove([
             $this->workingDir . "/data/in",
             $this->workingDir . "/tmp",
-        ];
-        $finder = new Finder();
-        $finder->files()->in($structure);
-        $fs->remove($finder);
-        $fs->remove($structure);
+        ]);
 
         // delete state file
         $fs->remove($this->workingDir . "/data/out/state.json");
@@ -129,17 +123,11 @@ class WorkingDirectory
         );
 
         // create empty output
-        $fs = new Filesystem();
-        $fs->mkdir($this->workingDir);
-
-        $structure = [
+        $fs->mkdir([
             $this->workingDir . "/tmp",
-            $this->workingDir . "/data/out",
             $this->workingDir . "/data/out/tables",
             $this->workingDir . "/data/out/files",
             $this->workingDir . "/data/in/user",
-        ];
-
-        $fs->mkdir($structure);
+        ]);
     }
 }
