@@ -192,11 +192,7 @@ class Container
                 $this->handleContainerFailure($process, $startTime);
             } else {
                 if ($process->getErrorOutput()) {
-                    $buffer = $process->getErrorOutput();
-                    if (mb_strlen($buffer) > 64000) {
-                        $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
-                    }
-                    $this->containerLogger->error($buffer);
+                    $this->containerLogger->error($process->getErrorOutput());
                 }
             }
         } finally {
@@ -223,9 +219,6 @@ class Container
     private function runWithoutLogger(Process $process)
     {
         $process->run(function ($type, $buffer) {
-            if (mb_strlen($buffer) > 64000) {
-                $buffer = mb_substr($buffer, 0, 64000) . " [trimmed]";
-            }
             if ($type === Process::OUT) {
                 $this->containerLogger->info($buffer);
             }
