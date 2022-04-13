@@ -642,9 +642,9 @@ class LoggerTest extends BaseContainerTest
         $logService->getLog()->notice('Test Notice');
         $logService->getLog()->error('Test Error');
         $logService->getLog()->info('Test Info');
-        $logService->getLog()->warn('Test Warn');
+        $logService->getLog()->warning('Test Warn');
         $logService->getLog()->debug('Test Debug');
-        $logService->getLog()->warn('');
+        $logService->getLog()->warning('');
 
         self::assertCount(1, $error);
         self::assertEquals('Test Error', $error[0]);

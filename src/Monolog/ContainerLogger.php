@@ -65,16 +65,12 @@ class ContainerLogger extends Logger
             return false;
         }
 
-        if (!static::$timezone) {
-            static::$timezone = new \DateTimeZone(date_default_timezone_get() ?: 'UTC');
-        }
-
         if ($this->microsecondTimestamps) {
-            $ts = \DateTime::createFromFormat('U.u', sprintf('%.6F', $timestamp), static::$timezone);
+            $ts = \DateTime::createFromFormat('U.u', sprintf('%.6F', $timestamp), $this->getTimezone());
         } else {
-            $ts = \DateTime::createFromFormat('U', sprintf('%.0F', $timestamp), static::$timezone);
+            $ts = \DateTime::createFromFormat('U', sprintf('%.0F', $timestamp), $this->getTimezone());
         }
-        $ts->setTimezone(static::$timezone);
+        $ts->setTimezone($this->getTimezone());
 
         $record = array(
             'message' => (string) $message,
