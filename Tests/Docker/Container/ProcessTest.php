@@ -29,7 +29,7 @@ fwrite(STDOUT, 'pho boo foo' . PHP_EOL);
 fwrite(STDERR, 'foo boo bar' . PHP_EOL);
 PHP
         );
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run();
         $process->setOutputFilter($outputFilter);
         self::assertSame('pho [hidden] foo', $process->getOutput());
@@ -47,7 +47,7 @@ fwrite(STDOUT, 'pho boo foo' . PHP_EOL);
 fwrite(STDERR, 'foo boo bar' . PHP_EOL);
 PHP
         );
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $events = [];
         $process->setOutputFilter($outputFilter);
         $process->run(function ($type, $e) use (&$events) {
@@ -77,7 +77,7 @@ fwrite(STDOUT, substr('a😀b', 0, 3) . PHP_EOL);
 fwrite(STDERR, substr('b😀c', 0, 3) . PHP_EOL);
 PHP
         );
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run();
         self::assertSame('a', $process->getOutput());
         self::assertSame('b', $process->getErrorOutput());
@@ -93,7 +93,7 @@ fwrite(STDERR, substr('b😀c', 0, 3) . PHP_EOL);
 PHP
         );
         $events = [];
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run(function ($type, $e) use (&$events) {
             return $events[$type][] = $e;
         });
@@ -121,7 +121,7 @@ fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 PHP
         );
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run();
         var_dump(memory_get_peak_usage(true));
         self::assertSame('a [trimmed]', $process->getOutput());
@@ -137,7 +137,7 @@ fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 PHP
         );
-        $process = new Process('php ' . $this->temp->getTmpFolder() . '/run.php');
+        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $events = [];
         $process->run(function ($type, $e) use (&$events) {
             return $events[$type][] = $e;
