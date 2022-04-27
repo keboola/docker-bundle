@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Docker\Container;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
-use function Keboola\Utils\sanitizeUtf8;
 
 class Process extends \Symfony\Component\Process\Process
 {
@@ -45,9 +44,6 @@ class Process extends \Symfony\Component\Process\Process
 
     private function filter(string $value): string
     {
-        if (mb_strlen($value) > 64000) {
-            $value = mb_substr($value, 0, 64000) . " [trimmed]";
-        }
-        return WtfWarningFilter::filter(trim($this->outputFilter->filter(sanitizeUtf8($value))));
+        return $this->outputFilter->filter($value);
     }
 }

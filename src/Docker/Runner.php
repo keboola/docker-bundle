@@ -49,11 +49,13 @@ class Runner
     private int $minLogPort;
     private int $maxLogPort;
     private array $instanceLimits;
+    private OutputFilter $outputFilter;
 
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
+        OutputFilter $outputFilter,
         string $oauthApiUrl,
         array $instanceLimits,
         int $minLogPort = 12202,
@@ -63,6 +65,7 @@ class Runner
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
         $this->clientWrapper = $clientWrapper;
+        $this->outputFilter = $outputFilter;
 
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
@@ -88,6 +91,7 @@ class Runner
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+        $this->outputFilter = $outputFilter;
     }
 
     private function getCommandToGetHostIp()
@@ -208,13 +212,12 @@ class Runner
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
-            $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $outputFilter
+                $this->outputFilter
             );
         } else {
             $outputFilter = new NullFilter();
@@ -235,7 +238,7 @@ class Runner
             $component->getConfigurationFormat(),
             $component->getId(),
             $jobDefinition->getConfigId(),
-            $outputFilter,
+            $this->outputFilter,
             $this->loggersService->getLog(),
             $jobDefinition->getRowId()
         );
@@ -276,7 +279,7 @@ class Runner
                 $stateFile,
                 $imageCreator,
                 $configFile,
-                $outputFilter,
+                $this->outputFilter,
                 $mode,
                 $inputTableStateList,
                 $inputFileStateList,

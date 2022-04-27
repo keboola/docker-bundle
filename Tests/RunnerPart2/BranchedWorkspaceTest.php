@@ -5,6 +5,7 @@ namespace Keboola\DockerBundle\Tests\RunnerPart2;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
@@ -229,10 +230,10 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $this->getEncryptorFactory(),
             $storageApiWrapper,
             $this->getLoggersService(),
+            new OutputFilter(),
             'dummy',
             ['cpu_count' => 2],
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT
+            RUNNER_MIN_LOG_PORT
         );
 
         $outputs = [];

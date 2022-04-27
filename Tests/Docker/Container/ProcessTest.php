@@ -83,35 +83,6 @@ PHP
         self::assertSame('b', $process->getErrorOutput());
     }
 
-    public function testFilterBrokenUnicodeWithCallback(): void
-    {
-        file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
-<?php
-
-fwrite(STDOUT, substr('a😀b', 0, 3) . PHP_EOL);
-fwrite(STDERR, substr('b😀c', 0, 3) . PHP_EOL);
-PHP
-        );
-        $events = [];
-        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
-        $process->run(function ($type, $e) use (&$events) {
-            return $events[$type][] = $e;
-        });
-        self::assertEquals(
-            [
-                'out' => [
-                    'a',
-                ],
-                'err' => [
-                    'b',
-                ],
-            ],
-            $events
-        );
-        self::assertSame('a', $process->getOutput());
-        self::assertSame('b', $process->getErrorOutput());
-    }
-
     public function testFilterLargeOutput(): void
     {
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
@@ -123,33 +94,8 @@ PHP
         );
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run();
-        var_dump(memory_get_peak_usage(true));
         self::assertSame('a [trimmed]', $process->getOutput());
         self::assertSame('b [trimmed]', $process->getErrorOutput());
     }
 
-    public function testFilterLargeOutputCallback(): void
-    {
-        file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
-<?php
-
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
-PHP
-        );
-        $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
-        $events = [];
-        $process->run(function ($type, $e) use (&$events) {
-            return $events[$type][] = $e;
-        });
-        var_dump(memory_get_peak_usage(true));
-        // there can be any number of `[trimmed]` events depending on how the garbage is broken into buffers,
-        // which depends on system mood
-        self::assertGreaterThanOrEqual(1, count($events['out']));
-        self::assertGreaterThanOrEqual(1, count($events['err']));
-        self::assertStringStartsWith('a', $events['out'][0]);
-        self::assertStringStartsWith('b', $events['err'][0]);
-        self::assertSame('a [trimmed]', $process->getOutput());
-        self::assertSame('b [trimmed]', $process->getErrorOutput());
-    }
 }
