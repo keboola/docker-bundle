@@ -127,7 +127,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent(), 'testConfig'),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();

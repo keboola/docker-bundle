@@ -60,6 +60,6 @@ class OutputFilterTest extends TestCase
     {
         $value = str_repeat('😀', 10**6);
         $filter = new OutputFilter(10);
-        self::assertSame('😀😀😀😀😀😀😀😀😀😀', $filter->filter($value));
+        self::assertSame('😀😀😀😀😀😀😀😀😀😀 [trimmed]', $filter->filter($value));
     }
 }

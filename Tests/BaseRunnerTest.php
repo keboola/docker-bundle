@@ -153,7 +153,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->encryptorFactory,
             $clientWrapper,
             $this->loggersServiceStub,
-            new OutputFilter(),
+            new OutputFilter(10000),
             "dummy",
             ['cpu_count' => 2],
             RUNNER_MIN_LOG_PORT

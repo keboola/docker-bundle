@@ -71,7 +71,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
 
         $dataLoader->storeOutput();
@@ -123,7 +123,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
 
         $dataLoader->storeOutput();
@@ -195,7 +195,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
 
         $dataLoader->storeOutput();

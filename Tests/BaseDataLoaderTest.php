@@ -76,7 +76,7 @@ abstract class BaseDataLoaderTest extends TestCase
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
-            new OutputFilter()
+            new OutputFilter(10000)
         );
     }
 

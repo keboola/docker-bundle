@@ -37,7 +37,7 @@ class NullDataLoaderTest extends TestCase
             new NullLogger(),
             '',
             new JobDefinition([], $component),
-            new OutputFilter()
+            new OutputFilter(10**6)
         );
         self::assertSame([], $dataLoader->getWorkspaceCredentials());
         $result = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));

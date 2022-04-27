@@ -20,7 +20,7 @@ class ProcessTest extends TestCase
 
     public function testOutputFilter(): void
     {
-        $outputFilter = new OutputFilter();
+        $outputFilter = new OutputFilter(10000);
         $outputFilter->addValue('boo');
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
@@ -38,7 +38,7 @@ PHP
 
     public function testOutputFilterWithCallback(): void
     {
-        $outputFilter = new OutputFilter();
+        $outputFilter = new OutputFilter(10000);
         $outputFilter->addValue('boo');
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php

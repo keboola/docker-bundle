@@ -72,7 +72,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
         sleep(1);
@@ -133,7 +133,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 

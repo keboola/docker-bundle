@@ -91,7 +91,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
     }
 
@@ -129,7 +129,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->storeOutput();
     }
@@ -163,7 +163,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
     }
 
@@ -239,7 +239,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -331,7 +331,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component, $configId),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -412,7 +412,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         self::expectException(UserException::class);
         self::expectExceptionMessage(
@@ -475,7 +475,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
