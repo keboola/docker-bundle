@@ -97,5 +97,4 @@ PHP
         self::assertSame('a [trimmed]', $process->getOutput());
         self::assertSame('b [trimmed]', $process->getErrorOutput());
     }
-
 }
