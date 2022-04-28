@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -47,13 +46,13 @@ class Runner
     private int $minLogPort;
     private int $maxLogPort;
     private array $instanceLimits;
-    private OutputFilter $outputFilter;
+    private OutputFilterInterface $outputFilter;
 
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
-        OutputFilter $outputFilter,
+        OutputFilterInterface $outputFilter,
         string $oauthApiUrl,
         array $instanceLimits,
         int $minLogPort = 12202,
