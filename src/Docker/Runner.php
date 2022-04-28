@@ -2,7 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
@@ -29,7 +28,6 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\IndexOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 
@@ -220,13 +218,12 @@ class Runner
                 $this->outputFilter
             );
         } else {
-            $outputFilter = new NullFilter();
             $dataLoader = new NullDataLoader(
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $outputFilter
+                $this->outputFilter
             );
         }
 
