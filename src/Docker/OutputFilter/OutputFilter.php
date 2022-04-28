@@ -46,7 +46,7 @@ class OutputFilter implements OutputFilterInterface
      */
     public function filter($text)
     {
-        return $this->filterSecrets($this->filterGarbage((string) $text));
+        return $this->filterGarbage($this->filterSecrets((string) $text));
     }
 
     private function filterSecrets(string $text): string

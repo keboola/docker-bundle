@@ -62,4 +62,14 @@ class OutputFilterTest extends TestCase
         $filter = new OutputFilter(10);
         self::assertSame('😀😀😀😀😀😀😀😀😀😀 [trimmed]', $filter->filter($value));
     }
+
+    public function testPartialSecrets(): void
+    {
+        $filter = new OutputFilter(13);
+        $filter->collectValues([['#encrypted' => 'secret']]);
+        self::assertEquals(
+            'this is [hidd [trimmed]',
+            $filter->filter('this is secret which is hidden')
+        );
+    }
 }
