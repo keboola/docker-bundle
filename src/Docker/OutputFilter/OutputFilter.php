@@ -2,14 +2,21 @@
 
 namespace Keboola\DockerBundle\Docker\OutputFilter;
 
+use Keboola\DockerBundle\Docker\Container\WtfWarningFilter;
+use function Keboola\Utils\sanitizeUtf8;
+
 class OutputFilter implements OutputFilterInterface
 {
-    const REPLACEMENT = '[hidden]';
+    private const REPLACEMENT = '[hidden]';
+    private const TRIMMED = '[trimmed]';
 
-    /**
-     * @var array
-     */
-    private $filterValues = [];
+    private array $filterValues = [];
+    private int $maxMessageChars;
+
+    public function __construct(int $maxMessageChars)
+    {
+        $this->maxMessageChars = $maxMessageChars;
+    }
 
     /**
      * @inheritdoc
@@ -39,9 +46,22 @@ class OutputFilter implements OutputFilterInterface
      */
     public function filter($text)
     {
+        return $this->filterGarbage($this->filterSecrets((string) $text));
+    }
+
+    private function filterSecrets(string $text): string
+    {
         foreach ($this->filterValues as $filterValue) {
             $text = str_replace($filterValue, self::REPLACEMENT, $text);
         }
         return $text;
+    }
+
+    private function filterGarbage(string $value): string
+    {
+        if (mb_strlen($value) > $this->maxMessageChars) {
+            $value = mb_substr($value, 0, $this->maxMessageChars) . ' ' . self::TRIMMED;
+        }
+        return WtfWarningFilter::filter(trim(sanitizeUtf8($value)));
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -29,7 +27,6 @@ use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\IndexOptions;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 
@@ -49,11 +46,13 @@ class Runner
     private int $minLogPort;
     private int $maxLogPort;
     private array $instanceLimits;
+    private OutputFilterInterface $outputFilter;
 
     public function __construct(
         ObjectEncryptorFactory $encryptorFactory,
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
+        OutputFilterInterface $outputFilter,
         string $oauthApiUrl,
         array $instanceLimits,
         int $minLogPort = 12202,
@@ -63,6 +62,7 @@ class Runner
         to avoid mis-configured clients. */
         $this->encryptorFactory = $encryptorFactory;
         $this->clientWrapper = $clientWrapper;
+        $this->outputFilter = $outputFilter;
 
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
@@ -88,6 +88,7 @@ class Runner
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
         $this->minLogPort = $minLogPort;
         $this->maxLogPort = $maxLogPort;
+        $this->outputFilter = $outputFilter;
     }
 
     private function getCommandToGetHostIp()
@@ -208,22 +209,20 @@ class Runner
         );
 
         if (($action == 'run') && ($component->getStagingStorage()['input'] != 'none')) {
-            $outputFilter = new OutputFilter();
             $dataLoader = new DataLoader(
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $outputFilter
+                $this->outputFilter
             );
         } else {
-            $outputFilter = new NullFilter();
             $dataLoader = new NullDataLoader(
                 $this->clientWrapper,
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $outputFilter
+                $this->outputFilter
             );
         }
 
@@ -235,7 +234,7 @@ class Runner
             $component->getConfigurationFormat(),
             $component->getId(),
             $jobDefinition->getConfigId(),
-            $outputFilter,
+            $this->outputFilter,
             $this->loggersService->getLog(),
             $jobDefinition->getRowId()
         );
@@ -276,7 +275,7 @@ class Runner
                 $stateFile,
                 $imageCreator,
                 $configFile,
-                $outputFilter,
+                $this->outputFilter,
                 $mode,
                 $inputTableStateList,
                 $inputFileStateList,

@@ -190,7 +190,7 @@ abstract class BaseContainerTest extends TestCase
         if (!$commandOptions) {
             $commandOptions = new RunCommandOptions([], []);
         }
-        $outputFilter = new OutputFilter();
+        $outputFilter = new OutputFilter(10000);
         $outputFilter->collectValues([$imageConfig]);
         $container = new Container(
             'container-error-test',

@@ -62,7 +62,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
-            new OutputFilter()
+            new OutputFilter(10000)
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 

@@ -55,7 +55,7 @@ class EnvironmentTest extends TestCase
             'connection-string',
             'mlflow-uri'
         );
-        $envs = $environment->getEnvironmentVariables(new OutputFilter());
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertArrayHasKey('KBC_CONFIGROWID', $envs);
@@ -106,7 +106,7 @@ class EnvironmentTest extends TestCase
             null,
             null
         );
-        $envs = $environment->getEnvironmentVariables(new OutputFilter());
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertArrayNotHasKey('KBC_CONFIGROWID', $envs);
@@ -154,7 +154,7 @@ class EnvironmentTest extends TestCase
             null,
             null
         );
-        $envs = $environment->getEnvironmentVariables(new OutputFilter());
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
@@ -204,7 +204,7 @@ class EnvironmentTest extends TestCase
             'connection-string',
             'mlflow-uri'
         );
-        $envs = $environment->getEnvironmentVariables(new OutputFilter());
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
@@ -257,7 +257,7 @@ class EnvironmentTest extends TestCase
             null,
             null
         );
-        $envs = $environment->getEnvironmentVariables(new OutputFilter());
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
