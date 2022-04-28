@@ -77,7 +77,9 @@ fwrite(STDOUT, substr('a😀b', 0, 3) . PHP_EOL);
 fwrite(STDERR, substr('b😀c', 0, 3) . PHP_EOL);
 PHP
         );
+        $outputFilter = new OutputFilter(10000);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
+        $process->setOutputFilter($outputFilter);
         $process->run();
         self::assertSame('a', $process->getOutput());
         self::assertSame('b', $process->getErrorOutput());
@@ -88,11 +90,13 @@ PHP
         file_put_contents($this->temp->getTmpFolder() . '/run.php', <<<'PHP'
 <?php
 
-fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 10*(10**6)) . PHP_EOL);
-fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 10*(10**6)) . PHP_EOL);
+fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
+fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 PHP
         );
+        $outputFilter = new OutputFilter(10000);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
+        $process->setOutputFilter($outputFilter);
         $process->run();
         self::assertSame('a [trimmed]', $process->getOutput());
         self::assertSame('b [trimmed]', $process->getErrorOutput());
