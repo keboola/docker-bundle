@@ -12,7 +12,7 @@ class MlflowTrackingTest extends TestCase
 {
     public function testBasicTracking(): void
     {
-        $outputFilter = new OutputFilter();
+        $outputFilter = new OutputFilter(10000);
         $tracking = new MlflowTracking('uri');
 
         self::assertSame('uri', $tracking->getUri());
@@ -25,7 +25,7 @@ class MlflowTrackingTest extends TestCase
 
     public function testTrackingWithToken(): void
     {
-        $outputFilter = new OutputFilter();
+        $outputFilter = new OutputFilter(10000);
         $tracking = new MlflowTracking('uri', 'token');
 
         self::assertSame('uri', $tracking->getUri());
