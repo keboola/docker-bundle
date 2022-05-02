@@ -18,7 +18,7 @@ class Environment
     private string $token;
     private ?string $branchId;
     private ?string $absConnectionString;
-    private ?string $mlflowUri;
+    private ?MlflowTracking $mlflowTracking;
 
     public function __construct(
         ?string $configId,
@@ -31,7 +31,7 @@ class Environment
         string $token,
         ?string $branchId,
         ?string $absConnectionString,
-        ?string $mlflowUri
+        ?MlflowTracking $mlflowTracking
     ) {
         if ($configId) {
             $this->configId = $configId;
@@ -49,7 +49,7 @@ class Environment
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
         $this->absConnectionString = $absConnectionString;
-        $this->mlflowUri = $mlflowUri;
+        $this->mlflowTracking = $mlflowTracking;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
@@ -88,8 +88,8 @@ class Environment
             $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->absConnectionString;
         }
 
-        if ($this->mlflowUri !== null) {
-            $envs['MLFLOW_TRACKING_URI'] = $this->mlflowUri;
+        if ($this->mlflowTracking !== null) {
+            $envs = array_merge($envs, $this->mlflowTracking->exportAsEnv($outputFilter));
         }
 
         return $envs;

@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Limits;
+use Keboola\DockerBundle\Docker\Runner\MlflowTracking;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
@@ -486,14 +487,17 @@ class Runner
         $imageDigests = [];
         $newState = [];
         $absConnectionString = null;
-        $mlflowUri = null;
+        $mlflowTracking = null;
         $output->setOutput('');
 
 
         $mlflowProject = $this->mlflowProjectResolver->getMlflowProjectIfAvailable($component, $tokenInfo);
         if ($mlflowProject !== null) {
             $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
-            $mlflowUri = $mlflowProject->getMlflowUri();
+            $mlflowTracking = new MlflowTracking(
+                $mlflowProject->getMlflowUri(),
+                $this->clientWrapper->getBasicClient()->getTokenString()
+            );
         }
 
         foreach ($images as $priority => $image) {
@@ -517,7 +521,7 @@ class Runner
                 $this->clientWrapper->getBasicClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
                 $absConnectionString,
-                $mlflowUri
+                $mlflowTracking
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),
