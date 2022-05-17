@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
+use Generator;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
@@ -11,6 +12,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 
 class LimitsTest extends TestCase
 {
@@ -229,5 +231,81 @@ class LimitsTest extends TestCase
             ->will(self::returnValue($component));
         /** @var Image $image */
         return $image;
+    }
+
+    /**
+     * @dataProvider dynamicBackendProvider
+     */
+    public function testDynamicBackend(
+        ?string $containerType,
+        string  $expectedMemoryLimit,
+        string  $expectedCpuLimit
+    ) {
+        $component = new Component([
+            'id' => 'keboola.runner-config-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '1g',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2],
+            ['runner.keboola.r-transformation.memoryLimitMBs' =>
+                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
+            ],
+            ['dynamic-backend-jobs'],
+            [],
+            $containerType
+        );
+
+        self::assertEquals($expectedMemoryLimit, $limits->getMemoryLimit($image));
+        self::assertEquals($expectedMemoryLimit, $limits->getMemorySwapLimit($image));
+        self::assertEquals($expectedCpuLimit, $limits->getCpuLimit($image));
+        self::assertTrue($logger->hasNoticeThatContains(
+            sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit)
+        ));
+        self::assertTrue($logger->hasNoticeThatContains(sprintf("CPU limit: %s", $expectedCpuLimit)));
+    }
+
+    public function dynamicBackendProvider(): Generator
+    {
+        yield 'no backend' => [
+            'containerType' => null,
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
+        yield 'small backend' => [
+            'containerType' => null,
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
+        yield 'medium backend' => [
+            'containerType' => 'medium',
+            'expectedMemoryLimit' => '2000M',
+            'expectedCpuLimit' => '2',
+        ];
+        yield 'large backend' => [
+            'containerType' => 'large',
+            'expectedMemoryLimit' => '4000M',
+            'expectedCpuLimit' => '4',
+        ];
+        yield 'xlarge backend' => [
+            'containerType' => 'xlarge',
+            'expectedMemoryLimit' => '16000M',
+            'expectedCpuLimit' => '16',
+        ];
+        yield 'invalid backend' => [
+            'containerType' => 'unknown',
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
     }
 }
