@@ -231,7 +231,10 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             'run',
             'run',
             '123456',
-            new NullUsageFile()
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
         );
     }
 

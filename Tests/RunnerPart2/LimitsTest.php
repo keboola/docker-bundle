@@ -23,7 +23,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 'invalid'],
             [],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -41,7 +42,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 1000]],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -59,7 +61,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 1],
             ['components.jobsParallelism' => ['name' => 'components.jobsParallelism', 'value' > 10]],
             ['foo', 'bar'],
-            ['bar', 'kochba']
+            ['bar', 'kochba'],
+            null
         );
         self::assertEquals(1, $limits->getCpuLimit($this->getImageMock()));
         self::assertContains('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
@@ -72,7 +75,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             [],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -84,7 +88,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(10, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -96,7 +101,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' > 10]],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -112,7 +118,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -133,7 +140,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -150,7 +158,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             [],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
@@ -167,7 +176,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertContains(
@@ -188,7 +198,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
         self::assertContains("Memory limits - component: '256m' project: NULL", $handler->getRecords()[0]['message']);

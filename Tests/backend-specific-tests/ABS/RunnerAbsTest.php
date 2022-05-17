@@ -111,7 +111,10 @@ class RunnerAbsTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();

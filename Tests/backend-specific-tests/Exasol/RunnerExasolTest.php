@@ -162,7 +162,10 @@ class RunnerExasolTest extends BaseRunnerTest
             'run',
             'run',
             '1234567',
-            new NullUsageFile()
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
         );
 
         $options = new ListConfigurationWorkspacesOptions();
