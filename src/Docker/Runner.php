@@ -181,7 +181,7 @@ class Runner
      * @param UsageFileInterface $usageFile
      * @param Output[] $outputs
      */
-    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile, array &$outputs)
+    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile, array &$outputs, ?string $backendSize)
     {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -280,7 +280,8 @@ class Runner
                 $mode,
                 $inputTableStateList,
                 $inputFileStateList,
-                $currentOutput
+                $currentOutput,
+                $backendSize
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
@@ -297,7 +298,7 @@ class Runner
      * @param array $rowIds
      * @param Output[] $outputs
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds, array &$outputs)
+    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds, array &$outputs, ?string $backendSize)
     {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
@@ -338,7 +339,7 @@ class Runner
                 "Running component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
-            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs);
+            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs, $backendSize);
             $this->loggersService->getLog()->info(
                 "Finished component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
@@ -418,13 +419,14 @@ class Runner
         $mode,
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
-        Output $output
+        Output $output,
+        ?string $backendSize
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
-        $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode, $output);
+        $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode, $output, $backendSize);
         $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
         $output->setDataLoader($dataLoader);
@@ -470,7 +472,8 @@ class Runner
         OutputFilterInterface $outputFilter,
         DataLoaderInterface $dataLoader,
         $mode,
-        $output
+        $output,
+        ?string $backendSize
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -480,7 +483,8 @@ class Runner
             $this->instanceLimits,
             !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
             !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
-            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : []
+            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : [],
+            $backendSize
         );
 
         $counter = 0;

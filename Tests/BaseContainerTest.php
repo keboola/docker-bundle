@@ -204,7 +204,7 @@ abstract class BaseContainerTest extends TestCase
             RUNNER_MAX_LOG_PORT,
             $commandOptions,
             $outputFilter,
-            new Limits($log, ['cpu_count' => 2], $projectLimits, [], [])
+            new Limits($log, ['cpu_count' => 2], $projectLimits, [], [], null)
         );
         return $container;
     }

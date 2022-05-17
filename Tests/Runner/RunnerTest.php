@@ -295,7 +295,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         self::assertEquals(
             [
@@ -455,7 +456,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         self::assertEquals(
             [
@@ -528,7 +530,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -589,7 +592,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         $cfg = $cmp->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertEquals([
@@ -661,7 +665,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
@@ -711,7 +716,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -769,7 +775,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -829,7 +836,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         $this->assertNotEmpty($outputs);
     }
@@ -889,7 +897,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $component = new Components($this->getClient());
@@ -977,7 +986,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $component = new Components($this->getClient());
@@ -1069,7 +1079,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
         } catch (UserException $e) {
             self::assertStringContainsString(
@@ -1184,7 +1195,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
         } catch (UserException $e) {
             self::assertStringContainsString(
@@ -1271,7 +1283,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
             self::fail('Must fail with user error');
         } catch (UserException $e) {
@@ -1379,7 +1392,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -1492,7 +1506,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -1544,7 +1559,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $component = new Components($this->getClient());
@@ -1588,7 +1604,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $component = new Components($this->getClient());
@@ -1641,7 +1658,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         $metadataApi = new Metadata($this->getClient());
         $bucketMetadata = $metadataApi->listBucketMetadata('in.c-keboola-docker-demo-sync');
@@ -1698,7 +1716,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -1757,7 +1776,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         self::assertTrue($this->getClient()->tableExists('in.c-keboola-docker-demo-sync-runner-configuration.sliced'));
@@ -1819,7 +1839,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -1881,7 +1902,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -1915,7 +1937,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
         } catch (ApplicationException $e) {
             self::assertStringContainsString(
@@ -1967,7 +1990,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -2005,7 +2029,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -2044,7 +2069,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -2091,7 +2117,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -2147,7 +2174,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -2207,7 +2235,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
@@ -2275,7 +2304,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
@@ -2326,7 +2356,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -2377,7 +2408,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -2419,7 +2451,7 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
         $outputs = [];
-        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs);
+        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs, null);
         self::assertEquals(
             [[[
                 'metric' => 'kB',
@@ -2480,7 +2512,8 @@ class RunnerTest extends BaseRunnerTest
             '987654',
             $usageFile,
             [],
-            $outputs
+            $outputs,
+            null
         );
         self::assertEquals(
             [
@@ -2528,7 +2561,7 @@ class RunnerTest extends BaseRunnerTest
         $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
         $runner = $this->getRunner();
         $outputs = [];
-        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs);
+        $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs, null);
         self::assertCount(1, $outputs);
         self::assertEquals("Script file /data/script.py\nScript finished", $outputs[0]->getProcessOutput());
     }
@@ -2663,7 +2696,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         // the script logs all the input files, so fileId2 should be there, but not fileId1
@@ -2766,7 +2800,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $options = new ListConfigurationWorkspacesOptions();
@@ -2841,7 +2876,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
             self::fail('Must fail');
         } catch (UserException $e) {
@@ -2927,7 +2963,8 @@ class RunnerTest extends BaseRunnerTest
                 '1234567',
                 new NullUsageFile(),
                 [],
-                $outputs
+                $outputs,
+                null
             );
             self::fail('Must fail');
         } catch (UserException $e) {
@@ -3009,7 +3046,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $records = $this->getContainerHandler()->getRecords();
@@ -3096,7 +3134,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -3176,7 +3215,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         // wait for the file to show up in the listing
         sleep(2);
@@ -3253,7 +3293,8 @@ class RunnerTest extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         // wait for the file to show up in the listing

@@ -17,50 +17,21 @@ class Limits
 
     const MAX_MEMORY_LIMIT = 64000;
 
-    /**
-     * @var array
-     */
-    private $userFeatures;
+    private array $userFeatures;
+    private array $projectFeatures;
+    private array $projectLimits;
+    private array $instanceLimits;
+    private LoggerInterface $logger;
+    private ValidatorInterface $validator;
+    private ?string $backendSize;
 
-    /**
-     * @var array
-     */
-    private $projectFeatures;
-
-    /**
-     * @var array
-     */
-    private $projectLimits;
-
-    /**
-     * @var array
-     */
-    private $instanceLimits;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var ValidatorInterface
-     */
-    private $validator;
-
-    /**
-     * Limits constructor.
-     * @param LoggerInterface $logger
-     * @param array $instanceLimits
-     * @param array $projectLimits
-     * @param array $projectFeatures
-     * @param array $userFeatures
-     */
     public function __construct(
         LoggerInterface $logger,
         array $instanceLimits,
         array $projectLimits,
         array $projectFeatures,
-        array $userFeatures
+        array $userFeatures,
+        ?string $backendSize
     ) {
         $this->logger = $logger;
         $this->instanceLimits = $instanceLimits;
@@ -68,6 +39,7 @@ class Limits
         $this->projectFeatures = $projectFeatures;
         $this->userFeatures = $userFeatures;
         $this->validator = Validation::createValidator();
+        $this->backendSize = $backendSize;
     }
 
     public function getMemoryLimit(Image $image)
