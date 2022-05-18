@@ -151,6 +151,7 @@ class Limits
             case 'large':
                 return 4;
             case 'xlarge':
+                // see https://github.com/keboola/job-queue-daemon/blob/7af7d3853cb81f585e9c4d29a5638ff2ad40107a/src/Cluster/ResourceTransformer.php#L34
                 return 14.2;
             default:
                 $this->logger->warning(sprintf('Unknown containerType "%s"', $containerType));
@@ -199,8 +200,8 @@ class Limits
             }
             // </hack>
 
-            $memoryReservation = $multiplier * $componentMemory;
-            return $this->bytesToDockerMemoryLimit($memoryReservation);
+            $memoryLimit = $multiplier * $componentMemory;
+            return $this->bytesToDockerMemoryLimit($memoryLimit);
         }
         $componentId = $image->getSourceComponent()->getId();
         $limitName = 'runner.' . $componentId . '.memoryLimitMBs';

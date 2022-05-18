@@ -299,7 +299,7 @@ class LimitsTest extends TestCase
         ];
         yield 'xlarge backend' => [
             'containerType' => 'xlarge',
-            'expectedMemoryLimit' => '16000M',
+            'expectedMemoryLimit' => '14000M',
             'expectedCpuLimit' => '16',
         ];
         yield 'invalid backend' => [
