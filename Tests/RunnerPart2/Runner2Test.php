@@ -78,7 +78,8 @@ class Runner2Test extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
     }
 
@@ -156,7 +157,8 @@ class Runner2Test extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $containerOutput = $outputs[0]->getProcessOutput();
@@ -236,7 +238,8 @@ class Runner2Test extends BaseRunnerTest
             '1234567',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
 
         $containerOutput = $outputs[0]->getProcessOutput();

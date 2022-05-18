@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
+use Generator;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
@@ -11,6 +12,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 
 class LimitsTest extends TestCase
 {
@@ -23,7 +25,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 'invalid'],
             [],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -41,7 +44,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 1000]],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -59,7 +63,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 1],
             ['components.jobsParallelism' => ['name' => 'components.jobsParallelism', 'value' > 10]],
             ['foo', 'bar'],
-            ['bar', 'kochba']
+            ['bar', 'kochba'],
+            null
         );
         self::assertEquals(1, $limits->getCpuLimit($this->getImageMock()));
         self::assertStringContainsString('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
@@ -72,7 +77,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             [],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -84,7 +90,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(10, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -96,7 +103,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' > 10]],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
     }
@@ -112,7 +120,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -133,7 +142,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
@@ -150,7 +160,8 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             [],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
@@ -167,7 +178,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertStringContainsString(
@@ -188,7 +200,8 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             [],
-            []
+            [],
+            null
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
         self::assertStringContainsString("Memory limits - component: '256m' project: NULL", $handler->getRecords()[0]['message']);
@@ -218,5 +231,141 @@ class LimitsTest extends TestCase
             ->will(self::returnValue($component));
         /** @var Image $image */
         return $image;
+    }
+
+    /**
+     * @dataProvider dynamicBackendProvider
+     */
+    public function testDynamicBackend(
+        ?string $containerType,
+        string  $expectedMemoryLimit,
+        string  $expectedCpuLimit
+    ) {
+        $component = new Component([
+            'id' => 'keboola.runner-config-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '1g',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            ['cpu_count' => 2], // ignored
+            ['runner.keboola.runner-config-test.memoryLimitMBs' => // ignored
+                ['name' => 'runner.keboola.runner-config-test.memoryLimitMBs', 'value' => 60000],
+            ],
+            ['dynamic-backend-jobs'],
+            [],
+            $containerType
+        );
+
+        self::assertEquals($expectedMemoryLimit, $limits->getMemoryLimit($image));
+        self::assertEquals($expectedMemoryLimit, $limits->getMemorySwapLimit($image));
+        self::assertEquals($expectedCpuLimit, $limits->getCpuLimit($image));
+        self::assertTrue($logger->hasNoticeThatContains(
+            sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit)
+        ));
+        self::assertTrue($logger->hasNoticeThatContains(sprintf("CPU limit: %s", $expectedCpuLimit)));
+    }
+
+    public function dynamicBackendProvider(): Generator
+    {
+        yield 'no backend' => [
+            'containerType' => null,
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
+        yield 'small backend' => [
+            'containerType' => null,
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
+        yield 'medium backend' => [
+            'containerType' => 'medium',
+            'expectedMemoryLimit' => '2000M',
+            'expectedCpuLimit' => '2',
+        ];
+        yield 'large backend' => [
+            'containerType' => 'large',
+            'expectedMemoryLimit' => '4000M',
+            'expectedCpuLimit' => '4',
+        ];
+        yield 'xlarge backend' => [
+            'containerType' => 'xlarge',
+            'expectedMemoryLimit' => '14000M',
+            'expectedCpuLimit' => '16',
+        ];
+        yield 'invalid backend' => [
+            'containerType' => 'unknown',
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '1',
+        ];
+    }
+
+    public function testDynamicBackendHackPython(): void
+    {
+        $component = new Component([
+            'id' => 'keboola.python-transformation-v2',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '12000m',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            [],
+            [],
+            ['dynamic-backend-jobs'],
+            [],
+            'small'
+        );
+
+        self::assertEquals('8000M', $limits->getMemoryLimit($image));
+        self::assertEquals('8000M', $limits->getMemorySwapLimit($image));
+        self::assertEquals(1, $limits->getCpuLimit($image));
+    }
+
+    public function testDynamicBackendHackR(): void
+    {
+        $component = new Component([
+            'id' => 'keboola.r-transformation-v2',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '12000m',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            [],
+            [],
+            ['dynamic-backend-jobs'],
+            [],
+            'medium'
+        );
+
+        self::assertEquals('16000M', $limits->getMemoryLimit($image));
+        self::assertEquals('16000M', $limits->getMemorySwapLimit($image));
+        self::assertEquals(2, $limits->getCpuLimit($image));
     }
 }

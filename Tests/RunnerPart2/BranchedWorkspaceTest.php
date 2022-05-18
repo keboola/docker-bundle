@@ -244,7 +244,8 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             '123456',
             new NullUsageFile(),
             [],
-            $outputs
+            $outputs,
+            null
         );
         return $outputs;
     }
