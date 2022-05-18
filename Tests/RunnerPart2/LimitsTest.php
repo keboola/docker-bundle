@@ -309,7 +309,7 @@ class LimitsTest extends TestCase
         ];
     }
 
-    public function testDynamicBackendHackPython()
+    public function testDynamicBackendHackPython(): void
     {
         $component = new Component([
             'id' => 'keboola.python-transformation-v2',
@@ -339,7 +339,8 @@ class LimitsTest extends TestCase
         self::assertEquals(1, $limits->getCpuLimit($image));
     }
 
-    public function testDynamicBackendHackR() {
+    public function testDynamicBackendHackR(): void
+    {
         $component = new Component([
             'id' => 'keboola.r-transformation-v2',
             'data' => [

@@ -151,7 +151,7 @@ class Limits
             case 'large':
                 return 4;
             case 'xlarge':
-                return 16;
+                return 14.2;
             default:
                 $this->logger->warning(sprintf('Unknown containerType "%s"', $containerType));
                 return 1;
@@ -191,9 +191,10 @@ class Limits
             // 8GB. Unfortunately in the meantime, the component limit was raised to 16GB on some transformations
             // (but not all). This is a workaround for that - the limit is artificially lowered to 8GB in case of
             // dynamic backends and left alone if dynamic backend is not used.
-            if (in_array($image->getSourceComponent()->getId(),
-                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2'])
-            ) {
+            if (in_array(
+                $image->getSourceComponent()->getId(),
+                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2']
+            )) {
                 $componentMemory = 8 * (10**9);
             }
             // </hack>
