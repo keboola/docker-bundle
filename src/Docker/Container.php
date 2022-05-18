@@ -5,7 +5,6 @@ namespace Keboola\DockerBundle\Docker;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\InitializationException;
 use Keboola\DockerBundle\Exception\OutOfMemoryException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -351,8 +350,10 @@ class Container
                     $data
                 );
             } else {
-                throw new InitializationException(
-                    "{$this->getImage()->getPrintableImageId()} container terminated. Will restart."
+                throw new OutOfMemoryException(
+                    "Component terminated. Possibly due to out of memory error",
+                    null,
+                    $data
                 );
             }
         } elseif ($process->getExitCode() == 1) {
