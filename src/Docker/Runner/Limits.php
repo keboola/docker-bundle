@@ -185,6 +185,18 @@ class Limits
         if (in_array(self::DYNAMIC_BACKEND_JOBS_FEATURE, $this->projectFeatures)) {
             $multiplier = $this->getNodeTypeMultiplier($this->containerType);
             $componentMemory = UnitConverter::connectionMemoryLimitToBytes($image->getSourceComponent()->getMemory());
+
+            // <hack>
+            // For the purpose of dynamic backends, the basic (small) setting for transformations is assumed to be
+            // 8GB. Unfortunately in the meantime, the component limit was raised to 16GB on some transformations
+            // (but not all). This is a workaround for that - the limit is artificially lowered to 8GB in case of
+            // dynamic backends and left alone if dynamic backend is not used.
+            if (in_array($image->getSourceComponent()->getId(),
+                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2'])) {
+                $componentMemory = 8 * (10**9);
+            }
+            // </hack>
+
             $memoryReservation = $multiplier * $componentMemory;
             return $this->bytesToDockerMemoryLimit($memoryReservation);
         }

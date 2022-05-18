@@ -257,9 +257,9 @@ class LimitsTest extends TestCase
         $logger = new TestLogger();
         $limits = new Limits(
             $logger,
-            ['cpu_count' => 2],
-            ['runner.keboola.r-transformation.memoryLimitMBs' =>
-                ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
+            ['cpu_count' => 2], // ignored
+            ['runner.keboola.runner-config-test.memoryLimitMBs' => // ignored
+                ['name' => 'runner.keboola.runner-config-test.memoryLimitMBs', 'value' => 60000],
             ],
             ['dynamic-backend-jobs'],
             [],
@@ -307,5 +307,63 @@ class LimitsTest extends TestCase
             'expectedMemoryLimit' => '1000M',
             'expectedCpuLimit' => '1',
         ];
+    }
+
+    public function testDynamicBackendHackPython() {
+        $component = new Component([
+            'id' => 'keboola.python-transformation-v2',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '12000m',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            [],
+            [],
+            ['dynamic-backend-jobs'],
+            [],
+            'small'
+        );
+
+        self::assertEquals('8000M', $limits->getMemoryLimit($image));
+        self::assertEquals('8000M', $limits->getMemorySwapLimit($image));
+        self::assertEquals(1, $limits->getCpuLimit($image));
+    }
+
+    public function testDynamicBackendHackR() {
+        $component = new Component([
+            'id' => 'keboola.r-transformation-v2',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'dummy',
+                ],
+                'memory' => '12000m',
+            ],
+        ]);
+        $image = $this->createMock(AWSElasticContainerRegistry::class);
+        $image->method('getSourceComponent')->willReturn($component);
+
+        $logger = new TestLogger();
+        $limits = new Limits(
+            $logger,
+            [],
+            [],
+            ['dynamic-backend-jobs'],
+            [],
+            'medium'
+        );
+
+        self::assertEquals('16000M', $limits->getMemoryLimit($image));
+        self::assertEquals('16000M', $limits->getMemorySwapLimit($image));
+        self::assertEquals(2, $limits->getCpuLimit($image));
     }
 }
