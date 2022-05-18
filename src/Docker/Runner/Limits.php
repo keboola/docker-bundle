@@ -192,7 +192,8 @@ class Limits
             // (but not all). This is a workaround for that - the limit is artificially lowered to 8GB in case of
             // dynamic backends and left alone if dynamic backend is not used.
             if (in_array($image->getSourceComponent()->getId(),
-                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2'])) {
+                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2'])
+            ) {
                 $componentMemory = 8 * (10**9);
             }
             // </hack>

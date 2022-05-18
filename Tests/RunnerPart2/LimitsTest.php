@@ -309,7 +309,8 @@ class LimitsTest extends TestCase
         ];
     }
 
-    public function testDynamicBackendHackPython() {
+    public function testDynamicBackendHackPython()
+    {
         $component = new Component([
             'id' => 'keboola.python-transformation-v2',
             'data' => [
