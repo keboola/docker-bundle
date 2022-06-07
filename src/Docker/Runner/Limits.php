@@ -78,17 +78,17 @@ class Limits
         if (in_array(self::DYNAMIC_BACKEND_JOBS_FEATURE, $this->projectFeatures)) {
             switch ($this->containerType) {
                 case null:
-                case 'small':
+                case 'xsmall':
                     $cpuLimit = 1;
                     break;
-                case 'medium':
+                case 'small':
                     $cpuLimit = 2;
                     break;
-                case 'large':
+                case 'medium':
                     $cpuLimit = 4;
                     break;
-                case 'xlarge':
-                    $cpuLimit = 16;
+                case 'large':
+                    $cpuLimit = 14;
                     break;
                 default:
                     $this->logger->warning(sprintf('Unknown containerType "%s"', $this->containerType));
@@ -140,19 +140,20 @@ class Limits
         throw new ApplicationException("cpu_count is not set in parameters.yml");
     }
 
-    private function getNodeTypeMultiplier(?string $containerType): int
+    private function getNodeTypeMultiplier(?string $containerType): float
     {
         switch ($containerType) {
             case null:
+            case 'xsmall':
+                return 0.5;
             case 'small':
                 return 1;
             case 'medium':
                 return 2;
             case 'large':
-                return 4;
-            case 'xlarge':
                 // see https://github.com/keboola/job-queue-daemon/blob/7af7d3853cb81f585e9c4d29a5638ff2ad40107a/src/Cluster/ResourceTransformer.php#L34
-                return 14.2;
+                // https://keboola.atlassian.net/wiki/spaces/KB/pages/2234941476/Dynamic+backend+size+per+job+Python+R#Option-2-(preferred-by-odin):
+                return 7.1;
             default:
                 $this->logger->warning(sprintf('Unknown containerType "%s"', $containerType));
                 return 1;
@@ -187,20 +188,8 @@ class Limits
             $multiplier = $this->getNodeTypeMultiplier($this->containerType);
             $componentMemory = UnitConverter::connectionMemoryLimitToBytes($image->getSourceComponent()->getMemory());
 
-            // <hack>
-            // For the purpose of dynamic backends, the basic (small) setting for transformations is assumed to be
-            // 8GB. Unfortunately in the meantime, the component limit was raised to 16GB on some transformations
-            // (but not all). This is a workaround for that - the limit is artificially lowered to 8GB in case of
-            // dynamic backends and left alone if dynamic backend is not used.
-            if (in_array(
-                $image->getSourceComponent()->getId(),
-                ['keboola.python-transformation-v2', 'keboola.r-transformation-v2']
-            )) {
-                $componentMemory = 8 * (10**9);
-            }
-            // </hack>
+            $memoryLimit = round($multiplier * $componentMemory);
 
-            $memoryLimit = $multiplier * $componentMemory;
             return $this->bytesToDockerMemoryLimit($memoryLimit);
         }
         $componentId = $image->getSourceComponent()->getId();
