@@ -279,8 +279,8 @@ class LimitsTest extends TestCase
     {
         yield 'no backend' => [
             'containerType' => null,
-            'expectedMemoryLimit' => '500M',
-            'expectedCpuLimit' => '1',
+            'expectedMemoryLimit' => '1000M',
+            'expectedCpuLimit' => '2',
         ];
         yield 'xsmall backend' => [
             'containerType' => 'xsmall',
