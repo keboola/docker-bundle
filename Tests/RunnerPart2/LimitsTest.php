@@ -279,93 +279,33 @@ class LimitsTest extends TestCase
     {
         yield 'no backend' => [
             'containerType' => null,
-            'expectedMemoryLimit' => '1000M',
+            'expectedMemoryLimit' => '500M',
+            'expectedCpuLimit' => '1',
+        ];
+        yield 'xsmall backend' => [
+            'containerType' => 'xsmall',
+            'expectedMemoryLimit' => '500M',
             'expectedCpuLimit' => '1',
         ];
         yield 'small backend' => [
-            'containerType' => null,
+            'containerType' => 'small',
             'expectedMemoryLimit' => '1000M',
-            'expectedCpuLimit' => '1',
+            'expectedCpuLimit' => '2',
         ];
         yield 'medium backend' => [
             'containerType' => 'medium',
             'expectedMemoryLimit' => '2000M',
-            'expectedCpuLimit' => '2',
+            'expectedCpuLimit' => '4',
         ];
         yield 'large backend' => [
             'containerType' => 'large',
-            'expectedMemoryLimit' => '4000M',
-            'expectedCpuLimit' => '4',
-        ];
-        yield 'xlarge backend' => [
-            'containerType' => 'xlarge',
-            'expectedMemoryLimit' => '14000M',
-            'expectedCpuLimit' => '16',
+            'expectedMemoryLimit' => '7100M',
+            'expectedCpuLimit' => '14',
         ];
         yield 'invalid backend' => [
             'containerType' => 'unknown',
             'expectedMemoryLimit' => '1000M',
             'expectedCpuLimit' => '1',
         ];
-    }
-
-    public function testDynamicBackendHackPython(): void
-    {
-        $component = new Component([
-            'id' => 'keboola.python-transformation-v2',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => 'dummy',
-                ],
-                'memory' => '12000m',
-            ],
-        ]);
-        $image = $this->createMock(AWSElasticContainerRegistry::class);
-        $image->method('getSourceComponent')->willReturn($component);
-
-        $logger = new TestLogger();
-        $limits = new Limits(
-            $logger,
-            [],
-            [],
-            ['dynamic-backend-jobs'],
-            [],
-            'small'
-        );
-
-        self::assertEquals('8000M', $limits->getMemoryLimit($image));
-        self::assertEquals('8000M', $limits->getMemorySwapLimit($image));
-        self::assertEquals(1, $limits->getCpuLimit($image));
-    }
-
-    public function testDynamicBackendHackR(): void
-    {
-        $component = new Component([
-            'id' => 'keboola.r-transformation-v2',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => 'dummy',
-                ],
-                'memory' => '12000m',
-            ],
-        ]);
-        $image = $this->createMock(AWSElasticContainerRegistry::class);
-        $image->method('getSourceComponent')->willReturn($component);
-
-        $logger = new TestLogger();
-        $limits = new Limits(
-            $logger,
-            [],
-            [],
-            ['dynamic-backend-jobs'],
-            [],
-            'medium'
-        );
-
-        self::assertEquals('16000M', $limits->getMemoryLimit($image));
-        self::assertEquals('16000M', $limits->getMemorySwapLimit($image));
-        self::assertEquals(2, $limits->getCpuLimit($image));
     }
 }
