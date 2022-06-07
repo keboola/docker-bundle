@@ -77,10 +77,10 @@ class Limits
     {
         if (in_array(self::DYNAMIC_BACKEND_JOBS_FEATURE, $this->projectFeatures)) {
             switch ($this->containerType) {
-                case null:
                 case 'xsmall':
                     $cpuLimit = 1;
                     break;
+                case null:
                 case 'small':
                     $cpuLimit = 2;
                     break;
@@ -143,9 +143,9 @@ class Limits
     private function getNodeTypeMultiplier(?string $containerType): float
     {
         switch ($containerType) {
-            case null:
             case 'xsmall':
                 return 0.5;
+            case null:
             case 'small':
                 return 1;
             case 'medium':
