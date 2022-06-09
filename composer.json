@@ -21,7 +21,7 @@
         "symfony/http-foundation": "^5.4",
         "symfony/monolog-bridge": "^5.4",
         "vkartaviy/retry": "^0.2",
-        "keboola/object-encryptor": "dev-odin-PS-3491 as 0.4.2",
+        "keboola/object-encryptor": "^1.0",
         "monolog/monolog": "^2.5",
         "mustache/mustache": "^2.13",
         "keboola/common-exceptions": "^1.0",
