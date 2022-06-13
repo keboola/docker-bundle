@@ -298,41 +298,47 @@ class RunnerTest extends BaseRunnerTest
             $outputs,
             null
         );
-        self::assertEquals(
-            [
-                0 => [
-                    'id' => 'developer-portal-v2/keboola.processor-last-file:0.3.0',
-                    'digests' => [
-                        'developer-portal-v2/keboola.processor-last-file@sha256:0c730bd4d91ca6962d72cd0d878a97857a1ef7c37eadd2eafd770ca26e627b0e'
-                    ],
-                ],
-                1 => [
-                    'id' => 'developer-portal-v2/keboola.processor-decompress:v4.1.0',
-                    'digests' => [
-                        'developer-portal-v2/keboola.processor-decompress@sha256:30a1a7119d51b5bb42d6c088fd3d98fed8ff7025fdca65618328face13bda91f'
-                    ],
-                ],
-                2 => [
-                    'id' => 'developer-portal-v2/keboola.processor-move-files:v2.2.1',
-                    'digests' => [
-                        'developer-portal-v2/keboola.processor-move-files@sha256:991ba73bb0fa8622c791eadc23b845aa74578fa136e328ea19b1305a530edded'
-                    ],
-                ],
-                3 => [
-                    'id' => 'developer-portal-v2/keboola.processor-iconv:4.0.0',
-                    'digests' => [
-                        'developer-portal-v2/keboola.processor-iconv@sha256:5c92ba8195dafe80455e59b99554155fd7095d59b1993e0dfc25ae44506e8be5'
-                    ],
-                ],
-                4 => [
-                    'id' => 'developer-portal-v2/keboola.r-transformation:1.2.8',
-                    'digests' => [
-                        'developer-portal-v2/keboola.r-transformation@sha256:e339e69841712bc8ef87f04020e244cbf237f206e6d6d2c1621c20e515b8562d'
-                    ],
-                ]
-            ],
-            $outputs[0]->getImages()
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-last-file:',
+            $outputs[0]->getImages()[0]['id']
         );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-last-file@sha256:',
+            $outputs[0]->getImages()[0]['digests'][0]
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-decompress:',
+            $outputs[0]->getImages()[1]['id']
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-decompress@sha256:',
+            $outputs[0]->getImages()[1]['digests'][0]
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-move-files:',
+            $outputs[0]->getImages()[2]['id']
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-move-files@sha256:',
+            $outputs[0]->getImages()[2]['digests'][0]
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-iconv:',
+            $outputs[0]->getImages()[3]['id']
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.processor-iconv@sha256:',
+            $outputs[0]->getImages()[3]['digests'][0]
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.r-transformation:',
+            $outputs[0]->getImages()[4]['id']
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.r-transformation@sha256:',
+            $outputs[0]->getImages()[4]['digests'][0]
+        );
+
         $lines = explode("\n", $outputs[0]->getProcessOutput());
         $lines = array_map(function ($line) {
             return substr($line, 23); // skip the date of event

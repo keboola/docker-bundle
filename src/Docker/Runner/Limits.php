@@ -16,7 +16,7 @@ class Limits
     const DEFAULT_CPU_LIMIT = 2;
 
     const MAX_MEMORY_LIMIT = 64000;
-    public const DYNAMIC_BACKEND_JOBS_FEATURE = 'dynamic-backend-jobs';
+    public const PAY_AS_YOU_GO_FEATURE = 'pay-as-you-go';
 
     private array $userFeatures;
     private array $projectFeatures;
@@ -75,7 +75,7 @@ class Limits
 
     public function getCpuLimit(Image $image)
     {
-        if (in_array(self::DYNAMIC_BACKEND_JOBS_FEATURE, $this->projectFeatures)) {
+        if (!in_array(self::PAY_AS_YOU_GO_FEATURE, $this->projectFeatures)) {
             switch ($this->containerType) {
                 case 'xsmall':
                     $cpuLimit = 1;
@@ -184,7 +184,7 @@ class Limits
 
     private function getProjectMemoryLimit(Image $image)
     {
-        if (in_array(self::DYNAMIC_BACKEND_JOBS_FEATURE, $this->projectFeatures)) {
+        if (!in_array(self::PAY_AS_YOU_GO_FEATURE, $this->projectFeatures)) {
             $multiplier = $this->getNodeTypeMultiplier($this->containerType);
             $componentMemory = UnitConverter::connectionMemoryLimitToBytes($image->getSourceComponent()->getMemory());
 

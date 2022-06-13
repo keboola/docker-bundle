@@ -25,7 +25,7 @@ class ContainerTest extends BaseContainerTest
             . " docker run"
             . " --volume '" . $this->getTempDir() . "/data:/data'"
             . " --volume '" . $this->getTempDir() . "/tmp:/tmp'"
-            . " --memory '256m'"
+            . " --memory '256M'"
             . " --net 'bridge'"
             . " --cpus '2'"
             . " --env \"var=val\""
@@ -49,7 +49,7 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['no-swap'];
         $container = $this->getContainer($imageConfiguration, [], [], false);
-        self::assertStringContainsString(" --memory-swap '256m'", $container->getRunCommand('name'));
+        self::assertStringContainsString(" --memory-swap '256M'", $container->getRunCommand('name'));
     }
 
     public function testInspectCommand()

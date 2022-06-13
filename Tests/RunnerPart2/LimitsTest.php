@@ -24,7 +24,7 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 'invalid'],
             [],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -43,7 +43,7 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 1000]],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -62,7 +62,7 @@ class LimitsTest extends TestCase
             $logger,
             ['cpu_count' => 1],
             ['components.jobsParallelism' => ['name' => 'components.jobsParallelism', 'value' > 10]],
-            ['foo', 'bar'],
+            ['foo', 'bar', 'pay-as-you-go'],
             ['bar', 'kochba'],
             null
         );
@@ -76,7 +76,7 @@ class LimitsTest extends TestCase
             new NullLogger(),
             ['cpu_count' => 14],
             [],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -89,7 +89,7 @@ class LimitsTest extends TestCase
             new NullLogger(),
             ['cpu_count' => 14],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -102,7 +102,7 @@ class LimitsTest extends TestCase
             new NullLogger(),
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' > 10]],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -119,7 +119,7 @@ class LimitsTest extends TestCase
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -141,7 +141,7 @@ class LimitsTest extends TestCase
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -159,7 +159,7 @@ class LimitsTest extends TestCase
             new NullLogger(),
             ['cpu_count' => 2],
             [],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -177,7 +177,7 @@ class LimitsTest extends TestCase
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -199,7 +199,7 @@ class LimitsTest extends TestCase
             ['runner.keboola.r-transformation.memoryLimitMBs' =>
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
-            [],
+            ['pay-as-you-go'],
             [],
             null
         );
@@ -261,7 +261,7 @@ class LimitsTest extends TestCase
             ['runner.keboola.runner-config-test.memoryLimitMBs' => // ignored
                 ['name' => 'runner.keboola.runner-config-test.memoryLimitMBs', 'value' => 60000],
             ],
-            ['dynamic-backend-jobs'],
+            [],
             [],
             $containerType
         );
