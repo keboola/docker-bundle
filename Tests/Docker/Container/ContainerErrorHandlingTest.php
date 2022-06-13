@@ -116,7 +116,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
         $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $this->expectException(OutOfMemoryException::class);
-        $this->expectExceptionMessage('Component out of memory (exceeded 32m)');
+        $this->expectExceptionMessage('Component out of memory (exceeded 32M)');
         $container->run();
     }
 
