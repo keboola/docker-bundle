@@ -175,6 +175,11 @@ class Container extends Configuration
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('orchestration')
+                    ->children()
+                        ->booleanNode('enabled')->defaultFalse()->end()
+                    ->end()
+                ->end()
             ->end()
         ->end();
         return $treeBuilder;

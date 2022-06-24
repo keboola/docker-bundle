@@ -164,7 +164,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testRuntimeConfiguration()
+    public function testRuntimeConfiguration(): void
     {
         $config = (new Configuration\Container())->parse([
             'config' => [
@@ -212,7 +212,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testConfigurationWithTableFiles()
+    public function testConfigurationWithTableFiles(): void
     {
         (new Configuration\Container())->parse([
             "config" => [
@@ -234,7 +234,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testArtifactsRunsConfigurationDoesNotAcceptsExtraKeys(): void
+    public function testArtifactsConfigurationDoesNotAcceptsExtraKeys(): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage('Unrecognized option "backend" under "container.artifacts".');
@@ -242,7 +242,7 @@ class ContainerConfigurationTest extends TestCase
         (new Configuration\Container())->parse([
             'config' => [
                 'artifacts' => [
-                    'runs' => [
+                    'backend' => [
                         'type' => 'foo',
                     ]
                 ],
@@ -376,6 +376,77 @@ class ContainerConfigurationTest extends TestCase
             'config' => [
                 'artifacts' => [
                     'runs' => $runsConfiguration,
+                ],
+            ],
+        ]);
+    }
+
+    public function artifactsOrchestrationConfigurationData(): iterable
+    {
+        yield 'empty configuration' => [
+            [],
+            [
+                'enabled' => false,
+            ],
+        ];
+        yield 'enabled filter' => [
+            [
+                'enabled' => true,
+            ],
+            [
+                'enabled' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsOrchestrationConfigurationData
+     */
+    public function testArtifactsOrchestrationConfiguration(
+        array $orchestrationConfiguration,
+        array $expectedOrchestrationConfiguration
+    ): void {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'orchestration' => $orchestrationConfiguration,
+                ],
+            ],
+        ]);
+
+        self::assertSame($expectedOrchestrationConfiguration, $config['artifacts']['orchestration']);
+    }
+
+    public function artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    {
+        yield 'enabled - invalid enabled value' => [
+            [
+                'enabled' => 'a',
+            ],
+            'Invalid type for path "container.artifacts.orchestration.enabled". Expected "bool", but got "string".',
+        ];
+        yield 'extrakeys' => [
+            [
+                'foo' => 'bar',
+            ],
+            'Unrecognized option "foo" under "container.artifacts.orchestration". Available option is "enabled".',
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData
+     */
+    public function testArtifactsOrchestrationConfigurationThrowsErrorOnInvalidConfig(
+        array $orchestrationConfiguration,
+        string $expecterErrorMessage
+    ): void {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expecterErrorMessage);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'orchestration' => $orchestrationConfiguration,
                 ],
             ],
         ]);
