@@ -152,6 +152,15 @@ class Container extends Configuration
         // artifacts
         $root->children()
             ->arrayNode('artifacts')
+            ->validate()
+                ->ifTrue(function ($v) {
+                    $enabledFilters = array_filter($v, function ($filter) {
+                        return isset($filter['enabled']) && $filter['enabled'] === true;
+                    });
+                    return count($enabledFilters) > 1;
+                })
+                ->thenInvalid('Multiple artifacts types, enable only one of "custom", "orchestration" or "runs".')
+            ->end()
             ->children()
                 ->arrayNode('runs')
                     ->validate()
