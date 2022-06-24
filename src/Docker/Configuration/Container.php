@@ -148,6 +148,35 @@ class Container extends Configuration
                 ->end()
             ->end()
         ->end();
+
+        // artifacts
+        $root->children()
+            ->arrayNode('artifacts')
+            ->children()
+                ->arrayNode('runs')
+                    ->validate()
+                        ->ifTrue(function ($v) {
+                            if ($v['enabled'] === true) {
+                                if (!isset($v['filter']['date_since']) && !isset($v['filter']['limit'])) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                        ->thenInvalid('At least one of "date_since" or "limit" parameters must be defined.')
+                    ->end()
+                    ->children()
+                        ->booleanNode('enabled')->defaultFalse()->end()
+                        ->arrayNode('filter')
+                            ->children()
+                                ->scalarNode('date_since')->end()
+                                ->integerNode('limit')->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+            ->end()
+        ->end();
         return $treeBuilder;
     }
 }
