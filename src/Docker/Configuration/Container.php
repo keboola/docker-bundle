@@ -185,13 +185,13 @@ class Container extends Configuration
                     ->end()
                 ->end()
                 ->arrayNode('custom')
-                        ->validate()
-                            ->ifTrue(function ($v) {
-                                if ($v['enabled'] === true) {
-                                    if (!isset($v['filter']['component_id']) && !isset($v['filter']['config_id']) && !isset($v['filter']['branch_id'])) {
-                                        return true;
-                                    }
+                    ->validate()
+                        ->ifTrue(function ($v) {
+                            if ($v['enabled'] === true) {
+                                if (!isset($v['filter']['component_id']) && !isset($v['filter']['config_id']) && !isset($v['filter']['branch_id'])) {
+                                    return true;
                                 }
+                            }
                             return false;
                         })
                         ->thenInvalid('At least one of "component_id", "config_id" or "branch_id" parameters must be defined.')
