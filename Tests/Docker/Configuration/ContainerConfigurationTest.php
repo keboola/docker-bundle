@@ -451,4 +451,191 @@ class ContainerConfigurationTest extends TestCase
             ],
         ]);
     }
+
+    public function artifactsCustomConfigurationData(): iterable
+    {
+        yield 'empty configuration' => [
+            [],
+            [
+                'enabled' => false,
+            ],
+        ];
+        yield 'enabled filter - component' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+        ];
+        yield 'enabled filter - config_id' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'config_id' => '123456',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'config_id' => '123456',
+                ],
+            ],
+        ];
+        yield 'enabled filter - branch_id' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'branch_id' => 'main',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'branch_id' => 'main',
+                ],
+            ],
+        ];
+        yield 'enabled filter' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                ],
+            ],
+        ];
+        yield 'enabled filter - limit' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'limit' => 123,
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'limit' => 123,
+                ],
+            ],
+        ];
+        yield 'enabled filter - date_since' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'date_since' => '-7 days',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'date_since' => '-7 days',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsCustomConfigurationData
+     */
+    public function testArtifactsCustomConfiguration(
+        array $customConfiguration,
+        array $expectedCustomConfiguration
+    ): void {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'custom' => $customConfiguration,
+                ],
+            ],
+        ]);
+
+        self::assertSame($expectedCustomConfiguration, $config['artifacts']['custom']);
+    }
+
+    public function artifactsCustomConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    {
+        yield 'enabled - empty configuration' => [
+            [
+                'enabled' => true,
+            ],
+            'Invalid configuration for path "container.artifacts.custom": At least one of "component_id", "config_id" or "branch_id" parameters must be defined.',
+        ];
+        yield 'enabled - invalid enabled value' => [
+            [
+                'enabled' => 'a',
+            ],
+            'Invalid type for path "container.artifacts.custom.enabled". Expected "bool", but got "string".',
+        ];
+        yield 'enabled - invalid limit value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 'a',
+                ],
+            ],
+            'Invalid type for path "container.artifacts.custom.filter.limit". Expected "int", but got "string".',
+        ];
+        yield 'enabled - invalid date_since value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'date_since' => [],
+                ],
+            ],
+            'Invalid type for path "container.artifacts.custom.filter.date_since". Expected "scalar", but got "array".',
+        ];
+        yield 'extrakeys' => [
+            [
+                'foo' => 'bar',
+            ],
+            'Unrecognized option "foo" under "container.artifacts.custom". Available options are "enabled", "filter".',
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsCustomConfigurationThrowsErrorOnInvalidConfigData
+     */
+    public function testArtifactsCustomConfigurationThrowsErrorOnInvalidConfig(
+        array $customConfiguration,
+        string $expecterErrorMessage
+    ): void {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expecterErrorMessage);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'custom' => $customConfiguration,
+                ],
+            ],
+        ]);
+    }
 }

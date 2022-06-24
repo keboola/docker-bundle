@@ -175,6 +175,31 @@ class Container extends Configuration
                         ->end()
                     ->end()
                 ->end()
+                ->arrayNode('custom')
+                        ->validate()
+                            ->ifTrue(function ($v) {
+                                if ($v['enabled'] === true) {
+                                    if (!isset($v['filter']['component_id']) && !isset($v['filter']['config_id']) && !isset($v['filter']['branch_id'])) {
+                                        return true;
+                                    }
+                                }
+                            return false;
+                        })
+                        ->thenInvalid('At least one of "component_id", "config_id" or "branch_id" parameters must be defined.')
+                    ->end()
+                    ->children()
+                        ->booleanNode('enabled')->defaultFalse()->end()
+                        ->arrayNode('filter')
+                            ->children()
+                                ->scalarNode('component_id')->end()
+                                ->scalarNode('config_id')->end()
+                                ->scalarNode('branch_id')->end()
+                                ->scalarNode('date_since')->end()
+                                ->integerNode('limit')->end()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
                 ->arrayNode('orchestration')
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()
