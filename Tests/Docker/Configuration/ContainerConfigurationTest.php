@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
@@ -8,7 +10,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ContainerConfigurationTest extends TestCase
 {
-    public function testConfiguration()
+    public function testConfiguration(): void
     {
         (new Configuration\Container())->parse([
             "config" => [
@@ -88,7 +90,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testConfigurationWithWorkspaceConnection()
+    public function testConfigurationWithWorkspaceConnection(): void
     {
         (new Configuration\Container())->parse([
             "config" => [
@@ -162,7 +164,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testRuntimeConfiguration()
+    public function testRuntimeConfiguration(): void
     {
         $config = (new Configuration\Container())->parse([
             'config' => [
@@ -181,7 +183,7 @@ class ContainerConfigurationTest extends TestCase
         ], $config['runtime']['backend']);
     }
 
-    public function testRuntimeBackendConfigurationHasDefaultEmptyValue()
+    public function testRuntimeBackendConfigurationHasDefaultEmptyValue(): void
     {
         $config = (new Configuration\Container())->parse([
             'config' => [
@@ -192,7 +194,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertSame([], $config['runtime']['backend']);
     }
 
-    public function testRuntimeBackendConfigurationDoesNotAcceptExtraKeys()
+    public function testRuntimeBackendConfigurationDoesNotAcceptExtraKeys(): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage('Unrecognized option "bar" under "container.runtime.backend"');
@@ -210,7 +212,7 @@ class ContainerConfigurationTest extends TestCase
         self::assertTrue(true);
     }
 
-    public function testConfigurationWithTableFiles()
+    public function testConfigurationWithTableFiles(): void
     {
         (new Configuration\Container())->parse([
             "config" => [
@@ -230,5 +232,451 @@ class ContainerConfigurationTest extends TestCase
             ],
         ]);
         self::assertTrue(true);
+    }
+
+    public function testArtifactsConfigurationDoesNotAcceptsExtraKeys(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage('Unrecognized option "backend" under "container.artifacts".');
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'backend' => [
+                        'type' => 'foo',
+                    ]
+                ],
+            ],
+        ]);
+    }
+
+    public function artifactsRunsConfigurationData(): iterable
+    {
+        yield 'empty configuration' => [
+            [],
+            [
+                'enabled' => false,
+            ],
+        ];
+        yield 'enabled filter - limit' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 3,
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 3,
+                ],
+            ],
+        ];
+        yield 'enabled filter - date_since' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'date_since' => '-7 days',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'date_since' => '-7 days',
+                ],
+            ],
+        ];
+        yield 'enabled filter - limit + date_since' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 1,
+                    'date_since' => '-7 days',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 1,
+                    'date_since' => '-7 days',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsRunsConfigurationData
+     */
+    public function testArtifactsRunsConfiguration(
+        array $runsConfiguration,
+        array $expectedRunsConfiguration
+    ): void {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'runs' => $runsConfiguration,
+                ],
+            ],
+        ]);
+
+        self::assertSame($expectedRunsConfiguration, $config['artifacts']['runs']);
+    }
+
+    public function artifactsRunsConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    {
+        yield 'enabled - empty configuration' => [
+            [
+                'enabled' => true,
+            ],
+            'Invalid configuration for path "container.artifacts.runs": At least one of "date_since" or "limit" parameters must be defined.',
+        ];
+        yield 'enabled - invalid enabled value' => [
+            [
+                'enabled' => 'a',
+            ],
+            'Invalid type for path "container.artifacts.runs.enabled". Expected "bool", but got "string".',
+        ];
+        yield 'enabled - invalid limit value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 'a',
+                ],
+            ],
+            'Invalid type for path "container.artifacts.runs.filter.limit". Expected "int", but got "string".',
+        ];
+        yield 'enabled - invalid date_since value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'date_since' => [],
+                ],
+            ],
+            'Invalid type for path "container.artifacts.runs.filter.date_since". Expected "scalar", but got "array".',
+        ];
+        yield 'extrakeys' => [
+            [
+                'foo' => 'bar',
+            ],
+            'Unrecognized option "foo" under "container.artifacts.runs". Available options are "enabled", "filter".',
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsRunsConfigurationThrowsErrorOnInvalidConfigData
+     */
+    public function testArtifactsRunsConfigurationThrowsErrorOnInvalidConfig(
+        array $runsConfiguration,
+        string $expecterErrorMessage
+    ): void {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expecterErrorMessage);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'runs' => $runsConfiguration,
+                ],
+            ],
+        ]);
+    }
+
+    public function artifactsOrchestrationConfigurationData(): iterable
+    {
+        yield 'empty configuration' => [
+            [],
+            [
+                'enabled' => false,
+            ],
+        ];
+        yield 'enabled filter' => [
+            [
+                'enabled' => true,
+            ],
+            [
+                'enabled' => true,
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsOrchestrationConfigurationData
+     */
+    public function testArtifactsOrchestrationConfiguration(
+        array $orchestrationConfiguration,
+        array $expectedOrchestrationConfiguration
+    ): void {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'orchestration' => $orchestrationConfiguration,
+                ],
+            ],
+        ]);
+
+        self::assertSame($expectedOrchestrationConfiguration, $config['artifacts']['orchestration']);
+    }
+
+    public function artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    {
+        yield 'enabled - invalid enabled value' => [
+            [
+                'enabled' => 'a',
+            ],
+            'Invalid type for path "container.artifacts.orchestration.enabled". Expected "bool", but got "string".',
+        ];
+        yield 'extrakeys' => [
+            [
+                'foo' => 'bar',
+            ],
+            'Unrecognized option "foo" under "container.artifacts.orchestration". Available option is "enabled".',
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData
+     */
+    public function testArtifactsOrchestrationConfigurationThrowsErrorOnInvalidConfig(
+        array $orchestrationConfiguration,
+        string $expecterErrorMessage
+    ): void {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expecterErrorMessage);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'orchestration' => $orchestrationConfiguration,
+                ],
+            ],
+        ]);
+    }
+
+    public function artifactsCustomConfigurationData(): iterable
+    {
+        yield 'empty configuration' => [
+            [],
+            [
+                'enabled' => false,
+            ],
+        ];
+        yield 'enabled filter - component' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+        ];
+        yield 'enabled filter - config_id' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'config_id' => '123456',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'config_id' => '123456',
+                ],
+            ],
+        ];
+        yield 'enabled filter - branch_id' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'branch_id' => 'main',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'branch_id' => 'main',
+                ],
+            ],
+        ];
+        yield 'enabled filter' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                ],
+            ],
+        ];
+        yield 'enabled filter - limit' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'limit' => 123,
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'limit' => 123,
+                ],
+            ],
+        ];
+        yield 'enabled filter - date_since' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'date_since' => '-7 days',
+                ],
+            ],
+            [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                    'config_id' => '123456',
+                    'branch_id' => 'main',
+                    'date_since' => '-7 days',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsCustomConfigurationData
+     */
+    public function testArtifactsCustomConfiguration(
+        array $customConfiguration,
+        array $expectedCustomConfiguration
+    ): void {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'custom' => $customConfiguration,
+                ],
+            ],
+        ]);
+
+        self::assertSame($expectedCustomConfiguration, $config['artifacts']['custom']);
+    }
+
+    public function artifactsCustomConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    {
+        yield 'enabled - empty configuration' => [
+            [
+                'enabled' => true,
+            ],
+            'Invalid configuration for path "container.artifacts.custom": At least one of "component_id", "config_id" or "branch_id" parameters must be defined.',
+        ];
+        yield 'enabled - invalid enabled value' => [
+            [
+                'enabled' => 'a',
+            ],
+            'Invalid type for path "container.artifacts.custom.enabled". Expected "bool", but got "string".',
+        ];
+        yield 'enabled - invalid limit value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 'a',
+                ],
+            ],
+            'Invalid type for path "container.artifacts.custom.filter.limit". Expected "int", but got "string".',
+        ];
+        yield 'enabled - invalid date_since value' => [
+            [
+                'enabled' => true,
+                'filter' => [
+                    'date_since' => [],
+                ],
+            ],
+            'Invalid type for path "container.artifacts.custom.filter.date_since". Expected "scalar", but got "array".',
+        ];
+        yield 'extrakeys' => [
+            [
+                'foo' => 'bar',
+            ],
+            'Unrecognized option "foo" under "container.artifacts.custom". Available options are "enabled", "filter".',
+        ];
+    }
+
+    /**
+     * @dataProvider artifactsCustomConfigurationThrowsErrorOnInvalidConfigData
+     */
+    public function testArtifactsCustomConfigurationThrowsErrorOnInvalidConfig(
+        array $customConfiguration,
+        string $expecterErrorMessage
+    ): void {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expecterErrorMessage);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'custom' => $customConfiguration,
+                ],
+            ],
+        ]);
+    }
+
+    public function testArtifactsHavingMultipleFiltersEnabled(): void
+    {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'artifacts' => [
+                    'runs' => [
+                        'enabled' => true,
+                        'filter' => [
+                            'limit' => 1,
+                        ],
+                    ],
+                    'custom' => [
+                        'enabled' => true,
+                        'filter' => [
+                            'component_id' => 'keboola.orchestrator',
+                        ],
+                    ],
+                    'orchestration' => [
+                        'enabled' => true,
+                    ],
+                ],
+            ],
+        ]);
+
+        self::assertSame([
+            'runs' => [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 1,
+                ],
+            ],
+            'custom' => [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+            'orchestration' => ['enabled' => true],
+        ], $config['artifacts']);
     }
 }
