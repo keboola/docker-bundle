@@ -639,12 +639,9 @@ class ContainerConfigurationTest extends TestCase
         ]);
     }
 
-    public function testArtifactsHavingMultipleFiltersEnabledThrowsError(): void
+    public function testArtifactsHavingMultipleFiltersEnabled(): void
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Invalid configuration for path "container.artifacts": Multiple artifacts types, enable only one of "custom", "orchestration" or "runs".');
-
-        (new Configuration\Container())->parse([
+        $config = (new Configuration\Container())->parse([
             'config' => [
                 'artifacts' => [
                     'runs' => [
@@ -665,24 +662,21 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
-    }
-
-    public function testArtifactsHavingMultipleFiltersDisabled(): void
-    {
-        $config = (new Configuration\Container())->parse([
-            'config' => [
-                'artifacts' => [
-                    'runs' => [],
-                    'custom' => [],
-                    'orchestration' => [],
-                ],
-            ],
-        ]);
 
         self::assertSame([
-            'runs' => ['enabled' => false],
-            'custom' => ['enabled' => false],
-            'orchestration' => ['enabled' => false],
+            'runs' => [
+                'enabled' => true,
+                'filter' => [
+                    'limit' => 1,
+                ],
+            ],
+            'custom' => [
+                'enabled' => true,
+                'filter' => [
+                    'component_id' => 'keboola.orchestrator',
+                ],
+            ],
+            'orchestration' => ['enabled' => true],
         ], $config['artifacts']);
     }
 }
