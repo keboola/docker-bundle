@@ -2,6 +2,8 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\Artifacts\Artifacts;
+use Keboola\Artifacts\ArtifactsException;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -241,6 +243,16 @@ class Runner
         );
         $currentOutput->setStateFile($stateFile);
 
+        $artifacts = new Artifacts(
+            $this->clientWrapper->getBasicClient(),
+            $this->loggersService->getLog(),
+            $temp,
+            $this->clientWrapper->getBranchId() ?? ClientWrapper::BRANCH_DEFAULT,
+            $component->getId(),
+            $jobDefinition->getConfigId(),
+            $jobId
+        );
+
         $imageCreator = new ImageCreator(
             $this->encryptorFactory->getEncryptor(),
             $this->loggersService->getLog(),
@@ -281,7 +293,8 @@ class Runner
                 $inputTableStateList,
                 $inputFileStateList,
                 $currentOutput,
-                $backendSize
+                $artifacts,
+                $backendSize,
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
@@ -387,9 +400,9 @@ class Runner
     }
 
     /**
-     * @param $jobId
-     * @param $configId
-     * @param $rowId
+     * @param string $jobId
+     * @param string $configId
+     * @param string $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
      * @param DataLoaderInterface $dataLoader
@@ -402,12 +415,14 @@ class Runner
      * @param InputTableStateList $inputTableStateList
      * @param InputFileStateList $inputFileStateList
      * @param Output $output
-     * @throws ClientException
+     * @param Artifacts $artifacts
+     * @param string|null $backendSize
+     * @return Output
      */
     private function runComponent(
-        $jobId,
-        $configId,
-        $rowId,
+        string $jobId,
+        string $configId,
+        string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
         DataLoaderInterface $dataLoader,
@@ -416,17 +431,34 @@ class Runner
         ImageCreator $imageCreator,
         ConfigFile $configFile,
         OutputFilterInterface $outputFilter,
-        $mode,
+        string $mode,
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
         Output $output,
+        Artifacts $artifacts,
         ?string $backendSize
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
-        $this->runImages($jobId, $configId, $rowId, $component, $usageFile, $workingDirectory, $imageCreator, $configFile, $stateFile, $outputFilter, $dataLoader, $mode, $output, $backendSize);
+        $this->runImages(
+            $jobId,
+            $configId,
+            $rowId,
+            $component,
+            $usageFile,
+            $workingDirectory,
+            $imageCreator,
+            $configFile,
+            $stateFile,
+            $outputFilter,
+            $dataLoader,
+            $mode,
+            $output,
+            $artifacts,
+            $backendSize
+        );
         $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
         $output->setDataLoader($dataLoader);
@@ -444,9 +476,9 @@ class Runner
     }
 
     /**
-     * @param $jobId
-     * @param $configId
-     * @param $rowId
+     * @param string $jobId
+     * @param string $configId
+     * @param string $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
      * @param WorkingDirectory $workingDirectory
@@ -457,12 +489,16 @@ class Runner
      * @param DataLoaderInterface $dataLoader
      * @param string $mode
      * @param Output $output
-     * @throws ClientException
+     * @param Artifacts $artifacts
+     * @param string|null $backendSize
+     * @return void
+     * @throws ApplicationException
+     * @throws UserException
      */
     private function runImages(
-        $jobId,
-        $configId,
-        $rowId,
+        string $jobId,
+        string $configId,
+        string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
         WorkingDirectory $workingDirectory,
@@ -471,8 +507,9 @@ class Runner
         StateFile $stateFile,
         OutputFilterInterface $outputFilter,
         DataLoaderInterface $dataLoader,
-        $mode,
-        $output,
+        string $mode,
+        Output $output,
+        Artifacts $artifacts,
         ?string $backendSize
     ) {
         $images = $imageCreator->prepareImages();
@@ -494,7 +531,6 @@ class Runner
         $mlflowTracking = null;
         $output->setOutput('');
 
-
         $mlflowProject = $this->mlflowProjectResolver->getMlflowProjectIfAvailable($component, $tokenInfo);
         if ($mlflowProject !== null) {
             $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
@@ -507,6 +543,9 @@ class Runner
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
+                if (in_array('artifacts', $tokenInfo['owner']['features'])) {
+                    $this->downloadArtifacts($artifacts, $image->getConfigData()['artifacts']);
+                }
             } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
                 if ($dataLoader instanceof NullDataLoader) {
@@ -573,6 +612,15 @@ class Runner
                 if ($image->isMain()) {
                     $output->setOutput($process->getOutput());
                     $newState = $stateFile->loadStateFromFile();
+                    if (in_array('artifacts', $tokenInfo['owner']['features'])) {
+                        try {
+                            $artifacts->uploadCurrent();
+                        } catch (ArtifactsException $e) {
+                            $this->loggersService->getLog()->warning(
+                                sprintf('Error uploading artifacts "%s"', $e->getMessage())
+                            );
+                        }
+                    }
                 }
             } finally {
                 if ($image->getSourceComponent()->runAsRoot()) {
@@ -588,5 +636,15 @@ class Runner
             }
         }
         $stateFile->stashState($newState);
+    }
+
+    private function downloadArtifacts(Artifacts $artifacts, array $artifactsConfiguration): void
+    {
+        if ($artifactsConfiguration['runs']['enabled']) {
+            $artifacts->downloadLatestRuns(
+                $artifactsConfiguration['runs']['filter']['limit'] ?? null,
+                $artifactsConfiguration['runs']['filter']['date_since'] ?? null,
+            );
+        }
     }
 }

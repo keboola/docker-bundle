@@ -31,7 +31,7 @@ RUN wget https://download.docker.com/linux/debian/gpg \
     && apt-get update \
     && apt-cache policy docker-ce \
     && apt-get -y install docker-ce \
-    && rm -rf /var/lib/apt/lists/*    
+    && rm -rf /var/lib/apt/lists/*
 
 # install extensions
 RUN docker-php-ext-install zip

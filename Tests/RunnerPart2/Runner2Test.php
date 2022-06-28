@@ -11,7 +11,6 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\Sandboxes\Api\Project;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -248,6 +247,75 @@ class Runner2Test extends BaseRunnerTest
         // check the component ran but no connection string was passed
         self::assertContains('Environment "KBC_PROJECTID" has value "1234".', $containerOutput);
         self::assertNotContains('Environment "AZURE_STORAGE_CONNECTION_STRING"', $containerOutput);
+    }
+
+    public function testArtifacts()
+    {
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken', 'listFiles'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'features' => ['artifacts'],
+            ],
+        ]);
+        $this->setClientMock($storageApiMock);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'mytable.csv.gz',
+                            'destination' => 'in.c-runner-test.mytable',
+                            'columns' => ['col1'],
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    'os.makedirs("/artifacts/current")',
+                    'with open("/artifacts/current/myartifact1", "w") as file:',
+                    '   file.write("value1")',
+                ],
+            ],
+        ];
+
+        $runner = $this->getRunner();
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                'runner-configuration',
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
+        );
     }
 
     /**

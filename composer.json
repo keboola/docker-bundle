@@ -28,7 +28,8 @@
         "keboola/common-exceptions": "^1.0",
         "keboola/sandboxes-api-php-client": "^6.7",
         "php": ">=7.4",
-        "ext-zip": "*"
+        "ext-zip": "*",
+        "keboola/artifacts": "0.0.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
