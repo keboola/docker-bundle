@@ -31,7 +31,15 @@ RUN wget https://download.docker.com/linux/debian/gpg \
     && apt-get update \
     && apt-cache policy docker-ce \
     && apt-get -y install docker-ce \
-    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/lib/apt/lists/*
+
+#RUN mkdir -p /etc/apt/keyrings \
+#  && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+#  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" \
+#    | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+#  && apt-get update \
+#  && apt-get -y install docker-ce docker-ce-cli containerd.io \
+#  && rm -rf /var/lib/apt/lists/*
 
 # add SSH user
 RUN useradd --create-home --shell /bin/bash --groups sudo php-remote \
@@ -39,10 +47,10 @@ RUN useradd --create-home --shell /bin/bash --groups sudo php-remote \
 
 # install extensions
 RUN docker-php-ext-install zip
-#RUN pecl channel-update pecl.php.net \
-#    && pecl config-set php_ini /usr/local/etc/php.ini \
-#    && yes | pecl install xdebug-2.9.8 \
-#    && docker-php-ext-enable xdebug
+RUN pecl channel-update pecl.php.net \
+    && pecl config-set php_ini /usr/local/etc/php.ini \
+    && yes | pecl install xdebug-2.9.8 \
+    && docker-php-ext-enable xdebug
 
 ENV APACHE_LOCK_DIR=/var/apache/lock/
 
