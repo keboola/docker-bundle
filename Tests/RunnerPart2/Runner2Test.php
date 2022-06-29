@@ -431,19 +431,6 @@ class Runner2Test extends BaseRunnerTest
             $outputs,
             null
         );
-
-        $files = $this->client->listFiles(
-            (new ListFilesOptions())
-                ->setTags([
-                    'artifacts',
-                    'configId-' . $configId,
-                ])
-        );
-
-        self::assertCount(1, $files);
-        self::assertEquals('artifacts.tar.gz', $files[0]['name']);
-        self::assertContains('branchId-default', $files[0]['tags']);
-        self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
     }
 
     /**
