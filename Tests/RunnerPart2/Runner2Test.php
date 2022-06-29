@@ -259,7 +259,7 @@ class Runner2Test extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->onlyMethods(['verifyToken', 'listFiles'])
+            ->onlyMethods(['verifyToken'])
             ->getMock()
         ;
         $storageApiMock->method('verifyToken')->willReturn([
@@ -287,18 +287,8 @@ class Runner2Test extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-//                    'path = "/data/artifacts/current"',
-//                    'if not os.path.exists(path):os.makedirs(path)',
                     'with open("/data/artifacts/current/myartifact1", "w") as file:',
                     '   file.write("value1")',
-                ],
-            ],
-            'artifacts' => [
-                'runs' => [
-                    'enabled' => true,
-                    'filter' => [
-                        'limit' => 1,
-                    ],
                 ],
             ],
         ];
@@ -343,7 +333,7 @@ class Runner2Test extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->onlyMethods(['verifyToken', 'listFiles'])
+            ->onlyMethods(['verifyToken'])
             ->getMock()
         ;
         $storageApiMock->method('verifyToken')->willReturn([
@@ -353,7 +343,6 @@ class Runner2Test extends BaseRunnerTest
                 'features' => ['artifacts'],
             ],
         ]);
-        $storageApiMock->method('listFiles')->willReturn([]);
         $this->setClientMock($storageApiMock);
 
         $configId = rand(0, 999999);
@@ -377,7 +366,7 @@ class Runner2Test extends BaseRunnerTest
             '/tmp/artifacts.tar.gz',
             (new FileUploadOptions())
                 ->setTags([
-                    'artifacts',
+                    'artifact',
                     'branchId-default',
                     'componentId-keboola.python-transformation',
                     'configId-' . $configId,
@@ -408,11 +397,13 @@ class Runner2Test extends BaseRunnerTest
                 'runs' => [
                     'enabled' => true,
                     'filter' => [
-                        'limit' => 1,
+                        'limit' => 10,
                     ],
                 ],
             ],
         ];
+
+        sleep(3);
 
         $runner = $this->getRunner();
         $outputs = [];
