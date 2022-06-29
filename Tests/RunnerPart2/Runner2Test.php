@@ -14,7 +14,9 @@ use Keboola\Sandboxes\Api\Project;
 use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Symfony\Component\Process\Process;
 
 class Runner2Test extends BaseRunnerTest
 {
@@ -250,7 +252,7 @@ class Runner2Test extends BaseRunnerTest
         self::assertNotContains('Environment "AZURE_STORAGE_CONNECTION_STRING"', $containerOutput);
     }
 
-    public function testArtifactsWrite()
+    public function testArtifactsUpload()
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
@@ -302,6 +304,116 @@ class Runner2Test extends BaseRunnerTest
         ];
 
         $configId = rand(0, 999999);
+        $runner = $this->getRunner();
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
+        );
+
+        $files = $this->client->listFiles(
+            (new ListFilesOptions())
+                ->setTags([
+                    'artifacts',
+                    'configId-' . $configId,
+                ])
+        );
+
+        self::assertCount(1, $files);
+        self::assertEquals('artifacts.tar.gz', $files[0]['name']);
+        self::assertContains('branchId-default', $files[0]['tags']);
+        self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
+    }
+
+    public function testArtifactsDownload()
+    {
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken', 'listFiles'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'fileStorageProvider' => 'local',
+                'features' => ['artifacts'],
+            ],
+        ]);
+        $storageApiMock->method('listFiles')->willReturn([]);
+        $this->setClientMock($storageApiMock);
+
+        $configId = rand(0, 999999);
+        $previousJobId = rand(0, 999999);
+        if (!is_dir('/tmp/artifact/')) {
+            mkdir('/tmp/artifact/');
+        }
+        file_put_contents('/tmp/artifact/artifact1', 'value1');
+
+        $process = new Process([
+            'tar',
+            '-C',
+            '/tmp/artifact',
+            '-czvf',
+            '/tmp/artifacts.tar.gz',
+            '.',
+        ]);
+        $process->mustRun();
+
+        $fileId = $this->client->uploadFile(
+            '/tmp/artifacts.tar.gz',
+            (new FileUploadOptions())
+                ->setTags([
+                    'artifacts',
+                    'branchId-default',
+                    'componentId-keboola.python-transformation',
+                    'configId-' . $configId,
+                    'jobId-' . $previousJobId,
+                ])
+        );
+
+        $componentData = [
+            'id' => 'keboola.python-transformation',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+
+        $config = [
+            'storage' => [],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    sprintf('with open("/data/artifacts/runs/%s/artifact1", "r") as f:', $previousJobId),
+                    '   print(f.read())',
+                ],
+            ],
+            'artifacts' => [
+                'runs' => [
+                    'enabled' => true,
+                    'filter' => [
+                        'limit' => 1,
+                    ],
+                ],
+            ],
+        ];
+
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run(

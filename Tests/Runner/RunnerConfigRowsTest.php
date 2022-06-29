@@ -150,9 +150,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ];
 
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition($config, $this->getComponent());
+        $jobDefinition1 = new JobDefinition($config, $this->getComponent(), 'config-1234');
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
-        $jobDefinition2 = new JobDefinition($config, $this->getComponent());
+        $jobDefinition2 = new JobDefinition($config, $this->getComponent(), 'config-1235');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $outputs = [];
         $runner->run(
@@ -358,7 +358,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     '   file.write("value1")',
                 ],
             ],
-        ], $this->getComponent());
+        ], $this->getComponent(), 'my-config');
         $jobDefinition2 = new JobDefinition([
             'storage' => [
                 'output' => [
@@ -698,7 +698,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent()
+            $this->getComponent(),
+            'config-id'
         );
         $jobDefinition2 = new JobDefinition(
             [
@@ -720,7 +721,8 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent()
+            $this->getComponent(),
+            'config-id'
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();

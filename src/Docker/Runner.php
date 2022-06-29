@@ -642,6 +642,7 @@ class Runner
 
     private function downloadArtifacts(Artifacts $artifacts, array $artifactsConfiguration): void
     {
+        var_dump('duwnload artifaacts'); die;
         if ($artifactsConfiguration['runs']['enabled']) {
             $artifacts->downloadLatestRuns(
                 $artifactsConfiguration['runs']['filter']['limit'] ?? null,
