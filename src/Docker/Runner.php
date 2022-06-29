@@ -402,7 +402,7 @@ class Runner
     /**
      * @param string $jobId
      * @param string $configId
-     * @param string $rowId
+     * @param string|null $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
      * @param DataLoaderInterface $dataLoader
@@ -418,11 +418,13 @@ class Runner
      * @param Artifacts $artifacts
      * @param string|null $backendSize
      * @return Output
+     * @throws ApplicationException
+     * @throws UserException
      */
     private function runComponent(
         string $jobId,
         string $configId,
-        string $rowId,
+        ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
         DataLoaderInterface $dataLoader,
@@ -478,7 +480,7 @@ class Runner
     /**
      * @param string $jobId
      * @param string $configId
-     * @param string $rowId
+     * @param string|null $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
      * @param WorkingDirectory $workingDirectory
@@ -498,7 +500,7 @@ class Runner
     private function runImages(
         string $jobId,
         string $configId,
-        string $rowId,
+        ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
         WorkingDirectory $workingDirectory,

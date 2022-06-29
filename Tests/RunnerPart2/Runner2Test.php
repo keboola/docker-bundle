@@ -14,6 +14,7 @@ use Keboola\Sandboxes\Api\Project;
 use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\ListFilesOptions;
 
 class Runner2Test extends BaseRunnerTest
 {
@@ -249,7 +250,7 @@ class Runner2Test extends BaseRunnerTest
         self::assertNotContains('Environment "AZURE_STORAGE_CONNECTION_STRING"', $containerOutput);
     }
 
-    public function testArtifacts()
+    public function testArtifactsWrite()
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
@@ -262,13 +263,15 @@ class Runner2Test extends BaseRunnerTest
         $storageApiMock->method('verifyToken')->willReturn([
             'owner' => [
                 'id' => '1234',
+                'fileStorageProvider' => 'local',
                 'features' => ['artifacts'],
             ],
         ]);
+        $storageApiMock->method('listFiles')->willReturn([]);
         $this->setClientMock($storageApiMock);
 
         $componentData = [
-            'id' => 'keboola.docker-demo-sync',
+            'id' => 'keboola.python-transformation',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -278,33 +281,33 @@ class Runner2Test extends BaseRunnerTest
         ];
 
         $config = [
-            'storage' => [
-                'output' => [
-                    'tables' => [
-                        [
-                            'source' => 'mytable.csv.gz',
-                            'destination' => 'in.c-runner-test.mytable',
-                            'columns' => ['col1'],
-                        ],
-                    ],
-                ],
-            ],
+            'storage' => [],
             'parameters' => [
                 'script' => [
                     'import os',
-                    'os.makedirs("/artifacts/current")',
-                    'with open("/artifacts/current/myartifact1", "w") as file:',
+//                    'path = "/data/artifacts/current"',
+//                    'if not os.path.exists(path):os.makedirs(path)',
+                    'with open("/data/artifacts/current/myartifact1", "w") as file:',
                     '   file.write("value1")',
+                ],
+            ],
+            'artifacts' => [
+                'runs' => [
+                    'enabled' => true,
+                    'filter' => [
+                        'limit' => 1,
+                    ],
                 ],
             ],
         ];
 
+        $configId = rand(0, 999999);
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                'runner-configuration',
+                $configId,
                 $config,
                 []
             ),
@@ -316,6 +319,19 @@ class Runner2Test extends BaseRunnerTest
             $outputs,
             null
         );
+
+        $files = $this->client->listFiles(
+            (new ListFilesOptions())
+                ->setTags([
+                    'artifacts',
+                    'configId-' . $configId,
+                ])
+        );
+
+        self::assertCount(1, $files);
+        self::assertEquals('artifacts.tar.gz', $files[0]['name']);
+        self::assertContains('branchId-default', $files[0]['tags']);
+        self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
     }
 
     /**
