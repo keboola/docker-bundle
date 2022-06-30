@@ -399,7 +399,7 @@ class Runner2Test extends BaseRunnerTest
                 'runs' => [
                     'enabled' => true,
                     'filter' => [
-                        'limit' => 10,
+                        'limit' => 1,
                     ],
                 ],
             ],
@@ -425,7 +425,9 @@ class Runner2Test extends BaseRunnerTest
             null
         );
 
-        var_dump($outputs);
+        /** @var Output $output */
+        $output = $outputs[0];
+        self::assertStringContainsString('value1', $output->getProcessOutput());
     }
 
     /**
