@@ -364,7 +364,7 @@ class Runner2Test extends BaseRunnerTest
         ]);
         $process->mustRun();
 
-        $fileId = $this->client->uploadFile(
+        $this->client->uploadFile(
             '/tmp/artifacts.tar.gz',
             (new FileUploadOptions())
                 ->setTags([
@@ -405,7 +405,7 @@ class Runner2Test extends BaseRunnerTest
             ],
         ];
 
-        sleep(3);
+        sleep(2);
 
         $runner = $this->getRunner();
         $outputs = [];
@@ -424,6 +424,8 @@ class Runner2Test extends BaseRunnerTest
             $outputs,
             null
         );
+
+        var_dump($outputs);
     }
 
     /**

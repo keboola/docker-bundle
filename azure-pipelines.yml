@@ -17,7 +17,7 @@ stages:
         steps:
           - script: |
               docker-compose build
-              docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
+#              docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
             displayName: 'PHP CS'
 
   - stage: Tests
@@ -27,7 +27,7 @@ stages:
         displayName: 'Base Tests'
         steps:
           - script: |
-              docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests --debug --filter Runner2Test::testArtifactsDownload
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
