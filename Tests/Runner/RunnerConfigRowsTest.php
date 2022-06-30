@@ -213,9 +213,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ];
 
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition($config, $componentData);
+        $jobDefinition1 = new JobDefinition($config, $componentData, 'config-id');
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
-        $jobDefinition2 = new JobDefinition($config, $componentData);
+        $jobDefinition2 = new JobDefinition($config, $componentData, 'config-id-2');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $outputs = [];
         $runner->run(
