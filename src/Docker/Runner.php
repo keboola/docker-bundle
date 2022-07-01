@@ -190,7 +190,8 @@ class Runner
         $jobId,
         UsageFileInterface $usageFile,
         array &$outputs,
-        ?string $backendSize
+        ?string $backendSize,
+        bool $storeState
     ) {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -302,6 +303,7 @@ class Runner
                 $currentOutput,
                 $artifacts,
                 $backendSize,
+                $storeState
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
@@ -317,14 +319,22 @@ class Runner
      * @param UsageFileInterface $usageFile
      * @param array $rowIds
      * @param Output[] $outputs
+     * @param string|null $backendSize
+     * @throws ClientException
+     * @throws UserException
      */
-    public function run(array $jobDefinitions, $action, $mode, $jobId, UsageFileInterface $usageFile, array $rowIds, array &$outputs, ?string $backendSize)
-    {
+    public function run(
+        array $jobDefinitions,
+        string $action,
+        string $mode,
+        string $jobId,
+        UsageFileInterface $usageFile,
+        array $rowIds,
+        array &$outputs,
+        ?string $backendSize
+    ) {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
-                /**
-                 * @var JobDefinition $jobDefinition
-                 */
                 return in_array($jobDefinition->getRowId(), $rowIds);
             });
             if (count($jobDefinitions) === 0) {
@@ -335,6 +345,7 @@ class Runner
         if (($mode !== self::MODE_RUN) && ($mode !== self::MODE_DEBUG)) {
             throw new UserException("Invalid run mode: $mode");
         }
+        $storeState = $this->shouldStoreState($jobDefinitions[0]->getComponentId(), $jobDefinitions[0]->getConfigId());
         $outputs = [];
         $counter = 0;
         foreach ($jobDefinitions as $jobDefinition) {
@@ -359,7 +370,7 @@ class Runner
                 "Running component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
-            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs, $backendSize);
+            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs, $backendSize, $storeState);
             $this->loggersService->getLog()->info(
                 "Finished component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
@@ -368,7 +379,7 @@ class Runner
         $this->waitForStorageJobs($outputs);
         /** @var Output $output */
         foreach ($outputs as $output) {
-            if (($mode !== self::MODE_DEBUG) && $this->shouldStoreState($jobDefinition->getComponentId(), $jobDefinition->getConfigId())) {
+            if (($mode !== self::MODE_DEBUG) && $storeState) {
                 $output->getStateFile()->persistState(
                     $output->getInputTableResult()->getInputTableStateList(),
                     $output->getInputFileStateList()
@@ -424,6 +435,7 @@ class Runner
      * @param Output $output
      * @param Artifacts $artifacts
      * @param string|null $backendSize
+     * @param bool $storeState
      * @return Output
      * @throws ApplicationException
      * @throws UserException
@@ -445,7 +457,8 @@ class Runner
         InputFileStateList $inputFileStateList,
         Output $output,
         Artifacts $artifacts,
-        ?string $backendSize
+        ?string $backendSize,
+        bool $storeState
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -466,7 +479,8 @@ class Runner
             $mode,
             $output,
             $artifacts,
-            $backendSize
+            $backendSize,
+            $storeState
         );
         $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
@@ -519,7 +533,8 @@ class Runner
         string $mode,
         Output $output,
         Artifacts $artifacts,
-        ?string $backendSize
+        ?string $backendSize,
+        bool $storeState
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -552,8 +567,8 @@ class Runner
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
-                if (!is_null($configId) && in_array('artifacts', $tokenInfo['owner']['features'])) {
-                    $this->downloadArtifacts($artifacts, $image->getConfigData()['artifacts']);
+                if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
+                    $this->downloadArtifacts($artifacts, $image->getConfigData());
                 }
             } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
@@ -621,7 +636,7 @@ class Runner
                 if ($image->isMain()) {
                     $output->setOutput($process->getOutput());
                     $newState = $stateFile->loadStateFromFile();
-                    if (!is_null($configId) && in_array('artifacts', $tokenInfo['owner']['features'])) {
+                    if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
                             $artifacts->uploadCurrent();
                         } catch (ArtifactsException $e) {
@@ -647,9 +662,9 @@ class Runner
         $stateFile->stashState($newState);
     }
 
-    private function downloadArtifacts(Artifacts $artifacts, array $artifactsConfiguration): void
+    private function downloadArtifacts(Artifacts $artifacts, array $configuration): void
     {
-        if ($artifactsConfiguration['runs']['enabled']) {
+        if (!empty($configuration['artifacts']['runs']['enabled'])) {
             $artifacts->downloadLatestRuns(
                 $artifactsConfiguration['runs']['filter']['limit'] ?? null,
                 $artifactsConfiguration['runs']['filter']['date_since'] ?? null,

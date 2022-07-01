@@ -259,7 +259,7 @@ class Runner2Test extends BaseRunnerTest
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
             ]])
-            ->onlyMethods(['verifyToken'])
+            ->onlyMethods(['verifyToken', 'listFiles'])
             ->getMock()
         ;
         $storageApiMock->method('verifyToken')->willReturn([
@@ -269,6 +269,7 @@ class Runner2Test extends BaseRunnerTest
                 'features' => ['artifacts'],
             ],
         ]);
+        $storageApiMock->method('listFiles')->willReturn([]);
         $this->setClientMock($storageApiMock);
 
         $componentData = [
