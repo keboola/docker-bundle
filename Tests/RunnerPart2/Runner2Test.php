@@ -14,9 +14,11 @@ use Keboola\Sandboxes\Api\Project;
 use Keboola\StorageApi\Client as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
+use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Symfony\Component\Process\Process;
+use Throwable;
 
 class Runner2Test extends BaseRunnerTest
 {
@@ -25,6 +27,28 @@ class Runner2Test extends BaseRunnerTest
     public function setUp(): void
     {
         parent::setUp();
+    }
+
+    public static function tearDownAfterClass(): void
+    {
+        parent::tearDownAfterClass();
+        $client = new StorageApiClient([
+            'url' => STORAGE_API_URL,
+            'token' => STORAGE_API_TOKEN,
+        ]);
+        $transformationTestComponentId = 'keboola.python-transformation';
+        $components = new Components($client);
+        $configurations = $components->listComponentConfigurations(
+            (new ListComponentConfigurationsOptions())
+                ->setComponentId($transformationTestComponentId)
+        );
+        foreach ($configurations as $configuration) {
+            try {
+                $components->deleteConfiguration($transformationTestComponentId, $configuration['id']);
+            } catch (Throwable $e) {
+                // do nothing
+            }
+        }
     }
 
     public function testPermissionsFailedWithoutContainerRootUserFeature()
