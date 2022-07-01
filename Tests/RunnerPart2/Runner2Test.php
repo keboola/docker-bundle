@@ -269,7 +269,6 @@ class Runner2Test extends BaseRunnerTest
                 'features' => ['artifacts'],
             ],
         ]);
-        $storageApiMock->method('listFiles')->willReturn([]);
         $this->setClientMock($storageApiMock);
 
         $componentData = [
