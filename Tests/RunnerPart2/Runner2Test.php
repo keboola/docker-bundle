@@ -327,6 +327,7 @@ class Runner2Test extends BaseRunnerTest
                 ->setName('artifacts tests')
         );
         $configId = $configuration['id'];
+        $jobId = rand(0, 999999);
 
         $runner = $this->getRunner();
         $outputs = [];
@@ -339,7 +340,7 @@ class Runner2Test extends BaseRunnerTest
             ),
             'run',
             'run',
-            '1234567',
+            $jobId,
             new NullUsageFile(),
             [],
             $outputs,
@@ -350,14 +351,19 @@ class Runner2Test extends BaseRunnerTest
             (new ListFilesOptions())
                 ->setTags([
                     'artifacts',
+                    'branchId-default',
+                    'componentId-keboola.python-transformation',
                     'configId-' . $configId,
+                    'jobId-' . $jobId,
                 ])
+                ->setLimit(1)
         );
 
-        self::assertCount(1, $files);
         self::assertEquals('artifacts.tar.gz', $files[0]['name']);
         self::assertContains('branchId-default', $files[0]['tags']);
         self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('configId-' . $configId, $files[0]['tags']);
+        self::assertContains('jobId-' . $jobId, $files[0]['tags']);
     }
 
     public function testArtifactsDownload()
