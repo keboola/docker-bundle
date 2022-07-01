@@ -183,8 +183,15 @@ class Runner
      * @param UsageFileInterface $usageFile
      * @param Output[] $outputs
      */
-    private function runRow(JobDefinition $jobDefinition, $action, $mode, $jobId, UsageFileInterface $usageFile, array &$outputs, ?string $backendSize)
-    {
+    private function runRow(
+        JobDefinition $jobDefinition,
+        $action,
+        $mode,
+        $jobId,
+        UsageFileInterface $usageFile,
+        array &$outputs,
+        ?string $backendSize
+    ) {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
             . ", row id: " . $jobDefinition->getRowId() . ", state: " . json_encode($jobDefinition->getState())
@@ -401,7 +408,7 @@ class Runner
 
     /**
      * @param string $jobId
-     * @param string $configId
+     * @param string|null $configId
      * @param string|null $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
@@ -423,7 +430,7 @@ class Runner
      */
     private function runComponent(
         string $jobId,
-        string $configId,
+        ?string $configId,
         ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
@@ -479,7 +486,7 @@ class Runner
 
     /**
      * @param string $jobId
-     * @param string $configId
+     * @param string|null $configId
      * @param string|null $rowId
      * @param Component $component
      * @param UsageFileInterface $usageFile
@@ -499,7 +506,7 @@ class Runner
      */
     private function runImages(
         string $jobId,
-        string $configId,
+        ?string $configId,
         ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
@@ -545,7 +552,7 @@ class Runner
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
-                if (in_array('artifacts', $tokenInfo['owner']['features'])) {
+                if (!is_null($configId) && in_array('artifacts', $tokenInfo['owner']['features'])) {
                     $this->downloadArtifacts($artifacts, $image->getConfigData()['artifacts']);
                 }
             } else {
@@ -614,7 +621,7 @@ class Runner
                 if ($image->isMain()) {
                     $output->setOutput($process->getOutput());
                     $newState = $stateFile->loadStateFromFile();
-                    if (in_array('artifacts', $tokenInfo['owner']['features'])) {
+                    if (!is_null($configId) && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
                             $artifacts->uploadCurrent();
                         } catch (ArtifactsException $e) {

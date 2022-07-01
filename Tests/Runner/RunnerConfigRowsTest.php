@@ -150,9 +150,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ];
 
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition($config, $this->getComponent(), 'config-1234');
+        $jobDefinition1 = new JobDefinition($config, $this->getComponent());
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
-        $jobDefinition2 = new JobDefinition($config, $this->getComponent(), 'config-1235');
+        $jobDefinition2 = new JobDefinition($config, $this->getComponent());
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $outputs = [];
         $runner->run(
@@ -213,9 +213,9 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ];
 
         $runner = $this->getRunner();
-        $jobDefinition1 = new JobDefinition($config, $componentData, 'config-id');
+        $jobDefinition1 = new JobDefinition($config, $componentData);
         $config['storage']['output']['tables'][0]['destination'] = 'in.c-runner-test.mytable-2';
-        $jobDefinition2 = new JobDefinition($config, $componentData, 'config-id-2');
+        $jobDefinition2 = new JobDefinition($config, $componentData);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $outputs = [];
         $runner->run(
@@ -358,7 +358,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     '   file.write("value1")',
                 ],
             ],
-        ], $this->getComponent(), 'my-config');
+        ], $this->getComponent());
         $jobDefinition2 = new JobDefinition([
             'storage' => [
                 'output' => [
@@ -698,8 +698,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent(),
-            'config-id'
+            $this->getComponent()
         );
         $jobDefinition2 = new JobDefinition(
             [
@@ -721,8 +720,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent(),
-            'config-id'
+            $this->getComponent()
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
