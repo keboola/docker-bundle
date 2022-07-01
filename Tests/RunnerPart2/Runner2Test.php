@@ -295,7 +295,15 @@ class Runner2Test extends BaseRunnerTest
             ],
         ];
 
-        $configId = rand(0, 999999);
+        $components = new Components($storageApiMock);
+        $configuration = $components->addConfiguration(
+            (new Configuration())
+                ->setComponentId('keboola.python-transformation')
+                ->setConfiguration($config)
+                ->setName('artifacts tests')
+        );
+        $configId = $configuration['id'];
+
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run(
@@ -347,8 +355,34 @@ class Runner2Test extends BaseRunnerTest
         ]);
         $this->setClientMock($storageApiMock);
 
-        $configId = rand(0, 999999);
         $previousJobId = rand(0, 999999);
+        $config = [
+            'storage' => [],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    sprintf('with open("/data/artifacts/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
+                    '   print(f.read())',
+                ],
+            ],
+            'artifacts' => [
+                'runs' => [
+                    'enabled' => true,
+                    'filter' => [
+                        'limit' => 1,
+                    ],
+                ],
+            ],
+        ];
+        $components = new Components($storageApiMock);
+        $configuration = $components->addConfiguration(
+            (new Configuration())
+                ->setComponentId('keboola.python-transformation')
+                ->setConfiguration($config)
+                ->setName('artifacts tests')
+        );
+        $configId = $configuration['id'];
+
         if (!is_dir('/tmp/artifact/')) {
             mkdir('/tmp/artifact/');
         }
@@ -382,25 +416,6 @@ class Runner2Test extends BaseRunnerTest
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                ],
-            ],
-        ];
-
-        $config = [
-            'storage' => [],
-            'parameters' => [
-                'script' => [
-                    'import os',
-                    sprintf('with open("/data/artifacts/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
-                    '   print(f.read())',
-                ],
-            ],
-            'artifacts' => [
-                'runs' => [
-                    'enabled' => true,
-                    'filter' => [
-                        'limit' => 1,
-                    ],
                 ],
             ],
         ];
