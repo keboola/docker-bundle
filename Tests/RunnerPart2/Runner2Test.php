@@ -326,8 +326,6 @@ class Runner2Test extends BaseRunnerTest
                 ->setConfiguration($config)
                 ->setName('artifacts tests')
         );
-        var_dump('configuration');
-        var_dump($configuration);
 
         $configId = $configuration['id'];
         $jobId = rand(0, 999999);
@@ -363,9 +361,6 @@ class Runner2Test extends BaseRunnerTest
                 ])
                 ->setLimit(1)
         );
-
-        var_dump('files');
-        var_dump($files[0]);
 
         self::assertEquals('artifacts.tar.gz', $files[0]['name']);
         self::assertContains('branchId-default', $files[0]['tags']);
