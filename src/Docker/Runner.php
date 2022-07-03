@@ -149,13 +149,17 @@ class Runner
     }
 
     /**
-     * @param $componentId
-     * @param $configurationId
+     * @param JobDefinition|null $jobDefinition
      * @return bool
      * @throws ClientException
      */
-    private function shouldStoreState($componentId, $configurationId)
+    private function shouldStoreState(?JobDefinition $jobDefinition)
     {
+        if (is_null($jobDefinition)) {
+            return false;
+        }
+        $componentId = $jobDefinition->getComponentId();
+        $configurationId = $jobDefinition->getConfigId();
         $storeState = false;
         if ($componentId && $configurationId) {
             $storeState = true;
@@ -345,7 +349,7 @@ class Runner
         if (($mode !== self::MODE_RUN) && ($mode !== self::MODE_DEBUG)) {
             throw new UserException("Invalid run mode: $mode");
         }
-        $storeState = $this->shouldStoreState($jobDefinitions[0]->getComponentId(), $jobDefinitions[0]->getConfigId());
+        $storeState = $this->shouldStoreState(array_pop($jobDefinitions));
         $outputs = [];
         $counter = 0;
         foreach ($jobDefinitions as $jobDefinition) {
