@@ -155,11 +155,12 @@ class Runner
      */
     private function shouldStoreState(array $jobDefinitions)
     {
-        if (empty($jobDefinitions)) {
+        $jobDefinition = reset($jobDefinitions);
+        if (!$jobDefinition) {
             return false;
         }
-        $componentId = $jobDefinitions[0]->getComponentId();
-        $configurationId = $jobDefinitions[0]->getConfigId();
+        $componentId = $jobDefinition->getComponentId();
+        $configurationId = $jobDefinition->getConfigId();
         $storeState = false;
         if ($componentId && $configurationId) {
             $storeState = true;
