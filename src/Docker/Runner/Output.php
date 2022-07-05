@@ -179,7 +179,7 @@ class Output
         return $this->artifactsDownloaded;
     }
 
-    public function setArtifactUploaded(array $artifactResult): void
+    public function setArtifactUploaded(?array $artifactResult): void
     {
         $this->artifactUploaded = $artifactResult;
     }
