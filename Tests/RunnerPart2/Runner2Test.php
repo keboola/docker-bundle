@@ -437,7 +437,7 @@ class Runner2Test extends BaseRunnerTest
         ]);
         $process->mustRun();
 
-        $this->client->uploadFile(
+        $uploadedFileId = $this->client->uploadFile(
             '/tmp/artifacts.tar.gz',
             (new FileUploadOptions())
                 ->setTags([
@@ -482,6 +482,9 @@ class Runner2Test extends BaseRunnerTest
         /** @var Output $output */
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
+        self::assertSame([
+            ['storageFileId' => $uploadedFileId],
+        ], $output->getArtifactsDownloaded());
     }
 
     /**
