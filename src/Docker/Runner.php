@@ -573,7 +573,8 @@ class Runner
             if ($image->isMain()) {
                 $stateFile->createStateFile();
                 if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
-                    $this->downloadArtifacts($artifacts, $image->getConfigData());
+                    $downloadedArtifacts = $this->downloadArtifacts($artifacts, $image->getConfigData());
+                    $output->setArtifactsDownloaded($downloadedArtifacts);
                 }
             } else {
                 $this->loggersService->getLog()->info("Running processor " . $image->getSourceComponent()->getId());
@@ -643,7 +644,8 @@ class Runner
                     $newState = $stateFile->loadStateFromFile();
                     if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
-                            $artifacts->uploadCurrent();
+                            $uploadedArtifact = $artifacts->uploadCurrent();
+                            $output->setArtifactUploaded($uploadedArtifact);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(
                                 sprintf('Error uploading artifacts "%s"', $e->getMessage())
@@ -667,13 +669,15 @@ class Runner
         $stateFile->stashState($newState);
     }
 
-    private function downloadArtifacts(Artifacts $artifacts, array $configuration): void
+    private function downloadArtifacts(Artifacts $artifacts, array $configuration): array
     {
         if (!empty($configuration['artifacts']['runs']['enabled'])) {
-            $artifacts->downloadLatestRuns(
+            return $artifacts->downloadLatestRuns(
                 $artifactsConfiguration['runs']['filter']['limit'] ?? null,
                 $artifactsConfiguration['runs']['filter']['date_since'] ?? null,
             );
         }
+
+        return [];
     }
 }

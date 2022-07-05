@@ -43,6 +43,10 @@ class Output
     /** @var InputTableResult */
     private $inputTableResult;
 
+    private array $artifactsDownloaded;
+
+    private ?array $artifactUploaded;
+
     /**
      * @param array $images
      */
@@ -163,5 +167,25 @@ class Output
     public function getDataLoader()
     {
         return $this->dataLoader;
+    }
+
+    public function setArtifactsDownloaded(array $artifactsResult): void
+    {
+        $this->artifactsDownloaded = $artifactsResult;
+    }
+
+    public function getArtifactsDownloaded(): array
+    {
+        return $this->artifactsDownloaded;
+    }
+
+    public function setArtifactUploaded(array $artifactResult): void
+    {
+        $this->artifactUploaded = $artifactResult;
+    }
+
+    public function getArtifactUploaded(): ?array
+    {
+        return $this->artifactUploaded;
     }
 }
