@@ -367,6 +367,12 @@ class Runner2Test extends BaseRunnerTest
         self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
         self::assertContains('configId-' . $configId, $files[0]['tags']);
         self::assertContains('jobId-' . $jobId, $files[0]['tags']);
+
+        /** @var Output $output */
+        $output = $outputs[0];
+        self::assertSame([
+            'storageFileId' => $files[0]['id'],
+        ], $output->getArtifactUploaded());
     }
 
     public function testArtifactsDownload()
