@@ -118,7 +118,7 @@ stages:
         steps:
           - script: |
               docker-compose build --pull
-              docker-compose run tests ./vendor/bin/phpunit --filter Runner2Test::testArtifactsDownload
+              docker-compose run tests ./vendor/bin/phpunit --filter Runner2Test::testArtifacts
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
