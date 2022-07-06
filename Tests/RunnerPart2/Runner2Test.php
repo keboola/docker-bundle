@@ -36,7 +36,7 @@ class Runner2Test extends BaseRunnerTest
             'url' => STORAGE_API_URL,
             'token' => STORAGE_API_TOKEN,
         ]);
-        $transformationTestComponentId = 'keboola.python-transformation';
+        $transformationTestComponentId = 'keboola.python-transformation-v2';
         $components = new Components($client);
         $configurations = $components->listComponentConfigurations(
             (new ListComponentConfigurationsOptions())
@@ -58,7 +58,7 @@ class Runner2Test extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation-v2',
                 ],
             ],
         ];
@@ -297,11 +297,11 @@ class Runner2Test extends BaseRunnerTest
         $this->setClientMock($storageApiMock);
 
         $componentData = [
-            'id' => 'keboola.python-transformation',
+            'id' => 'keboola.python-transformation-v2',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation-v2',
                 ],
             ],
         ];
@@ -322,7 +322,7 @@ class Runner2Test extends BaseRunnerTest
         $components = new Components($storageApiMock);
         $configuration = $components->addConfiguration(
             (new Configuration())
-                ->setComponentId('keboola.python-transformation')
+                ->setComponentId('keboola.python-transformation-v2')
                 ->setConfiguration($config)
                 ->setName('artifacts tests')
         );
@@ -355,7 +355,7 @@ class Runner2Test extends BaseRunnerTest
                 ->setTags([
                     'artifacts',
                     'branchId-default',
-                    'componentId-keboola.python-transformation',
+                    'componentId-keboola.python-transformation-v2',
                     'configId-' . $configId,
                     'jobId-' . $jobId,
                 ])
@@ -364,7 +364,7 @@ class Runner2Test extends BaseRunnerTest
 
         self::assertEquals('artifacts.tar.gz', $files[0]['name']);
         self::assertContains('branchId-default', $files[0]['tags']);
-        self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
+        self::assertContains('componentId-keboola.python-transformation-v2', $files[0]['tags']);
         self::assertContains('configId-' . $configId, $files[0]['tags']);
         self::assertContains('jobId-' . $jobId, $files[0]['tags']);
 
@@ -416,7 +416,7 @@ class Runner2Test extends BaseRunnerTest
         $components = new Components($storageApiMock);
         $configuration = $components->addConfiguration(
             (new Configuration())
-                ->setComponentId('keboola.python-transformation')
+                ->setComponentId('keboola.python-transformation-v2')
                 ->setConfiguration($config)
                 ->setName('artifacts tests')
         );
@@ -443,18 +443,18 @@ class Runner2Test extends BaseRunnerTest
                 ->setTags([
                     'artifact',
                     'branchId-default',
-                    'componentId-keboola.python-transformation',
+                    'componentId-keboola.python-transformation-v2',
                     'configId-' . $configId,
                     'jobId-' . $previousJobId,
                 ])
         );
 
         $componentData = [
-            'id' => 'keboola.python-transformation',
+            'id' => 'keboola.python-transformation-v2',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation-v2',
                 ],
             ],
         ];
