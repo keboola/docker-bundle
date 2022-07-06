@@ -352,13 +352,12 @@ class Runner2Test extends BaseRunnerTest
 
         $files = $this->client->listFiles(
             (new ListFilesOptions())
-                ->setTags([
-                    'artifacts',
-                    'branchId-default',
-                    'componentId-keboola.python-transformation',
-                    'configId-' . $configId,
-                    'jobId-' . $jobId,
-                ])
+                ->setQuery(sprintf(
+                    'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+                    . 'AND configId-%s AND jobId-%s)',
+                    $configId,
+                    $jobId
+                ))
                 ->setLimit(1)
         );
 
@@ -455,13 +454,12 @@ class Runner2Test extends BaseRunnerTest
 
         $files = $this->client->listFiles(
             (new ListFilesOptions())
-                ->setTags([
-                    'artifacts',
-                    'branchId-default',
-                    'componentId-keboola.python-transformation',
-                    'configId-' . $configId,
-                    'jobId-' . $jobId,
-                ])
+                ->setQuery(sprintf(
+                    'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+                    . 'AND configId-%s AND jobId-%s)',
+                    $configId,
+                    $jobId
+                ))
                 ->setLimit(1)
         );
 
