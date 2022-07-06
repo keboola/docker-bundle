@@ -376,9 +376,6 @@ class Runner2Test extends BaseRunnerTest
 
     public function testArtifactsUploadNull()
     {
-        $tokenRes = $this->client->verifyToken();
-        $projectId = $tokenRes['owner']['id'];
-
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
@@ -448,10 +445,6 @@ class Runner2Test extends BaseRunnerTest
 
         sleep(2);
 
-        var_dump('project id ' . $projectId);
-        var_dump($configId);
-        var_dump($jobId);
-
         $files = $this->client->listFiles(
             (new ListFilesOptions())
                 ->setQuery(sprintf(
@@ -462,9 +455,6 @@ class Runner2Test extends BaseRunnerTest
                 ))
                 ->setLimit(1)
         );
-
-        var_dump($files);
-
         self::assertEmpty($files);
 
         /** @var Output $output */
