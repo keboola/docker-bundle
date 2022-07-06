@@ -43,9 +43,9 @@ class Output
     /** @var InputTableResult */
     private $inputTableResult;
 
-    private array $artifactsDownloaded;
+    private array $artifactsDownloaded = [];
 
-    private ?array $artifactUploaded;
+    private ?array $artifactUploaded = null;
 
     /**
      * @param array $images
