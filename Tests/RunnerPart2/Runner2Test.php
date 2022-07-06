@@ -352,13 +352,12 @@ class Runner2Test extends BaseRunnerTest
 
         $files = $this->client->listFiles(
             (new ListFilesOptions())
-                ->setTags([
-                    'artifacts',
-                    'branchId-default',
-                    'componentId-keboola.python-transformation',
-                    'configId-' . $configId,
-                    'jobId-' . $jobId,
-                ])
+                ->setQuery(sprintf(
+                    'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+                    . 'AND configId-%s AND jobId-%s)',
+                    $configId,
+                    $jobId
+                ))
                 ->setLimit(1)
         );
 
@@ -367,6 +366,100 @@ class Runner2Test extends BaseRunnerTest
         self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
         self::assertContains('configId-' . $configId, $files[0]['tags']);
         self::assertContains('jobId-' . $jobId, $files[0]['tags']);
+
+        /** @var Output $output */
+        $output = $outputs[0];
+        self::assertSame([
+            'storageFileId' => $files[0]['id'],
+        ], $output->getArtifactUploaded());
+    }
+
+    public function testArtifactsUploadNull()
+    {
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken', 'listFiles'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'fileStorageProvider' => 'local',
+                'features' => ['artifacts'],
+            ],
+        ]);
+        $storageApiMock->method('listFiles')->willReturn([]);
+        $this->setClientMock($storageApiMock);
+
+        $componentData = [
+            'id' => 'keboola.python-transformation',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+
+        $config = [
+            'storage' => [],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    '# do nothing'
+                ],
+            ],
+        ];
+
+        $components = new Components($storageApiMock);
+        $configuration = $components->addConfiguration(
+            (new Configuration())
+                ->setComponentId('keboola.python-transformation')
+                ->setConfiguration($config)
+                ->setName('artifacts tests')
+        );
+
+        $configId = $configuration['id'];
+        $jobId = rand(0, 999999);
+
+        $runner = $this->getRunner();
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            $jobId,
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
+        );
+
+        sleep(2);
+
+        $files = $this->client->listFiles(
+            (new ListFilesOptions())
+                ->setQuery(sprintf(
+                    'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+                    . 'AND configId-%s AND jobId-%s)',
+                    $configId,
+                    $jobId
+                ))
+                ->setLimit(1)
+        );
+        self::assertEmpty($files);
+
+        /** @var Output $output */
+        $output = $outputs[0];
+        self::assertNull($output->getArtifactUploaded());
     }
 
     public function testArtifactsDownload()
@@ -431,7 +524,7 @@ class Runner2Test extends BaseRunnerTest
         ]);
         $process->mustRun();
 
-        $this->client->uploadFile(
+        $uploadedFileId = $this->client->uploadFile(
             '/tmp/artifacts.tar.gz',
             (new FileUploadOptions())
                 ->setTags([
@@ -476,6 +569,91 @@ class Runner2Test extends BaseRunnerTest
         /** @var Output $output */
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
+        self::assertSame([
+            ['storageFileId' => $uploadedFileId],
+        ], $output->getArtifactsDownloaded());
+    }
+
+    public function testArtifactsDownloadEmpty()
+    {
+        $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->onlyMethods(['verifyToken'])
+            ->getMock()
+        ;
+        $storageApiMock->method('verifyToken')->willReturn([
+            'owner' => [
+                'id' => '1234',
+                'fileStorageProvider' => 'local',
+                'features' => ['artifacts'],
+            ],
+        ]);
+        $this->setClientMock($storageApiMock);
+
+        $previousJobId = rand(0, 999999);
+        $config = [
+            'storage' => [],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                    '# do nothing'
+                ],
+            ],
+            'artifacts' => [
+                'runs' => [
+                    'enabled' => false,
+                ],
+            ],
+        ];
+        $components = new Components($storageApiMock);
+        $configuration = $components->addConfiguration(
+            (new Configuration())
+                ->setComponentId('keboola.python-transformation')
+                ->setConfiguration($config)
+                ->setName('artifacts tests')
+        );
+        $configId = $configuration['id'];
+
+        if (!is_dir('/tmp/artifact/')) {
+            mkdir('/tmp/artifact/');
+        }
+
+        $componentData = [
+            'id' => 'keboola.python-transformation',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+
+        sleep(2);
+
+        $runner = $this->getRunner();
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                $configId,
+                $config,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
+        );
+
+        /** @var Output $output */
+        $output = $outputs[0];
+        self::assertSame([], $output->getArtifactsDownloaded());
     }
 
     /**
