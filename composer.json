@@ -29,7 +29,7 @@
         "keboola/sandboxes-api-php-client": "^6.7",
         "php": ">=7.4",
         "ext-zip": "*",
-        "keboola/artifacts": "dev-miro-PS-3465 as 0.0.5"
+        "keboola/artifacts": "^0.0.5"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
