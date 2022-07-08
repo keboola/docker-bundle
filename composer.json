@@ -17,7 +17,7 @@
         "keboola/output-mapping": "^18.0",
         "keboola/staging-provider": "^5.0",
         "keboola/storage-api-php-client-branch-wrapper": "^3.0",
-        "keboola/storage-api-client": "13.1.0",
+        "keboola/storage-api-client": "^13.1.0",
         "symfony/validator": "^5.4",
         "symfony/http-foundation": "^5.4",
         "symfony/monolog-bridge": "^5.4",
