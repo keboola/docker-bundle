@@ -180,23 +180,16 @@ class Runner
         return $storeState;
     }
 
-    /**
-     * @param JobDefinition $jobDefinition
-     * @param string $action
-     * @param string $mode
-     * @param string $jobId
-     * @param UsageFileInterface $usageFile
-     * @param Output[] $outputs
-     */
     private function runRow(
         JobDefinition $jobDefinition,
-        $action,
-        $mode,
-        $jobId,
+        string $action,
+        string $mode,
+        string $jobId,
         UsageFileInterface $usageFile,
         array &$outputs,
         ?string $backendSize,
-        bool $storeState
+        bool $storeState,
+        ?string $orchestrationId
     ) {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -263,7 +256,8 @@ class Runner
             $this->clientWrapper->getBranchId() ?? ClientWrapper::BRANCH_DEFAULT,
             $component->getId(),
             $jobDefinition->getConfigId(),
-            $jobId
+            $jobId,
+            $orchestrationId
         );
 
         $imageCreator = new ImageCreator(
@@ -336,7 +330,8 @@ class Runner
         UsageFileInterface $usageFile,
         array $rowIds,
         array &$outputs,
-        ?string $backendSize
+        ?string $backendSize,
+        ?string $orchestrationId
     ) {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
@@ -375,7 +370,17 @@ class Runner
                 "Running component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
-            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs, $backendSize, $storeState);
+            $this->runRow(
+                $jobDefinition,
+                $action,
+                $mode,
+                $jobId,
+                $usageFile,
+                $outputs,
+                $backendSize,
+                $storeState,
+                $orchestrationId
+            );
             $this->loggersService->getLog()->info(
                 "Finished component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
@@ -573,7 +578,7 @@ class Runner
             if ($image->isMain()) {
                 $stateFile->createStateFile();
                 if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
-                    $downloadedArtifacts = $this->downloadArtifacts($artifacts, $image->getConfigData());
+                    $downloadedArtifacts = $artifacts->download($image->getConfigData());
                     $output->setArtifactsDownloaded($downloadedArtifacts);
                 }
             } else {
@@ -644,8 +649,8 @@ class Runner
                     $newState = $stateFile->loadStateFromFile();
                     if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
-                            $uploadedArtifact = $artifacts->uploadCurrent();
-                            $output->setArtifactUploaded($uploadedArtifact);
+                            $uploadedArtifacts = $artifacts->upload();
+                            $output->setArtifactsUploaded($uploadedArtifacts);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(
                                 sprintf('Error uploading artifacts "%s"', $e->getMessage())

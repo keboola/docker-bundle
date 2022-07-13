@@ -371,7 +371,7 @@ class Runner2Test extends BaseRunnerTest
         $output = $outputs[0];
         self::assertSame([
             'storageFileId' => $files[0]['id'],
-        ], $output->getArtifactUploaded());
+        ], $output->getArtifactsUploaded());
     }
 
     public function testArtifactsUploadNull()
@@ -459,7 +459,7 @@ class Runner2Test extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertNull($output->getArtifactUploaded());
+        self::assertNull($output->getArtifactsUploaded());
     }
 
     public function testArtifactsDownload()
@@ -593,7 +593,6 @@ class Runner2Test extends BaseRunnerTest
         ]);
         $this->setClientMock($storageApiMock);
 
-        $previousJobId = rand(0, 999999);
         $config = [
             'storage' => [],
             'parameters' => [
