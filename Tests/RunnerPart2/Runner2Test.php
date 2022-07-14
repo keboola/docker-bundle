@@ -311,9 +311,9 @@ class Runner2Test extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    'path = "/data/artifacts/upload/current"',
+                    'path = "/data/artifacts/out/current"',
                     'if not os.path.exists(path):os.makedirs(path)',
-                    'with open("/data/artifacts/upload/current/myartifact1", "w") as file:',
+                    'with open("/data/artifacts/out/current/myartifact1", "w") as file:',
                     '   file.write("value1")',
                 ],
             ],
@@ -492,7 +492,7 @@ class Runner2Test extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    sprintf('with open("/data/artifacts/download/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
+                    sprintf('with open("/data/artifacts/in/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
                     '   print(f.read())',
                 ],
             ],
