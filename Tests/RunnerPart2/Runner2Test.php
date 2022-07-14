@@ -311,9 +311,9 @@ class Runner2Test extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    'path = "/data/artifacts/current"',
+                    'path = "/data/artifacts/upload/current"',
                     'if not os.path.exists(path):os.makedirs(path)',
-                    'with open("/data/artifacts/current/myartifact1", "w") as file:',
+                    'with open("/data/artifacts/upload/current/myartifact1", "w") as file:',
                     '   file.write("value1")',
                 ],
             ],
@@ -374,7 +374,7 @@ class Runner2Test extends BaseRunnerTest
         ], $output->getArtifactsUploaded());
     }
 
-    public function testArtifactsUploadNull()
+    public function testArtifactsUploadEmpty()
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
@@ -459,7 +459,7 @@ class Runner2Test extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertNull($output->getArtifactsUploaded());
+        self::assertSame([], $output->getArtifactsUploaded());
     }
 
     public function testArtifactsDownload()
@@ -487,7 +487,7 @@ class Runner2Test extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    sprintf('with open("/data/artifacts/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
+                    sprintf('with open("/data/artifacts/download/runs/jobId-%s/artifact1", "r") as f:', $previousJobId),
                     '   print(f.read())',
                 ],
             ],
