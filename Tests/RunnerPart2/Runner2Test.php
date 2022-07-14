@@ -369,9 +369,14 @@ class Runner2Test extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertSame([
-            'storageFileId' => $files[0]['id'],
-        ], $output->getArtifactsUploaded());
+        self::assertSame(
+            [
+                [
+                    'storageFileId' => $files[0]['id'],
+                ],
+            ],
+            $output->getArtifactsUploaded()
+        );
     }
 
     public function testArtifactsUploadEmpty()
