@@ -313,7 +313,11 @@ class Runner2Test extends BaseRunnerTest
                     'import os',
                     'path = "/data/artifacts/out/current"',
                     'if not os.path.exists(path):os.makedirs(path)',
+                    'pathShared = "/data/artifacts/out/shared"',
+                    'if not os.path.exists(path):os.makedirs(pathShared)',
                     'with open("/data/artifacts/out/current/myartifact1", "w") as file:',
+                    '   file.write("value1")',
+                    'with open("/data/artifacts/out/shared/myartifact1", "w") as file:',
                     '   file.write("value1")',
                 ],
             ],
@@ -329,6 +333,7 @@ class Runner2Test extends BaseRunnerTest
 
         $configId = $configuration['id'];
         $jobId = rand(0, 999999);
+        $orchestrationId = rand(0, 999999);
 
         $runner = $this->getRunner();
         $outputs = [];
@@ -345,34 +350,60 @@ class Runner2Test extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
+            $orchestrationId
         );
 
         sleep(2);
 
+        // current
         $files = $this->client->listFiles(
             (new ListFilesOptions())
                 ->setQuery(sprintf(
                     'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
-                    . 'AND configId-%s AND jobId-%s)',
+                    . 'AND configId-%s AND jobId-%s NOT shared)',
                     $configId,
                     $jobId
                 ))
                 ->setLimit(1)
         );
 
-        self::assertEquals('artifacts.tar.gz', $files[0]['name']);
-        self::assertContains('branchId-default', $files[0]['tags']);
-        self::assertContains('componentId-keboola.python-transformation', $files[0]['tags']);
-        self::assertContains('configId-' . $configId, $files[0]['tags']);
-        self::assertContains('jobId-' . $jobId, $files[0]['tags']);
+        $currentFile = $files[0];
+        self::assertEquals('artifacts.tar.gz', $currentFile['name']);
+        self::assertContains('branchId-default', $currentFile['tags']);
+        self::assertContains('componentId-keboola.python-transformation', $currentFile['tags']);
+        self::assertContains('configId-' . $configId, $currentFile['tags']);
+        self::assertContains('jobId-' . $jobId, $currentFile['tags']);
+
+        // shared
+        $files = $this->client->listFiles(
+            (new ListFilesOptions())
+                ->setQuery(sprintf(
+                    'tags:(artifact AND shared AND branchId-default '
+                    . 'AND componentId-keboola.python-transformation AND orchestrationId-%s)',
+                    $orchestrationId
+                ))
+                ->setLimit(1)
+        );
+
+        $sharedFile = $files[0];
+        self::assertEquals('artifacts.tar.gz', $sharedFile['name']);
+        self::assertContains('branchId-default', $sharedFile['tags']);
+        self::assertContains('componentId-keboola.python-transformation', $sharedFile['tags']);
+        self::assertContains('configId-' . $configId, $sharedFile['tags']);
+        self::assertContains('jobId-' . $jobId, $sharedFile['tags']);
+        self::assertContains('orchestrationId-' . $orchestrationId, $sharedFile['tags']);
+        self::assertContains('shared', $sharedFile['tags']);
 
         /** @var Output $output */
         $output = $outputs[0];
         self::assertSame(
             [
                 [
-                    'storageFileId' => $files[0]['id'],
+                    'storageFileId' => $currentFile['id'],
+                ],
+                [
+                    'storageFileId' => $sharedFile['id'],
                 ],
             ],
             $output->getArtifactsUploaded()
