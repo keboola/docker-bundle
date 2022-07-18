@@ -154,7 +154,6 @@ abstract class BaseRunnerTest extends TestCase
             $clientWrapper,
             $this->loggersServiceStub,
             new OutputFilter(10000),
-            "dummy",
             ['cpu_count' => 2],
             RUNNER_MIN_LOG_PORT
         );

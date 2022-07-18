@@ -231,7 +231,6 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $storageApiWrapper,
             $this->getLoggersService(),
             new OutputFilter(10000),
-            'dummy',
             ['cpu_count' => 2],
             RUNNER_MIN_LOG_PORT
         );

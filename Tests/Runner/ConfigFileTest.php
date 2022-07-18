@@ -18,7 +18,7 @@ class ConfigFileTest extends BaseRunnerTest
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        return new Authorization($oauthClientStub, $oauthClientStub, $this->getEncryptorFactory()->getEncryptor(), 'dummy-component');
+        return new Authorization($oauthClientStub, $this->getEncryptorFactory()->getEncryptor(), 'dummy-component');
     }
 
     public function testConfig()
