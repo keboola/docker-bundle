@@ -586,7 +586,7 @@ class ContainerConfigurationTest extends TestCase
             [
                 'enabled' => true,
             ],
-            'Invalid configuration for path "container.artifacts.custom": At least one of "component_id", "config_id" or "branch_id" parameters must be defined.',
+            'Invalid configuration for path "container.artifacts.custom": "component_id", "config_id" and "branch_id" parameters must be defined.',
         ];
         yield 'enabled - invalid enabled value' => [
             [
