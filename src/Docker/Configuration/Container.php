@@ -185,7 +185,7 @@ class Container extends Configuration
                             }
                             return false;
                         })
-                        ->thenInvalid('At least one of "component_id", "config_id" or "branch_id" parameters must be defined.')
+                        ->thenInvalid('"component_id", "config_id" and "branch_id" parameters must be defined.')
                     ->end()
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()

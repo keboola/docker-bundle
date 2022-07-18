@@ -45,7 +45,7 @@ class Output
 
     private array $artifactsDownloaded = [];
 
-    private ?array $artifactsUploaded = null;
+    private array $artifactsUploaded = [];
 
     /**
      * @param array $images
