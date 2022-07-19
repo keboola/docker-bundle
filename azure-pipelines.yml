@@ -15,10 +15,14 @@ stages:
       - job: prepare
         displayName: Prepare
         steps:
-          - script: |
-              docker-compose build
-              docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
+          - script: docker-compose build
+            displayName: 'Build Image'
+
+          - script: docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
             displayName: 'PHP CS'
+
+          - script: docker-compose run tests ./vendor/bin/phpstan
+            displayName: 'PHPStan'
 
   - stage: Tests
     dependsOn: beforeTests
