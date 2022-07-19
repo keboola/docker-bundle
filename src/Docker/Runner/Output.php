@@ -45,7 +45,7 @@ class Output
 
     private array $artifactsDownloaded = [];
 
-    private ?array $artifactUploaded = null;
+    private array $artifactsUploaded = [];
 
     /**
      * @param array $images
@@ -169,9 +169,9 @@ class Output
         return $this->dataLoader;
     }
 
-    public function setArtifactsDownloaded(array $artifactsResult): void
+    public function setArtifactsDownloaded(array $downloadedArtifacts): void
     {
-        $this->artifactsDownloaded = $artifactsResult;
+        $this->artifactsDownloaded = $downloadedArtifacts;
     }
 
     public function getArtifactsDownloaded(): array
@@ -179,13 +179,13 @@ class Output
         return $this->artifactsDownloaded;
     }
 
-    public function setArtifactUploaded(?array $artifactResult): void
+    public function setArtifactsUploaded(array $uploadedArtifacts): void
     {
-        $this->artifactUploaded = $artifactResult;
+        $this->artifactsUploaded = $uploadedArtifacts;
     }
 
-    public function getArtifactUploaded(): ?array
+    public function getArtifactsUploaded(): array
     {
-        return $this->artifactUploaded;
+        return $this->artifactsUploaded;
     }
 }

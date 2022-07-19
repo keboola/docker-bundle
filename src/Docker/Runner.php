@@ -4,6 +4,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Keboola\Artifacts\Artifacts;
 use Keboola\Artifacts\ArtifactsException;
+use Keboola\Artifacts\Tags;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -180,23 +181,16 @@ class Runner
         return $storeState;
     }
 
-    /**
-     * @param JobDefinition $jobDefinition
-     * @param string $action
-     * @param string $mode
-     * @param string $jobId
-     * @param UsageFileInterface $usageFile
-     * @param Output[] $outputs
-     */
     private function runRow(
         JobDefinition $jobDefinition,
-        $action,
-        $mode,
-        $jobId,
+        string $action,
+        string $mode,
+        string $jobId,
         UsageFileInterface $usageFile,
         array &$outputs,
         ?string $backendSize,
-        bool $storeState
+        bool $storeState,
+        ?string $orchestrationId
     ) {
         $this->loggersService->getLog()->notice(
             "Using configuration id: " . $jobDefinition->getConfigId() . ' version:' . $jobDefinition->getConfigVersion()
@@ -259,11 +253,7 @@ class Runner
         $artifacts = new Artifacts(
             $this->clientWrapper->getBasicClient(),
             $this->loggersService->getLog(),
-            $temp,
-            $this->clientWrapper->getBranchId() ?? ClientWrapper::BRANCH_DEFAULT,
-            $component->getId(),
-            $jobDefinition->getConfigId(),
-            $jobId
+            $temp
         );
 
         $imageCreator = new ImageCreator(
@@ -308,7 +298,8 @@ class Runner
                 $currentOutput,
                 $artifacts,
                 $backendSize,
-                $storeState
+                $storeState,
+                $orchestrationId
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
@@ -336,7 +327,8 @@ class Runner
         UsageFileInterface $usageFile,
         array $rowIds,
         array &$outputs,
-        ?string $backendSize
+        ?string $backendSize,
+        ?string $orchestrationId = null
     ) {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
@@ -375,7 +367,17 @@ class Runner
                 "Running component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
             );
-            $this->runRow($jobDefinition, $action, $mode, $jobId, $usageFile, $outputs, $backendSize, $storeState);
+            $this->runRow(
+                $jobDefinition,
+                $action,
+                $mode,
+                $jobId,
+                $usageFile,
+                $outputs,
+                $backendSize,
+                $storeState,
+                $orchestrationId
+            );
             $this->loggersService->getLog()->info(
                 "Finished component " . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
@@ -463,7 +465,8 @@ class Runner
         Output $output,
         Artifacts $artifacts,
         ?string $backendSize,
-        bool $storeState
+        bool $storeState,
+        ?string $orchestrationId
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -485,7 +488,8 @@ class Runner
             $output,
             $artifacts,
             $backendSize,
-            $storeState
+            $storeState,
+            $orchestrationId
         );
         $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
@@ -539,7 +543,8 @@ class Runner
         Output $output,
         Artifacts $artifacts,
         ?string $backendSize,
-        bool $storeState
+        bool $storeState,
+        ?string $orchestrationId
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -569,11 +574,21 @@ class Runner
             );
         }
 
+        $branchId = $this->clientWrapper->getBranchId() ?? ClientWrapper::BRANCH_DEFAULT;
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
                 if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
-                    $downloadedArtifacts = $this->downloadArtifacts($artifacts, $image->getConfigData());
+                    $downloadedArtifacts = $artifacts->download(
+                        new Tags(
+                            $branchId,
+                            $component->getId(),
+                            $configId,
+                            $jobId,
+                            $orchestrationId
+                        ),
+                        $image->getConfigData()
+                    );
                     $output->setArtifactsDownloaded($downloadedArtifacts);
                 }
             } else {
@@ -644,8 +659,14 @@ class Runner
                     $newState = $stateFile->loadStateFromFile();
                     if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
-                            $uploadedArtifact = $artifacts->uploadCurrent();
-                            $output->setArtifactUploaded($uploadedArtifact);
+                            $uploadedArtifacts = $artifacts->upload(new Tags(
+                                $branchId,
+                                $component->getId(),
+                                $configId,
+                                $jobId,
+                                $orchestrationId
+                            ));
+                            $output->setArtifactsUploaded($uploadedArtifacts);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(
                                 sprintf('Error uploading artifacts "%s"', $e->getMessage())
@@ -667,17 +688,5 @@ class Runner
             }
         }
         $stateFile->stashState($newState);
-    }
-
-    private function downloadArtifacts(Artifacts $artifacts, array $configuration): array
-    {
-        if (!empty($configuration['artifacts']['runs']['enabled'])) {
-            return $artifacts->downloadLatestRuns(
-                $artifactsConfiguration['runs']['filter']['limit'] ?? null,
-                $artifactsConfiguration['runs']['filter']['date_since'] ?? null,
-            );
-        }
-
-        return [];
     }
 }
