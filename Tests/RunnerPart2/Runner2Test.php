@@ -332,8 +332,8 @@ class Runner2Test extends BaseRunnerTest
         );
 
         $configId = $configuration['id'];
-        $jobId = rand(0, 999999);
-        $orchestrationId = rand(0, 999999);
+        $jobId = (string) random_int(0, 999999);
+        $orchestrationId = (string) random_int(0, 999999);
 
         $runner = $this->getRunner();
         $outputs = [];
@@ -459,7 +459,7 @@ class Runner2Test extends BaseRunnerTest
         );
 
         $configId = $configuration['id'];
-        $jobId = rand(0, 999999);
+        $jobId = (string) random_int(0, 999999);
 
         $runner = $this->getRunner();
         $outputs = [];

@@ -1,7 +1,7 @@
 <?php
 // Define path to application directory
 define('ROOT_PATH', __DIR__);
-ini_set('display_errors', true);
+ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
 date_default_timezone_set('Europe/Prague');

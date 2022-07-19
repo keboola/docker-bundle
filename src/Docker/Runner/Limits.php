@@ -185,7 +185,7 @@ class Limits
             $multiplier = $this->getNodeTypeMultiplier($this->containerType);
             $componentMemory = UnitConverter::connectionMemoryLimitToBytes($image->getSourceComponent()->getMemory());
 
-            $memoryLimit = round($multiplier * $componentMemory);
+            $memoryLimit = (int) round($multiplier * $componentMemory);
 
             return $this->bytesToDockerMemoryLimit($memoryLimit);
         }

@@ -252,7 +252,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     '   file.write("value1")',
                 ],
             ],
-        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        ], $this->getComponent(), 'my-config', '1', [], 'row-1');
         $jobDefinition2 = new JobDefinition([
             'storage' => [
                 'output' => [
@@ -271,7 +271,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     '   file.write("value2")',
                 ],
             ],
-        ], $this->getComponent(), 'my-config', 1, [], 'row-2');
+        ], $this->getComponent(), 'my-config', '1', [], 'row-2');
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
         $outputs = [];
@@ -303,7 +303,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-        ], $this->getComponent(), 'my-config', 1, [], 'row-1');
+        ], $this->getComponent(), 'my-config', '1', [], 'row-1');
         $jobDefinitions = [$jobDefinition1];
         $runner = $this->getRunner();
         self::expectException(UserException::class);
@@ -377,7 +377,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     '   file.write("value2")',
                 ],
             ],
-        ], $this->getComponent(), 'my-config', 1, [], 'disabled-row', true);
+        ], $this->getComponent(), 'my-config', '1', [], 'disabled-row', true);
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
         $outputs = [];
@@ -444,7 +444,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             ],
             $this->getComponent(),
             'my-config',
-            1,
+            '1',
             [],
             'disabled-row',
             true

@@ -1,5 +1,5 @@
 parameters:
-    level: 4
+    level: 5
     checkMissingIterableValueType: false
     paths:
         - src
@@ -12,9 +12,6 @@ parameters:
 
         - message: "#^Unreachable statement - code above always terminates.$#"
           path: Tests
-
-        - message: '#^Variable \$artifactsConfiguration on left side of \?\? is never defined\.$#'
-          path: src/Docker/Runner.php
 
         - '#^Instantiated class Keboola\\Syrup\\Exception\\ApplicationException not found\.$#'
         - '#^PHPDoc tag @throws with type Keboola\\Syrup\\Exception\\ApplicationException is not subtype of Throwable$#'
