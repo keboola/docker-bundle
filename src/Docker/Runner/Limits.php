@@ -18,7 +18,6 @@ class Limits
     const MAX_MEMORY_LIMIT = 64000;
     public const PAY_AS_YOU_GO_FEATURE = 'pay-as-you-go';
 
-    private array $userFeatures;
     private array $projectFeatures;
     private array $projectLimits;
     private array $instanceLimits;
@@ -31,14 +30,12 @@ class Limits
         array $instanceLimits,
         array $projectLimits,
         array $projectFeatures,
-        array $userFeatures,
         ?string $containerType
     ) {
         $this->logger = $logger;
         $this->instanceLimits = $instanceLimits;
         $this->projectLimits = $projectLimits;
         $this->projectFeatures = $projectFeatures;
-        $this->userFeatures = $userFeatures;
         $this->validator = Validation::createValidator();
         $this->containerType = $containerType;
     }

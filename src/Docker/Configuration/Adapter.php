@@ -171,10 +171,6 @@ class Adapter
             throw new ApplicationException("File" . $file . " not found.");
         }
         $fileHandler = new SplFileInfo($file, "", basename($file));
-        if ($fileHandler) {
-            return $fileHandler->getContents();
-        } else {
-            throw new ApplicationException("File" . $file . " not found.");
-        }
+        return $fileHandler->getContents();
     }
 }

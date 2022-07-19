@@ -3,8 +3,6 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Docker\Runner;
@@ -13,46 +11,27 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseRunnerTest extends TestCase
 {
-    /**
-     * @var TestHandler
-     */
-    private $containerHandler;
+    private TestHandler $containerHandler;
+    private TestHandler $runnerHandler;
+    private ObjectEncryptorFactory $encryptorFactory;
+    protected Client $client;
 
     /**
-     * @var TestHandler
-     */
-    private $runnerHandler;
-
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    /**
-     * @var Client
-     */
-    protected $client;
-
-    /**
-     * @var Client
+     * @var null|(Client&MockObject)
      */
     protected $clientMock;
 
     /**
-     * @var null|UsageFileInterface
-     */
-    private $usageFile;
-
-    /**
-     * @var LoggersService
+     * @var LoggersService&MockObject
      */
     private $loggersServiceStub;
 
-    protected function initStorageClient()
+    protected function initStorageClient(): void
     {
         $this->client = new Client(
             [
@@ -87,8 +66,6 @@ abstract class BaseRunnerTest extends TestCase
             $tokenInfo['owner']['id'],
             $this->client->getApiUrl()
         ));
-
-        $this->usageFile = null;
 
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
@@ -142,7 +119,7 @@ abstract class BaseRunnerTest extends TestCase
         } else {
             $storageClientStub = $this->client;
         }
-        $this->usageFile = new NullUsageFile();
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);

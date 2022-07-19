@@ -549,7 +549,6 @@ class Runner
             $this->instanceLimits,
             !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
             !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
-            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : [],
             $backendSize
         );
 

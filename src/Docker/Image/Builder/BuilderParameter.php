@@ -37,12 +37,6 @@ class BuilderParameter
      */
     private $value = null;
 
-    /**
-     * Predefined value of the parameter.
-     * @var null
-     */
-    private $defaultValue = null;
-
 
     /**
      * Constructor
@@ -57,7 +51,6 @@ class BuilderParameter
         $this->name = $name;
         $this->type = $type;
         $this->required = $required;
-        $this->defaultValue = $defaultValue;
         $this->value = $defaultValue;
         $this->allowedValues = $values;
         if (($this->type == 'enumeration') && (count($this->allowedValues) == 0)) {

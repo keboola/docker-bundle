@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 class Environment
 {
     private ?string $configId;
-    private array $configParameters;
     private array $tokenInfo;
     private ?string $runId;
     private string $url;
@@ -40,7 +39,6 @@ class Environment
         }
 
         $this->component = $component;
-        $this->configParameters = $config;
         $this->tokenInfo = $tokenInfo;
         $this->runId = $runId;
         $this->url = $url;

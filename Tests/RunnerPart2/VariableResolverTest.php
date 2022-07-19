@@ -279,7 +279,7 @@ class VariableResolverTest extends TestCase
             'No variable values provided for configuration "123", row "321", referencing variables "' .
             $vConfigurationId . '".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], null, null);
     }
 
     public function testResolveVariablesInvalidDefaultValues(): void
@@ -302,7 +302,7 @@ class VariableResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Cannot read default variable values "non-existent" for configuration "123", row "321".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], null, null);
     }
 
     public function testResolveVariablesInvalidProvidedValues(): void
@@ -324,7 +324,7 @@ class VariableResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Cannot read requested variable values "non-existent" for configuration "123", row "321".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesInvalidProvidedArguments(): void
@@ -350,7 +350,7 @@ class VariableResolverTest extends TestCase
             [$jobDefinition],
             'non-existent',
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
-        )[0];
+        );
     }
 
     public function testResolveVariablesNonExistentVariableConfiguration(): void
@@ -367,7 +367,7 @@ class VariableResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Variable configuration cannot be read: Configuration non-existent not found'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesInvalidVariableConfiguration(): void
@@ -389,7 +389,7 @@ class VariableResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Variable configuration is invalid: Unrecognized option "invalid" under "configuration"'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesNoVariables(): void
@@ -443,7 +443,7 @@ class VariableResolverTest extends TestCase
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
-        $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
+        $variableResolver->resolveVariables([$jobDefinition], $vRowId, []);
     }
 
     public function testResolveVariablesSpecialCharacterReplacement(): void
@@ -506,7 +506,7 @@ class VariableResolverTest extends TestCase
             [$jobDefinition],
             null,
             ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
-        )[0];
+        );
     }
 
     public function testResolveVariablesMissingValues(): void

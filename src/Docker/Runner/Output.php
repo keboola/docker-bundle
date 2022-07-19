@@ -30,17 +30,13 @@ class Output
      */
     private $stateFile;
 
-    /**
-     * @var InputFileStateList
-     */
+    /** @var null|InputFileStateList */
     private $inputFileStateList;
 
-    /**
-     * @var DataLoaderInterface
-     */
+    /** @var null|DataLoaderInterface */
     private $dataLoader;
 
-    /** @var InputTableResult */
+    /** @var null|InputTableResult */
     private $inputTableResult;
 
     private array $artifactsDownloaded = [];
@@ -103,17 +99,11 @@ class Output
         $this->tableQueue = $tableQueue;
     }
 
-    /**
-     * @param InputTableResult $inputTableResult
-     */
     public function setInputTableResult(InputTableResult $inputTableResult)
     {
         $this->inputTableResult = $inputTableResult;
     }
 
-    /**
-     * @param InputFileStateList $inputFileStateList
-     */
     public function setInputFileStateList(InputFileStateList $inputFileStateList)
     {
         $this->inputFileStateList = $inputFileStateList;
@@ -125,7 +115,7 @@ class Output
     }
 
     /**
-     * @return InputTableResult
+     * @return null|InputTableResult
      */
     public function getInputTableResult()
     {
@@ -133,7 +123,7 @@ class Output
     }
 
     /**
-     * @return InputFileStateList
+     * @return null|InputFileStateList
      */
     public function getInputFileStateList()
     {
@@ -148,9 +138,6 @@ class Output
         return $this->tableQueue;
     }
 
-    /**
-     * @param StateFile $stateFile
-     */
     public function setStateFile(StateFile $stateFile): void
     {
         $this->stateFile = $stateFile;
@@ -162,7 +149,7 @@ class Output
     }
 
     /**
-     * @return DataLoaderInterface
+     * @return null|DataLoaderInterface
      */
     public function getDataLoader()
     {

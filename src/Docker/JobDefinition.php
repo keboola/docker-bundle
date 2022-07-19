@@ -7,17 +7,17 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class JobDefinition
 {
     /**
-     * @var string
+     * @var null|string
      */
     private $configId;
 
     /**
-     * @var string
+     * @var null|string
      */
     private $rowId;
 
     /**
-     * @var string
+     * @var null|string
      */
     private $configVersion;
 
@@ -46,10 +46,10 @@ class JobDefinition
      *
      * @param array $configuration
      * @param Component $component
-     * @param string $configId
-     * @param string $configVersion
+     * @param null|string $configId
+     * @param null|string $configVersion
      * @param array $state
-     * @param string $rowId
+     * @param null|string $rowId
      * @param bool $isDisabled
      */
     public function __construct(array $configuration, Component $component, $configId = null, $configVersion = null, array $state = [], $rowId = null, $isDisabled = false)
@@ -68,11 +68,11 @@ class JobDefinition
      */
     public function getComponentId()
     {
-        return $this->component ? $this->component->getId() : null;
+        return $this->component->getId();
     }
 
     /**
-     * @return mixed
+     * @return null|string
      */
     public function getConfigId()
     {
@@ -80,7 +80,7 @@ class JobDefinition
     }
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getRowId()
     {
@@ -88,7 +88,7 @@ class JobDefinition
     }
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getConfigVersion()
     {

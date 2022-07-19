@@ -13,28 +13,28 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class StorageApiService
 {
     /** @var RequestStack */
-    protected $requestStack;
+    protected RequestStack $requestStack;
 
-    /** @var Request */
-    protected $request;
+    /** @var null|Client */
+    protected ?Client $client;
 
-    /** @var Client */
-    protected $client;
-
-    /** @var LoggerInterface */
+    /** @var null|LoggerInterface */
     private $logger;
 
     /** @var string */
     protected $storageApiUrl;
 
-    /** @var array */
+    /** @var null|array */
     protected $tokenData;
 
-    /** @var Client */
+    /** @var null|Client */
     private $clientWithoutLogger;
 
-    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
-    {
+    public function __construct(
+        RequestStack $requestStack,
+        string $storageApiUrl = 'https://connection.keboola.com',
+        ?LoggerInterface $logger = null
+    ) {
         $this->storageApiUrl = $storageApiUrl;
         $this->requestStack = $requestStack;
         $this->logger = $logger;
@@ -82,7 +82,7 @@ class StorageApiService
             if (!$request->headers->has('X-StorageApi-Token')) {
                 throw new UserException('Missing StorageAPI token');
             }
-            $this->setClient(new Client(
+            $this->client = $this->verifyClient(new Client(
                 [
                     'token' => $request->headers->get('X-StorageApi-Token'),
                     'url' => $this->storageApiUrl,

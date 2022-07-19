@@ -16,10 +16,9 @@ use Psr\Log\Test\TestLogger;
 
 class BillingClientTest extends TestCase
 {
-    private function getClient(array $options, LoggerInterface $logger = null)
+    private function getClient(array $options)
     {
         return new BillingClient(
-            $logger ? $logger : new NullLogger(),
             'http://example.com/',
             'testToken',
             $options
@@ -28,12 +27,11 @@ class BillingClientTest extends TestCase
 
     public function testCreateClientInvalidBackoff()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "abc" is invalid: This value should be a valid number'
         );
         new BillingClient(
-            new NullLogger(),
             'http://example.com/',
             'testToken',
             ['backoffMaxTries' => 'abc']
@@ -42,12 +40,11 @@ class BillingClientTest extends TestCase
 
     public function testCreateClientTooLowBackoff()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "-1" is invalid: This value should be between 0 and 100'
         );
         new BillingClient(
-            new NullLogger(),
             'http://example.com/',
             'testToken',
             ['backoffMaxTries' => -1]
@@ -56,12 +53,11 @@ class BillingClientTest extends TestCase
 
     public function testCreateClientTooHighBackoff()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "101" is invalid: This value should be between 0 and 100'
         );
         new BillingClient(
-            new NullLogger(),
             'http://example.com/',
             'testToken',
             ['backoffMaxTries' => 101]
@@ -70,29 +66,29 @@ class BillingClientTest extends TestCase
 
     public function testCreateClientInvalidToken()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "" is invalid: This value should not be blank.'
         );
-        new BillingClient(new NullLogger(), 'http://example.com/', '');
+        new BillingClient('http://example.com/', '');
     }
 
     public function testCreateClientInvalidUrl()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "invalid url" is invalid: This value is not a valid URL.'
         );
-        new BillingClient(new NullLogger(), 'invalid url', 'testToken');
+        new BillingClient('invalid url', 'testToken');
     }
 
     public function testCreateClientMultipleErrors()
     {
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage(
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage(
             'Invalid parameters when creating client: Value "invalid url" is invalid: This value is not a valid URL.'
         );
-        new BillingClient(new NullLogger(), 'invalid url', '');
+        new BillingClient('invalid url', '');
     }
 
     public function testClientRequestResponse()
@@ -140,8 +136,8 @@ class BillingClientTest extends TestCase
         $stack = HandlerStack::create($mock);
         $stack->push($history);
         $client = $this->getClient(['handler' => $stack]);
-        self::expectException(BillingClientException::class);
-        self::expectExceptionMessage('Unable to parse response body into JSON: Syntax error');
+        $this->expectException(BillingClientException::class);
+        $this->expectExceptionMessage('Unable to parse response body into JSON: Syntax error');
         $client->getRemainingCredits();
     }
 

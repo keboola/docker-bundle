@@ -258,7 +258,7 @@ class SharedCodeResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Shared code configuration cannot be read: Configuration non-existent not found'
         );
-        $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+        $sharedCodeResolver->resolveSharedCode([$jobDefinition]);
     }
 
     public function testResolveSharedCodeNonExistentRow()
@@ -285,7 +285,7 @@ class SharedCodeResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Shared code configuration cannot be read: Row foo not found'
         );
-        $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+        $sharedCodeResolver->resolveSharedCode([$jobDefinition]);
     }
 
     public function testResolveSharedCodeInvalidRow()
@@ -312,7 +312,7 @@ class SharedCodeResolverTest extends TestCase
         $this->expectExceptionMessage(
             'Shared code configuration is invalid: Unrecognized option "this is broken" under "configuration"'
         );
-        $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
+        $sharedCodeResolver->resolveSharedCode([$jobDefinition]);
     }
 
     public function testResolveSharedCodeBranch()

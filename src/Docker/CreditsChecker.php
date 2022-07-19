@@ -29,7 +29,7 @@ class CreditsChecker
     public function getBillingClient($url, $token)
     {
         $url = $this->getBillingServiceUrl();
-        return new BillingClient(new NullLogger(), $url, $token);
+        return new BillingClient($url, $token);
     }
 
     public function hasCredits()

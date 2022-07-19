@@ -66,7 +66,7 @@ class RunnerSynapseTest extends BaseRunnerTest
         }
     }
 
-    protected function initStorageClient()
+    protected function initStorageClient(): void
     {
         $this->client = new Client([
             'url' => STORAGE_API_URL_SYNAPSE,

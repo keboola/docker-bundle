@@ -215,13 +215,10 @@ class Component
             switch ($this->data['logging']['gelf_server_type']) {
                 case 'udp':
                     return ServerFactory::SERVER_UDP;
-                    break;
                 case 'tcp':
                     return ServerFactory::SERVER_TCP;
-                    break;
                 case 'http':
                     return ServerFactory::SERVER_HTTP;
-                    break;
                 default:
                     throw new ApplicationException(
                         "Server type '{$this->data['logging']['gelf_server_type']}' not supported"
