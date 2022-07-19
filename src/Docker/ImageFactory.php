@@ -2,9 +2,9 @@
 
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\Syrup\Exception\ApplicationException;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 

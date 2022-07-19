@@ -13,10 +13,6 @@ parameters:
         - message: "#^Unreachable statement - code above always terminates.$#"
           path: Tests
 
-        - '#^Instantiated class Keboola\\Syrup\\Exception\\ApplicationException not found\.$#'
-        - '#^PHPDoc tag @throws with type Keboola\\Syrup\\Exception\\ApplicationException is not subtype of Throwable$#'
-        - '#^Throwing object of an unknown class Keboola\\Syrup\\Exception\\ApplicationException\.$#'
-
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-symfony/extension.neon
