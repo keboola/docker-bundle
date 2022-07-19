@@ -7,7 +7,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 class JobDefinition
 {
     /**
-     * @var
+     * @var string
      */
     private $configId;
 
@@ -61,8 +61,6 @@ class JobDefinition
         $this->rowId = $rowId;
         $this->isDisabled = $isDisabled;
         $this->state = $state;
-
-        return $this;
     }
 
     /**

@@ -1,5 +1,5 @@
 parameters:
-    level: 1
+    level: 2
     checkMissingIterableValueType: false
     paths:
         - src
@@ -14,6 +14,8 @@ parameters:
           path: src/Docker/Runner.php
 
         - '#^Instantiated class Keboola\\Syrup\\Exception\\ApplicationException not found\.$#'
+        - '#^PHPDoc tag @throws with type Keboola\\Syrup\\Exception\\ApplicationException is not subtype of Throwable$#'
 
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-symfony/extension.neon

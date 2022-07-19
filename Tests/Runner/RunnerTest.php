@@ -2471,7 +2471,7 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->clearConfigurations();
         $usageFile = new TestUsageFile();
-        /** @var UsageFileInterface $usageFile */
+
         $component = new Components($this->getClient());
         $configuration = new Configuration();
         $configuration->setComponentId('keboola.docker-demo-sync');

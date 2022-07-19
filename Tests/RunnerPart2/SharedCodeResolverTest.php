@@ -253,9 +253,9 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Shared code configuration cannot be read: Configuration non-existent not found'
         );
         $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
@@ -280,9 +280,9 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Shared code configuration cannot be read: Row foo not found'
         );
         $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];
@@ -307,9 +307,9 @@ class SharedCodeResolverTest extends TestCase
         $logger = new TestLogger();
         $sharedCodeResolver = new SharedCodeResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Shared code configuration is invalid: Unrecognized option "this is broken" under "configuration"'
         );
         $sharedCodeResolver->resolveSharedCode([$jobDefinition])[0];

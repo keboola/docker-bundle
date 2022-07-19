@@ -71,7 +71,7 @@ class Adapter
     }
 
     /**
-     * @param $format
+     * @param string $format
      * @return $this
      * @throws ApplicationException
      */
@@ -100,7 +100,7 @@ class Adapter
      *
      * Read configuration from file
      *
-     * @param $file
+     * @param string $file
      * @return array
      * @throws ApplicationException
      */
@@ -139,7 +139,7 @@ class Adapter
     /**
      * Write configuration to file in given format
      *
-     * @param $file
+     * @param string $file
      */
     public function writeToFile($file)
     {

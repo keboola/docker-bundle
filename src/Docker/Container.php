@@ -224,10 +224,6 @@ class Container
         });
     }
 
-    /**
-     * @param Process $process
-     * @param $containerName
-     */
     private function runWithLogger($containerName)
     {
         $server = ServerFactory::createServer($this->getImage()->getSourceComponent()->getLoggerServerType());
