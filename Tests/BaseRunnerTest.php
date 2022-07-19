@@ -11,7 +11,6 @@ use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -44,7 +43,7 @@ abstract class BaseRunnerTest extends TestCase
     protected $clientMock;
 
     /**
-     * @var UsageFileInterface
+     * @var null|UsageFileInterface
      */
     private $usageFile;
 
@@ -68,8 +67,6 @@ abstract class BaseRunnerTest extends TestCase
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-        $this->containerHandler = null;
-        $this->runnerHandler = null;
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
@@ -97,7 +94,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->runnerHandler = new TestHandler();
         $log = new Logger("test-logger", [$this->runnerHandler]);
         $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
-        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
+        $this->loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->loggersServiceStub->expects(self::any())

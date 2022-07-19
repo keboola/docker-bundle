@@ -43,17 +43,17 @@ abstract class BaseContainerTest extends TestCase
     private $containerTestHandler;
 
     /**
-     * @var callable
+     * @var null|callable
      */
     private $createEventCallback;
 
     /**
-     * @var LoggersService
+     * @var null|LoggersService
      */
     private $logService;
 
     /**
-     * @var StorageApiService
+     * @var null|StorageApiService
      */
     private $storageServiceStub;
 

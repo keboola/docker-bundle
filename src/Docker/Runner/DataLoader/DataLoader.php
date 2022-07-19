@@ -11,6 +11,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\Definition;
+use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
@@ -317,9 +318,9 @@ class DataLoader implements DataLoaderInterface
     }
 
     /**
-     * @return iterable<AbstractStagingProvider>
+     * @return iterable<ProviderInterface>
      */
-    private function getStagingProviders(Definition $stagingDefinition)
+    private function getStagingProviders(Definition $stagingDefinition): iterable
     {
         yield $stagingDefinition->getFileDataProvider();
         yield $stagingDefinition->getFileMetadataProvider();

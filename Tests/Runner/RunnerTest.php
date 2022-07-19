@@ -1955,7 +1955,7 @@ class RunnerTest extends BaseRunnerTest
             );
             self::assertCount(1, $outputs);
             /** @var Output $output */
-            $output = $outputs[0];
+            $output = array_shift($outputs);
             self::assertEquals('v123', $output->getConfigVersion());
             self::assertNull($output->getInputFileStateList());
             self::assertCount(1, $output->getImages());
