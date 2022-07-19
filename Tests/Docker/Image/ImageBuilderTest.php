@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
@@ -27,6 +26,7 @@ class ImageBuilderTest extends BaseImageTest
         $process = Process::fromShellCommandline('sudo docker images | grep builder- | wc -l');
         $process->run();
         $oldCount = intval(trim($process->getOutput()));
+        $jobScopedEncryptor = $this->getJobScopedEncryptor();
 
         $imageConfig = new Component([
             'data' => [
@@ -38,7 +38,7 @@ class ImageBuilderTest extends BaseImageTest
                         'repository' => [
                             'uri' => 'https://bitbucket.org/keboola/private-test.git',
                             'type' => 'git',
-                            '#password' => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
+                            '#password' => $jobScopedEncryptor->encrypt(GIT_PRIVATE_PASSWORD),
                             'username' => GIT_PRIVATE_USERNAME,
                         ],
                         'commands' => [
@@ -53,7 +53,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($jobScopedEncryptor, new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertStringContainsString('builder-', $image->getFullImageId());
 
@@ -92,7 +92,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertStringContainsString('builder-', $image->getFullImageId());
 
@@ -127,7 +127,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
@@ -164,7 +164,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail('Building from private repository without login should fail');
@@ -233,7 +233,7 @@ class ImageBuilderTest extends BaseImageTest
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare($configData);
         self::assertStringContainsString('builder-', $image->getFullImageId());
 
@@ -267,7 +267,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare([]);
             $this->fail('Invalid repository must raise exception.');
@@ -322,7 +322,7 @@ class ImageBuilderTest extends BaseImageTest
                 '#password' => GIT_PRIVATE_PASSWORD,
             ]
         ];
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         try {
             $image->prepare($configData);
             $this->fail('Invalid repository address must fail');
@@ -360,7 +360,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertStringContainsString('builder-', $image->getFullImageId());
 
@@ -398,7 +398,7 @@ class ImageBuilderTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertStringContainsString('builder-', $image->getFullImageId());
 

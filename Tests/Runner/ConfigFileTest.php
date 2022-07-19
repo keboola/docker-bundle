@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -14,11 +15,19 @@ class ConfigFileTest extends BaseRunnerTest
 {
     private function getAuthorization()
     {
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $this->getEncryptor(),
+            'keboola.docker-demo-sync',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        return new Authorization($oauthClientStub, $this->getEncryptorFactory()->getEncryptor(), 'dummy-component');
+        return new Authorization($oauthClientStub, $jobScopedEncryptor, 'dummy-component');
     }
 
     public function testConfig()
@@ -56,8 +65,8 @@ SAMPLE;
     {
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Error in configuration: Unrecognized option');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Error in configuration: Unrecognized option');
         $config->createConfigFile(['key1' => 'value1'], new OutputFilter(10000), []);
     }
 

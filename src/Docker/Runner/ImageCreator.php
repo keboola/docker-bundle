@@ -5,8 +5,8 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\UserException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -15,62 +15,24 @@ use Psr\Log\LoggerInterface;
 
 class ImageCreator
 {
-    /**
-     * @var ObjectEncryptor
-     */
-    private $encryptor;
+    private JobScopedEncryptor $jobScopedEncryptor;
+    private LoggerInterface $logger;
+    private Client $storageClient;
+    private Component $mainComponent;
+    private array $componentConfig;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private array $before;
+    private array $after;
+    private Temp $temp;
 
-    /**
-     * @var Component
-     */
-    private $mainComponent;
-
-    /**
-     * @var array
-     */
-    private $before;
-
-    /**
-     * @var array
-     */
-    private $after;
-
-    /**
-     * @var array
-     */
-    private $componentConfig;
-
-    /**
-     * @var Temp
-     */
-    private $temp;
-
-    /**
-     * @var Client
-     */
-    private $storageClient;
-
-    /**
-     * ImageCreator constructor.
-     * @param ObjectEncryptor $encryptor
-     * @param LoggerInterface $logger
-     * @param Client $storageClient
-     * @param Component $mainComponent
-     * @param array $componentConfig
-     */
     public function __construct(
-        ObjectEncryptor $encryptor,
+        JobScopedEncryptor $jobQueueEncryptor,
         LoggerInterface $logger,
         Client $storageClient,
         Component $mainComponent,
         array $componentConfig
     ) {
-        $this->encryptor = $encryptor;
+        $this->jobScopedEncryptor = $jobQueueEncryptor;
         $this->logger = $logger;
         $this->mainComponent = $mainComponent;
         $this->storageClient = $storageClient;
@@ -89,19 +51,19 @@ class ImageCreator
         foreach ($this->before as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = ImageFactory::getImage($this->encryptor, $this->logger, $this->mainComponent, $this->temp, true);
+        $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $this->mainComponent, $this->temp, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
         foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }

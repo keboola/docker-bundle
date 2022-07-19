@@ -38,7 +38,7 @@ class ImageBuildingTest extends BaseImageTest
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue(
@@ -96,7 +96,7 @@ DOCKERFILE;
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue(
@@ -168,7 +168,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue(
@@ -233,7 +233,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
         /** @var ImageBuilder $image */
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke(
@@ -297,14 +297,14 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar', 'bar' => 'baz']]);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'createDockerFile');
         $reflection->setAccessible(true);
-        self::expectException(BuildParameterException::class);
-        self::expectExceptionMessage('Orphaned parameter');
+        $this->expectException(BuildParameterException::class);
+        $this->expectExceptionMessage('Orphaned parameter');
         $reflection->invoke($image, $tempDir->getTmpFolder());
     }
 
@@ -344,16 +344,18 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionMethod(ImageBuilder::class, 'initParameters');
         $reflection->setAccessible(true);
-        self::expectException(BuildParameterException::class);
-        self::expectExceptionMessage('has no value');
+        $this->expectException(BuildParameterException::class);
+        $this->expectExceptionMessage('has no value');
         $reflection->invoke($image, ['parameters' => ['foo' => 'fooBar']]);
     }
 
     public function testGitCredentials()
     {
+        $jobScopedEncryptor = $this->getJobScopedEncryptor();
+
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
@@ -364,7 +366,7 @@ ENTRYPOINT php /home/run.php --data=/data';
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
-                            '#password' => $this->getEncryptor()->encrypt(GIT_PRIVATE_PASSWORD),
+                            '#password' => $jobScopedEncryptor->encrypt(GIT_PRIVATE_PASSWORD),
                             'username' => GIT_PRIVATE_USERNAME,
                         ],
                         'commands' => [
@@ -380,7 +382,7 @@ ENTRYPOINT php /home/run.php --data=/data';
         $tempDir = new Temp('docker-test');
         $tempDir->initRunFolder();
 
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($jobScopedEncryptor, new NullLogger(), $imageConfig, $tempDir, true);
         $reflection = new \ReflectionProperty(ImageBuilder::class, 'parentImage');
         $reflection->setAccessible(true);
         $reflection->setValue(
@@ -479,7 +481,7 @@ DOCKERFILE;
         $tempDir->initRunFolder();
 
         /** @var ImageBuilder $image */
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, $tempDir, true);
         self::assertInstanceOf(ImageBuilder::class, $image);
         self::assertTrue($image->getCache(), 'caching should be enabled by default');
 

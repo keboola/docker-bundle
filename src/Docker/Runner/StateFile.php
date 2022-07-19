@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -20,40 +20,22 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
-    const NAMESPACE_COMPONENT = 'component';
+    public const NAMESPACE_COMPONENT = 'component';
+    public const NAMESPACE_STORAGE = 'storage';
+    public const NAMESPACE_INPUT = 'input';
+    public const NAMESPACE_TABLES = 'tables';
+    public const NAMESPACE_FILES = 'files';
 
-    const NAMESPACE_STORAGE = 'storage';
-
-    const NAMESPACE_INPUT = 'input';
-
-    const NAMESPACE_TABLES = 'tables';
-
-    const NAMESPACE_FILES = 'files';
-
-    /**
-     * @var string
-     */
-    private $dataDirectory;
-
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
-
-    /**
-     * @var string
-     */
-    private $componentId;
-
-    /**
-     * @var string
-     */
-    private $configurationId;
-
-    /**
-     * @var string
-     */
-    private $configurationRowId;
+    private string $dataDirectory;
+    private ClientWrapper $clientWrapper;
+    private ObjectEncryptor $encryptor;
+    private string $format;
+    private string $componentId;
+    private string $projectId;
+    private ?string $configurationId;
+    private ?string $configurationRowId;
+    private OutputFilterInterface $outputFilter;
+    private LoggerInterface $logger;
 
     /**
      * @var array
@@ -61,47 +43,33 @@ class StateFile
     private $state;
 
     /**
-     * @var string
-     */
-    private $format;
-
-    /**
-     * @var OutputFilterInterface
-     */
-    private $outputFilter;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    /**
      * @var mixed
      */
-    private $currentState = null;
+    private $currentState;
 
     public function __construct(
-        $dataDirectory,
+        string $dataDirectory,
         ClientWrapper $clientWrapper,
-        ObjectEncryptorFactory $encryptorFactory,
+        ObjectEncryptor $encryptor,
         array $state,
-        $format,
-        $componentId,
-        $configurationId,
+        string $format,
+        string $componentId,
+        string $projectId,
+        ?string $configurationId,
         OutputFilterInterface $outputFilter,
         LoggerInterface $logger,
-        $configurationRowId = null
+        ?string $configurationRowId = null
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->clientWrapper = $clientWrapper;
-        $this->encryptorFactory = $encryptorFactory;
+        $this->encryptor = $encryptor;
+        $this->format = $format;
         $this->componentId = $componentId;
+        $this->projectId = $projectId;
+        $this->logger = $logger;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
+
         try {
             $parsedState = (new State())->parse(['state' => $state]);
         } catch (InvalidConfigurationException $e) {
@@ -112,10 +80,9 @@ class StateFile
         } else {
             $this->state = [];
         }
-        $this->format = $format;
+
         $this->outputFilter = $outputFilter;
         $this->outputFilter->collectValues($state);
-        $this->logger = $logger;
     }
 
     public function createStateFile()
@@ -148,9 +115,10 @@ class StateFile
         $configuration->setConfigurationId($this->configurationId);
         try {
             if ($this->currentState !== null) {
-                $encryptedStateData = $this->encryptorFactory->getEncryptor()->encrypt(
+                $encryptedStateData = $this->encryptor->encryptForProject(
                     $this->currentState,
-                    $this->encryptorFactory->getEncryptor()->getRegisteredProjectWrapperClass()
+                    $this->componentId,
+                    $this->projectId
                 );
             } else {
                 $encryptedStateData = [];

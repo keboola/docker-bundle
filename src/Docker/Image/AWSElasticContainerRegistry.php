@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
@@ -16,9 +15,9 @@ class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
 
-    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
+    public function __construct(Component $component, LoggerInterface $logger)
     {
-        parent::__construct($encryptor, $component, $logger);
+        parent::__construct($component, $logger);
         if (!empty($component->getImageDefinition()["repository"]["region"])) {
             $this->awsRegion = $component->getImageDefinition()["repository"]["region"];
         }

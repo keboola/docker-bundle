@@ -82,13 +82,11 @@ abstract class Image
 
     /**
      * Constructor (use @see {factory()})
-     * @param ObjectEncryptor $encryptor
      * @param Component $component
      * @param LoggerInterface $logger
      */
-    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
+    public function __construct(Component $component, LoggerInterface $logger)
     {
-        $this->encryptor = $encryptor;
         $this->component = $component;
         $this->logger = $logger;
         $this->imageId = $component->getImageDefinition()['uri'];
@@ -108,14 +106,6 @@ abstract class Image
         $this->retryMinInterval = $minInterval;
         $this->retryMaxInterval = $maxInterval;
         $this->retryMaxAttempts = $maxAttempts;
-    }
-
-    /**
-     * @return ObjectEncryptor
-     */
-    public function getEncryptor()
-    {
-        return $this->encryptor;
     }
 
     /**

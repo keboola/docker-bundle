@@ -3,8 +3,6 @@
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Docker\Image\DockerHub;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 
@@ -13,27 +11,28 @@ abstract class ImageFactory
     const KNOWN_IMAGE_TYPES = ['dockerhub', 'builder', 'quayio', 'aws-ecr'];
 
     /**
-     * @param ObjectEncryptor $encryptor Encryptor for image definition.
-     * @param LoggerInterface $logger Logger instance.
-     * @param Component $component Docker image runtime configuration.
-     * @param Temp $temp Temporary service.
      * @param bool $isMain True to mark the image as main image.
-     * @return Image|DockerHub
+     * @return Image
      */
-    public static function getImage(ObjectEncryptor $encryptor, LoggerInterface $logger, Component $component, Temp $temp, $isMain)
-    {
+    public static function getImage(
+        JobScopedEncryptor $jobScopedEncryptor,
+        LoggerInterface $logger,
+        Component $component,
+        Temp $temp,
+        $isMain
+    ) {
         switch ($component->getType()) {
             case 'dockerhub':
-                $instance = new Image\DockerHub($encryptor, $component, $logger);
+                $instance = new Image\DockerHub($component, $logger);
                 break;
             case 'quayio':
-                $instance = new Image\QuayIO($encryptor, $component, $logger);
+                $instance = new Image\QuayIO($component, $logger);
                 break;
             case 'aws-ecr':
-                $instance = new Image\AWSElasticContainerRegistry($encryptor, $component, $logger);
+                $instance = new Image\AWSElasticContainerRegistry($component, $logger);
                 break;
             case 'builder':
-                $instance = new Image\Builder\ImageBuilder($encryptor, $component, $logger);
+                $instance = new Image\Builder\ImageBuilder($jobScopedEncryptor, $component, $logger);
                 $instance->setTemp($temp);
                 break;
             default:

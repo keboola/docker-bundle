@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Docker\Runner;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -18,7 +19,8 @@ abstract class BaseRunnerTest extends TestCase
 {
     private TestHandler $containerHandler;
     private TestHandler $runnerHandler;
-    private ObjectEncryptorFactory $encryptorFactory;
+    private ObjectEncryptor $encryptor;
+    private string $projectId;
     protected Client $client;
 
     /**
@@ -46,16 +48,12 @@ abstract class BaseRunnerTest extends TestCase
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-        $this->encryptorFactory = new ObjectEncryptorFactory(
+        $this->encryptor = ObjectEncryptorFactory::getAwsEncryptor(
+            'test',
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            ''
         );
-        $this->encryptorFactory->setComponentId('keboola.docker-demo-sync');
-        $this->encryptorFactory->setProjectId('12345');
-        $this->encryptorFactory->setStackId('test');
+
         $this->initStorageClient();
         $tokenInfo = $this->client->verifyToken();
         print(sprintf(
@@ -67,6 +65,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->client->getApiUrl()
         ));
 
+        $this->projectId = (string) $tokenInfo['owner']['id'];
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
         $log = new Logger("test-logger", [$this->runnerHandler]);
@@ -82,32 +81,43 @@ abstract class BaseRunnerTest extends TestCase
             ->will($this->returnValue($containerLogger));
     }
 
-    protected function getEncryptorFactory()
+    public function getProjectId(): string
     {
-        return $this->encryptorFactory;
+        return $this->projectId;
     }
 
-    protected function getRunnerHandler()
+    protected function getEncryptor(): ObjectEncryptor
+    {
+        return $this->encryptor;
+    }
+
+    protected function getRunnerHandler(): TestHandler
     {
         return $this->runnerHandler;
     }
 
-    protected function getContainerHandler()
+    protected function getContainerHandler(): TestHandler
     {
         return $this->containerHandler;
     }
 
+    /**
+     * @return LoggersService&MockObject
+     */
     protected function getLoggersService()
     {
         return $this->loggersServiceStub;
     }
 
-    protected function getClient()
+    protected function getClient(): Client
     {
         return $this->client;
     }
 
-    protected function setClientMock($clientMock)
+    /**
+     * @param Client&MockObject $clientMock
+     */
+    protected function setClientMock($clientMock): void
     {
         $this->clientMock = $clientMock;
     }
@@ -124,7 +134,7 @@ abstract class BaseRunnerTest extends TestCase
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
         return new Runner(
-            $this->encryptorFactory,
+            $this->encryptor,
             $clientWrapper,
             $this->loggersServiceStub,
             new OutputFilter(10000),

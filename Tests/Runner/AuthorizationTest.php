@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
@@ -14,48 +15,9 @@ use Keboola\Temp\Temp;
 
 class AuthorizationTest extends BaseRunnerTest
 {
-    public function testOauthDecrypt()
+    public function testOauthDecrypt(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $credentials = [
-            'id' => 'test-credentials-45',
-            'authorizedFor' => '',
-            'creator' => [
-                'id' => '3800',
-                'description' => 'ondrej.hlavacek@keboola.com',
-            ],
-            'created' => '2016-02-09 09:47:16',
-            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
-            'oauthVersion' => '2.0',
-            'appKey' => '123456',
-            '#appSecret' => '654321',
-        ];
-        $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
-        $oauthClientStub->expects(self::once())
-            ->method('getDetail')
-            ->with('keboola.docker-demo', 'whatever')
-            ->will(self::returnValue($oauthResponse));
-        $config = ['oauth_api' => [
-            'id' => 'whatever',
-            'version' => 3
-        ]];
-
-        /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
-        self::assertEquals(
-            $credentials,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
-        );
-    }
-
-    public function testOauthConfigDecrypt()
-    {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -72,7 +34,51 @@ class AuthorizationTest extends BaseRunnerTest
             'appKey' => '123456',
             '#appSecret' => '654321',
         ];
-        $oauthResponse = $encryptorFactory->getEncryptor()->encrypt($credentials);
+        $oauthResponse = $encryptor->encryptForProject($credentials, 'keboola.docker-demo', '12345');
+        $oauthClientStub->expects(self::once())
+            ->method('getDetail')
+            ->with('keboola.docker-demo', 'whatever')
+            ->will(self::returnValue($oauthResponse));
+        $config = ['oauth_api' => [
+            'id' => 'whatever',
+            'version' => 3
+        ]];
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
+        /** @var Credentials $oauthClientStub */
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
+        self::assertEquals(
+            $credentials,
+            $auth->getAuthorization($config)['oauth_api']['credentials']
+        );
+    }
+
+    public function testOauthConfigDecrypt(): void
+    {
+        $encryptor = $this->getEncryptor();
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $credentials = [
+            'id' => 'test-credentials-45',
+            'authorizedFor' => '',
+            'creator' => [
+                'id' => '3800',
+                'description' => 'ondrej.hlavacek@keboola.com',
+            ],
+            'created' => '2016-02-09 09:47:16',
+            '#data' => '{"access_token":"abcd","token_type":"bearer","uid":"efgh"}',
+            'oauthVersion' => '2.0',
+            'appKey' => '123456',
+            '#appSecret' => '654321',
+        ];
+        $oauthResponse = $encryptor->encryptForProject($credentials, 'keboola.docker-demo', '12345');
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
@@ -82,9 +88,16 @@ class AuthorizationTest extends BaseRunnerTest
             'version' => 3,
         ]]];
 
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         $temp = new Temp();
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), []);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -118,10 +131,9 @@ class AuthorizationTest extends BaseRunnerTest
         self::assertEquals($sampleData, $data);
     }
 
-    public function testOauthInjected()
+    public function testOauthInjected(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $credentials = [
             'id' => 'test-credentials-45',
             'authorizedFor' => '',
@@ -140,69 +152,90 @@ class AuthorizationTest extends BaseRunnerTest
             'version' => 3,
         ]];
 
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         $oauthClientStub->expects(self::never())
             ->method('getDetail');
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         self::assertEquals(
             $credentials,
             $auth->getAuthorization($config)['oauth_api']['credentials']
         );
     }
 
-    public function testOauthUserError()
+    public function testOauthUserError(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $config = ['oauth_api' => [
             'id' => 'test-credentials-45',
             'version' => 3,
         ]];
 
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException('OAuth API error: No data found for api: keboola.docker-demo', 400)));
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('No data found for api');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('No data found for api');
         $auth->getAuthorization($config);
     }
 
-    public function testOauthApplicationError()
+    public function testOauthApplicationError(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $config = ['oauth_api' => [
             'id' => 'test-credentials-45',
             'version' => 3,
         ]];
 
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException('Internal Server Error', 500)));
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
-        self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('Internal Server Error');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
+        $this->expectException(ApplicationException::class);
+        $this->expectExceptionMessage('Internal Server Error');
         $auth->getAuthorization($config);
     }
 
-    public function testOauthInjectedSandboxed()
+    public function testOauthInjectedSandboxed(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $credentials = [
             'id' => 'test-credentials-45',
             'authorizedFor' => '',
@@ -217,27 +250,34 @@ class AuthorizationTest extends BaseRunnerTest
             '#appSecret' => '654321',
         ];
         $config = ['oauth_api' => [
-            'credentials' => $encryptorFactory->getEncryptor()->encrypt($credentials),
+            'credentials' => $encryptor->encryptForProject($credentials, 'keboola.docker-demo', '12345'),
             'version' => 3,
         ]];
         $expectedConfig = $config;
         unset($expectedConfig['oauth_api']['version']);
 
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         self::assertEquals(
             $expectedConfig,
             $auth->getAuthorization($config)
         );
     }
 
-    public function testOauthInjectedConfigDecrypt()
+    public function testOauthInjectedConfigDecrypt(): void
     {
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
 
         $credentials = [
             'id' => 'test-credentials-45',
@@ -258,11 +298,19 @@ class AuthorizationTest extends BaseRunnerTest
         ]]];
 
         $temp = new Temp();
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), []);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -296,13 +344,12 @@ class AuthorizationTest extends BaseRunnerTest
         self::assertEquals($sampleData, $data);
     }
 
-    public function testOauthV2DeprecationMessage()
+    public function testOauthV2DeprecationMessage(): void
     {
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
 
-        $encryptorFactory = $this->getEncryptorFactory();
-        $encryptorFactory->setComponentId('keboola.docker-demo');
+        $encryptor = $this->getEncryptor();
         $config = [
             'oauth_api' => [
                 'id' => 'test-deprecated-credentials',
@@ -310,11 +357,20 @@ class AuthorizationTest extends BaseRunnerTest
             ],
         ];
 
-        $oauthClientStub = self::getMockBuilder(Credentials::class)
+        $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $encryptor,
+            'keboola.docker-demo',
+            '12345',
+            null
+        );
+
+
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         $auth->getAuthorization($config);
     }
 }
