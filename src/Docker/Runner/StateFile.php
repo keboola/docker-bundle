@@ -182,6 +182,9 @@ class StateFile
         }
     }
 
+    /**
+     * @return array|object
+     */
     public function loadStateFromFile()
     {
         $stateAdapter = new Adapter($this->format);

@@ -7,28 +7,17 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService
 {
-    /** @var RequestStack */
     protected RequestStack $requestStack;
+    protected string $storageApiUrl;
+    private ?LoggerInterface $logger;
 
-    /** @var null|Client */
-    protected ?Client $client;
-
-    /** @var null|LoggerInterface */
-    private $logger;
-
-    /** @var string */
-    protected $storageApiUrl;
-
-    /** @var null|array */
-    protected $tokenData;
-
-    /** @var null|Client */
-    private $clientWithoutLogger;
+    protected ?Client $client = null;
+    private ?Client $clientWithoutLogger = null;
+    protected ?array $tokenData = null;
 
     public function __construct(
         RequestStack $requestStack,
