@@ -1,0 +1,19 @@
+parameters:
+    level: 1
+    checkMissingIterableValueType: false
+    paths:
+        - src
+        - Tests
+        - bootstrap.php
+
+    ignoreErrors:
+        - message: '#^Constructor of class [\w\\]+ has an unused parameter \$\w+\.$#'
+          path: src/Docker/Runner/DataLoader/NullDataLoader.php
+
+        - message: '#^Variable \$artifactsConfiguration on left side of \?\? is never defined\.$#'
+          path: src/Docker/Runner.php
+
+        - '#^Instantiated class Keboola\\Syrup\\Exception\\ApplicationException not found\.$#'
+
+includes:
+    - vendor/phpstan/phpstan-phpunit/extension.neon

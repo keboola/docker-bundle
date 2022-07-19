@@ -8,6 +8,9 @@ use Symfony\Component\Config\Definition\Processor;
 
 abstract class Configuration implements ConfigurationInterface
 {
+    final public function __construct()
+    {
+    }
 
     /**
      * @return TreeBuilder
