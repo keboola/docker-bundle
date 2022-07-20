@@ -354,7 +354,7 @@ ENTRYPOINT php /home/run.php --data=/data';
 
     public function testGitCredentials()
     {
-        $jobScopedEncryptor = $this->getJobScopedEncryptor();
+        $jobScopedEncryptor = $this->getJobScopedEncryptor('docker-demo');
 
         $imageConfig = new Component([
             'data' => [
@@ -366,7 +366,7 @@ ENTRYPOINT php /home/run.php --data=/data';
                         'repository' => [
                             'uri' => 'https://github.com/keboola/docker-demo-app',
                             'type' => 'git',
-                            '#password' => $jobScopedEncryptor->encrypt(GIT_PRIVATE_PASSWORD),
+                            '#password' => $this->getEncryptor()->encryptForComponent(GIT_PRIVATE_PASSWORD, 'docker-demo'),
                             'username' => GIT_PRIVATE_USERNAME,
                         ],
                         'commands' => [
