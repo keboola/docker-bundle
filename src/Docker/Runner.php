@@ -215,7 +215,7 @@ class Runner
 
         $configFile = new ConfigFile(
             $workingDirectory->getDataDir(),
-            $this->encryptor->decryptForComponent($component->getImageParameters(), $component->getId()),
+            $jobScopedEncryptor->decrypt($component->getImageParameters()),
             $authorization,
             $action,
             $component->getConfigurationFormat()
