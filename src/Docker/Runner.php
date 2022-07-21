@@ -42,7 +42,6 @@ class Runner
 
     private ObjectEncryptorFactory $encryptorFactory;
     private ClientWrapper $clientWrapper;
-    private Credentials $oauthClient;
     private Credentials $oauthClient3;
     private MlflowProjectResolver $mlflowProjectResolver;
     private LoggersService $loggersService;
@@ -57,7 +56,6 @@ class Runner
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
         OutputFilterInterface $outputFilter,
-        string $oauthApiUrl,
         array $instanceLimits,
         int $minLogPort = 12202,
         int $maxLogPort = 13202
@@ -76,9 +74,6 @@ class Runner
             $storageApiToken
         );
 
-        $this->oauthClient = new Credentials($storageApiToken, [
-            'url' => $oauthApiUrl
-        ]);
         $this->oauthClient3 = new Credentials($storageApiToken, [
             'url' => $this->getOauthUrlV3()
         ]);
@@ -208,7 +203,7 @@ class Runner
         $usageFile->setDataDir($workingDirectory->getDataDir());
 
         $configData = $jobDefinition->getConfiguration();
-        $authorization = new Authorization($this->oauthClient, $this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
+        $authorization = new Authorization($this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
         $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
         $configFile = new ConfigFile(
             $workingDirectory->getDataDir(),
@@ -554,7 +549,6 @@ class Runner
             $this->instanceLimits,
             !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
             !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
-            !empty($tokenInfo['admin']['features']) ? $tokenInfo['admin']['features'] : [],
             $backendSize
         );
 

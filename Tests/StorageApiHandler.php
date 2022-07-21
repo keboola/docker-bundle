@@ -14,27 +14,11 @@ use Monolog\Logger;
  */
 class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInterface
 {
-    /**
-     * @var array
-     */
-    private $verbosity;
+    private array $verbosity;
+    protected string $appName;
+    protected Client $storageApiClient;
 
-    /**
-     * @var string
-     */
-    protected $appName;
-
-    /**
-     * @var Client
-     */
-    protected $storageApiClient;
-
-    /**
-     * StorageApiHandler constructor.
-     * @param string $appName
-     * @param Client $client
-     */
-    public function __construct($appName, Client $client)
+    public function __construct(string $appName, Client $client)
     {
         parent::__construct();
         $this->appName = $appName;
@@ -68,15 +52,11 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
     }
 
     /**
-     * @inheritdoc
+     * @param array $record
      */
     public function handle(array $record): bool
     {
         if (($this->verbosity[$record['level']] == self::VERBOSITY_NONE) || empty($record['message'])) {
-            return false;
-        }
-
-        if (!$this->storageApiClient) {
             return false;
         }
 

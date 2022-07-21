@@ -2,7 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Keboola\Syrup\Exception\ApplicationException;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -11,7 +11,7 @@ use Symfony\Component\Yaml\Yaml;
 class Adapter
 {
     /**
-     * @var array
+     * @var array|object
      */
     protected $config;
 
@@ -37,7 +37,7 @@ class Adapter
 
 
     /**
-     * @return array
+     * @return array|object
      */
     public function getConfig()
     {
@@ -71,7 +71,7 @@ class Adapter
     }
 
     /**
-     * @param $format
+     * @param string $format
      * @return $this
      * @throws ApplicationException
      */
@@ -100,8 +100,8 @@ class Adapter
      *
      * Read configuration from file
      *
-     * @param $file
-     * @return array
+     * @param string $file
+     * @return array|object
      * @throws ApplicationException
      */
     public function readFromFile($file)
@@ -113,10 +113,9 @@ class Adapter
 
         $serialized = $this->getContents($file);
 
-        if ($this->getFormat() == 'yaml') {
-            $yaml = new Yaml();
-            $data = $yaml->parse($serialized);
-        } elseif ($this->getFormat() == 'json') {
+        if ($this->getFormat() === 'yaml') {
+            $data = Yaml::parse($serialized);
+        } elseif ($this->getFormat() === 'json') {
             $encoder = new JsonEncoder();
             $data = $encoder->decode($serialized, $encoder::FORMAT);
         } else {
@@ -139,17 +138,17 @@ class Adapter
     /**
      * Write configuration to file in given format
      *
-     * @param $file
+     * @param string $file
      */
     public function writeToFile($file)
     {
-        if ($this->getFormat() == 'yaml') {
+        if ($this->getFormat() === 'yaml') {
             $yaml = new Yaml();
             $serialized = $yaml->dump($this->getConfig(), 10);
-            if ($serialized == 'null') {
+            if ($serialized === 'null') {
                 $serialized = '{}';
             }
-        } elseif ($this->getFormat() == 'json') {
+        } elseif ($this->getFormat() === 'json') {
             $encoder = new JsonEncoder();
             $config = $this->normalizeConfig($this->getConfig());
             $serialized = $encoder->encode($config, $encoder::FORMAT, ['json_encode_options' => JSON_PRETTY_PRINT]);
@@ -161,7 +160,7 @@ class Adapter
     }
 
     /**
-     * @param $file
+     * @param string $file
      * @return mixed
      * @throws ApplicationException
      */
@@ -171,10 +170,6 @@ class Adapter
             throw new ApplicationException("File" . $file . " not found.");
         }
         $fileHandler = new SplFileInfo($file, "", basename($file));
-        if ($fileHandler) {
-            return $fileHandler->getContents();
-        } else {
-            throw new ApplicationException("File" . $file . " not found.");
-        }
+        return $fileHandler->getContents();
     }
 }

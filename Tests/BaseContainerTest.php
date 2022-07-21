@@ -43,17 +43,17 @@ abstract class BaseContainerTest extends TestCase
     private $containerTestHandler;
 
     /**
-     * @var callable
+     * @var null|callable
      */
     private $createEventCallback;
 
     /**
-     * @var LoggersService
+     * @var null|LoggersService
      */
     private $logService;
 
     /**
-     * @var StorageApiService
+     * @var null|StorageApiService
      */
     private $storageServiceStub;
 
@@ -204,7 +204,7 @@ abstract class BaseContainerTest extends TestCase
             RUNNER_MAX_LOG_PORT,
             $commandOptions,
             $outputFilter,
-            new Limits($log, ['cpu_count' => 2], $projectLimits, [], [], null)
+            new Limits($log, ['cpu_count' => 2], $projectLimits, [], null)
         );
         return $container;
     }

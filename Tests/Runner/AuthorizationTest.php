@@ -45,7 +45,7 @@ class AuthorizationTest extends BaseRunnerTest
         ]];
 
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
             $credentials,
             $auth->getAuthorization($config)['oauth_api']['credentials']
@@ -84,7 +84,7 @@ class AuthorizationTest extends BaseRunnerTest
 
         $temp = new Temp();
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), []);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -146,7 +146,7 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub->expects(self::never())
             ->method('getDetail');
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
             $credentials,
             $auth->getAuthorization($config)['oauth_api']['credentials']
@@ -170,7 +170,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException('OAuth API error: No data found for api: keboola.docker-demo', 400)));
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::expectException(UserException::class);
         self::expectExceptionMessage('No data found for api');
         $auth->getAuthorization($config);
@@ -193,7 +193,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(new RequestException('Internal Server Error', 500)));
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage('Internal Server Error');
         $auth->getAuthorization($config);
@@ -227,7 +227,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         self::assertEquals(
             $expectedConfig,
             $auth->getAuthorization($config)
@@ -262,7 +262,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), []);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
@@ -314,7 +314,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->disableOriginalConstructor()
             ->getMock();
         /** @var Credentials $oauthClientStub */
-        $auth = new Authorization($oauthClientStub, $oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
+        $auth = new Authorization($oauthClientStub, $encryptorFactory->getEncryptor(), 'keboola.docker-demo');
         $auth->getAuthorization($config);
     }
 }

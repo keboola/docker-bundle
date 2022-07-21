@@ -43,12 +43,15 @@ class VariableResolver
         $this->logger = $logger;
     }
 
+    /**
+     * @param JobDefinition[] $jobDefinitions
+     */
     public function resolveVariables(array $jobDefinitions, $variableValuesId, $variableValuesData)
     {
         if ($variableValuesId && $variableValuesData) {
             throw new UserException('Only one of variableValuesId and variableValuesData can be entered.');
         }
-        /** @var JobDefinition $jobDefinition */
+
         $newJobDefinitions = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if (!empty($jobDefinition->getConfiguration()['variables_id'])) {

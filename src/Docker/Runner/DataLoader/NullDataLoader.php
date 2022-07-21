@@ -33,6 +33,7 @@ class NullDataLoader implements DataLoaderInterface
 
     public function storeOutput()
     {
+        return null;
     }
 
     public function storeDataArchive($fileName, array $tags)

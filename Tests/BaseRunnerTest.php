@@ -3,57 +3,35 @@
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 abstract class BaseRunnerTest extends TestCase
 {
-    /**
-     * @var TestHandler
-     */
-    private $containerHandler;
+    private TestHandler $containerHandler;
+    private TestHandler $runnerHandler;
+    private ObjectEncryptorFactory $encryptorFactory;
+    protected Client $client;
 
     /**
-     * @var TestHandler
-     */
-    private $runnerHandler;
-
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
-
-    /**
-     * @var Client
-     */
-    protected $client;
-
-    /**
-     * @var Client
+     * @var null|(Client&MockObject)
      */
     protected $clientMock;
 
     /**
-     * @var UsageFileInterface
-     */
-    private $usageFile;
-
-    /**
-     * @var LoggersService
+     * @var LoggersService&MockObject
      */
     private $loggersServiceStub;
 
-    protected function initStorageClient()
+    protected function initStorageClient(): void
     {
         $this->client = new Client(
             [
@@ -68,8 +46,6 @@ abstract class BaseRunnerTest extends TestCase
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-        $this->containerHandler = null;
-        $this->runnerHandler = null;
         $this->encryptorFactory = new ObjectEncryptorFactory(
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
@@ -91,13 +67,11 @@ abstract class BaseRunnerTest extends TestCase
             $this->client->getApiUrl()
         ));
 
-        $this->usageFile = null;
-
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
         $log = new Logger("test-logger", [$this->runnerHandler]);
         $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
-        $this->loggersServiceStub = self::getMockBuilder(LoggersService::class)
+        $this->loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->loggersServiceStub->expects(self::any())
@@ -145,7 +119,7 @@ abstract class BaseRunnerTest extends TestCase
         } else {
             $storageClientStub = $this->client;
         }
-        $this->usageFile = new NullUsageFile();
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
@@ -154,7 +128,6 @@ abstract class BaseRunnerTest extends TestCase
             $clientWrapper,
             $this->loggersServiceStub,
             new OutputFilter(10000),
-            "dummy",
             ['cpu_count' => 2],
             RUNNER_MIN_LOG_PORT
         );

@@ -10,32 +10,14 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 
 class Authorization
 {
-    /**
-     * @var Credentials
-     */
-    private $oauthClient;
+    private ObjectEncryptor $encryptor;
+    private Credentials $oauthClientV3;
+    private string $componentId;
 
-    /**
-     * @var ObjectEncryptor
-     */
-    private $encryptor;
-
-    /**
-     * @var string
-     */
-    private $componentId;
-
-    /**
-     * @var Credentials
-     */
-    private $oauthClientV3;
-
-    public function __construct(Credentials $client, Credentials $clientV3, ObjectEncryptor $encryptor, $componentId)
+    public function __construct(Credentials $clientV3, ObjectEncryptor $encryptor, string $componentId)
     {
-        $this->oauthClient = $client;
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
-        $this->oauthClient->enableReturnArrays(true);
         $this->oauthClientV3 = $clientV3;
         $this->oauthClientV3->enableReturnArrays(true);
     }

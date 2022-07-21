@@ -10,11 +10,6 @@ use Psr\Log\NullLogger;
 
 class ImageCreatorTest extends BaseRunnerTest
 {
-    /**
-     * @var Client
-     */
-    protected $client;
-
     public function setUp(): void
     {
         parent::setUp();
@@ -40,7 +35,7 @@ class ImageCreatorTest extends BaseRunnerTest
                 ],
             ]
         ];
-        $this->client = self::getMockBuilder(Client::class)
+        $this->client = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->client->expects($this->any())

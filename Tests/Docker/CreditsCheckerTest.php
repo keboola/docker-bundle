@@ -93,10 +93,12 @@ class CreditsCheckerTest extends TestCase
      */
     public function testCheckCreditsHasFeatureHasCredits($remainingCredits, $hasCredits)
     {
-        $client = self::getMockBuilder(Client::class)
+        $client = $this->getMockBuilder(Client::class)
             ->setMethods(['indexAction', 'verifyToken'])
             ->disableOriginalConstructor()
             ->getMock();
+        $client->token = 'fake-token';
+
         $client->method('indexAction')->willReturn(
             [
                 'services' => [
@@ -128,20 +130,20 @@ class CreditsCheckerTest extends TestCase
                 ]
             ]
         );
-        $billingClient = self::getMockBuilder(BillingClient::class)
+        $billingClient = $this->getMockBuilder(BillingClient::class)
             ->setMethods(['getRemainingCredits'])
             ->disableOriginalConstructor()
             ->getMock();
         $billingClient->method('getRemainingCredits')
             ->willReturn($remainingCredits);
-        /** @var Client $client */
-        $creditsChecker = self::getMockBuilder(CreditsChecker::class)
+
+        $creditsChecker = $this->getMockBuilder(CreditsChecker::class)
             ->setMethods(['getBillingClient'])
             ->setConstructorArgs([$client])
             ->getMock();
         $creditsChecker->method('getBillingClient')
             ->willReturn($billingClient);
-        /** @var CreditsChecker $creditsChecker */
+
         self::assertEquals($hasCredits, $creditsChecker->hasCredits());
     }
 }

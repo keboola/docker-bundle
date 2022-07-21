@@ -7,34 +7,23 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Client;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class StorageApiService
 {
-    /** @var RequestStack */
-    protected $requestStack;
+    protected RequestStack $requestStack;
+    protected string $storageApiUrl;
+    private ?LoggerInterface $logger;
 
-    /** @var Request */
-    protected $request;
+    protected ?Client $client = null;
+    private ?Client $clientWithoutLogger = null;
+    protected ?array $tokenData = null;
 
-    /** @var Client */
-    protected $client;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    /** @var string */
-    protected $storageApiUrl;
-
-    /** @var array */
-    protected $tokenData;
-
-    /** @var Client */
-    private $clientWithoutLogger;
-
-    public function __construct(RequestStack $requestStack, $storageApiUrl = 'https://connection.keboola.com', LoggerInterface $logger = null)
-    {
+    public function __construct(
+        RequestStack $requestStack,
+        string $storageApiUrl = 'https://connection.keboola.com',
+        ?LoggerInterface $logger = null
+    ) {
         $this->storageApiUrl = $storageApiUrl;
         $this->requestStack = $requestStack;
         $this->logger = $logger;
@@ -82,7 +71,7 @@ class StorageApiService
             if (!$request->headers->has('X-StorageApi-Token')) {
                 throw new UserException('Missing StorageAPI token');
             }
-            $this->setClient(new Client(
+            $this->client = $this->verifyClient(new Client(
                 [
                     'token' => $request->headers->get('X-StorageApi-Token'),
                     'url' => $this->storageApiUrl,

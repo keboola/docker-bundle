@@ -21,11 +21,11 @@ class LoggersService
     private $containerLogger;
 
     /**
-     * @var StorageApiHandlerInterface
+     * @var null|StorageApiHandlerInterface
      */
     private $sapiHandler;
 
-    public function __construct(Logger $log, ContainerLogger $containerLog, $sapiHandler)
+    public function __construct(Logger $log, ContainerLogger $containerLog, ?StorageApiHandlerInterface $sapiHandler)
     {
         $this->logger = $log;
         $this->containerLogger = $containerLog;

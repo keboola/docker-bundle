@@ -273,13 +273,13 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'No variable values provided for configuration "123", row "321", referencing variables "' .
             $vConfigurationId . '".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], null, null);
     }
 
     public function testResolveVariablesInvalidDefaultValues(): void
@@ -297,12 +297,12 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Cannot read default variable values "non-existent" for configuration "123", row "321".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], null, null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], null, null);
     }
 
     public function testResolveVariablesInvalidProvidedValues(): void
@@ -319,12 +319,12 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Cannot read requested variable values "non-existent" for configuration "123", row "321".'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesInvalidProvidedArguments(): void
@@ -341,16 +341,16 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Only one of variableValuesId and variableValuesData can be entered.'
         );
         $variableResolver->resolveVariables(
             [$jobDefinition],
             'non-existent',
             ['values' => [['name' => 'foo', 'value' => 'bar']]]
-        )[0];
+        );
     }
 
     public function testResolveVariablesNonExistentVariableConfiguration(): void
@@ -362,12 +362,12 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Variable configuration cannot be read: Configuration non-existent not found'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesInvalidVariableConfiguration(): void
@@ -384,12 +384,12 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '321', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage(
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
             'Variable configuration is invalid: Unrecognized option "invalid" under "configuration"'
         );
-        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null)[0];
+        $variableResolver->resolveVariables([$jobDefinition], 'non-existent', null);
     }
 
     public function testResolveVariablesNoVariables(): void
@@ -441,9 +441,9 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
-        $variableResolver->resolveVariables([$jobDefinition], $vRowId, [])[0];
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
+        $variableResolver->resolveVariables([$jobDefinition], $vRowId, []);
     }
 
     public function testResolveVariablesSpecialCharacterReplacement(): void
@@ -499,14 +499,14 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Variable replacement resulted in invalid configuration, error: Syntax error');
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Variable replacement resulted in invalid configuration, error: Syntax error');
         $variableResolver->resolveVariables(
             [$jobDefinition],
             null,
             ['values' => [['name' => 'foo', 'value' => 'special " \' { } characters']]]
-        )[0];
+        );
     }
 
     public function testResolveVariablesMissingValues(): void
@@ -523,9 +523,9 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('No value provided for variable "goo".');
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('No value provided for variable "goo".');
         $variableResolver->resolveVariables(
             [$jobDefinition],
             null,
@@ -547,9 +547,9 @@ class VariableResolverTest extends TestCase
         $logger = new TestLogger();
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
-        /** @var JobDefinition $newJobDefinition */
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Missing values for placeholders: "bar, baz"');
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Missing values for placeholders: "bar, baz"');
         $variableResolver->resolveVariables(
             [$jobDefinition],
             null,

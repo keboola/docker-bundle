@@ -4,12 +4,13 @@ namespace Keboola\DockerBundle\Docker\Container;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
-class Process extends \Symfony\Component\Process\Process
+class Process extends SymfonyProcess
 {
     private OutputFilterInterface $outputFilter;
 
-    public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60, array $options = array())
+    public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60)
     {
         parent::__construct($commandline, $cwd, $env, $input, $timeout);
         $this->outputFilter = new NullFilter();

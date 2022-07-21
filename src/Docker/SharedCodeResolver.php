@@ -37,7 +37,6 @@ class SharedCodeResolver
      */
     public function resolveSharedCode(array $jobDefinitions)
     {
-        /** @var JobDefinition $jobDefinition */
         $newJobDefinitions = [];
         foreach ($jobDefinitions as $jobDefinition) {
             if (!empty($jobDefinition->getConfiguration()['shared_code_id'])) {
