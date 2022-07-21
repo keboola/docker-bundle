@@ -7,6 +7,7 @@ use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\BranchAwareClient;
@@ -46,12 +47,13 @@ class StateFileTest extends TestCase
             STORAGE_API_TOKEN,
         ));
 
-        $this->encryptor = ObjectEncryptorFactory::getAwsEncryptor(
-            'test',
+        $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
+            parse_url(STORAGE_API_URL, PHP_URL_HOST),
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
             null,
-        );
+            null,
+        ));
     }
 
     public function testCreateStateFileFromStateWithNamespace()
