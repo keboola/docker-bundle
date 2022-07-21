@@ -20,7 +20,8 @@ abstract class BaseImageTest extends TestCase
         $this->encryptor = ObjectEncryptorFactory::getAwsEncryptor(
             parse_url(STORAGE_API_URL, PHP_URL_HOST),
             AWS_KMS_TEST_KEY,
-            AWS_ECR_REGISTRY_REGION
+            AWS_ECR_REGISTRY_REGION,
+            null,
         );
     }
 

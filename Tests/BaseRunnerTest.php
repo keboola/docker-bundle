@@ -52,6 +52,7 @@ abstract class BaseRunnerTest extends TestCase
             'test',
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
+            null,
         );
 
         $this->initStorageClient();
