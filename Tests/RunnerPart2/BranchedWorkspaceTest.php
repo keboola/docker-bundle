@@ -227,7 +227,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
     private function runJob(ClientWrapper $storageApiWrapper, JobDefinition $jobDefinition)
     {
         $runner = new Runner(
-            $this->getEncryptorFactory(),
+            $this->getEncryptor(),
             $storageApiWrapper,
             $this->getLoggersService(),
             new OutputFilter(10000),

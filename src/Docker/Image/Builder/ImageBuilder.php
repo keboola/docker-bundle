@@ -5,9 +5,9 @@ namespace Keboola\DockerBundle\Docker\Image\Builder;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\BuildException;
 use Keboola\DockerBundle\Exception\BuildParameterException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
@@ -69,11 +69,6 @@ class ImageBuilder extends Image
     /**
      * @var string
      */
-    protected $containerId;
-
-    /**
-     * @var string
-     */
     protected $fullImageId;
 
     /**
@@ -91,17 +86,20 @@ class ImageBuilder extends Image
      */
     private $parentImage;
 
-    public function __construct(ObjectEncryptor $encryptor, Component $component, LoggerInterface $logger)
+    private JobScopedEncryptor $jobScopedEncryptor;
+
+    public function __construct(JobScopedEncryptor $jobScopedEncryptor, Component $component, LoggerInterface $logger)
     {
-        parent::__construct($encryptor, $component, $logger);
+        parent::__construct($component, $logger);
+        $this->jobScopedEncryptor = $jobScopedEncryptor;
+
         $config = $component->getImageDefinition();
         if (isset($config["build_options"])) {
             if (isset($config["build_options"]["repository"]["username"])) {
                 $this->repoUsername = $config["build_options"]["repository"]["username"];
             }
             if (isset($config["build_options"]["repository"]["#password"])) {
-                $this->repoPassword =
-                    $this->getEncryptor()->decrypt($config["build_options"]["repository"]["#password"]);
+                $this->repoPassword = $this->jobScopedEncryptor->decrypt($config["build_options"]["repository"]["#password"]);
             }
             $this->repository = $config["build_options"]["repository"]["uri"];
             $this->repositoryType = $config["build_options"]["repository"]["type"];
@@ -377,7 +375,7 @@ class ImageBuilder extends Image
     {
         try {
             $component = $this->getSourceComponent()->changeType($this->parentType);
-            $image = ImageFactory::getImage($this->encryptor, $this->logger, $component, $this->temp, $this->isMain());
+            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, $this->isMain());
             $image->setRetryLimits($this->retryMinInterval, $this->retryMaxInterval, $this->retryMaxAttempts);
             $image->prepare($this->configData);
             $this->parentImage = $image->getFullImageId();

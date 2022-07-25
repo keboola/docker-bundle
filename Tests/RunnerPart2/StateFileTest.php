@@ -7,6 +7,8 @@ use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\ObjectEncryptor\EncryptorOptions;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
@@ -22,9 +24,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends TestCase
 {
-    private Temp $temp;
     private string $dataDir;
-    private ObjectEncryptorFactory $encryptorFactory;
+    private ObjectEncryptor $encryptor;
     private ClientWrapper $clientWrapper;
 
     public function setUp(): void
@@ -34,9 +35,9 @@ class StateFileTest extends TestCase
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
 
         // Create folders
-        $this->temp = new Temp('docker');
+        $temp = new Temp('docker');
         $fs = new Filesystem();
-        $this->dataDir = $this->temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'data';
+        $this->dataDir = $temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'data';
         $fs->mkdir($this->dataDir);
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'in');
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'out');
@@ -45,16 +46,14 @@ class StateFileTest extends TestCase
             STORAGE_API_URL,
             STORAGE_API_TOKEN,
         ));
-        $this->encryptorFactory = new ObjectEncryptorFactory(
+
+        $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
+            parse_url(STORAGE_API_URL, PHP_URL_HOST),
             AWS_KMS_TEST_KEY,
             AWS_ECR_REGISTRY_REGION,
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            ''
-        );
-        $this->encryptorFactory->setStackId('test');
-        $this->encryptorFactory->setComponentId('docker-demo');
-        $this->encryptorFactory->setProjectId('123');
+            null,
+            null,
+        ));
     }
 
     public function testCreateStateFileFromStateWithNamespace()
@@ -62,12 +61,13 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [
                 StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today']
             ],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -85,15 +85,16 @@ class StateFileTest extends TestCase
 
     public function testInitializeStateFileFromStateWithoutNamespace()
     {
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
         new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             ['lastUpdate' => 'today'],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -105,10 +106,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -153,10 +155,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             $testLogger
@@ -168,7 +171,7 @@ class StateFileTest extends TestCase
 
     public function testPersistStateLogsSavingState()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -180,10 +183,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             $testLogger
@@ -195,7 +199,7 @@ class StateFileTest extends TestCase
 
     public function testPersistStateEncrypts()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -218,10 +222,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -232,7 +237,7 @@ class StateFileTest extends TestCase
 
     public function testStashStateDoesNotUpdate()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::never())
@@ -243,10 +248,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -256,7 +262,7 @@ class StateFileTest extends TestCase
 
     public function testPersistsStateUpdatesFromEmpty()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -278,10 +284,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -292,7 +299,7 @@ class StateFileTest extends TestCase
 
     public function testPersistsStateUpdatesToEmptyArray()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -317,10 +324,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -331,7 +339,7 @@ class StateFileTest extends TestCase
 
     public function testPersistsStateUpdatesToEmptyObject()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -356,10 +364,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -370,7 +379,7 @@ class StateFileTest extends TestCase
 
     public function testPersistsStateSavesUnchangedState()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -397,10 +406,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -418,10 +428,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -439,10 +450,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -456,10 +468,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -470,7 +483,7 @@ class StateFileTest extends TestCase
 
     public function testPersistStateThrowsAnExceptionOn404()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -494,10 +507,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -511,7 +525,7 @@ class StateFileTest extends TestCase
 
     public function testPersisStatePassOtherExceptions()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -535,10 +549,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -553,7 +568,7 @@ class StateFileTest extends TestCase
 
     public function testPersistStateStoresInputTablesState()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -586,10 +601,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -607,7 +623,7 @@ class StateFileTest extends TestCase
 
     public function testRowPersistStateStoresInputTablesState()
     {
-        $sapiStub = self::getMockBuilder(Client::class)
+        $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
@@ -640,10 +656,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -698,10 +715,11 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $wrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
             'docker-demo',
+            'project-id',
             'config-id',
             new NullFilter(),
             $testLogger

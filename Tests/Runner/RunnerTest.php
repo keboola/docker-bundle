@@ -8,7 +8,6 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
@@ -32,32 +31,32 @@ class RunnerTest extends BaseRunnerTest
 {
     use ReflectionPropertyAccessTestCase;
 
-    private function clearBuckets()
+    private function clearBuckets(): void
     {
         foreach (['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
+                if ($e->getCode() !== 404) {
                     throw $e;
                 }
             }
         }
     }
 
-    private function clearConfigurations()
+    private function clearConfigurations(): void
     {
         $cmp = new Components($this->getClient());
         try {
             $cmp->deleteConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
     }
 
-    private function createBuckets()
+    private function createBuckets(): void
     {
         $this->clearBuckets();
         // Create buckets
@@ -65,7 +64,7 @@ class RunnerTest extends BaseRunnerTest
         $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'snowflake');
     }
 
-    private function clearFiles()
+    private function clearFiles(): void
     {
         // remove uploaded files
         $options = new ListFilesOptions();
@@ -84,7 +83,7 @@ class RunnerTest extends BaseRunnerTest
      * @param array $state
      * @return JobDefinition[]
      */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
+    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state): array
     {
         $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
         return [$jobDefinition];
@@ -95,7 +94,7 @@ class RunnerTest extends BaseRunnerTest
      * @param $metadata
      * @return array
      */
-    private function getMetadataValues($metadata)
+    private function getMetadataValues($metadata): array
     {
         $result = [];
         foreach ($metadata as $item) {
@@ -104,9 +103,9 @@ class RunnerTest extends BaseRunnerTest
         return $result;
     }
 
-    public function testGetOauthUrl()
+    public function testGetOauthUrl(): void
     {
-        $clientMock = self::getMockBuilder(Client::class)
+        $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
@@ -134,7 +133,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals($response, 'https://someurl');
     }
 
-    public function testRunnerProcessors()
+    public function testRunnerProcessors(): void
     {
         $this->clearBuckets();
         $this->clearFiles();
@@ -180,7 +179,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = self::getMockBuilder(Client::class)
+        $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
@@ -361,7 +360,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
     }
 
-    public function testRunnerProcessorsSyncAction()
+    public function testRunnerProcessorsSyncAction(): void
     {
         $this->clearBuckets();
         $this->clearFiles();
@@ -377,7 +376,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = self::getMockBuilder(Client::class)
+        $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
@@ -487,7 +486,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
     }
 
-    public function testImageParametersDecrypt()
+    public function testImageParametersDecrypt(): void
     {
         $configurationData = [
            'parameters' => [
@@ -502,7 +501,7 @@ class RunnerTest extends BaseRunnerTest
                ],
            ],
         ];
-        $encrypted = $this->getEncryptorFactory()->getEncryptor()->encrypt('someString');
+        $encrypted = $this->getEncryptor()->encryptForComponent('someString', 'keboola.docker-demo-sync');
 
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -562,7 +561,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testClearStateWithNamespace()
+    public function testClearStateWithNamespace(): void
     {
         $this->clearConfigurations();
         $state = [StateFile::NAMESPACE_COMPONENT => ['key' => 'value']];
@@ -614,7 +613,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorDefaultBucketWithDot()
+    public function testExecutorDefaultBucketWithDot(): void
     {
         $this->createBuckets();
         $temp = new Temp();
@@ -680,7 +679,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
     }
 
-    public function testExecutorStoreState()
+    public function testExecutorStoreState(): void
     {
         $this->clearConfigurations();
         $component = new Components($this->getClient());
@@ -739,7 +738,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateEncryptsValue()
+    public function testExecutorStoreStateEncryptsValue(): void
     {
         $this->clearConfigurations();
         $component = new Components($this->getClient());
@@ -791,12 +790,17 @@ class RunnerTest extends BaseRunnerTest
         self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state'][StateFile::NAMESPACE_COMPONENT]['#encrypted']);
         self::assertEquals(
             'secret',
-            $this->getEncryptorFactory()->getEncryptor()->decrypt($configuration['state'][StateFile::NAMESPACE_COMPONENT]['#encrypted'])
+            $this->getEncryptor()->decryptForConfiguration(
+                $configuration['state'][StateFile::NAMESPACE_COMPONENT]['#encrypted'],
+                'keboola.docker-demo-sync',
+                $this->getProjectId(),
+                'runner-configuration'
+            )
         );
         $this->clearConfigurations();
     }
 
-    public function testExecutorReadNamespacedState()
+    public function testExecutorReadNamespacedState(): void
     {
         $state = [StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']];
         $this->clearConfigurations();
@@ -848,7 +852,7 @@ class RunnerTest extends BaseRunnerTest
         $this->assertNotEmpty($outputs);
     }
 
-    public function testExecutorStoreStateWithProcessor()
+    public function testExecutorStoreStateWithProcessor(): void
     {
         $this->clearConfigurations();
         $component = new Components($this->getClient());
@@ -921,7 +925,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateRows()
+    public function testExecutorStoreStateRows(): void
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1024,7 +1028,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testSynchronousOutputMappingErrorsAreReported()
+    public function testSynchronousOutputMappingErrorsAreReported(): void
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1110,7 +1114,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testAsynchronousOutputMappingErrorsAreReported()
+    public function testAsynchronousOutputMappingErrorsAreReported(): void
     {
         $this->clearBuckets();
         $this->clearConfigurations();
@@ -1233,7 +1237,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorStoreStateWithProcessorError()
+    public function testExecutorStoreStateWithProcessorError(): void
     {
         $this->clearConfigurations();
         $runner = $this->getRunner();
@@ -1302,7 +1306,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
     }
 
-    public function testExecutorAfterProcessorNoState()
+    public function testExecutorAfterProcessorNoState(): void
     {
         $this->clearConfigurations();
         $components = [
@@ -1326,7 +1330,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ]
         ];
-        $clientMock = self::getMockBuilder(Client::class)
+        $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
@@ -1416,7 +1420,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
     }
 
-    public function testExecutorBeforeProcessorNoState()
+    public function testExecutorBeforeProcessorNoState(): void
     {
         $this->clearConfigurations();
         $components = [
@@ -1440,7 +1444,7 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = self::getMockBuilder(Client::class)
+        $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
                 'url' => STORAGE_API_URL,
                 'token' => STORAGE_API_TOKEN,
@@ -1530,7 +1534,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
     }
 
-    public function testExecutorNoStoreState()
+    public function testExecutorNoStoreState(): void
     {
         $this->clearConfigurations();
         $configData = [
@@ -1570,12 +1574,12 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $component = new Components($this->getClient());
-        self::expectException(ClientException::class);
+        $this->expectException(ClientException::class);
         self:$this->expectExceptionMessage('Configuration runner-configuration not found');
         $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 
-    public function testExecutorStateNoConfigId()
+    public function testExecutorStateNoConfigId(): void
     {
         $this->clearConfigurations();
         $componentData = [
@@ -1615,12 +1619,12 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $component = new Components($this->getClient());
-        self::expectException(ClientException::class);
+        $this->expectException(ClientException::class);
         self:$this->expectExceptionMessage('Configuration runner-configuration not found');
         $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
     }
 
-    public function testExecutorNoConfigIdNoMetadata()
+    public function testExecutorNoConfigIdNoMetadata(): void
     {
         $this->clearConfigurations();
         $componentData = [
@@ -1677,7 +1681,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
     }
 
-    public function testExecutorInvalidConfiguration()
+    public function testExecutorInvalidConfiguration(): void
     {
         $configurationData = [
             'storage' => [
@@ -1707,8 +1711,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Unrecognized option "filterByRunId');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Unrecognized option "filterByRunId');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
@@ -1727,7 +1731,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorDefaultBucketNoStage()
+    public function testExecutorDefaultBucketNoStage(): void
     {
         $this->createBuckets();
         $temp = new Temp();
@@ -1790,7 +1794,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
     }
 
-    public function testExecutorSyncActionNoStorage()
+    public function testExecutorSyncActionNoStorage(): void
     {
         $this->createBuckets();
         $temp = new Temp();
@@ -1830,8 +1834,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        self::expectException(UserException::class);
-        self::expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
@@ -1850,7 +1854,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorNoStorage()
+    public function testExecutorNoStorage(): void
     {
         $this->createBuckets();
         $temp = new Temp();
@@ -1893,8 +1897,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        self::expectException(UserException::class);
-        self::expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions(
@@ -1913,7 +1917,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorApplicationError()
+    public function testExecutorApplicationError(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -1965,7 +1969,7 @@ class RunnerTest extends BaseRunnerTest
         }
     }
 
-    public function testExecutorUserError()
+    public function testExecutorUserError(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -1986,8 +1990,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Class 1 error');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Class 1 error');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
@@ -2001,7 +2005,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorApplicationErrorDisabled()
+    public function testExecutorApplicationErrorDisabled(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2025,8 +2029,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Class 2 error');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Class 2 error');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
@@ -2040,7 +2044,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorApplicationErrorDisabledButStillError()
+    public function testExecutorApplicationErrorDisabledButStillError(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2065,8 +2069,8 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
 
-        self::expectException(ApplicationException::class);
-        self::expectExceptionMessage('Component definition is invalid');
+        $this->expectException(ApplicationException::class);
+        $this->expectExceptionMessage('Component definition is invalid');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
@@ -2080,7 +2084,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorInvalidInputMapping()
+    public function testExecutorInvalidInputMapping(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2113,8 +2117,8 @@ class RunnerTest extends BaseRunnerTest
             ]
         ];
         $runner = $this->getRunner();
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
@@ -2128,7 +2132,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorInvalidInputMapping2()
+    public function testExecutorInvalidInputMapping2(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2170,8 +2174,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
@@ -2185,7 +2189,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorSlicedFilesWithComponentRootUserFeature()
+    public function testExecutorSlicedFilesWithComponentRootUserFeature(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2259,7 +2263,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorSlicedFilesWithoutComponentRootUserFeature()
+    public function testExecutorSlicedFilesWithoutComponentRootUserFeature(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2316,7 +2320,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
     }
 
-    public function testAuthorizationDecrypt()
+    public function testAuthorizationDecrypt(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2380,7 +2384,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('anotherFoo', $config['authorization']['oauth_api']['credentials']['four']);
     }
 
-    public function testTokenObfuscate()
+    public function testTokenObfuscate(): void
     {
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -2427,7 +2431,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertStringContainsString('[hidden]', $output);
     }
 
-    public function testExecutorStoreUsage()
+    public function testExecutorStoreUsage(): void
     {
         $this->clearConfigurations();
         $usageFile = new TestUsageFile();
@@ -2467,7 +2471,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function testExecutorStoreRowsUsage()
+    public function testExecutorStoreRowsUsage(): void
     {
         $this->clearConfigurations();
         $usageFile = new TestUsageFile();
@@ -2539,7 +2543,7 @@ class RunnerTest extends BaseRunnerTest
     /**
      * @dataProvider swapFeatureProvider
      */
-    public function testExecutorSwap($features)
+    public function testExecutorSwap($features): void
     {
         $this->clearConfigurations();
         $usageFile = new NullUsageFile();
@@ -2572,7 +2576,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals("Script file /data/script.py\nScript finished", $outputs[0]->getProcessOutput());
     }
 
-    public function testRunAdaptiveInputMapping()
+    public function testRunAdaptiveInputMapping(): void
     {
         $this->createBuckets();
         $this->clearConfigurations();
@@ -2726,7 +2730,7 @@ class RunnerTest extends BaseRunnerTest
         );
     }
 
-    public function swapFeatureProvider()
+    public function swapFeatureProvider(): array
     {
         return [
             [["no-swap"]],
@@ -2734,7 +2738,7 @@ class RunnerTest extends BaseRunnerTest
         ];
     }
 
-    public function testWorkspaceMapping()
+    public function testWorkspaceMapping(): void
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -2818,7 +2822,7 @@ class RunnerTest extends BaseRunnerTest
         $components->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
 
-    public function testWorkspaceMappingCleanupComponentError()
+    public function testWorkspaceMappingCleanupComponentError(): void
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -2987,7 +2991,7 @@ class RunnerTest extends BaseRunnerTest
         }
     }
 
-    public function testS3StagingMapping()
+    public function testS3StagingMapping(): void
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -3071,7 +3075,7 @@ class RunnerTest extends BaseRunnerTest
         $components->deleteConfiguration('keboola.runner-staging-test', $configId);
     }
 
-    public function testStorageFilesOutputProcessed()
+    public function testStorageFilesOutputProcessed(): void
     {
         $this->clearFiles();
         // create the file for the input file processing test
@@ -3160,7 +3164,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $inputFileList);
     }
 
-    public function testOutputTablesAsFiles()
+    public function testOutputTablesAsFiles(): void
     {
         $this->clearFiles();
         $this->clearBuckets();
@@ -3242,7 +3246,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 
-    public function testOutputTablesAsFilesWithMissingTableFiles()
+    public function testOutputTablesAsFilesWithMissingTableFiles(): void
     {
         $this->clearFiles();
         $this->clearBuckets();

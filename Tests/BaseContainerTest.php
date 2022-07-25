@@ -5,12 +5,15 @@ namespace Keboola\DockerBundle\Tests;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\DockerBundle\Service\StorageApiService;
+use Keboola\ObjectEncryptor\EncryptorOptions;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
@@ -22,63 +25,31 @@ use Symfony\Component\Filesystem\Filesystem;
 
 abstract class BaseContainerTest extends TestCase
 {
-    /**
-     * @var ObjectEncryptorFactory
-     */
-    private $encryptorFactory;
+    private ObjectEncryptor $encryptor;
+    private Temp $temp;
+    private TestHandler $testHandler;
+    private TestHandler $containerTestHandler;
 
-    /**
-     * @var Temp
-     */
-    private $temp;
-
-    /**
-     * @var TestHandler
-     */
-    private $testHandler;
-
-    /**
-     * @var TestHandler
-     */
-    private $containerTestHandler;
-
-    /**
-     * @var null|callable
-     */
+    /** @var null|callable */
     private $createEventCallback;
 
-    /**
-     * @var null|LoggersService
-     */
-    private $logService;
-
-    /**
-     * @var null|StorageApiService
-     */
-    private $storageServiceStub;
-
-    /**
-     * @var array
-     */
-    private $componentConfig;
-
-    /**
-     * @var Client
-     */
-    private $storageClientStub;
+    private ?LoggersService $logService;
+    private ?StorageApiService $storageServiceStub;
+    private array $componentConfig;
+    private Client $storageClientStub;
 
     protected function setUp(): void
     {
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-        $this->encryptorFactory = new ObjectEncryptorFactory(
+        $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
+            parse_url(STORAGE_API_URL, PHP_URL_HOST),
             'alias/dummy-key',
             AWS_ECR_REGISTRY_REGION,
-            hash('sha256', uniqid()),
-            hash('sha256', uniqid()),
-            ''
-        );
+            null,
+            null,
+        ));
         $this->temp = new Temp('runner-tests');
         $this->temp->initRunFolder();
         $this->createEventCallback = null;
@@ -164,7 +135,7 @@ abstract class BaseContainerTest extends TestCase
         $this->storageClientStub->expects($this->any())
             ->method('createEvent')
             ->with($this->callback($this->createEventCallback));
-        $this->storageServiceStub = self::getMockBuilder(StorageApiService::class)
+        $this->storageServiceStub = $this->getMockBuilder(StorageApiService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->storageServiceStub->expects(self::any())
@@ -176,7 +147,7 @@ abstract class BaseContainerTest extends TestCase
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
         $image = ImageFactory::getImage(
-            $this->encryptorFactory->getEncryptor(),
+            new JobScopedEncryptor($this->encryptor, 'foo', 'bar', null),
             $log,
             new Component($imageConfig),
             $this->temp,

@@ -25,7 +25,7 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
@@ -40,7 +40,7 @@ class Runner
 
     const MODE_RUN = 'run';
 
-    private ObjectEncryptorFactory $encryptorFactory;
+    private ObjectEncryptor $encryptor;
     private ClientWrapper $clientWrapper;
     private Credentials $oauthClient3;
     private MlflowProjectResolver $mlflowProjectResolver;
@@ -52,7 +52,7 @@ class Runner
     private OutputFilterInterface $outputFilter;
 
     public function __construct(
-        ObjectEncryptorFactory $encryptorFactory,
+        ObjectEncryptor $encryptor,
         ClientWrapper $clientWrapper,
         LoggersService $loggersService,
         OutputFilterInterface $outputFilter,
@@ -62,7 +62,7 @@ class Runner
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
-        $this->encryptorFactory = $encryptorFactory;
+        $this->encryptor = $encryptor;
         $this->clientWrapper = $clientWrapper;
         $this->outputFilter = $outputFilter;
 
@@ -202,12 +202,20 @@ class Runner
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $usageFile->setDataDir($workingDirectory->getDataDir());
 
+        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $jobScopedEncryptor = new JobScopedEncryptor(
+            $this->encryptor,
+            $jobDefinition->getComponentId(),
+            $tokenInfo['owner']['id'],
+            $jobDefinition->getConfigId()
+        );
+
         $configData = $jobDefinition->getConfiguration();
-        $authorization = new Authorization($this->oauthClient3, $this->encryptorFactory->getEncryptor(), $component->getId());
-        $imageParameters = $this->encryptorFactory->getEncryptor()->decrypt($component->getImageParameters());
+        $authorization = new Authorization($this->oauthClient3, $jobScopedEncryptor, $component->getId());
+
         $configFile = new ConfigFile(
             $workingDirectory->getDataDir(),
-            $imageParameters,
+            $jobScopedEncryptor->decrypt($component->getImageParameters()),
             $authorization,
             $action,
             $component->getConfigurationFormat()
@@ -234,14 +242,15 @@ class Runner
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
             $this->clientWrapper,
-            $this->encryptorFactory,
+            $this->encryptor,
             $jobDefinition->getState(),
-            $component->getConfigurationFormat(),
-            $component->getId(),
-            $jobDefinition->getConfigId(),
+            (string) $component->getConfigurationFormat(),
+            (string) $component->getId(),
+            (string) $tokenInfo['owner']['id'],
+            $jobDefinition->getConfigId() ? (string) $jobDefinition->getConfigId() : null,
             $this->outputFilter,
             $this->loggersService->getLog(),
-            $jobDefinition->getRowId()
+            $jobDefinition->getRowId() ? (string) $jobDefinition->getRowId() : null,
         );
         $currentOutput->setStateFile($stateFile);
 
@@ -252,7 +261,7 @@ class Runner
         );
 
         $imageCreator = new ImageCreator(
-            $this->encryptorFactory->getEncryptor(),
+            $jobScopedEncryptor,
             $this->loggersService->getLog(),
             $this->clientWrapper->getBasicClient(),
             $component,

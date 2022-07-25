@@ -26,7 +26,7 @@ class QuayIORepositoryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());

@@ -2,20 +2,23 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\RequestException;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 
 class Authorization
 {
-    private ObjectEncryptor $encryptor;
     private Credentials $oauthClientV3;
+    private JobScopedEncryptor $encryptor;
     private string $componentId;
 
-    public function __construct(Credentials $clientV3, ObjectEncryptor $encryptor, string $componentId)
-    {
+    public function __construct(
+        Credentials $clientV3,
+        JobScopedEncryptor $encryptor,
+        string $componentId
+    ) {
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
         $this->oauthClientV3 = $clientV3;

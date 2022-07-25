@@ -33,9 +33,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->setRetryLimits(100, 100, 1);
-        self::expectException(LoginFailedException::class);
+        $this->expectException(LoginFailedException::class);
         $image->prepare([]);
     }
 
@@ -55,7 +55,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         $logger = new TestLogger();
-        $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->setRetryLimits(100, 100, 1);
         try {
             $image->prepare([]);
@@ -84,7 +84,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':latest', $image->getFullImageId());
         $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
@@ -111,7 +111,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             ],
         ]);
         /** @var AWSElasticContainerRegistry $image */
-        $image = ImageFactory::getImage($this->getEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         self::assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
     }
 
@@ -131,7 +131,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         ]);
         $testHandler = new TestHandler();
         $logger = new Logger('null', [$testHandler]);
-        $image = ImageFactory::getImage($this->getEncryptor(), $logger, $imageConfig, new Temp(), true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
 
         self::assertEquals(AWS_ECR_REGISTRY_URI . ':test-hash', $image->getFullImageId());
