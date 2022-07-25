@@ -381,7 +381,7 @@ class ContainerConfigurationTest extends TestCase
         ]);
     }
 
-    public function artifactsOrchestrationConfigurationData(): iterable
+    public function artifactsSharedConfigurationData(): iterable
     {
         yield 'empty configuration' => [
             [],
@@ -400,44 +400,44 @@ class ContainerConfigurationTest extends TestCase
     }
 
     /**
-     * @dataProvider artifactsOrchestrationConfigurationData
+     * @dataProvider artifactsSharedConfigurationData
      */
-    public function testArtifactsOrchestrationConfiguration(
-        array $orchestrationConfiguration,
-        array $expectedOrchestrationConfiguration
+    public function testArtifactsSharedConfiguration(
+        array $sharedConfiguration,
+        array $expectedSharedConfiguration
     ): void {
         $config = (new Configuration\Container())->parse([
             'config' => [
                 'artifacts' => [
-                    'orchestration' => $orchestrationConfiguration,
+                    'Shared' => $sharedConfiguration,
                 ],
             ],
         ]);
 
-        self::assertSame($expectedOrchestrationConfiguration, $config['artifacts']['orchestration']);
+        self::assertSame($expectedSharedConfiguration, $config['artifacts']['shared']);
     }
 
-    public function artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData(): iterable
+    public function artifactsSharedConfigurationThrowsErrorOnInvalidConfigData(): iterable
     {
         yield 'enabled - invalid enabled value' => [
             [
                 'enabled' => 'a',
             ],
-            'Invalid type for path "container.artifacts.orchestration.enabled". Expected "bool", but got "string".',
+            'Invalid type for path "container.artifacts.shared.enabled". Expected "bool", but got "string".',
         ];
         yield 'extrakeys' => [
             [
                 'foo' => 'bar',
             ],
-            'Unrecognized option "foo" under "container.artifacts.orchestration". Available option is "enabled".',
+            'Unrecognized option "foo" under "container.artifacts.shared". Available option is "enabled".',
         ];
     }
 
     /**
-     * @dataProvider artifactsOrchestrationConfigurationThrowsErrorOnInvalidConfigData
+     * @dataProvider artifactsSharedConfigurationThrowsErrorOnInvalidConfigData
      */
-    public function testArtifactsOrchestrationConfigurationThrowsErrorOnInvalidConfig(
-        array $orchestrationConfiguration,
+    public function testArtifactsSharedConfigurationThrowsErrorOnInvalidConfig(
+        array $sharedConfiguration,
         string $expecterErrorMessage
     ): void {
         $this->expectException(InvalidConfigurationException::class);
@@ -446,7 +446,7 @@ class ContainerConfigurationTest extends TestCase
         (new Configuration\Container())->parse([
             'config' => [
                 'artifacts' => [
-                    'orchestration' => $orchestrationConfiguration,
+                    'shared' => $sharedConfiguration,
                 ],
             ],
         ]);
@@ -656,7 +656,7 @@ class ContainerConfigurationTest extends TestCase
                             'component_id' => 'keboola.orchestrator',
                         ],
                     ],
-                    'orchestration' => [
+                    'shared' => [
                         'enabled' => true,
                     ],
                 ],
@@ -676,7 +676,7 @@ class ContainerConfigurationTest extends TestCase
                     'component_id' => 'keboola.orchestrator',
                 ],
             ],
-            'orchestration' => ['enabled' => true],
+            'shared' => ['enabled' => true],
         ], $config['artifacts']);
     }
 }
