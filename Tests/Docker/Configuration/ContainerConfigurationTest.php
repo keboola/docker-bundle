@@ -409,7 +409,7 @@ class ContainerConfigurationTest extends TestCase
         $config = (new Configuration\Container())->parse([
             'config' => [
                 'artifacts' => [
-                    'Shared' => $sharedConfiguration,
+                    'shared' => $sharedConfiguration,
                 ],
             ],
         ]);
