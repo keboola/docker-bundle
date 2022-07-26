@@ -200,7 +200,7 @@ class Container extends Configuration
                         ->end()
                     ->end()
                 ->end()
-                ->arrayNode('orchestration')
+                ->arrayNode('shared')
                     ->children()
                         ->booleanNode('enabled')->defaultFalse()->end()
                     ->end()

@@ -1116,6 +1116,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testAsynchronousOutputMappingErrorsAreReported(): void
     {
+        // https://keboola.slack.com/archives/CFVRE56UA/p1658815231303589
+        $this->markTestSkipped('Skipped due to connection bug');
         $this->clearBuckets();
         $this->clearConfigurations();
         $component = new Components($this->getClient());
