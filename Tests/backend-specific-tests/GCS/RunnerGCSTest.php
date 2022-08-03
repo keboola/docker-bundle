@@ -13,17 +13,12 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
-use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\Workspaces;
-use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 
 class RunnerGCSTest extends BaseRunnerTest
 {
     use BackendAssertsTrait;
-
-    private const TEST_FILE_TAG = 'gcs-workspace-runner-test';
 
     public function setUp(): void
     {
@@ -62,17 +57,6 @@ class RunnerGCSTest extends BaseRunnerTest
                 $workspacesApi->deleteWorkspace($workspace['id']);
             }
             $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configuration['id']);
-        }
-    }
-
-    private function clearFiles()
-    {
-        $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([
-            self::TEST_FILE_TAG,
-            "componentId: keboola.runner-workspace-abs-test",
-        ]));
-        foreach ($fileList as $file) {
-            $this->client->deleteFile($file['id']);
         }
     }
 
