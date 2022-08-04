@@ -1463,14 +1463,15 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'components/keboola.docker-demo-sync') {
+                if ($url === 'branch/default/components/keboola.docker-demo-sync') {
                     return $components[0];
-                } elseif ($url === 'components/keboola.processor-dumpy') {
+                } elseif ($url === 'branch/default/components/keboola.processor-dumpy') {
                     return $components[1];
                 } else {
                     return $this->client->apiGet($url, $filename);
                 }
-            });
+            })
+        ;
 
         $configData = [
             'parameters' => [
