@@ -196,13 +196,13 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'components/keboola.processor-last-file') {
+                if ($url === 'branch/default/components/keboola.processor-last-file') {
                     return $components[0];
-                } elseif ($url === 'components/keboola.processor-iconv') {
+                } elseif ($url === 'branch/default/components/keboola.processor-iconv') {
                     return $components[1];
-                } elseif ($url === 'components/keboola.processor-move-files') {
+                } elseif ($url === 'branch/default/components/keboola.processor-move-files') {
                     return $components[2];
-                } elseif ($url === 'components/keboola.processor-decompress') {
+                } elseif ($url === 'branch/default/components/keboola.processor-decompress') {
                     return $components[3];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -393,7 +393,7 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'components/keboola.processor-decompress') {
+                if ($url === 'branch/default/components/keboola.processor-decompress') {
                     return $components[0];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -1342,9 +1342,9 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'components/keboola.docker-demo-sync') {
+                if ($url === 'branch/default/components/keboola.docker-demo-sync') {
                     return $components[0];
-                } elseif ($url === 'components/keboola.processor-dumpy') {
+                } elseif ($url === 'branch/default/components/keboola.processor-dumpy') {
                     return $components[1];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -1463,14 +1463,15 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'components/keboola.docker-demo-sync') {
+                if ($url === 'branch/default/components/keboola.docker-demo-sync') {
                     return $components[0];
-                } elseif ($url === 'components/keboola.processor-dumpy') {
+                } elseif ($url === 'branch/default/components/keboola.processor-dumpy') {
                     return $components[1];
                 } else {
                     return $this->client->apiGet($url, $filename);
                 }
-            });
+            })
+        ;
 
         $configData = [
             'parameters' => [
