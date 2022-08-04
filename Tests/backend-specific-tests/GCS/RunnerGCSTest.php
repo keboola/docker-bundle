@@ -29,7 +29,7 @@ class RunnerGCSTest extends BaseRunnerTest
 
     private function clearBuckets()
     {
-        foreach (['in.c-snowlake-runner-test', 'out.c-snowlake-runner-test'] as $bucket) {
+        foreach (['in.c-snowflake-runner-test', 'out.c-snowflake-runner-test'] as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
