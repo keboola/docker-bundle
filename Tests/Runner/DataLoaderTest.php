@@ -488,7 +488,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
     }
 
-    public function testFixedTypeTableCreate()
+    public function testTypedTableCreate()
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -533,7 +533,9 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ];
-        $clientWrapper = new ClientWrapper(new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FIXED_TYPE));
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION)
+        );
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),

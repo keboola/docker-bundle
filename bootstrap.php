@@ -24,8 +24,11 @@ defined('STORAGE_API_TOKEN_MASTER')
 defined('STORAGE_API_TOKEN_READ_ONLY')
 || define('STORAGE_API_TOKEN_READ_ONLY', getenv('STORAGE_API_TOKEN_READ_ONLY') ?: 'read_only_your_token');
 
-defined('STORAGE_API_TOKEN_FIXED_TYPE')
-|| define('STORAGE_API_TOKEN_FIXED_TYPE', getenv('STORAGE_API_TOKEN_FIXED_TYPE') ?: 'fixed_type_your_token');
+defined('STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION')
+|| define(
+    'STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION',
+    getenv('STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION') ?: 'feature_tables_definition_token'
+);
 
 defined('STORAGE_API_URL_SYNAPSE')
 || define('STORAGE_API_URL_SYNAPSE', getenv('STORAGE_API_URL_SYNAPSE') ?: 'sapi_url');
