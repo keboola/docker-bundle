@@ -44,6 +44,8 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
+    private const TYPED_TABLES_FEATURE = 'tables-definition';
+
     private ClientWrapper $clientWrapper;
     private LoggerInterface $logger;
     private string $dataDirectory;
@@ -56,7 +58,7 @@ class DataLoader implements DataLoaderInterface
     private OutputFilterInterface $outputFilter;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
-    private array $tokenInfo;
+    private array $projectFeatures;
 
     /**
      * DataLoader constructor.
@@ -102,7 +104,8 @@ class DataLoader implements DataLoaderInterface
             $this->component->getConfigurationFormat()
         );
 
-        $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $this->projectFeatures = $tokenInfo['owner']['features'];
 
         /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
             we need the base dir here */
@@ -128,7 +131,7 @@ class DataLoader implements DataLoaderInterface
         );
         $inputProviderInitializer->initializeProviders(
             $this->getStagingStorageInput(),
-            $this->tokenInfo
+            $tokenInfo
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
@@ -138,7 +141,7 @@ class DataLoader implements DataLoaderInterface
         );
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
-            $this->tokenInfo
+            $tokenInfo
         );
     }
 
@@ -238,10 +241,7 @@ class DataLoader implements DataLoaderInterface
         }
 
         // Check whether or not we are creating typed tables
-        $createTypedTables = false;
-        if (in_array('tables-definition', $this->tokenInfo['owner']['features'], true)) {
-            $createTypedTables = true;
-        }
+        $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true);
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
