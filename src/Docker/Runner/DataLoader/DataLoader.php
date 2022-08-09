@@ -56,6 +56,7 @@ class DataLoader implements DataLoaderInterface
     private OutputFilterInterface $outputFilter;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
+    private array $tokenInfo;
 
     /**
      * DataLoader constructor.
@@ -101,7 +102,7 @@ class DataLoader implements DataLoaderInterface
             $this->component->getConfigurationFormat()
         );
 
-        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $this->tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
 
         /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
             we need the base dir here */
@@ -127,7 +128,7 @@ class DataLoader implements DataLoaderInterface
         );
         $inputProviderInitializer->initializeProviders(
             $this->getStagingStorageInput(),
-            $tokenInfo
+            $this->tokenInfo
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
@@ -137,7 +138,7 @@ class DataLoader implements DataLoaderInterface
         );
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
-            $tokenInfo
+            $this->tokenInfo
         );
     }
 
@@ -236,6 +237,11 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug("Default bucket " . $uploadTablesOptions["bucket"]);
         }
 
+        // Check whether or not we are creating typed tables
+        $createTypedTables = false;
+        if (in_array('tables-definition', $this->tokenInfo['owner']['features'], true)) {
+            $createTypedTables = true;
+        }
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
@@ -265,7 +271,8 @@ class DataLoader implements DataLoaderInterface
                 'data/out/tables/',
                 $uploadTablesOptions,
                 $tableSystemMetadata,
-                $this->getStagingStorageOutput()
+                $this->getStagingStorageOutput(),
+                $createTypedTables
             );
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
