@@ -3,6 +3,10 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
+use Keboola\Datatype\Definition\BaseType;
+use Keboola\Datatype\Definition\Common;
+use Keboola\Datatype\Definition\GenericStorage;
+use Keboola\Datatype\Definition\Snowflake;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -19,6 +23,8 @@ use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
+use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Psr\Log\NullLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -480,5 +486,87 @@ class DataLoaderTest extends BaseDataLoaderTest
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
         self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
+    }
+
+    public function testTypedTableCreate()
+    {
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            "1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02"
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
+                            'columns' => ['int', 'string', 'decimal', 'float', 'bool', 'date', 'timestamp'],
+                            // TODO: Enable this once https://keboola.atlassian.net/browse/KBC-2850 is fixed
+                            // 'primary_key' => ['int'],
+                            'column_metadata' => [
+                                'int' => (new GenericStorage('int', ['nullable' => false]))->toMetadata(),
+                                'string' => (new GenericStorage('varchar', ['length' => '17', 'nullable' => false]))->toMetadata(),
+                                'decimal' => (new GenericStorage('decimal', ['length' => '10.2']))->toMetadata(),
+                                'float' => (new GenericStorage('float'))->toMetadata(),
+                                'bool' => (new GenericStorage('bool'))->toMetadata(),
+                                'date' => (new GenericStorage('date'))->toMetadata(),
+                                'timestamp' => (new GenericStorage('timestamp'))->toMetadata(),
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION)
+        );
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000)
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable('in.c-docker-demo-testConfig.fixed-type-test');
+        self::assertTrue($tableDetails['isTyped']);
+
+        self::assertDataType($tableDetails['columnMetadata']['int'], Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDetails['columnMetadata']['string'], Snowflake::TYPE_VARCHAR);
+        self::assertDataType($tableDetails['columnMetadata']['decimal'], Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDetails['columnMetadata']['float'], Snowflake::TYPE_FLOAT);
+        self::assertDataType($tableDetails['columnMetadata']['bool'], Snowflake::TYPE_BOOLEAN);
+        self::assertDataType($tableDetails['columnMetadata']['date'], Snowflake::TYPE_DATE);
+        self::assertDataType($tableDetails['columnMetadata']['timestamp'], Snowflake::TYPE_TIMESTAMP_LTZ);
+    }
+
+    private static function assertDataType($metadata, $expectedType): void
+    {
+        foreach ($metadata as $metadatum) {
+            if ($metadatum['key'] === Common::KBC_METADATA_KEY_TYPE) {
+                self::assertSame($expectedType, $metadatum['value']);
+                return;
+            }
+        }
+        self::fail('Metadata key ' . Common::KBC_METADATA_KEY_TYPE . ' not found');
     }
 }
