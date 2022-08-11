@@ -242,8 +242,9 @@ class DataLoader implements DataLoaderInterface
         }
 
         // Check whether or not we are creating typed tables
-        $typedTablesFeatures = [self::TYPED_TABLES_FEATURE, self::NATIVE_TYPES_FEATURE];
-        $createTypedTables = count(array_intersect($this->projectFeatures, $typedTablesFeatures)) === 2;
+        $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true)
+            && in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
+
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
