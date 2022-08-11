@@ -44,7 +44,7 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private const TYPED_TABLES_FEATURE = 'tables-definition';
+    private const TYPED_TABLES_FEATURE = 'native-types';
 
     private ClientWrapper $clientWrapper;
     private LoggerInterface $logger;
