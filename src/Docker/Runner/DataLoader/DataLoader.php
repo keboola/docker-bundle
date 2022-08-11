@@ -44,7 +44,8 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private const TYPED_TABLES_FEATURE = 'native-types';
+    private const TYPED_TABLES_FEATURE = 'tables-definition';
+    private const NATIVE_TYPES_FEATURE = 'native-types';
 
     private ClientWrapper $clientWrapper;
     private LoggerInterface $logger;
@@ -241,7 +242,8 @@ class DataLoader implements DataLoaderInterface
         }
 
         // Check whether or not we are creating typed tables
-        $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true);
+        $typedTablesFeatures = [self::TYPED_TABLES_FEATURE, self::NATIVE_TYPES_FEATURE];
+        $createTypedTables = count(array_intersect($this->projectFeatures, $typedTablesFeatures)) === 2;
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
