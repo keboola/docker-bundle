@@ -534,7 +534,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         ];
         $clientWrapper = new ClientWrapper(
-            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_TABLES_DEFINITION)
+            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES)
         );
         $dataLoader = new DataLoader(
             $clientWrapper,
