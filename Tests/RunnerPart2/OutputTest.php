@@ -34,6 +34,7 @@ class OutputTest extends TestCase
         self::assertNull($output->getInputTableResult());
         self::assertNull($output->getDataLoader());
         self::assertNull($output->getTableQueue());
+        self::assertNull($output->getOutputTableResult());
         $output->setConfigVersion(null);
         self::assertNull($output->getConfigVersion());
     }
