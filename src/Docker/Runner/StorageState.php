@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\InputMapping\State\InputFileStateList;
@@ -7,11 +9,8 @@ use Keboola\InputMapping\Table\Result as InputTableResult;
 
 class StorageState
 {
-    /** @var InputTableResult */
-    private $inputTableResult;
-
-    /** @var InputFileStateList */
-    private $inputFileStateList;
+    private InputTableResult $inputTableResult;
+    private InputFileStateList $inputFileStateList;
 
     public function __construct(
         InputTableResult $inputTableResult,
@@ -21,18 +20,12 @@ class StorageState
         $this->inputFileStateList = $inputFileStateList;
     }
 
-    /**
-     * @return InputFileStateList
-     */
-    public function getInputFileStateList()
+    public function getInputFileStateList(): InputFileStateList
     {
         return $this->inputFileStateList;
     }
 
-    /**
-     * @return InputTableResult
-     */
-    public function getInputTableResult()
+    public function getInputTableResult(): InputTableResult
     {
         return $this->inputTableResult;
     }
