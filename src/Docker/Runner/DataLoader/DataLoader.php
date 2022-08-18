@@ -444,12 +444,12 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                try {
-                    // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
-                    if ($this->configId && $this->isReusableWorkspace($stagingProvider)) {
-                        continue;
-                    }
+                // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
+                if ($this->configId && $this->isReusableWorkspace($stagingProvider)) {
+                    continue;
+                }
 
+                try {
                     $stagingProvider->cleanup();
                     $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
@@ -464,7 +464,9 @@ class DataLoader implements DataLoaderInterface
 
     private function isReusableWorkspace(StagingProviderInterface $stagingProvider): bool
     {
-        return $stagingProvider->getStaging()->getType() === AbsWorkspaceStaging::getType()
-            || $stagingProvider->getStaging()->getType() === RedshiftWorkspaceStaging::getType();
+        return $this->getStagingStorageInput() === InputStrategyFactory::WORKSPACE_ABS ||
+            $this->getStagingStorageOutput() === InputStrategyFactory::WORKSPACE_ABS ||
+            $this->getStagingStorageInput() === InputStrategyFactory::WORKSPACE_REDSHIFT ||
+            $this->getStagingStorageOutput() === InputStrategyFactory::WORKSPACE_REDSHIFT;
     }
 }
