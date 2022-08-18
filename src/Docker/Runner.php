@@ -26,7 +26,6 @@ use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
@@ -401,24 +400,26 @@ class Runner
 
     private function waitForStorageJobs(array $outputs)
     {
-        $tableQueues = [];
+        /** @var Output[] $outputsWithTableQueue */
+        $outputsWithTableQueue = [];
         $taskCount = 0;
         try {
             foreach ($outputs as $output) {
                 /** @var Output $output */
                 if ($output->getTableQueue()) {
-                    $tableQueues[] = $output->getTableQueue();
+                    $outputsWithTableQueue[] = $output;
                     $taskCount += $output->getTableQueue()->getTaskCount();
                 }
             }
             $this->loggersService->getLog()->info(sprintf('Waiting for %s Storage jobs to finish.', $taskCount));
-            /** @var LoadTableQueue $tableQueue */
-            foreach ($tableQueues as $tableQueue) {
+            foreach ($outputsWithTableQueue as $output) {
                 try {
-                    $tableQueue->waitForAll();
+                    $output->getTableQueue()->waitForAll();
                 } catch (InvalidOutputException $e) {
                     throw new UserException('Failed to process output mapping: ' . $e->getMessage(), $e);
                 }
+
+                $output->setOutputTableResult($output->getTableQueue()->getTableResult());
             }
         } finally {
             foreach ($outputs as $output) {

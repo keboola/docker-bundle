@@ -6,6 +6,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
+use Keboola\OutputMapping\Table\Result as OutputTableResult;
 
 class Output
 {
@@ -36,8 +37,9 @@ class Output
     /** @var null|DataLoaderInterface */
     private $dataLoader;
 
-    /** @var null|InputTableResult */
-    private $inputTableResult;
+    private ?InputTableResult $inputTableResult = null;
+
+    private ?OutputTableResult $outputTableResult = null;
 
     private array $artifactsDownloaded = [];
 
@@ -174,5 +176,15 @@ class Output
     public function getArtifactsUploaded(): array
     {
         return $this->artifactsUploaded;
+    }
+
+    public function setOutputTableResult(OutputTableResult $outputTableResult): void
+    {
+        $this->outputTableResult = $outputTableResult;
+    }
+
+    public function getOutputTableResult(): ?OutputTableResult
+    {
+        return $this->outputTableResult;
     }
 }
