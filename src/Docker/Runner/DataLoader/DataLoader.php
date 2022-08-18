@@ -444,12 +444,12 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
-                if ($this->configId && $this->isReusableWorkspace($stagingProvider)) {
-                    continue;
-                }
-
                 try {
+                    // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
+                    if ($this->configId && $this->isReusableWorkspace($stagingProvider)) {
+                        continue;
+                    }
+
                     $stagingProvider->cleanup();
                     $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
