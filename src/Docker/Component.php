@@ -129,6 +129,14 @@ class Component
     /**
      * @return bool
      */
+    public function overideKeepalive60s()
+    {
+        return in_array('container-tcpkeepalive-60s-overide', $this->features);
+    }
+
+    /**
+     * @return bool
+     */
     public function blockBranchJobs()
     {
         return in_array('dev-branch-job-blocked', $this->features);
