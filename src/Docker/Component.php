@@ -129,6 +129,14 @@ class Component
     /**
      * @return bool
      */
+    public function overrideKeepalive60s()
+    {
+        return in_array('container-tcpkeepalive-60s-override', $this->features);
+    }
+
+    /**
+     * @return bool
+     */
     public function blockBranchJobs()
     {
         return in_array('dev-branch-job-blocked', $this->features);

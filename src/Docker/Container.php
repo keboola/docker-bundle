@@ -402,6 +402,7 @@ class Container
             . $labels
             . " --name " . escapeshellarg($containerId)
             . (!$this->getImage()->getSourceComponent()->runAsRoot() ? ' --user $(id -u):$(id -g)' : "")
+            . ($this->getImage()->getSourceComponent()->overrideKeepalive60s() ? ' --sysctl net.ipv4.tcp_keepalive_time=60' : "")
             . " " . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }
