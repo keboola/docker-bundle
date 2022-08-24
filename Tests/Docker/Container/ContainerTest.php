@@ -38,6 +38,14 @@ class ContainerTest extends BaseContainerTest
         self::assertEquals($expected, $container->getRunCommand('name'));
     }
 
+    public function testRunCommandWithKeepaliveOverrideUserFeature()
+    {
+        $imageConfiguration = $this->getImageConfiguration();
+        $imageConfiguration['features'] = ['container-tcpkeepalive-60s-override'];
+        $container = $this->getContainer($imageConfiguration, [], [], false);
+        self::assertStringContainsString(" --sysctl net.ipv4.tcp_keepalive_time=60", $container->getRunCommand('name'));
+    }
+
     public function testRunCommandContainerWithoutRootUserFeature()
     {
         $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
