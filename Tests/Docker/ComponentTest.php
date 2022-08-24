@@ -199,7 +199,7 @@ class ComponentTest extends TestCase
                 ],
             ],
             'features' => [
-                'container-root-user', 'dev-branch-configuration-unsafe', 'dev-branch-job-blocked', 'dev-mapping-allowed', 'container-tcpkeepalive-60s-overide'
+                'container-root-user', 'dev-branch-configuration-unsafe', 'dev-branch-job-blocked', 'dev-mapping-allowed', 'container-tcpkeepalive-60s-override'
             ],
         ];
         $component = new Component($componentData);
@@ -207,7 +207,7 @@ class ComponentTest extends TestCase
         self::assertTrue($component->allowBranchMapping());
         self::assertTrue($component->blockBranchJobs());
         self::assertTrue($component->branchConfigurationsAreUnsafe());
-        self::assertTrue($component->overideKeepalive60s());
+        self::assertTrue($component->overrideKeepalive60s());
     }
 
     public function testInvalidRepository()

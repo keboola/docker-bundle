@@ -129,9 +129,9 @@ class Component
     /**
      * @return bool
      */
-    public function overideKeepalive60s()
+    public function overrideKeepalive60s()
     {
-        return in_array('container-tcpkeepalive-60s-overide', $this->features);
+        return in_array('container-tcpkeepalive-60s-override', $this->features);
     }
 
     /**
