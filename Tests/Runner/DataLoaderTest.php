@@ -615,7 +615,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new OutputFilter(10000)
         );
         $dataLoader->cleanWorkspace();
-        $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
         self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));
+        $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
 }
