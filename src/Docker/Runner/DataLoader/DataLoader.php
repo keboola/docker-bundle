@@ -453,10 +453,8 @@ class DataLoader implements DataLoaderInterface
                     $stagingProvider->cleanup();
                     $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
-                    // ignore errors if the cleanup fails because the workspace is already gone
-                    if ($e->getStringCode() !== 'workspace.workspaceNotFound') {
-                        throw $e;
-                    }
+                    // ignore errors if the cleanup fails because we a) can't fix it b) should not break the job
+                    $this->logger->error('Failed to cleanup workspace: ' . $e->getMessage());
                 }
             }
         }

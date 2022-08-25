@@ -3,7 +3,6 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\Common;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
@@ -17,6 +16,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -26,6 +26,7 @@ use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Psr\Log\NullLogger;
+use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends BaseDataLoaderTest
@@ -568,5 +569,53 @@ class DataLoaderTest extends BaseDataLoaderTest
             }
         }
         self::fail('Metadata key ' . Common::KBC_METADATA_KEY_TYPE . ' not found');
+    }
+
+    public function testWorkspaceCleanupFailure(): void
+    {
+        $component = new Component([
+            'id' => 'keboola.runner-workspace-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
+                    'tag' => '1.6.2',
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ]);
+        $clientMock = $this->createMock(Client::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+
+        // exception is not thrown outside
+        $clientMock->expects(self::once())->method('apiPost')->willThrowException(
+            new ClientException('boo')
+        );
+
+        $clientWrapperMock = $this->createMock(ClientWrapper::class);
+        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClientIfAvailable')->willReturn($clientMock);
+
+        $configuration = new Configuration();
+        $configuration->setName('testWorkspaceCleanup');
+        $configuration->setComponentId('keboola.runner-workspace-test');
+        $configuration->setConfiguration([]);
+        $componentsApi = new Components($this->clientWrapper->getBasicClient());
+        $configId = $componentsApi->addConfiguration($configuration)['id'];
+
+        $logger = new TestLogger();
+        $dataLoader = new DataLoader(
+            $clientWrapperMock,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition([], $component, $configId),
+            new OutputFilter(10000)
+        );
+        $dataLoader->cleanWorkspace();
+        $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
+        self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));
     }
 }
