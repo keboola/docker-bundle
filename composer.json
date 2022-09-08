@@ -9,27 +9,27 @@
         }
     ],
     "require": {
+        "php": ">=7.4",
         "ext-json": "*",
-        "keboola/php-utils": "^2.3.1",
-        "keboola/oauth-v2-php-client": "^3.0",
+        "ext-zip": "*",
+        "keboola/artifacts": "^0.2.0",
+        "keboola/common-exceptions": "^1.0",
         "keboola/gelf-server": "^3.0",
         "keboola/input-mapping": "^16.1",
-        "keboola/output-mapping": "^19.0.0",
-        "keboola/staging-provider": "^5.1",
-        "keboola/storage-api-php-client-branch-wrapper": "^3.0",
-        "keboola/storage-api-client": "^13.4",
-        "symfony/validator": "^5.4",
-        "symfony/http-foundation": "^5.4",
-        "symfony/monolog-bridge": "^5.4",
-        "vkartaviy/retry": "^0.2",
+        "keboola/oauth-v2-php-client": "^3.0",
         "keboola/object-encryptor": "^2.0",
+        "keboola/output-mapping": "^19.0.0",
+        "keboola/php-utils": "^2.3.1",
+        "keboola/sandboxes-api-php-client": "^6.7",
+        "keboola/staging-provider": "^5.1",
+        "keboola/storage-api-client": "^13.4|^14.0",
+        "keboola/storage-api-php-client-branch-wrapper": "^3.0",
         "monolog/monolog": "^2.5",
         "mustache/mustache": "^2.13",
-        "keboola/common-exceptions": "^1.0",
-        "keboola/sandboxes-api-php-client": "^6.7",
-        "php": ">=7.4",
-        "ext-zip": "*",
-        "keboola/artifacts": "^0.1.0"
+        "symfony/http-foundation": "^5.4",
+        "symfony/monolog-bridge": "^5.4",
+        "symfony/validator": "^5.4",
+        "vkartaviy/retry": "^0.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.5",
@@ -50,6 +50,8 @@
         }
     },
     "config": {
+        "sort-packages": true,
+        "lock": false,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
