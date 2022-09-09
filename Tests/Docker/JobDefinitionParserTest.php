@@ -4,7 +4,6 @@ namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinitionParser;
-
 use Keboola\DockerBundle\Exception\UserException;
 use PHPUnit\Framework\TestCase;
 
@@ -492,6 +491,29 @@ class JobDefinitionParserTest extends TestCase
             'Processors may be set either in configuration or in configuration row, but not in both places'
         );
         $parser->parseConfig($this->getComponent(), $config);
+    }
+
+    public function testEmptyConfig(): void
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 3,
+            'state' => null,
+            'configuration' => null,
+            'rows' => [],
+        ];
+
+        $parser = new JobDefinitionParser();
+        $parser->parseConfig($this->getComponent(), $config);
+        self::assertSame(
+            [
+                'shared_code_row_ids' => [],
+                'storage' => [],
+                'processors' => [],
+                'parameters' => [],
+            ],
+            $parser->getJobDefinitions()[0]->getConfiguration()
+        );
     }
 
     public function testMultiRowConfigurationWithInvalidProcessors2()

@@ -31,7 +31,7 @@ class JobDefinitionParser
         $this->validateConfig($component, $config);
         $this->jobDefinitions = [];
         if (count($config['rows']) == 0) {
-            $jobDefinition = new JobDefinition($config['configuration'], $component, $config['id'], $config['version'], $config['state']);
+            $jobDefinition = new JobDefinition($config['configuration'] ?? [], $component, $config['id'], $config['version'], $config['state'] ?? []);
             $this->jobDefinitions[] = $jobDefinition;
         } else {
             foreach ($config['rows'] as $row) {
