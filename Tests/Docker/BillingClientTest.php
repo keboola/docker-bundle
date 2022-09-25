@@ -110,6 +110,7 @@ class BillingClientTest extends TestCase
         $stack->push($history);
         $client = $this->getClient(['handler' => $stack]);
         $credits = $client->getRemainingCredits();
+        self::assertIsFloat($credits);
         self::assertEqualsWithDelta(123.43434343434, $credits, 0.0001);
         self::assertCount(1, $requestHistory);
         /** @var Request $request */
