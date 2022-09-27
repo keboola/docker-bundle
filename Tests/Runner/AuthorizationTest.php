@@ -10,7 +10,7 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\OAuthV2Api\Exception\RequestException;
+use Keboola\OAuthV2Api\Exception\ClientException;
 use Keboola\Temp\Temp;
 
 class AuthorizationTest extends BaseRunnerTest
@@ -187,7 +187,7 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
-            ->will(self::throwException(new RequestException('OAuth API error: No data found for api: keboola.docker-demo', 400)));
+            ->will(self::throwException(new ClientException('OAuth API error: No data found for api: keboola.docker-demo', 400)));
 
         $jobScopedEncryptor = new JobScopedEncryptor(
             $encryptor,
@@ -217,7 +217,7 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
-            ->will(self::throwException(new RequestException('Internal Server Error', 500)));
+            ->will(self::throwException(new ClientException('Internal Server Error', 500)));
 
         $jobScopedEncryptor = new JobScopedEncryptor(
             $encryptor,

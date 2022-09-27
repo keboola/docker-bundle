@@ -591,7 +591,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
 
         // exception is not thrown outside
-        $clientMock->expects(self::once())->method('apiPost')->willThrowException(
+        $clientMock->expects(self::once())->method('apiPostJson')->willThrowException(
             new ClientException('boo')
         );
 

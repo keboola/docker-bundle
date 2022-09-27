@@ -6,7 +6,7 @@ use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\OAuthV2Api\Credentials;
-use Keboola\OAuthV2Api\Exception\RequestException;
+use Keboola\OAuthV2Api\Exception\ClientException;
 
 class Authorization
 {
@@ -22,7 +22,6 @@ class Authorization
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
         $this->oauthClientV3 = $clientV3;
-        $this->oauthClientV3->enableReturnArrays(true);
     }
 
     public function getAuthorization($configData)
@@ -45,7 +44,7 @@ class Authorization
                     );
                     $decrypted = $this->encryptor->decrypt($credentials);
                     $data['oauth_api']['credentials'] = $decrypted;
-                } catch (RequestException $e) {
+                } catch (ClientException $e) {
                     if (($e->getCode() >= 400) && ($e->getCode() < 500)) {
                         throw new UserException($e->getMessage(), $e);
                     } else {
