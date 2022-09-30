@@ -14,9 +14,9 @@ use Symfony\Component\Process\Process;
 class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
-    private const CONNECT_TIMEOUT = 10;
-    private const CONNECT_RETRIES = 2;
-    private const TRANSFER_TIMEOUT = 120;
+    const CONNECT_TIMEOUT = 10;
+    const CONNECT_RETRIES = 2;
+    const TRANSFER_TIMEOUT = 120;
 
     public function __construct(Component $component, LoggerInterface $logger)
     {
