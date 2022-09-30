@@ -14,6 +14,9 @@ use Symfony\Component\Process\Process;
 class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
+    private const CONNECT_TIMEOUT = 10;
+    private const CONNECT_RETRIES = 2;
+    private const TRANSFER_TIMEOUT = 120;
 
     public function __construct(Component $component, LoggerInterface $logger)
     {
@@ -43,7 +46,10 @@ class AWSElasticContainerRegistry extends Image
     {
         $ecrClient = new EcrClient(array(
             'region' => $this->getAwsRegion(),
-            'version' => '2015-09-21'
+            'version' => '2015-09-21',
+            'retries' => self::CONNECT_RETRIES,
+            'connect_timeout' => self::CONNECT_TIMEOUT,
+            'timeout' => self::TRANSFER_TIMEOUT,
         ));
         /** @var Result $authorization */
         $authorization = null;
