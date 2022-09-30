@@ -15,7 +15,7 @@ class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
     const CONNECT_TIMEOUT = 10;
-    const CONNECT_RETRIES = 2;
+    const CONNECT_RETRIES = 0;
     const TRANSFER_TIMEOUT = 120;
 
     public function __construct(Component $component, LoggerInterface $logger)
