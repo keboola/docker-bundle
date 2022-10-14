@@ -669,7 +669,7 @@ class Runner
                                 $configId,
                                 $jobId,
                                 $orchestrationId
-                            ));
+                            ), $image->getConfigData());
                             $output->setArtifactsUploaded($uploadedArtifacts);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(

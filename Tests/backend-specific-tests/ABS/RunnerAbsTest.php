@@ -36,19 +36,6 @@ class RunnerAbsTest extends BaseRunnerTest
         $this->getClient()->createBucket('runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'snowflake');
     }
 
-    /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
-     * @return JobDefinition[]
-     */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
-        return [$jobDefinition];
-    }
-
     public function testAbsStagingMapping()
     {
         $this->clearBuckets();
