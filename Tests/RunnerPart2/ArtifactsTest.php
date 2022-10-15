@@ -222,8 +222,10 @@ class ArtifactsTest extends BaseRunnerTest
             $jobId
         ), 10);
 
+        usort($currentFiles, fn ($a, $b) => strcmp($a['name'], $b['name']));
+
         $currentFile = $currentFiles[0];
-        self::assertEquals('myartifact2', $currentFile['name']);
+        self::assertEquals('myartifact1', $currentFile['name']);
         self::assertContains('branchId-default', $currentFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $currentFile['tags']);
         self::assertContains('configId-' . $configId, $currentFile['tags']);
@@ -236,8 +238,10 @@ class ArtifactsTest extends BaseRunnerTest
             $orchestrationId
         ), 10);
 
+        usort($sharedFiles, fn ($a, $b) => strcmp($a['name'], $b['name']));
+
         $sharedFile = $sharedFiles[0];
-        self::assertEquals('myartifact2', $sharedFile['name']);
+        self::assertEquals('myartifact1', $sharedFile['name']);
         self::assertContains('branchId-default', $sharedFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $sharedFile['tags']);
         self::assertContains('configId-' . $configId, $sharedFile['tags']);
@@ -250,12 +254,12 @@ class ArtifactsTest extends BaseRunnerTest
         self::assertSame(
             [
                 'current' => [
-                    ['storageFileId' => $currentFiles[1]['id']],
                     ['storageFileId' => $currentFiles[0]['id']],
+                    ['storageFileId' => $currentFiles[1]['id']],
                 ],
                 'shared' => [
-                    ['storageFileId' => $sharedFiles[1]['id']],
                     ['storageFileId' => $sharedFiles[0]['id']],
+                    ['storageFileId' => $sharedFiles[1]['id']],
                 ],
             ],
             $output->getArtifactsUploaded()
