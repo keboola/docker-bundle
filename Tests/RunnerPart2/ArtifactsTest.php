@@ -251,19 +251,12 @@ class ArtifactsTest extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertSame(
-            [
-                'current' => [
-                    ['storageFileId' => $currentFiles[0]['id']],
-                    ['storageFileId' => $currentFiles[1]['id']],
-                ],
-                'shared' => [
-                    ['storageFileId' => $sharedFiles[0]['id']],
-                    ['storageFileId' => $sharedFiles[1]['id']],
-                ],
-            ],
-            $output->getArtifactsUploaded()
-        );
+        $uploadedResult = $output->getArtifactsUploaded();
+
+        self::assertContainsEquals(['storageFileId' => $currentFiles[0]['id']], $uploadedResult['current']);
+        self::assertContainsEquals(['storageFileId' => $currentFiles[1]['id']], $uploadedResult['current']);
+        self::assertContainsEquals(['storageFileId' => $sharedFiles[0]['id']], $uploadedResult['shared']);
+        self::assertContainsEquals(['storageFileId' => $sharedFiles[1]['id']], $uploadedResult['shared']);
     }
 
     public function testArtifactsUploadEmpty()
