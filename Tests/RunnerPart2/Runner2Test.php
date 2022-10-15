@@ -2,8 +2,6 @@
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;

@@ -212,7 +212,7 @@ class ArtifactsTest extends BaseRunnerTest
         $orchestrationId = (string) random_int(0, 999999);
 
         $outputs = $this->runRunner($configuration, $jobId, $orchestrationId);
-        sleep(2);
+        sleep(3);
 
         // current
         $currentFiles = $this->listStorageFiles(sprintf(
