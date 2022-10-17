@@ -77,19 +77,6 @@ class RunnerTest extends BaseRunnerTest
     }
 
     /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
-     * @return JobDefinition[]
-     */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state): array
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
-        return [$jobDefinition];
-    }
-
-    /**
      * Transform metadata into a key-value array
      * @param $metadata
      * @return array

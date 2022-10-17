@@ -153,6 +153,13 @@ class Container extends Configuration
         $root->children()
             ->arrayNode('artifacts')
             ->children()
+                ->arrayNode('options')
+                    ->children()
+                        ->booleanNode('zip')
+                            ->defaultTrue()
+                        ->end()
+                    ->end()
+                ->end()
                 ->arrayNode('runs')
                     ->validate()
                         ->ifTrue(function ($v) {

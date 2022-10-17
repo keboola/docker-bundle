@@ -77,19 +77,6 @@ class RunnerTeradataTest extends BaseRunnerTest
         $this->getClient()->createBucket('teradata-runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'teradata');
     }
 
-    /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
-     * @return JobDefinition[]
-     */
-    private function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
-        return [$jobDefinition];
-    }
-
     public function testWorkspaceSynapseMapping()
     {
         $this->clearBuckets();
