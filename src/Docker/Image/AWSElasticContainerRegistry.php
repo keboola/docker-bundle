@@ -102,7 +102,6 @@ class AWSElasticContainerRegistry extends Image
                 "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
                 "&& docker logout " . $this->getLogoutParams()
             );
-
         $process = Process::fromShellCommandline($command);
         $process->setTimeout(3600);
         try {
