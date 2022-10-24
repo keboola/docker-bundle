@@ -29,6 +29,7 @@ class Container extends Configuration
                             ->addDefaultsIfNotSet()
                             ->children()
                                 ->scalarNode('type')->end()
+                                ->scalarNode('context')->end()
                             ->end()
                         ->end()
                     ->end()

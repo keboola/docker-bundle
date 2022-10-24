@@ -173,6 +173,7 @@ class ContainerConfigurationTest extends TestCase
                     'image_tag' => '12.7.0',
                     'backend' => [
                         'type' => 'foo',
+                        'context' => 'wml',
                     ]
                 ],
             ],
@@ -180,6 +181,7 @@ class ContainerConfigurationTest extends TestCase
 
         self::assertSame([
             'type' => 'foo',
+            'context' => 'wml',
         ], $config['runtime']['backend']);
     }
 
@@ -204,6 +206,7 @@ class ContainerConfigurationTest extends TestCase
                 'runtime' => [
                     'backend' => [
                         'type' => 'foo',
+                        'context' => 'wml',
                         'bar' => 'baz',
                     ]
                 ],
