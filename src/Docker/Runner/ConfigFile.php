@@ -53,6 +53,7 @@ class ConfigFile
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
         try {
+            $backendContext = $configData['runtime']['backend']['context'] ?? null;
             // remove runtime parameters and processors which are not supposed to be passed into the container
             unset($configData['runtime']);
             unset($configData['processors']);
@@ -68,6 +69,9 @@ class ConfigFile
             }
             if ($workspaceCredentials) {
                 $configData['authorization']['workspace'] = $workspaceCredentials;
+            }
+            if ($backendContext) {
+                $configData['authorization']['context'] = $backendContext;
             }
 
             // action

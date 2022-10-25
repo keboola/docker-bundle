@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Generator;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
@@ -13,7 +14,7 @@ use Keboola\Temp\Temp;
 
 class ConfigFileTest extends BaseRunnerTest
 {
-    private function getAuthorization()
+    private function getAuthorization(): Authorization
     {
         $oauthClientStub = $this->getMockBuilder(Credentials::class)
             ->disableOriginalConstructor()
@@ -30,7 +31,7 @@ class ConfigFileTest extends BaseRunnerTest
         return new Authorization($oauthClientStub, $jobScopedEncryptor, 'dummy-component');
     }
 
-    public function testConfig()
+    public function testConfig(): void
     {
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
@@ -61,7 +62,7 @@ SAMPLE;
         self::assertEquals($sampleData, $data);
     }
 
-    public function testInvalidConfig()
+    public function testInvalidConfig(): void
     {
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
@@ -70,7 +71,16 @@ SAMPLE;
         $config->createConfigFile(['key1' => 'value1'], new OutputFilter(10000), []);
     }
 
-    public function testDefinitionParameters()
+    public function definitionParametersData(): Generator
+    {
+        yield 'no context' => [null];
+        yield 'backend context' => ['wlm'];
+    }
+
+    /**
+     * @dataProvider definitionParametersData
+     */
+    public function testDefinitionParameters(?string $expectedAuthContext): void
     {
         $imageConfig = [
             'definition' => [
@@ -94,6 +104,10 @@ SAMPLE;
             ]
         ];
 
+        if ($expectedAuthContext) {
+            $configData['runtime']['backend']['context'] = $expectedAuthContext;
+        }
+
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter(10000), []);
@@ -105,9 +119,17 @@ SAMPLE;
         // volatile parameters must not get stored
         self::assertArrayNotHasKey('foo', $config['parameters']);
         self::assertArrayNotHasKey('baz', $config['parameters']);
+        self::assertArrayNotHasKey('context', $config['authorization']);
+
+        if ($expectedAuthContext) {
+            self::assertArrayHasKey('context', $config['authorization']);
+            self::assertSame($expectedAuthContext, $config['authorization']['context']);
+        } else {
+            self::assertArrayNotHasKey('context', $config['authorization']);
+        }
     }
 
-    public function testEmptyConfig()
+    public function testEmptyConfig(): void
     {
         $imageConfig = [];
         $configData = [];
@@ -122,12 +144,33 @@ SAMPLE;
         self::assertArrayHasKey('image_parameters', $config);
         self::assertArrayHasKey('action', $config);
         self::assertEquals('run', $config['action']);
+        self::assertArrayNotHasKey('context', $config['authorization']);
     }
 
-    public function testWorkspaceConfig()
+    public function workspaceConfigData(): Generator
+    {
+        yield 'empty config data' => [
+            [],
+            null
+        ];
+        yield 'backend context' => [
+            [
+                'runtime' => [
+                    'backend' => [
+                        'context' => 'wlm',
+                    ],
+                ],
+            ],
+            'wlm',
+        ];
+    }
+
+    /**
+     * @dataProvider workspaceConfigData
+     */
+    public function testWorkspaceConfig(array $configData, ?string $expectedAuthContext): void
     {
         $imageConfig = [];
-        $configData = [];
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter(10000), ['host' => 'foo', 'user' => 'bar']);
@@ -138,7 +181,14 @@ SAMPLE;
         self::assertArrayHasKey('parameters', $config);
         self::assertArrayHasKey('image_parameters', $config);
         self::assertArrayHasKey('action', $config);
-        self::assertEquals('run', $config['action']);
-        self::assertEquals(['host' => 'foo', 'user' => 'bar'], $config['authorization']['workspace']);
+        self::assertSame('run', $config['action']);
+        self::assertSame(['host' => 'foo', 'user' => 'bar'], $config['authorization']['workspace']);
+
+        if ($expectedAuthContext) {
+            self::assertArrayHasKey('context', $config['authorization']);
+            self::assertSame($expectedAuthContext, $config['authorization']['context']);
+        } else {
+            self::assertArrayNotHasKey('context', $config['authorization']);
+        }
     }
 }
