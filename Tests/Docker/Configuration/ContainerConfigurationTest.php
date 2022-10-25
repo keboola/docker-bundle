@@ -57,7 +57,8 @@ class ContainerConfigurationTest extends TestCase
                                 "key" => "val"
                             ]
                         ]
-                    ]
+                    ],
+                    'context' => 'wlm',
                 ],
                 "processors" => [
                     "before" => [
@@ -132,7 +133,8 @@ class ContainerConfigurationTest extends TestCase
                         "container" => 'my-container',
                         "connectionString" => 'aVeryLongString',
                         "account" => 'test'
-                    ]
+                    ],
+                    'context' => 'wlm',
                 ],
                 "processors" => [
                     "before" => [

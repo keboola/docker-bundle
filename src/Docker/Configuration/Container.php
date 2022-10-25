@@ -113,6 +113,7 @@ class Container extends Configuration
                         ->scalarNode("account")->end()
                     ->end()
                 ->end()
+                ->scalarNode("context")->end()
             ->end()
         ->end();
 
