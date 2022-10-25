@@ -119,7 +119,6 @@ SAMPLE;
         // volatile parameters must not get stored
         self::assertArrayNotHasKey('foo', $config['parameters']);
         self::assertArrayNotHasKey('baz', $config['parameters']);
-        self::assertArrayNotHasKey('context', $config['authorization']);
 
         if ($expectedAuthContext) {
             self::assertArrayHasKey('context', $config['authorization']);
