@@ -250,7 +250,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
+        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
         self::assertNotNull($dataLoader->getWorkspaceBackendSize());
     }
