@@ -214,7 +214,6 @@ class Runner
 
         $configFile = new ConfigFile(
             $workingDirectory->getDataDir(),
-            $jobScopedEncryptor->decrypt($component->getImageParameters()),
             $authorization,
             $action,
             $component->getConfigurationFormat()
@@ -302,7 +301,8 @@ class Runner
                 $artifacts,
                 $backendSize,
                 $storeState,
-                $orchestrationId
+                $orchestrationId,
+                $jobScopedEncryptor
             );
         } catch (\Exception $e) {
             $dataLoader->cleanWorkspace();
@@ -471,7 +471,8 @@ class Runner
         Artifacts $artifacts,
         ?string $backendSize,
         bool $storeState,
-        ?string $orchestrationId
+        ?string $orchestrationId,
+        JobScopedEncryptor $jobScopedEncryptor
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -494,7 +495,8 @@ class Runner
             $artifacts,
             $backendSize,
             $storeState,
-            $orchestrationId
+            $orchestrationId,
+            $jobScopedEncryptor
         );
         $output->setInputTableResult($storageState->getInputTableResult());
         $output->setInputFileStateList($storageState->getInputFileStateList());
@@ -549,7 +551,8 @@ class Runner
         Artifacts $artifacts,
         ?string $backendSize,
         bool $storeState,
-        ?string $orchestrationId
+        ?string $orchestrationId,
+        JobScopedEncryptor $jobScopedEncryptor
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -620,7 +623,12 @@ class Runner
                 'digests' => $image->getPrintableImageDigests()
             ];
             $output->setImages($imageDigests);
-            $configFile->createConfigFile($image->getConfigData(), $outputFilter, $dataLoader->getWorkspaceCredentials());
+            $configFile->createConfigFile(
+                $image->getConfigData(),
+                $outputFilter,
+                $dataLoader->getWorkspaceCredentials(),
+                $jobScopedEncryptor->decrypt($component->getImageParameters()),
+            );
 
             $containerIdParts = [
                 $jobId,

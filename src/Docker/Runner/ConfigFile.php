@@ -20,11 +20,6 @@ class ConfigFile
     private $format;
 
     /**
-     * @var array
-     */
-    private $imageParameters;
-
-    /**
      * @var Authorization
      */
     private $authorization;
@@ -36,19 +31,17 @@ class ConfigFile
 
     public function __construct(
         $dataDirectory,
-        array $imageParameters,
         Authorization $authorization,
         $action,
         $format
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->format = $format;
-        $this->imageParameters = $imageParameters;
         $this->authorization = $authorization;
         $this->action = $action;
     }
 
-    public function createConfigFile($configData, OutputFilterInterface $outputFilter, array $workspaceCredentials)
+    public function createConfigFile($configData, OutputFilterInterface $outputFilter, array $workspaceCredentials, array $imageParameters)
     {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
@@ -57,7 +50,7 @@ class ConfigFile
             unset($configData['runtime']);
             unset($configData['processors']);
 
-            $configData['image_parameters'] = $this->imageParameters;
+            $configData['image_parameters'] = $imageParameters;
             if (!empty($configData['authorization'])) {
                 $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
             } else {
