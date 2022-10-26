@@ -33,11 +33,12 @@ class ConfigFileTest extends BaseRunnerTest
     public function testConfig()
     {
         $temp = new Temp();
-        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile(
             ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
             new OutputFilter(10000),
-            []
+            [],
+            ['fooBar' => 'baz']
         );
         $data = file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json');
         $sampleData = <<<SAMPLE
@@ -64,10 +65,10 @@ SAMPLE;
     public function testInvalidConfig()
     {
         $temp = new Temp();
-        $config = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $this->getAuthorization(), 'run', 'json');
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Error in configuration: Unrecognized option');
-        $config->createConfigFile(['key1' => 'value1'], new OutputFilter(10000), []);
+        $config->createConfigFile(['key1' => 'value1'], new OutputFilter(10000), [], ['fooBar' => 'baz']);
     }
 
     public function testDefinitionParameters()
@@ -95,8 +96,8 @@ SAMPLE;
         ];
 
         $temp = new Temp();
-        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
-        $config->createConfigFile($configData, new OutputFilter(10000), []);
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+        $config->createConfigFile($configData, new OutputFilter(10000), [], $imageConfig);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         self::assertEquals('id', $config['parameters']['primary_key_column']);
@@ -112,8 +113,8 @@ SAMPLE;
         $imageConfig = [];
         $configData = [];
         $temp = new Temp();
-        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
-        $config->createConfigFile($configData, new OutputFilter(10000), []);
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+        $config->createConfigFile($configData, new OutputFilter(10000), [], $imageConfig);
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         self::assertArrayHasKey('storage', $config);
@@ -129,8 +130,13 @@ SAMPLE;
         $imageConfig = [];
         $configData = [];
         $temp = new Temp();
-        $config = new ConfigFile($temp->getTmpFolder(), $imageConfig, $this->getAuthorization(), 'run', 'json');
-        $config->createConfigFile($configData, new OutputFilter(10000), ['host' => 'foo', 'user' => 'bar']);
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+        $config->createConfigFile(
+            $configData,
+            new OutputFilter(10000),
+            ['host' => 'foo', 'user' => 'bar'],
+            $imageConfig
+        );
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 
         self::assertArrayHasKey('storage', $config);
