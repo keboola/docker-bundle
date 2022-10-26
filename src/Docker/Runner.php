@@ -627,7 +627,7 @@ class Runner
                 $image->getConfigData(),
                 $outputFilter,
                 $dataLoader->getWorkspaceCredentials(),
-                $jobScopedEncryptor->decrypt($component->getImageParameters()),
+                $jobScopedEncryptor->decrypt($image->getSourceComponent()->getImageParameters()),
             );
 
             $containerIdParts = [
