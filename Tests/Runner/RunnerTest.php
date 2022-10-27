@@ -360,6 +360,7 @@ class RunnerTest extends BaseRunnerTest
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
                         'tag' => '1.1.0',
                     ],
+                    'image_parameters' => ['foo' => 'bar']
                 ],
             ]
         ];
@@ -389,7 +390,7 @@ class RunnerTest extends BaseRunnerTest
 
         $configurationData = [
             'storage' => [],
-            'parameters' => ['operation' => 'dump-config', 'arbitrary' => ['bar' => 'Kochba']],
+            'parameters' => ['operation' => 'dump-config'],
             'processors' => [
                 'before' => [
                     [
@@ -398,7 +399,6 @@ class RunnerTest extends BaseRunnerTest
                         ],
                         'parameters' => [
                             'operation' => 'dump-config',
-                            'arbitrary' => ['foo' => 'bar'],
                         ],
                     ],
                 ],
@@ -412,6 +412,7 @@ class RunnerTest extends BaseRunnerTest
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
                     'tag' => '1.1.0',
                 ],
+                'image_parameters' => ['bar' => 'Kochba']
             ],
         ];
         $this->setClientMock($clientMock);
