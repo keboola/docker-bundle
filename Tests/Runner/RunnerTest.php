@@ -347,6 +347,109 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
     }
 
+    public function testProcessorsImageParameters(): void
+    {
+        $this->clearBuckets();
+        $this->clearFiles();
+        $components = [
+            [
+                'id' => 'keboola.runner-config-test',
+                'data' => [
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
+                        'tag' => '1.1.0',
+                    ],
+                    'image_parameters' => ['foo' => 'bar']
+                ],
+            ]
+        ];
+        $clientMock = $this->getMockBuilder(Client::class)
+            ->setConstructorArgs([[
+                'url' => STORAGE_API_URL,
+                'token' => STORAGE_API_TOKEN,
+            ]])
+            ->setMethods(['apiGet', 'getServiceUrl'])
+            ->getMock();
+        $clientMock
+            ->method('getServiceUrl')
+            ->withConsecutive(['sandboxes'], ['oauth'])
+            ->willReturnOnConsecutiveCalls(
+                'https://sandboxes.someurl',
+                'https://someurl'
+            );
+        $clientMock
+            ->method('apiGet')
+            ->willReturnCallback(function ($url, $filename) use ($components) {
+                if ($url === 'branch/default/components/keboola.runner-config-test') {
+                    return $components[0];
+                } else {
+                    return $this->client->apiGet($url, $filename);
+                }
+            });
+
+        $configurationData = [
+            'storage' => [],
+            'parameters' => ['operation' => 'dump-config'],
+            'processors' => [
+                'before' => [
+                    [
+                        'definition' => [
+                            'component' => 'keboola.runner-config-test',
+                        ],
+                        'parameters' => [
+                            'operation' => 'dump-config',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $componentData = [
+            'id' => 'keboola.runner-config-test',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
+                    'tag' => '1.1.0',
+                ],
+                'image_parameters' => ['bar' => 'Kochba']
+            ],
+        ];
+        $this->setClientMock($clientMock);
+        $runner = $this->getRunner();
+        $outputs = [];
+        $runner->run(
+            $this->prepareJobDefinitions(
+                $componentData,
+                uniqid('test-'),
+                $configurationData,
+                []
+            ),
+            'run',
+            'run',
+            '1234567',
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.runner-config-test:',
+            $outputs[0]->getImages()[0]['id']
+        );
+        self::assertStringStartsWith(
+            'developer-portal-v2/keboola.runner-config-test@sha256:',
+            $outputs[0]->getImages()[0]['digests'][0]
+        );
+
+        $records = $this->getContainerHandler()->getRecords();
+        self::assertContains('"foo": "bar"', $records[0]['message']);
+        self::assertContains('"bar": "Kochba"', $records[1]['message']);
+
+        $this->clearBuckets();
+        $this->clearFiles();
+    }
+
     public function testRunnerProcessorsSyncAction(): void
     {
         $this->clearBuckets();

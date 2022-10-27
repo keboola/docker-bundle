@@ -98,8 +98,8 @@ class AuthorizationTest extends BaseRunnerTest
         $temp = new Temp();
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
-        $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config, new OutputFilter(10000), []);
+        $configFile = new ConfigFile($temp->getTmpFolder(), $auth, 'run', 'json');
+        $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [
@@ -311,8 +311,8 @@ class AuthorizationTest extends BaseRunnerTest
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
-        $configFile = new ConfigFile($temp->getTmpFolder(), ['fooBar' => 'baz'], $auth, 'run', 'json');
-        $configFile->createConfigFile($config, new OutputFilter(10000), []);
+        $configFile = new ConfigFile($temp->getTmpFolder(), $auth, 'run', 'json');
+        $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
         $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
         $sampleData = [
             'authorization' => [

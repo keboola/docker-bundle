@@ -102,6 +102,7 @@ class Container extends Configuration
                 ->arrayNode("workspace")
                     ->children()
                         ->scalarNode("host")->end()
+                        ->scalarNode("account")->end()
                         ->scalarNode("warehouse")->end()
                         ->scalarNode("database")->end()
                         ->scalarNode("schema")->end()
