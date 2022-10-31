@@ -29,6 +29,7 @@ class Container extends Configuration
                             ->addDefaultsIfNotSet()
                             ->children()
                                 ->scalarNode('type')->end()
+                                ->scalarNode('context')->end()
                             ->end()
                         ->end()
                     ->end()
@@ -110,8 +111,10 @@ class Container extends Configuration
                         ->scalarNode("password")->end()
                         ->scalarNode("container")->end()
                         ->scalarNode("connectionString")->end()
+                        ->scalarNode("account")->end()
                     ->end()
                 ->end()
+                ->scalarNode("context")->end()
             ->end()
         ->end();
 

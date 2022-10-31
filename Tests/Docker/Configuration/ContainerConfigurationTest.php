@@ -57,7 +57,8 @@ class ContainerConfigurationTest extends TestCase
                                 "key" => "val"
                             ]
                         ]
-                    ]
+                    ],
+                    'context' => 'wlm',
                 ],
                 "processors" => [
                     "before" => [
@@ -130,8 +131,10 @@ class ContainerConfigurationTest extends TestCase
                 "authorization" => [
                     "workspace" => [
                         "container" => 'my-container',
-                        "connectionString" => 'aVeryLongString'
-                    ]
+                        "connectionString" => 'aVeryLongString',
+                        "account" => 'test'
+                    ],
+                    'context' => 'wlm',
                 ],
                 "processors" => [
                     "before" => [
@@ -173,6 +176,7 @@ class ContainerConfigurationTest extends TestCase
                     'image_tag' => '12.7.0',
                     'backend' => [
                         'type' => 'foo',
+                        'context' => 'wml',
                     ]
                 ],
             ],
@@ -180,6 +184,7 @@ class ContainerConfigurationTest extends TestCase
 
         self::assertSame([
             'type' => 'foo',
+            'context' => 'wml',
         ], $config['runtime']['backend']);
     }
 
@@ -204,6 +209,7 @@ class ContainerConfigurationTest extends TestCase
                 'runtime' => [
                     'backend' => [
                         'type' => 'foo',
+                        'context' => 'wml',
                         'bar' => 'baz',
                     ]
                 ],
