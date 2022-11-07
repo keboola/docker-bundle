@@ -15,7 +15,6 @@ use Psr\Log\LoggerInterface;
 
 class ImageCreator
 {
-    private JobScopedEncryptor $jobScopedEncryptor;
     private LoggerInterface $logger;
     private Client $storageClient;
     private Component $mainComponent;
@@ -26,13 +25,11 @@ class ImageCreator
     private Temp $temp;
 
     public function __construct(
-        JobScopedEncryptor $jobQueueEncryptor,
         LoggerInterface $logger,
         Client $storageClient,
         Component $mainComponent,
         array $componentConfig
     ) {
-        $this->jobScopedEncryptor = $jobQueueEncryptor;
         $this->logger = $logger;
         $this->mainComponent = $mainComponent;
         $this->storageClient = $storageClient;

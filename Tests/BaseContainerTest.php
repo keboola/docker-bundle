@@ -25,7 +25,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 abstract class BaseContainerTest extends TestCase
 {
-    private ObjectEncryptor $encryptor;
     private Temp $temp;
     private TestHandler $testHandler;
     private TestHandler $containerTestHandler;
@@ -43,13 +42,6 @@ abstract class BaseContainerTest extends TestCase
         parent::setUp();
         putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
         putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
-        $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(STORAGE_API_URL, PHP_URL_HOST),
-            'alias/dummy-key',
-            AWS_ECR_REGISTRY_REGION,
-            null,
-            null,
-        ));
         $this->temp = new Temp('runner-tests');
         $this->temp->initRunFolder();
         $this->createEventCallback = null;
