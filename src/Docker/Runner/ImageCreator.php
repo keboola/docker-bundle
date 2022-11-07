@@ -63,7 +63,7 @@ class ImageCreator
         foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->logger, $component,  false);
+            $image = ImageFactory::getImage($this->logger, $component, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
