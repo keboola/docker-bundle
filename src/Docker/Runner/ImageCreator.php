@@ -51,19 +51,19 @@ class ImageCreator
         foreach ($this->before as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->logger, $component, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $this->mainComponent, $this->temp, true);
+        $image = ImageFactory::getImage($this->logger, $this->mainComponent, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
         foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
+            $image = ImageFactory::getImage($this->logger, $component,  false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }

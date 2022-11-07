@@ -147,10 +147,8 @@ abstract class BaseContainerTest extends TestCase
         $containerLog = new ContainerLogger('container-tests', [$this->containerTestHandler]);
         $this->logService = new LoggersService($log, $containerLog, $sapiHandler);
         $image = ImageFactory::getImage(
-            new JobScopedEncryptor($this->encryptor, 'foo', 'bar', null),
             $log,
             new Component($imageConfig),
-            $this->temp,
             true
         );
         if ($prepare) {
