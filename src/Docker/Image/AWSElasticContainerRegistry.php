@@ -2,8 +2,10 @@
 
 namespace Keboola\DockerBundle\Docker\Image;
 
+use Aws\Credentials\CredentialProvider;
 use Aws\Ecr\EcrClient;
 use Aws\Result;
+use Aws\Sts\StsClient;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -44,12 +46,25 @@ class AWSElasticContainerRegistry extends Image
      */
     public function getLoginParams()
     {
+        $stsClient = new StsClient([
+            'region' => $this->getAwsRegion(),
+            'version' => '2011-06-15',
+            'retries' => self::CONNECT_RETRIES,
+            'connect_timeout' => self::CONNECT_TIMEOUT,
+            'timeout' => self::TRANSFER_TIMEOUT,
+            'credentials' => false,
+        ]);
+        $awsCredentials = CredentialProvider::defaultProvider([
+            'region' => $this->getAwsRegion(),
+            'stsClient' => $stsClient,
+        ]);
         $ecrClient = new EcrClient(array(
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21',
             'retries' => self::CONNECT_RETRIES,
             'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::TRANSFER_TIMEOUT,
+            'credentials' => $awsCredentials,
         ));
         /** @var Result $authorization */
         $authorization = null;
