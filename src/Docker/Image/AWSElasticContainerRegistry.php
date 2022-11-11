@@ -48,6 +48,7 @@ class AWSElasticContainerRegistry extends Image
     {
         $stsClient = new StsClient([
             'region' => $this->getAwsRegion(),
+            'version' => '2011-06-15',
             'retries' => self::CONNECT_RETRIES,
             'connect_timeout' => self::CONNECT_TIMEOUT,
             'timeout' => self::TRANSFER_TIMEOUT,
