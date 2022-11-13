@@ -76,6 +76,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                 throw $e;
             }
         }
+        try {
+            $component->deleteConfiguration('keboola.runner-config-test', 'runner-configuration');
+        } catch (ClientException $e) {
+            if ($e->getCode() != 404) {
+                throw $e;
+            }
+        }
     }
 
     public function tearDown(): void
@@ -599,12 +606,18 @@ class RunnerConfigRowsTest extends BaseRunnerTest
     {
         $component = new Components($this->getClient());
         $configuration = new Configuration();
-        $configuration->setComponentId('docker-demo');
+        $configuration->setComponentId('keboola.runner-config-test');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
         $component->addConfiguration($configuration);
 
         $configData = [
+            'parameters' => [
+                'operation' => 'create-state',
+                'arbitrary' => [
+                    'baz' => 'bar',
+                ],
+            ],
             'processors' => [
                 'after' => [
                     [
@@ -632,24 +645,15 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         $component->addConfigurationRow($configurationRow);
 
         $componentData = [
-            'id' => 'docker-demo',
+            'id' => 'keboola.runner-config-test',
             'type' => 'other',
             'name' => 'Docker State test',
             'description' => 'Testing Docker',
             'data' => [
                 'definition' => [
-                    'type' => 'builder',
-                    'uri' => 'keboola/docker-custom-php',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'quayio',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git',
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'echo "{\"baz\": \"bar\"}" > /data/out/state.json',
-                    ],
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
+                    'tag' => '1.2.0',
                 ],
             ],
         ];
@@ -669,7 +673,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             null
         );
 
-        $configuration = $component->getConfiguration('docker-demo', 'runner-configuration');
+        $configuration = $component->getConfiguration('keboola.runner-config-test', 'runner-configuration');
 
         self::assertEquals([], $configuration['state']);
         self::assertEquals(['baz' => 'bar'], $configuration['rows'][0]['state'][StateFile::NAMESPACE_COMPONENT]);
