@@ -50,8 +50,10 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2011-06-15',
             'retries' => self::CONNECT_RETRIES,
-            'connect_timeout' => self::CONNECT_TIMEOUT,
-            'timeout' => self::TRANSFER_TIMEOUT,
+            'http' => [
+                'connect_timeout' => self::CONNECT_TIMEOUT,
+                'timeout' => self::TRANSFER_TIMEOUT,
+            ],
             'credentials' => false,
         ]);
         $awsCredentials = CredentialProvider::defaultProvider([
@@ -62,8 +64,10 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21',
             'retries' => self::CONNECT_RETRIES,
-            'connect_timeout' => self::CONNECT_TIMEOUT,
-            'timeout' => self::TRANSFER_TIMEOUT,
+            'http' => [
+                'connect_timeout' => self::CONNECT_TIMEOUT,
+                'timeout' => self::TRANSFER_TIMEOUT,
+            ],
             'credentials' => $awsCredentials,
         ));
         /** @var Result $authorization */
