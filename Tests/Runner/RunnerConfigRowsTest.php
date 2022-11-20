@@ -653,7 +653,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
-                    'tag' => '1.2.0',
+                    'tag' => '1.2.1',
                 ],
             ],
         ];
