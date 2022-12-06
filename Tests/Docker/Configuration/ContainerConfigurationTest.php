@@ -132,7 +132,8 @@ class ContainerConfigurationTest extends TestCase
                     "workspace" => [
                         "container" => 'my-container',
                         "connectionString" => 'aVeryLongString',
-                        "account" => 'test'
+                        "account" => 'test',
+                        "credentials" => '{}'
                     ],
                     'context' => 'wlm',
                 ],
