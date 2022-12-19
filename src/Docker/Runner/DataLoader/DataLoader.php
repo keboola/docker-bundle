@@ -270,7 +270,6 @@ class DataLoader implements DataLoaderInterface
                 return null;
             }
             return $this->storeOutputTables($commonSystemMetadata, $isFailedJob);
-
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
         }
