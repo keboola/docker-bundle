@@ -303,7 +303,7 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function storeOutputTables($tableSystemMetadata, $isFailedJob): ?LoadTableQueue
+    private function storeOutputTables($tableSystemMetadata, $isFailedJob): LoadTableQueue
     {
         if ($this->clientWrapper->hasBranch()) {
             $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
@@ -329,7 +329,7 @@ class DataLoader implements DataLoaderInterface
         try {
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
-            $tableQueue = $tableWriter->uploadTables(
+            return $tableWriter->uploadTables(
                 'data/out/tables/',
                 $uploadTablesOptions,
                 $tableSystemMetadata,

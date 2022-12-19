@@ -31,7 +31,7 @@ class NullDataLoader implements DataLoaderInterface
         return new StorageState($result, new InputFileStateList([]));
     }
 
-    public function storeOutput($isFailedJob)
+    public function storeOutput($isFailedJob = false)
     {
         return null;
     }
