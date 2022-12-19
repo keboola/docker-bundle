@@ -195,31 +195,56 @@ class DataLoader implements DataLoaderInterface
         return new StorageState($inputTableResult, $resultInputFilesStateList);
     }
 
-    public function storeOutput(): ?LoadTableQueue
+    public function storeOutputOnFailure():LoadTableQueue
     {
-        $this->logger->debug("Storing results.");
+        $this->logger->debug("Storing results on error.");
         $outputTablesConfig = [];
-        $outputFilesConfig = [];
-        $outputTableFilesConfig = [];
-
         if (isset($this->storageConfig["output"]["tables"]) &&
             count($this->storageConfig["output"]["tables"])
         ) {
             $outputTablesConfig = $this->storageConfig["output"]["tables"];
         }
-        if (isset($this->storageConfig["output"]["files"]) &&
-            count($this->storageConfig["output"]["files"])
-        ) {
-            $outputFilesConfig = $this->storageConfig["output"]["files"];
-        }
-        if (isset($this->storageConfig["output"]["table_files"]) &&
-            count($this->storageConfig["output"]["table_files"])
-        ) {
-            $outputTableFilesConfig = $this->storageConfig["output"]["table_files"];
-        }
-        $this->logger->debug("Uploading output tables and files.");
-
         $uploadTablesOptions = ["mapping" => $outputTablesConfig];
+
+        $tableSystemMetadata = [
+            AbstractWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
+            AbstractWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
+        ];
+        if ($this->configRowId) {
+            $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
+        }
+        if ($this->clientWrapper->hasBranch()) {
+            $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+        }
+        // Get default bucket
+        if ($this->defaultBucketName) {
+            $uploadTablesOptions["bucket"] = $this->defaultBucketName;
+            $this->logger->debug("Default bucket " . $uploadTablesOptions["bucket"]);
+        }
+        // Check whether or not we are creating typed tables
+        $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true)
+            && in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
+
+        $tableWriter = new TableWriter($this->outputStrategyFactory);
+        $tableWriter->setFormat($this->component->getConfigurationFormat());
+        try {
+            $tableQueue = $tableWriter->uploadTables(
+                'data/out/tables/',
+                $uploadTablesOptions,
+                $tableSystemMetadata,
+                $this->getStagingStorageOutput(),
+                $createTypedTables,
+                true
+            );
+            return $tableQueue;
+        } catch (InvalidOutputException $ex) {
+            throw new UserException($ex->getMessage(), $ex);
+        }
+    }
+
+    public function storeOutput($isFailedJob = false): ?LoadTableQueue
+    {
+        $this->logger->debug("Uploading output tables and files.");
 
         $commonSystemMetadata = [
             AbstractWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
@@ -228,12 +253,62 @@ class DataLoader implements DataLoaderInterface
         if ($this->configRowId) {
             $commonSystemMetadata[AbstractWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
-        $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
+
+        try {
+            $this->storeOutputFiles(
+                $commonSystemMetadata,
+                (
+                    isset($this->storageConfig["output"]["files"]) &&
+                    count($this->storageConfig["output"]["files"])
+                ) ? $this->storageConfig["output"]["files"] : [],
+                (
+                    isset($this->storageConfig["output"]["table_files"]) &&
+                    count($this->storageConfig["output"]["table_files"])
+                ) ? $this->storageConfig["output"]["table_files"] : []
+            );
+            if ($this->useFileStorageOnly()) {
+                return null;
+            }
+            return $this->storeOutputTables($commonSystemMetadata, $isFailedJob);
+
+        } catch (InvalidOutputException $ex) {
+            throw new UserException($ex->getMessage(), $ex);
+        }
+    }
+
+    private function storeOutputFiles($fileSystemMetadata, $mappingConfig, $tableFilesConfig): void
+    {
+        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
+
+        $fileWriter = new FileWriter($this->outputStrategyFactory);
+        $fileWriter->setFormat($this->component->getConfigurationFormat());
+        $fileWriter->uploadFiles(
+            'data/out/files/',
+            ['mapping' => $mappingConfig],
+            $fileSystemMetadata,
+            $this->getStagingStorageOutput(),
+            []
+        );
+        if ($this->useFileStorageOnly()) {
+            $fileWriter->uploadFiles(
+                'data/out/tables/',
+                [],
+                $fileSystemMetadata,
+                $this->getStagingStorageOutput(),
+                $tableFilesConfig
+            );
+        }
+        if (isset($this->storageConfig["input"]["files"])) {
+            // tag input files
+            $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
+        }
+    }
+
+    private function storeOutputTables($tableSystemMetadata, $isFailedJob): ?LoadTableQueue
+    {
         if ($this->clientWrapper->hasBranch()) {
             $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
-
-        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -245,29 +320,14 @@ class DataLoader implements DataLoaderInterface
         $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true)
             && in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
 
+        $uploadTablesOptions = [
+            "mapping" => (
+                isset($this->storageConfig["output"]["tables"]) &&
+                count($this->storageConfig["output"]["tables"])
+            ) ? $this->storageConfig["output"]["tables"] : []
+        ];
+
         try {
-            $fileWriter = new FileWriter($this->outputStrategyFactory);
-            $fileWriter->setFormat($this->component->getConfigurationFormat());
-            $fileWriter->uploadFiles(
-                'data/out/files/',
-                ['mapping' => $outputFilesConfig],
-                $fileSystemMetadata,
-                $this->getStagingStorageOutput()
-            );
-            if ($this->useFileStorageOnly()) {
-                $fileWriter->uploadFiles(
-                    'data/out/tables/',
-                    [],
-                    $fileSystemMetadata,
-                    $this->getStagingStorageOutput(),
-                    $outputTableFilesConfig
-                );
-                if (isset($this->storageConfig["input"]["files"])) {
-                    // tag input files
-                    $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
-                }
-                return null;
-            }
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
@@ -275,13 +335,9 @@ class DataLoader implements DataLoaderInterface
                 $uploadTablesOptions,
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
-                $createTypedTables
+                $createTypedTables,
+                $isFailedJob
             );
-            if (isset($this->storageConfig["input"]["files"])) {
-                // tag input files
-                $fileWriter->tagFiles($this->storageConfig["input"]["files"]);
-            }
-            return $tableQueue;
         } catch (InvalidOutputException $ex) {
             throw new UserException($ex->getMessage(), $ex);
         }

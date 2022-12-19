@@ -32,7 +32,7 @@ interface DataLoaderInterface
     /**
      * @return LoadTableQueue|null
      */
-    public function storeOutput();
+    public function storeOutput($isFailedJob);
 
     public function storeDataArchive($fileName, array $tags);
 
