@@ -478,40 +478,50 @@ class Runner
         $workingDirectory->createWorkingDir();
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
-        $this->runImages(
-            $jobId,
-            $configId,
-            $rowId,
-            $component,
-            $usageFile,
-            $workingDirectory,
-            $imageCreator,
-            $configFile,
-            $stateFile,
-            $outputFilter,
-            $dataLoader,
-            $mode,
-            $output,
-            $artifacts,
-            $backendSize,
-            $storeState,
-            $orchestrationId,
-            $jobScopedEncryptor
-        );
-        $output->setInputTableResult($storageState->getInputTableResult());
-        $output->setInputFileStateList($storageState->getInputFileStateList());
-        $output->setDataLoader($dataLoader);
+        try {
+            $this->runImages(
+                $jobId,
+                $configId,
+                $rowId,
+                $component,
+                $usageFile,
+                $workingDirectory,
+                $imageCreator,
+                $configFile,
+                $stateFile,
+                $outputFilter,
+                $dataLoader,
+                $mode,
+                $output,
+                $artifacts,
+                $backendSize,
+                $storeState,
+                $orchestrationId,
+                $jobScopedEncryptor
+            );
+            $output->setInputTableResult($storageState->getInputTableResult());
+            $output->setInputFileStateList($storageState->getInputFileStateList());
+            $output->setDataLoader($dataLoader);
 
-        if ($mode === self::MODE_DEBUG) {
-            $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
-        } else {
-            $tableQueue = $dataLoader->storeOutput();
-            $output->setTableQueue($tableQueue);
+            if ($mode === self::MODE_DEBUG) {
+                $dataLoader->storeDataArchive('stage_output', [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]);
+            } else {
+                $tableQueue = $dataLoader->storeOutput();
+                $output->setTableQueue($tableQueue);
+            }
+
+            // finalize
+            $workingDirectory->dropWorkingDir();
+            return $output;
+        } catch (\Throwable $exception) {
+            if ($mode !== self::MODE_DEBUG) {
+                $tableQueue = $dataLoader->storeOutput(true);
+                $output->setTableQueue($tableQueue);
+                $output->setDataLoader($dataLoader);
+                $this->waitForStorageJobs([$output]);
+            }
+            throw $exception;
         }
-
-        // finalize
-        $workingDirectory->dropWorkingDir();
-        return $output;
     }
 
     /**

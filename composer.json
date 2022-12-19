@@ -18,7 +18,7 @@
         "keboola/input-mapping": "^16.1",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.0",
-        "keboola/output-mapping": "^19.0.0",
+        "keboola/output-mapping": "^19.3.1",
         "keboola/php-utils": "^2.3.1",
         "keboola/sandboxes-api-php-client": "^6.7",
         "keboola/staging-provider": "^5.1",
