@@ -304,8 +304,6 @@ class Runner
                 $orchestrationId,
                 $jobScopedEncryptor
             );
-        } catch (\Exception $e) {
-            throw $e;
         } finally {
             $dataLoader->cleanWorkspace();
         }
@@ -518,6 +516,8 @@ class Runner
             if ($mode !== self::MODE_DEBUG) {
                 $tableQueue = $dataLoader->storeOutput(true);
                 $output->setTableQueue($tableQueue);
+                $output->setDataLoader($dataLoader);
+                $this->waitForStorageJobs([$output]);
             }
             throw $exception;
         }

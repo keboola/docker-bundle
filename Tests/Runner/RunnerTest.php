@@ -3415,7 +3415,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('my_table.csv', $fileList[0]['name']);
     }
 
-    public function testOutputTablesOnJobFailure(): void
+    public function testOutputTablesOnJobFailureManifest(): void
     {
         $this->clearFiles();
         $this->clearBuckets();
@@ -3433,13 +3433,89 @@ class RunnerTest extends BaseRunnerTest
             'storage' => [
                 'output' => [
                     'files' => [],
+                    'tables' => [],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import csv',
+                    'import sys',
+                    'import json',
+                    'with open("out/tables/write-always.csv", mode="wt", encoding="utf-8") as out_file:',
+                    '    writer = csv.DictWriter(out_file, fieldnames=["col1", "col2"], lineterminator="\n", delimiter=",", quotechar=\'"\')',
+                    '    writer.writeheader()',
+                    '    writer.writerow({\'col1\': \'hello\', \'col2\': \'world\'})',
+                    'manifest = {"destination": "out.c-runner-test.write-always", "write_always": True}',
+                    'out_file = open("out/tables/write-always.csv.manifest", "w")',
+                    'json.dump(manifest, out_file, indent=2)',
+                    'out_file.close()',
+                    'print("Class 1 error", file=sys.stderr)',
+                    'sys.exit(1)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration',
+                    $configurationData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null
+            );
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Class 1 error',
+                $e->getMessage()
+            );
+        }
+
+        // table should not exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.write-on-success'));
+
+        // but the write-always table should exist
+        self::assertTrue($this->client->tableExists('out.c-runner-test.write-always'));
+    }
+
+    public function testOutputTablesOnJobFailureWorkspace(): void
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+
+        $componentData = [
+            'id' => 'keboola.snowflake-transformation',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.snowflake-transformation',
+                    'tag' => '0.7.0',
+                ],
+                'staging_storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ];
+        $configurationData = [
+            'storage' => [
+                'output' => [
+                    'files' => [],
                     'tables' => [
                         [
-                            'source' => 'write-on-success.csv',
+                            'source' => 'write-on-success',
                             'destination' => 'out.c-runner-test.write-on-success',
                         ],
                         [
-                            'source' => 'write-always.csv',
+                            'source' => 'write-always',
                             'destination' => 'out.c-runner-test.write-always',
                             'write_always' => true,
                         ],
@@ -3447,37 +3523,47 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
             'parameters' => [
-                'script' => [
-                    'import csv',
-                    'import sys',
-                    'with open(\'out/tables/write-always.csv\', mode=\'wt\', encoding=\'utf-8\') as out_file:',
-                    '    writer = csv.DictWriter(out_file, fieldnames=[\'col1\', \'col2\'], lineterminator=csvlt, delimiter=csvdel, quotechar=csvquo)',
-                    '    writer.writeheader()',
-                    '    writer.writerow({\'col1\': \'hello\', \'col2\': \'world\'})',
-                    'print("Class 1 error", file=sys.stderr)',
-                    'sys.exit(1)',
+                'blocks' => [
+                    [
+                        'name' => 'Block 1',
+                        'codes' => [
+                            [
+                                'name' => 'Main',
+                                'script' => [
+                                    'CREATE TABLE "write-on-success" AS (SELECT \'hello hell\' AS someText);',
+                                    'CREATE TABLE "write-always" AS (SELECT \'hello world\' AS someText);',
+                                    'CRATE TABLE INTO A BOX',
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
             ],
         ];
         $runner = $this->getRunner();
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Class 1 error');
         $outputs = [];
-        $runner->run(
-            $this->prepareJobDefinitions(
-                $componentData,
-                'runner-configuration',
-                $configurationData,
-                []
-            ),
-            'run',
-            'run',
-            '1234567',
-            new NullUsageFile(),
-            [],
-            $outputs,
-            null
-        );
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    null,
+                    $configurationData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null
+            );
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Query "CRATE TABLE INTO A BOX" in "Main" failed with error',
+                $e->getMessage()
+            );
+        }
 
         // table should not exist
         self::assertFalse($this->client->tableExists('out.c-runner-test.write-on-success'));
