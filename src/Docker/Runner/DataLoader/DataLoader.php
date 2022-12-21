@@ -195,7 +195,7 @@ class DataLoader implements DataLoaderInterface
         return new StorageState($inputTableResult, $resultInputFilesStateList);
     }
 
-    public function storeOutput(): ?LoadTableQueue
+    public function storeOutput($isFailedJob = false): ?LoadTableQueue
     {
         $this->logger->debug("Storing results.");
         $outputTablesConfig = [];
@@ -275,7 +275,8 @@ class DataLoader implements DataLoaderInterface
                 $uploadTablesOptions,
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
-                $createTypedTables
+                $createTypedTables,
+                $isFailedJob
             );
             if (isset($this->storageConfig["input"]["files"])) {
                 // tag input files
