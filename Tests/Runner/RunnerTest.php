@@ -3573,4 +3573,214 @@ class RunnerTest extends BaseRunnerTest
         // but the write-always table should exist
         self::assertTrue($this->client->tableExists('out.c-runner-test.write-always'));
     }
+
+    public function testOutputTablesOnJobFailureOriginalErrorNotConcealed(): void
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $configurationData = [
+            'storage' => [
+                'output' => [
+                    'files' => [],
+                    'tables' => [
+                        [
+                            'source' => 'write-always.csv',
+                            'destination' => 'out.c-runner-test.write-always',
+                            'write_always' => true,
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import csv',
+                    'import sys',
+                    'import json',
+                    'manifest = {"invalid": "true"}',
+                    'out_file = open("out/tables/write-always.csv.manifest", "w")',
+                    'json.dump(manifest, out_file, indent=2)',
+                    'out_file.close()',
+                    'print("Class 1 error", file=sys.stderr)',
+                    'sys.exit(1)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration',
+                    $configurationData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null
+            );
+            self::fail('Must fail');
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Class 1 error',
+                $e->getMessage()
+            );
+        }
+
+        // table should not exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.write-always'));
+    }
+
+    public function testOutputTablesOnJobFailureRecoverableOutputMappingError(): void
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $configurationData = [
+            'storage' => [
+                'output' => [
+                    'files' => [],
+                    'tables' => [
+                        [
+                            'source' => 'write-always.csv',
+                            'destination' => 'out.c-runner-test.write-always',
+                            'write_always' => true,
+                        ],
+                        [
+                            'source' => 'non-existent.csv',
+                            'destination' => 'out.c-runner-test.non-existent',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import csv',
+                    'import sys',
+                    'with open("out/tables/write-always.csv", mode="wt", encoding="utf-8") as out_file:',
+                    '    writer = csv.DictWriter(out_file, fieldnames=["col1", "col2"], lineterminator="\n", delimiter=",", quotechar=\'"\')',
+                    '    writer.writeheader()',
+                    '    writer.writerow({\'col1\': \'hello\', \'col2\': \'world\'})',
+                    'sys.exit(0)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration',
+                    $configurationData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null
+            );
+            self::fail('Must fail');
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Table sources not found: "non-existent.csv"',
+                $e->getMessage()
+            );
+        }
+
+        // table should not exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.non-existent'));
+
+        // but the write-always table should exist
+        self::assertTrue($this->client->tableExists('out.c-runner-test.write-always'));
+    }
+
+    public function testOutputTablesOnJobFailureNonRecoverableOutputMappingError(): void
+    {
+        $this->clearFiles();
+        $this->clearBuckets();
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $configurationData = [
+            'storage' => [
+                'output' => [
+                    'files' => [],
+                    'tables' => [
+                        [
+                            'source' => 'write-always.csv',
+                            'destination' => 'out.c-runner-test.write-always',
+                            'write_always' => true,
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import sys',
+                    'sys.exit(0)',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions(
+                    $componentData,
+                    'runner-configuration',
+                    $configurationData,
+                    []
+                ),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null
+            );
+            self::fail('Must fail');
+        } catch (UserException $e) {
+            self::assertStringContainsString(
+                'Table sources not found: "write-always.csv"',
+                $e->getMessage()
+            );
+        }
+        // but the write-always table should exist
+        self::assertFalse($this->client->tableExists('out.c-runner-test.write-always'));
+    }
 }

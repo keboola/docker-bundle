@@ -515,10 +515,14 @@ class Runner
             return $output;
         } catch (\Throwable $exception) {
             if ($mode !== self::MODE_DEBUG) {
-                $tableQueue = $dataLoader->storeOutput(true);
-                $output->setTableQueue($tableQueue);
-                $output->setDataLoader($dataLoader);
-                $this->waitForStorageJobs([$output]);
+                try {
+                    $tableQueue = $dataLoader->storeOutput(true);
+                    $output->setTableQueue($tableQueue);
+                    $output->setDataLoader($dataLoader);
+                    $this->waitForStorageJobs([$output]);
+                } catch (\Throwable $e) {
+                    throw $exception;
+                }
             }
             throw $exception;
         }
