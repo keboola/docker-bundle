@@ -114,13 +114,10 @@ class AWSElasticContainerRegistry extends Image
     {
         $proxy = $this->getRetryProxy();
 
-        $command = "sudo docker run --rm -v /var/run/docker.sock:/var/run/docker.sock " .
-            "docker:1.11 sh -c " .
-            escapeshellarg(
-                "docker login " . $this->getLoginParams() .  " " .
-                "&& docker pull " . escapeshellarg($this->getFullImageId()) . " " .
-                "&& docker logout " . $this->getLogoutParams()
-            );
+        $command = "sudo docker login " . $this->getLoginParams() .  " " .
+            "&& sudo docker pull " . escapeshellarg($this->getFullImageId()) . " " .
+            "&& sudo docker logout " . $this->getLogoutParams();
+
         $process = Process::fromShellCommandline($command);
         $process->setTimeout(3600);
         try {
