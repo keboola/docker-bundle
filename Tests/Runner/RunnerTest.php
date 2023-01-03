@@ -443,8 +443,8 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $records = $this->getContainerHandler()->getRecords();
-        self::assertContains('"foo": "bar"', $records[0]['message']);
-        self::assertContains('"bar": "Kochba"', $records[1]['message']);
+        self::assertStringContainsString('"foo": "bar"', $records[0]['message']);
+        self::assertStringContainsString('"bar": "Kochba"', $records[1]['message']);
 
         $this->clearBuckets();
         $this->clearFiles();

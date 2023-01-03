@@ -73,7 +73,7 @@ class WorkingDirectory
                     $command = $this->getNormalizeCommand();
                     $process = Process::fromShellCommandline($command);
                     $process->setTimeout(120);
-                    $process->run();
+                    $process->mustRun();
                 }
             );
         } catch (ProcessTimedOutException $e) {
