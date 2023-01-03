@@ -28,7 +28,7 @@ class WorkingDirectoryTest extends TestCase
             ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
                 'sleep 130 && sudo chown 0 ' . $temp->getTmpFolder() . ' -R',
-                'sudo chown' . $uid . ' ' . $temp->getTmpFolder() . ' -R'
+                'sudo chown ' . $uid . ' ' . $temp->getTmpFolder() . ' -R'
             ));
 
         /** @var WorkingDirectory $workingDir */
