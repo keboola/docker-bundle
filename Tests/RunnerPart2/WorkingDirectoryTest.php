@@ -27,10 +27,8 @@ class WorkingDirectoryTest extends TestCase
         $workingDir->expects(self::exactly(2))
             ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
-                'sleep 130 && sudo docker run --rm --volume=' . $temp->getTmpFolder() .
-                '/data:/data alpine sh -c \'chown 0 /data -R\'',
-                'sudo docker run --rm --volume=' . $temp->getTmpFolder() .
-                '/data:/data alpine sh -c \'chown ' . $uid . ' /data -R\''
+                'sleep 130 && sudo chown 0 ' . $temp->getTmpFolder() . ' -R',
+                'sudo chown' . $uid . ' ' . $temp->getTmpFolder() . ' -R'
             ));
 
         /** @var WorkingDirectory $workingDir */

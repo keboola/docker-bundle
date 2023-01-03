@@ -58,9 +58,7 @@ class WorkingDirectory
     public function getNormalizeCommand()
     {
         $uid = trim((Process::fromShellCommandline('id -u'))->mustRun()->getOutput());
-        return "sudo docker run --rm --volume=" .
-            $this->workingDir . ":/data alpine sh -c 'chown {$uid} /data -R && "
-                . "chmod -R u+wrX /data'";
+        return "sudo chown {$uid} {$this->workingDir} -R && chmod -R u+wrX {$this->workingDir}";
     }
 
     public function normalizePermissions()
