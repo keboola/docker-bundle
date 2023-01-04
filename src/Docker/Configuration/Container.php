@@ -52,6 +52,7 @@ class Container extends Configuration
 
         $inputTable = $input
             ->children()
+                ->booleanNode("use_workspace_with_readonly_role")->end()
                 ->arrayNode("tables")
                     ->prototype("array")
         ;

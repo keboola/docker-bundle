@@ -41,7 +41,8 @@ class WorkspaceProviderFactoryFactory
         $stagingStorage,
         Component $component,
         $configId,
-        array $backendConfig
+        array $backendConfig,
+        $useReadonlyRole
     ) {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
@@ -57,7 +58,8 @@ class WorkspaceProviderFactoryFactory
                 $this->workspacesApiClient,
                 $component->getId(),
                 $configId,
-                $this->resolveWorkspaceBackendConfiguration($backendConfig)
+                $this->resolveWorkspaceBackendConfiguration($backendConfig),
+                $useReadonlyRole
             );
             $this->logger->info('Created a new ephemeral workspace.');
         }
