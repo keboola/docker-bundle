@@ -41,12 +41,9 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
                 ]
             ]
         ];
-        $clientWrapper = new ClientWrapper(
-            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES)
-        );
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
@@ -54,7 +51,7 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
         );
         self::assertTrue($logger->hasInfoThatContains('Created a new readonly workspace.'));
 
-        $workspaces = new Workspaces($clientWrapper->getBranchClientIfAvailable());
+        $workspaces = new Workspaces($this->clientWrapper->getBranchClientIfAvailable());
 
         $createdWorkspaceId = $dataLoader->getWorkspaceId();
 
@@ -90,12 +87,10 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
                 ]
             ]
         ];
-        $clientWrapper = new ClientWrapper(
-            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES)
-        );
+
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
-            $clientWrapper,
+            $this->clientWrapper,
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
@@ -103,7 +98,7 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
         );
         self::assertTrue($logger->hasInfoThatContains('Created a new ephemeral workspace.'));
 
-        $workspaces = new Workspaces($clientWrapper->getBranchClientIfAvailable());
+        $workspaces = new Workspaces($this->clientWrapper->getBranchClientIfAvailable());
 
         $createdWorkspaceId = $dataLoader->getWorkspaceId();
 
