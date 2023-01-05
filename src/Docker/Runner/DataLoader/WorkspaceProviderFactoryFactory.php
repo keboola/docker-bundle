@@ -42,7 +42,7 @@ class WorkspaceProviderFactoryFactory
         Component $component,
         $configId,
         array $backendConfig,
-        $useReadonlyRole = null
+        ?bool $useReadonlyRole
     ) {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */

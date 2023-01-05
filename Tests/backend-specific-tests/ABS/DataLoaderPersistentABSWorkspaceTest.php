@@ -285,7 +285,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'workspace-abs',
                 $component,
                 $configurationId,
-                []
+                [],
+                null
             );
         } catch (ApplicationException $e) {
             self::assertEquals(
