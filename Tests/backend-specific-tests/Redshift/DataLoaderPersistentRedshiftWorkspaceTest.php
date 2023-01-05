@@ -82,7 +82,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             array_keys($credentials)
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
-        self::assertTrue($logger->hasInfoThatContains('Created a new ephemeral workspace.'));
+        self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
     }
