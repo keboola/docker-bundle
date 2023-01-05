@@ -7,6 +7,9 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\StorageApi\Components;
+use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
+use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Psr\Log\Test\TestLogger;
@@ -50,6 +53,16 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
             new OutputFilter(10000)
         );
         self::assertTrue($logger->hasInfoThatContains('Created a new readonly workspace.'));
+
+        $workspaces = new Workspaces($clientWrapper->getBranchClientIfAvailable());
+
+        $createdWorkspaceId = $dataLoader->getWorkspaceId();
+
+        $workspaceDetails = $workspaces->getWorkspace($createdWorkspaceId);
+
+        self::assertTrue($workspaceDetails['readOnlyStorageAccess']);
+
+        $dataLoader->cleanWorkspace();
     }
 
     public function testEphemeralWorkspaceCreation()
@@ -89,5 +102,15 @@ class WorkspaceProviderFactoryFactoryTest extends BaseDataLoaderTest
             new OutputFilter(10000)
         );
         self::assertTrue($logger->hasInfoThatContains('Created a new ephemeral workspace.'));
+
+        $workspaces = new Workspaces($clientWrapper->getBranchClientIfAvailable());
+
+        $createdWorkspaceId = $dataLoader->getWorkspaceId();
+
+        $workspaceDetails = $workspaces->getWorkspace($createdWorkspaceId);
+
+        self::assertFalse($workspaceDetails['readOnlyStorageAccess']);
+
+        $dataLoader->cleanWorkspace();
     }
 }
