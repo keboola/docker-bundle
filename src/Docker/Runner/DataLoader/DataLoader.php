@@ -124,7 +124,7 @@ class DataLoader implements DataLoaderInterface
             $this->component,
             $this->configId,
             $this->runtimeConfig['backend'] ?? [],
-            $this->storageConfig['input']['use_workspace_with_readonly_role'] ?? null
+            $this->storageConfig['input']['read_only_storage_access'] ?? null
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,

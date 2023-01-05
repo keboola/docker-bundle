@@ -61,7 +61,8 @@ class WorkspaceProviderFactoryFactory
                 $this->resolveWorkspaceBackendConfiguration($backendConfig),
                 $useReadonlyRole
             );
-            $this->logger->info('Created a new ephemeral workspace.');
+            $worksaceType = $useReadonlyRole ? 'readonly' : 'ephemeral';
+            $this->logger->info('Created a new ' . $worksaceType .  ' workspace.');
         }
         return $workspaceProviderFactory;
     }
