@@ -312,24 +312,6 @@ class DataLoader implements DataLoaderInterface
         return null;
     }
 
-    public function getWorkspaceId(): ?string
-    {
-        // this returns the first workspace found, which is ok so far because there can only be one
-        // (ensured in validateStagingSetting())
-        // working only with inputStrategyFactory, but the workspaceproviders are shared between input and output, so it's "ok"
-        foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
-            foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
-                    continue;
-                }
-
-                return $stagingProvider->getWorkspaceId();
-            }
-        }
-
-        return null;
-    }
-
     public function getWorkspaceCredentials(): array
     {
         // this returns the first workspace found, which is ok so far because there can only be one
