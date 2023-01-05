@@ -696,7 +696,7 @@ class ContainerConfigurationTest extends TestCase
             "config" => [
                 "storage" => [
                     "input" => [
-                        "use_workspace_with_readonly_role" => true,
+                        "read_only_storage_access" => true,
                         "tables" => [],
                         "files" => [],
                     ],
