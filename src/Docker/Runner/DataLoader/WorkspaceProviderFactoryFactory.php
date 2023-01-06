@@ -82,7 +82,8 @@ class WorkspaceProviderFactoryFactory
             $workspace = $this->componentsApiClient->createConfigurationWorkspace(
                 $component->getId(),
                 $configId,
-                ['backend' => RedshiftWorkspaceStaging::getType()]
+                ['backend' => RedshiftWorkspaceStaging::getType()],
+                true
             );
             $workspaceId = $workspace['id'];
             $password = $workspace['connection']['password'];
@@ -124,7 +125,8 @@ class WorkspaceProviderFactoryFactory
             $workspace = $this->componentsApiClient->createConfigurationWorkspace(
                 $component->getId(),
                 $configId,
-                ['backend' => AbsWorkspaceStaging::getType()]
+                ['backend' => AbsWorkspaceStaging::getType()],
+                true
             );
             $workspaceId = $workspace['id'];
             $connectionString = $workspace['connection']['connectionString'];
