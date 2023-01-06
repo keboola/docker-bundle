@@ -186,7 +186,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspace = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'abs']
+            ['backend' => 'abs'],
+            true
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
@@ -263,12 +264,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspace1 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'abs']
+            ['backend' => 'abs'],
+            true
         );
         $workspace2 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'abs']
+            ['backend' => 'abs'],
+            true
         );
 
         $clientWrapper = $this->createMock(ClientWrapper::class);

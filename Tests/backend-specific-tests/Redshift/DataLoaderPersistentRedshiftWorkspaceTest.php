@@ -190,7 +190,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $workspace = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'redshift']
+            ['backend' => 'redshift'],
+            true
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
@@ -269,12 +270,14 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $workspace1 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'redshift']
+            ['backend' => 'redshift'],
+            true
         );
         $workspace2 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
-            ['backend' => 'redshift']
+            ['backend' => 'redshift'],
+            true
         );
 
         $clientWrapper = $this->createMock(ClientWrapper::class);

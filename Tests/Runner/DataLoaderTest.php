@@ -377,7 +377,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         $workspace = $componentsApi->createConfigurationWorkspace(
             'docker-demo',
             $configId,
-            ['backend' => 'redshift']
+            ['backend' => 'redshift'],
+            true
         );
         $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
         $workspaceApi->loadWorkspaceData(
