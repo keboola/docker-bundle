@@ -172,6 +172,15 @@ class Container
      */
     public function run()
     {
+        if (!empty($this->image->getSourceComponent()->getImageParameters()['shibboleet']['sleep'])) {
+            $spread = $this->image->getSourceComponent()->getImageParameters()['shibboleet']['spread'] ?? 0;
+            $sleep = $this->image->getSourceComponent()->getImageParameters()['shibboleet']['sleep'] + random_int(0, $spread);
+            $this->logger->notice(sprintf('Sleeping %s s', $sleep));
+            sleep($sleep);
+            $process = Process::fromShellCommandline('echo "The bits are breeding"');
+            $process->run();
+            return $process;
+        }
         // create container
         $startTime = time();
         try {
