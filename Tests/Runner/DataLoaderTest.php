@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Generator;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\Common;
 use Keboola\Datatype\Definition\GenericStorage;
@@ -253,6 +254,64 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
         self::assertNotNull($dataLoader->getWorkspaceBackendSize());
+    }
+
+    /**
+     * @dataProvider readonlyFlagProvider
+     */
+    public function testWorkspaceReadOnly(bool $readOnlyWorkspace): void
+    {
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master'
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'input' => [
+                    'read_only_storage_access' => $readOnlyWorkspace,
+                    'tables' => [],
+                    'files' => [],
+                ]
+            ]
+        ];
+        $dataLoader = new DataLoader(
+            $this->clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000)
+        );
+        $dataLoader->storeOutput();
+        $credentials = $dataLoader->getWorkspaceCredentials();
+
+        $schemaName = $credentials['schema'];
+        $workspacesApi = new Workspaces($this->clientWrapper->getBasicClient());
+        $workspaces = $workspacesApi->listWorkspaces();
+        $readonlyWorkspace = null;
+        foreach ($workspaces as $workspace) {
+            if ($workspace['connection']['schema'] === $schemaName) {
+                $readonlyWorkspace = $workspace;
+            }
+        }
+        self::assertNotNull($readonlyWorkspace);
+        self::assertSame($readOnlyWorkspace, $readonlyWorkspace['readOnlyStorageAccess']);
+        $dataLoader->cleanWorkspace();
+    }
+
+    public function readonlyFlagProvider(): Generator
+    {
+        yield 'readonly on' => [true];
+        yield 'readonly off' => [false];
     }
 
     public function testWorkspaceRedshiftNoPreserve()

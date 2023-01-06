@@ -689,4 +689,27 @@ class ContainerConfigurationTest extends TestCase
             'shared' => ['enabled' => true],
         ], $config['artifacts']);
     }
+
+    public function testConfigurationWithReadonlyRole(): void
+    {
+        (new Configuration\Container())->parse([
+            "config" => [
+                "storage" => [
+                    "input" => [
+                        "read_only_storage_access" => true,
+                        "tables" => [],
+                        "files" => [],
+                    ],
+                    "output" => [
+                        "tables" => [],
+                        "files" => [],
+                        "table_files" => [
+                            "tags" => ["tag"],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertTrue(true);
+    }
 }

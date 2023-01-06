@@ -123,7 +123,8 @@ class DataLoader implements DataLoaderInterface
             $this->getStagingStorageInput(),
             $this->component,
             $this->configId,
-            $this->runtimeConfig['backend'] ?? []
+            $this->runtimeConfig['backend'] ?? [],
+            $this->storageConfig['input']['read_only_storage_access'] ?? null
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,

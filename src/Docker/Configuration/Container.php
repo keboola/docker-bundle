@@ -52,6 +52,7 @@ class Container extends Configuration
 
         $inputTable = $input
             ->children()
+                ->booleanNode("read_only_storage_access")->end()
                 ->arrayNode("tables")
                     ->prototype("array")
         ;

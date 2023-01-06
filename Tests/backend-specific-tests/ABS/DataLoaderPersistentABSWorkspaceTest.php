@@ -81,7 +81,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['connectionString', 'container'], array_keys($credentials));
         self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
-        self::assertTrue($logger->hasInfoThatContains('Created a new ephemeral workspace.'));
+        self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
     }
@@ -285,7 +285,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'workspace-abs',
                 $component,
                 $configurationId,
-                []
+                [],
+                null
             );
         } catch (ApplicationException $e) {
             self::assertEquals(
