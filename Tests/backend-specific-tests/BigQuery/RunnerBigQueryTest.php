@@ -96,7 +96,7 @@ class RunnerBigQueryTest extends BaseRunnerTest
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => '061240556736.dkr.ecr.us-east-1.amazonaws.com/keboola.runner-workspace-test',
-                    'tag' => 'latest',
+                    'tag' => 'dev-23.1',
                 ],
                 'staging_storage' => [
                     'input' => 'workspace-bigquery',
