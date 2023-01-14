@@ -122,14 +122,6 @@ class RunnerBigQueryTest extends BaseRunnerTest
                 $configId,
                 [
                     'storage' => [
-                        'input' => [
-                            'tables' => [
-                                [
-                                    'source' => 'in.c-bigquery-runner-test.mytable',
-                                    'destination' => 'local-table',
-                                ],
-                            ],
-                        ],
                         'output' => [
                             'tables' => [
                                 [
