@@ -57,12 +57,6 @@ defined('STORAGE_API_TOKEN_TERADATA')
 defined('RUN_TERADATA_TESTS')
 || define('RUN_TERADATA_TESTS', getenv('RUN_TERADATA_TESTS') ?: '0');
 
-defined('STORAGE_API_URL_BIGQUERY')
-|| define('STORAGE_API_URL_BIGQUERY', getenv('STORAGE_API_URL_BIGQUERY') ?: 'sapi_url');
-
-defined('STORAGE_API_TOKEN_BIGQUERY')
-|| define('STORAGE_API_TOKEN_BIGQUERY', getenv('STORAGE_API_TOKEN_BIGQUERY') ?: 'your_token');
-
 defined('RUN_BIGQUERY_TESTS')
 || define('RUN_BIGQUERY_TESTS', getenv('RUN_BIGQUERY_TESTS') ?: '0');
 

@@ -3,10 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -16,7 +13,7 @@ use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
-class RunnerBigQueryTest extends BaseRunnerTest
+class RunnerBigQueryTest extends BaseTableBackendTest
 {
     private const COMPONENT_ID = 'keboola.runner-workspace-bigquery-test';
 
@@ -51,22 +48,6 @@ class RunnerBigQueryTest extends BaseRunnerTest
             }
             $componentsApi->deleteConfiguration(self::COMPONENT_ID, $configuration['id']);
         }
-    }
-
-    protected function initStorageClient(): void
-    {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL_BIGQUERY,
-            'token' => STORAGE_API_TOKEN_BIGQUERY,
-        ]);
-    }
-
-    public function setUp(): void
-    {
-        if (!RUN_BIGQUERY_TESTS) {
-            self::markTestSkipped('BigQuery test is disabled.');
-        }
-        parent::setUp();
     }
 
     private function createBuckets()
@@ -151,5 +132,10 @@ class RunnerBigQueryTest extends BaseRunnerTest
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-bigquery-runner-test.new-table'));
+    }
+
+    public static function expectedDefaultTableBackend(): string
+    {
+        return 'bigquery';
     }
 }
