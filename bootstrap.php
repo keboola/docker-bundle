@@ -30,12 +30,6 @@ defined('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES')
     getenv('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES') ?: 'feature_native_types_token'
 );
 
-defined('STORAGE_API_URL_SYNAPSE')
-|| define('STORAGE_API_URL_SYNAPSE', getenv('STORAGE_API_URL_SYNAPSE') ?: 'sapi_url');
-
-defined('STORAGE_API_TOKEN_SYNAPSE')
-|| define('STORAGE_API_TOKEN_SYNAPSE', getenv('STORAGE_API_TOKEN_SYNAPSE') ?: 'your_token');
-
 defined('RUN_SYNAPSE_TESTS')
 || define('RUN_SYNAPSE_TESTS', getenv('RUN_SYNAPSE_TESTS') ?: '0');
 
