@@ -181,7 +181,7 @@ stages:
         displayName: 'ABS Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite abs-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite abs-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -196,7 +196,7 @@ stages:
               GIT_PRIVATE_USERNAME: $(GIT_PRIVATE_USERNAME)
               QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
               QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
-              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_URL: $(STORAGE_API_URL)
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_URL_SYNAPSE: $(STORAGE_API_URL_SYNAPSE)
@@ -210,7 +210,7 @@ stages:
         displayName: 'GCS Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_CONTROL_PLANE -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_CONTROL_PLANE tests ./vendor/bin/phpunit --testsuite gcs-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite gcs-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -225,8 +225,8 @@ stages:
               GIT_PRIVATE_USERNAME: $(GIT_PRIVATE_USERNAME)
               QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
               QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
-              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN)
-              STORAGE_API_URL: $(STORAGE_API_URL)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN_CONTROL_PLANE)
+              STORAGE_API_URL: $(STORAGE_API_URL_CONTROL_PLANE)
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_URL_SYNAPSE: $(STORAGE_API_URL_SYNAPSE)
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
@@ -241,7 +241,7 @@ stages:
         displayName: 'Synapse Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_ABS tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -268,7 +268,7 @@ stages:
         displayName: 'Exasol Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite exasol-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -295,7 +295,7 @@ stages:
         displayName: 'Redshift Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN tests ./vendor/bin/phpunit --testsuite redshift-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite redshift-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -324,7 +324,7 @@ stages:
         displayName: 'Teradata Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN tests ./vendor/bin/phpunit --testsuite teradata-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite teradata-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
@@ -351,7 +351,7 @@ stages:
         displayName: 'BiqQuery Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_TOKEN=$STORAGE_API_TOKEN tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
