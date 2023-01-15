@@ -3,22 +3,17 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
-use Keboola\StorageApi\Options\FileUploadOptions;
-use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
-class RunnerExasolTest extends BaseRunnerTest
+class RunnerExasolTest extends BaseTableBackendTest
 {
     const ABS_TEST_FILE_TAG = 'abs-workspace-runner-test';
 
@@ -53,22 +48,6 @@ class RunnerExasolTest extends BaseRunnerTest
             }
             $componentsApi->deleteConfiguration('keboola.runner-workspace-exasol-test', $configuration['id']);
         }
-    }
-
-    protected function initStorageClient(): void
-    {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL_EXASOL,
-            'token' => STORAGE_API_TOKEN_EXASOL,
-        ]);
-    }
-
-    public function setUp(): void
-    {
-        if (!RUN_EXASOL_TESTS) {
-            self::markTestSkipped('Exasol test is disabled.');
-        }
-        parent::setUp();
     }
 
     private function createBuckets()
@@ -161,5 +140,10 @@ class RunnerExasolTest extends BaseRunnerTest
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-exasol-runner-test.new-table'));
+    }
+
+    public static function expectedDefaultTableBackend(): string
+    {
+        return 'exasol';
     }
 }
