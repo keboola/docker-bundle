@@ -48,12 +48,6 @@ defined('STORAGE_API_TOKEN_EXASOL')
 defined('RUN_EXASOL_TESTS')
 || define('RUN_EXASOL_TESTS', getenv('RUN_EXASOL_TESTS') ?: '0');
 
-defined('STORAGE_API_URL_TERADATA')
-|| define('STORAGE_API_URL_TERADATA', getenv('STORAGE_API_URL_TERADATA') ?: 'sapi_url');
-
-defined('STORAGE_API_TOKEN_TERADATA')
-|| define('STORAGE_API_TOKEN_TERADATA', getenv('STORAGE_API_TOKEN_TERADATA') ?: 'your_token');
-
 defined('RUN_TERADATA_TESTS')
 || define('RUN_TERADATA_TESTS', getenv('RUN_TERADATA_TESTS') ?: '0');
 
