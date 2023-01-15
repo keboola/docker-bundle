@@ -21,4 +21,18 @@ trait BackendAssertsTrait
             ))
         );
     }
+
+    public static function assertDefaultTableBackend(string $expectedBackend, Client $client): void
+    {
+        $owner = $client->verifyToken()['owner'];
+        assert(
+            $owner['defaultBackend'] === $expectedBackend
+                && $owner[sprintf('has%s', mb_convert_case($expectedBackend, MB_CASE_TITLE))] === true,
+            new RuntimeException(sprintf(
+                'Project "%s" is not configured with %s table storage backend',
+                $owner['id'],
+                $expectedBackend
+            ))
+        );
+    }
 }
