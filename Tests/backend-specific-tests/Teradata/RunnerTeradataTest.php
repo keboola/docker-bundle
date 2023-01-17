@@ -21,7 +21,7 @@ class RunnerTeradataTest extends BaseTableBackendTest
     {
         foreach (['in.c-teradata-runner-test', 'out.c-teradata-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() != 404) {
                     throw $e;
@@ -44,7 +44,7 @@ class RunnerTeradataTest extends BaseTableBackendTest
                     ->setConfigurationId($configuration['id'])
             );
             foreach ($workspaces as $workspace) {
-                $workspacesApi->deleteWorkspace($workspace['id']);
+                $workspacesApi->deleteWorkspace($workspace['id'], true);
             }
             $componentsApi->deleteConfiguration(self::COMPONENT_ID, $configuration['id']);
         }
@@ -84,9 +84,6 @@ class RunnerTeradataTest extends BaseTableBackendTest
                     'output' => 'workspace-teradata',
                 ],
             ],
-            // https://keboola.slack.com/archives/C02C3GZUS/p1598942156005100
-            // https://github.com/microsoft/msphpsql/issues/400#issuecomment-481722255
-            'features' => ['container-root-user'],
         ];
 
         $configId = uniqid('runner-test-');
@@ -106,14 +103,6 @@ class RunnerTeradataTest extends BaseTableBackendTest
                 $configId,
                 [
                     'storage' => [
-                        'input' => [
-                            'tables' => [
-                                [
-                                    'source' => 'in.c-teradata-runner-test.mytable',
-                                    'destination' => 'local-table',
-                                ],
-                            ],
-                        ],
                         'output' => [
                             'tables' => [
                                 [
