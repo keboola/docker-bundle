@@ -351,7 +351,7 @@ stages:
         displayName: 'BiqQuery Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_TOKEN_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
             env:
               AWS_ECR_ACCESS_KEY_ID: $(AWS_ECR_ACCESS_KEY_ID)
               AWS_ECR_REGISTRY_ACCOUNT_ID: $(AWS_ECR_REGISTRY_ACCOUNT_ID)
