@@ -36,12 +36,6 @@ defined('STORAGE_API_URL_SYNAPSE')
 defined('STORAGE_API_TOKEN_SYNAPSE')
 || define('STORAGE_API_TOKEN_SYNAPSE', getenv('STORAGE_API_TOKEN_SYNAPSE') ?: 'your_token');
 
-defined('GIT_PRIVATE_USERNAME')
-    || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ?: 'username');
-
-defined('GIT_PRIVATE_PASSWORD')
-    || define('GIT_PRIVATE_PASSWORD', getenv('GIT_PRIVATE_PASSWORD') ?: 'password');
-
 defined('AWS_ECR_REGISTRY_URI')
 || define('AWS_ECR_REGISTRY_URI', getenv('AWS_ECR_REGISTRY_URI') ?: 'foobar.amazon.com');
 
