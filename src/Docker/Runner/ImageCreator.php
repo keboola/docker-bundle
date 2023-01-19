@@ -15,6 +15,7 @@ use Psr\Log\LoggerInterface;
 
 class ImageCreator
 {
+    private JobScopedEncryptor $jobScopedEncryptor;
     private LoggerInterface $logger;
     private Client $storageClient;
     private Component $mainComponent;
@@ -25,11 +26,13 @@ class ImageCreator
     private Temp $temp;
 
     public function __construct(
+        JobScopedEncryptor $jobQueueEncryptor,
         LoggerInterface $logger,
         Client $storageClient,
         Component $mainComponent,
         array $componentConfig
     ) {
+        $this->jobScopedEncryptor = $jobQueueEncryptor;
         $this->logger = $logger;
         $this->mainComponent = $mainComponent;
         $this->storageClient = $storageClient;
@@ -48,19 +51,19 @@ class ImageCreator
         foreach ($this->before as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->logger, $component, false);
+            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }
 
-        $image = ImageFactory::getImage($this->logger, $this->mainComponent, true);
+        $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $this->mainComponent, $this->temp, true);
         $image->prepare($this->componentConfig);
         $images[] = $image;
 
         foreach ($this->after as $processor) {
             $componentId = $processor['definition']['component'];
             $component = $this->getComponent($componentId);
-            $image = ImageFactory::getImage($this->logger, $component, false);
+            $image = ImageFactory::getImage($this->jobScopedEncryptor, $this->logger, $component, $this->temp, false);
             $image->prepare(['parameters' => empty($processor['parameters']) ? [] : $processor['parameters']]);
             $images[] = $image;
         }

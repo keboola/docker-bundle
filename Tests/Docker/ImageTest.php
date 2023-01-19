@@ -28,7 +28,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage(new NullLogger(), $configuration, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $configuration, new Temp(), true);
         self::assertEquals(DockerHub::class, get_class($image));
         self::assertEquals('master', $image->getTag());
         self::assertEquals('keboola/docker-demo:master', $image->getFullImageId());
@@ -45,7 +45,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
 
-        $image = ImageFactory::getImage(new NullLogger(), $configuration, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $configuration, new Temp(), true);
         self::assertEquals(QuayIO::class, get_class($image));
         self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
         self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
@@ -66,7 +66,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
         $logger = new TestLogger();
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
@@ -87,10 +87,10 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         $logger = new TestLogger();
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertFalse($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
@@ -110,7 +110,7 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), new NullLogger(), $imageConfig, new Temp(), true);
         $image->prepare([]);
         preg_match('#@sha256:(.*)$#', $image->getImageDigests()[0], $matches);
         $imageConfig = new Component([
@@ -124,7 +124,7 @@ class ImageTest extends BaseImageTest
             ],
         ]);
         $logger = new TestLogger();
-        $image = ImageFactory::getImage($logger, $imageConfig, true);
+        $image = ImageFactory::getImage($this->getJobScopedEncryptor(), $logger, $imageConfig, new Temp(), true);
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .

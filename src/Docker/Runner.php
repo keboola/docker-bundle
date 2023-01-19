@@ -259,6 +259,7 @@ class Runner
         );
 
         $imageCreator = new ImageCreator(
+            $jobScopedEncryptor,
             $this->loggersService->getLog(),
             $this->clientWrapper->getBasicClient(),
             $component,

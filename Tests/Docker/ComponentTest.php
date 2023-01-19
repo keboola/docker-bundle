@@ -210,6 +210,33 @@ class ComponentTest extends TestCase
         self::assertTrue($component->overrideKeepalive60s());
     }
 
+    public function testInvalidRepository()
+    {
+        try {
+            new Component([
+                'data' => [
+                    'definition' => [
+                        'type' => 'builder',
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/docker-demo',
+                        'build_options' => [
+                            'parent_type' => 'aws-ecr',
+                            'repository' => [
+                                'uri' => 'https://github.com/keboola/docker-demo-app',
+                                'type' => 'fooBar',
+                            ],
+                            'commands' => [
+                                'composer install',
+                            ],
+                            'entry_point' => 'php /home/run.php --data=/data',
+                        ],
+                    ],
+                ],
+            ]);
+        } catch (ApplicationException $e) {
+            self::assertStringContainsString('Invalid repository_type', $e->getMessage());
+        }
+    }
+
     public function testHasSwap()
     {
         $componentData = [
