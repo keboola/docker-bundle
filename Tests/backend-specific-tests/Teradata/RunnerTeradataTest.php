@@ -3,10 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -16,7 +13,7 @@ use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
-class RunnerTeradataTest extends BaseRunnerTest
+class RunnerTeradataTest extends BaseTableBackendTest
 {
     private const COMPONENT_ID = 'keboola.runner-workspace-teradata-test';
 
@@ -24,7 +21,7 @@ class RunnerTeradataTest extends BaseRunnerTest
     {
         foreach (['in.c-teradata-runner-test', 'out.c-teradata-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() != 404) {
                     throw $e;
@@ -47,26 +44,10 @@ class RunnerTeradataTest extends BaseRunnerTest
                     ->setConfigurationId($configuration['id'])
             );
             foreach ($workspaces as $workspace) {
-                $workspacesApi->deleteWorkspace($workspace['id']);
+                $workspacesApi->deleteWorkspace($workspace['id'], ['async' => true]);
             }
             $componentsApi->deleteConfiguration(self::COMPONENT_ID, $configuration['id']);
         }
-    }
-
-    protected function initStorageClient(): void
-    {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL_TERADATA,
-            'token' => STORAGE_API_TOKEN_TERADATA,
-        ]);
-    }
-
-    public function setUp(): void
-    {
-        if (!RUN_TERADATA_TESTS) {
-            self::markTestSkipped('Teradata test is disabled.');
-        }
-        parent::setUp();
     }
 
     private function createBuckets()
@@ -77,7 +58,7 @@ class RunnerTeradataTest extends BaseRunnerTest
         $this->getClient()->createBucket('teradata-runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'teradata');
     }
 
-    public function testWorkspaceSynapseMapping()
+    public function testWorkspaceTeradataMapping()
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -103,9 +84,6 @@ class RunnerTeradataTest extends BaseRunnerTest
                     'output' => 'workspace-teradata',
                 ],
             ],
-            // https://keboola.slack.com/archives/C02C3GZUS/p1598942156005100
-            // https://github.com/microsoft/msphpsql/issues/400#issuecomment-481722255
-            'features' => ['container-root-user'],
         ];
 
         $configId = uniqid('runner-test-');
@@ -125,14 +103,6 @@ class RunnerTeradataTest extends BaseRunnerTest
                 $configId,
                 [
                     'storage' => [
-                        'input' => [
-                            'tables' => [
-                                [
-                                    'source' => 'in.c-teradata-runner-test.mytable',
-                                    'destination' => 'local-table',
-                                ],
-                            ],
-                        ],
                         'output' => [
                             'tables' => [
                                 [
@@ -162,5 +132,10 @@ class RunnerTeradataTest extends BaseRunnerTest
         $options->setConfigurationId($configId);
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-teradata-runner-test.new-table'));
+    }
+
+    public static function expectedDefaultTableBackend(): string
+    {
+        return 'teradata';
     }
 }

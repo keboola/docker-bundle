@@ -56,6 +56,9 @@
 		<testsuite name="teradata-tests">
 			<directory>Tests/backend-specific-tests/Teradata</directory>
 		</testsuite>
+		<testsuite name="bigquery-tests">
+			<directory>Tests/backend-specific-tests/BigQuery</directory>
+		</testsuite>
 	</testsuites>
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">

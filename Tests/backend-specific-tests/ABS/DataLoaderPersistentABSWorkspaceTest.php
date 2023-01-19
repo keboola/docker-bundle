@@ -23,6 +23,8 @@ use Psr\Log\Test\TestLogger;
 
 class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 {
+    use BackendAssertsTrait;
+
     private Client $client;
 
     public function setUp(): void
@@ -33,6 +35,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             'url' => STORAGE_API_URL_SYNAPSE,
             'token' => STORAGE_API_TOKEN_SYNAPSE,
         ]);
+
+        self::assertDefaultTableBackend('synapse', $this->client);
+
         $this->metadata = new Metadata($this->client);
         $this->temp = new Temp();
         $this->temp->initRunFolder();

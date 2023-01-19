@@ -60,14 +60,6 @@ class RunnerGCSTest extends BaseRunnerTest
         }
     }
 
-    protected function initStorageClient(): void
-    {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
-        ]);
-    }
-
     private function createBuckets()
     {
         $this->clearBuckets();

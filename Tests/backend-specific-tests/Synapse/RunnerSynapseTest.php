@@ -3,10 +3,7 @@
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -18,7 +15,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\Temp\Temp;
 
-class RunnerSynapseTest extends BaseRunnerTest
+class RunnerSynapseTest extends BaseTableBackendTest
 {
     const ABS_TEST_FILE_TAG = 'abs-workspace-runner-test';
 
@@ -64,22 +61,6 @@ class RunnerSynapseTest extends BaseRunnerTest
         foreach ($fileList as $file) {
             $this->client->deleteFile($file['id']);
         }
-    }
-
-    protected function initStorageClient(): void
-    {
-        $this->client = new Client([
-            'url' => STORAGE_API_URL_SYNAPSE,
-            'token' => STORAGE_API_TOKEN_SYNAPSE,
-        ]);
-    }
-
-    public function setUp(): void
-    {
-        if (!RUN_SYNAPSE_TESTS) {
-            self::markTestSkipped('Synapse test is disabled.');
-        }
-        parent::setUp();
     }
 
     private function createBuckets()
@@ -420,5 +401,10 @@ class RunnerSynapseTest extends BaseRunnerTest
         $options->setComponentId('keboola.runner-workspace-abs-test');
         $options->setConfigurationId($configId);
         self::assertCount(1, $components->listConfigurationWorkspaces($options));
+    }
+
+    public static function expectedDefaultTableBackend(): string
+    {
+        return 'synapse';
     }
 }
