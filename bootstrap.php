@@ -36,18 +36,6 @@ defined('STORAGE_API_URL_SYNAPSE')
 defined('STORAGE_API_TOKEN_SYNAPSE')
 || define('STORAGE_API_TOKEN_SYNAPSE', getenv('STORAGE_API_TOKEN_SYNAPSE') ?: 'your_token');
 
-defined('RUN_SYNAPSE_TESTS')
-|| define('RUN_SYNAPSE_TESTS', getenv('RUN_SYNAPSE_TESTS') ?: '0');
-
-defined('RUN_EXASOL_TESTS')
-|| define('RUN_EXASOL_TESTS', getenv('RUN_EXASOL_TESTS') ?: '0');
-
-defined('RUN_TERADATA_TESTS')
-|| define('RUN_TERADATA_TESTS', getenv('RUN_TERADATA_TESTS') ?: '0');
-
-defined('RUN_BIGQUERY_TESTS')
-|| define('RUN_BIGQUERY_TESTS', getenv('RUN_BIGQUERY_TESTS') ?: '0');
-
 defined('GIT_PRIVATE_USERNAME')
     || define('GIT_PRIVATE_USERNAME', getenv('GIT_PRIVATE_USERNAME') ?: 'username');
 
