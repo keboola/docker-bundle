@@ -154,7 +154,7 @@ stages:
 
       - job: synapseTests
         displayName: 'Synapse Tests'
-        condition: eq($(RUN_SYNAPSE_TESTS, '1')
+        condition: eq($(RUN_SYNAPSE_TESTS), '1')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_SYNAPSE tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
@@ -171,7 +171,7 @@ stages:
 
       - job: exasolTests
         displayName: 'Exasol Tests'
-        condition: eq($(RUN_EXASOL_TESTS, '1')
+        condition: eq($(RUN_EXASOL_TESTS), '1')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests --debug
@@ -205,7 +205,7 @@ stages:
 
       - job: teradataTests
         displayName: 'Teradata Tests'
-        condition: eq($(RUN_TERADATA_TESTS, '1')
+        condition: eq($(RUN_TERADATA_TESTS), '1')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_TERADATA tests ./vendor/bin/phpunit --testsuite teradata-tests --debug
@@ -222,7 +222,7 @@ stages:
 
       - job: bigqueryTests
         displayName: 'BiqQuery Tests'
-        condition: eq($(RUN_BIGQUERY_TESTS, '1')
+        condition: eq($(RUN_BIGQUERY_TESTS), '1')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
