@@ -66,14 +66,7 @@ class ImageCreatorTest extends BaseRunnerTest
             ]
         ];
 
-        $jobScopedEncryptor = new JobScopedEncryptor(
-            $this->getEncryptor(),
-            'keboola.docker-demo',
-            '12345',
-            null
-        );
-
-        $imageCreator = new ImageCreator($jobScopedEncryptor, new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         self::assertCount(1, $images);
         self::assertTrue($images[0]->isMain());
@@ -98,14 +91,7 @@ class ImageCreatorTest extends BaseRunnerTest
             ],
         ];
 
-        $jobScopedEncryptor = new JobScopedEncryptor(
-            $this->getEncryptor(),
-            'keboola.docker-demo',
-            '12345',
-            null
-        );
-
-        $imageCreator = new ImageCreator($jobScopedEncryptor, new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         self::assertCount(1, $images);
         self::assertTrue($images[0]->isMain());
@@ -150,14 +136,7 @@ class ImageCreatorTest extends BaseRunnerTest
             ],
         ];
 
-        $jobScopedEncryptor = new JobScopedEncryptor(
-            $this->getEncryptor(),
-            'keboola.docker-demo',
-            '12345',
-            null
-        );
-
-        $imageCreator = new ImageCreator($jobScopedEncryptor, new NullLogger(), $this->client, $image, $config);
+        $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         self::assertCount(3, $images);
         self::assertStringContainsString('keboola.processor-decompress', $images[0]->getFullImageId());
