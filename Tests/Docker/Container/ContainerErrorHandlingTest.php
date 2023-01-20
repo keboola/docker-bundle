@@ -141,25 +141,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
 
     public function testOutOfMemoryCrippledComponent()
     {
-        $imageConfiguration = [
-            'data' => [
-                'memory' => '32m',
-                'definition' => [
-                    'type' => 'builder',
-                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
-                    'tag' => 'latest',
-                    'build_options' => [
-                        'parent_type' => 'aws-ecr',
-                        'repository' => [
-                            'uri' => 'https://github.com/keboola/docker-demo-app.git', // not used, can be anything
-                            'type' => 'git'
-                        ],
-                        'commands' => [],
-                        'entry_point' => 'python /home/main.py --data=/data/ || true'
-                    ],
-                ]
-            ]
-        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $script = ['list = []', 'for i in range(100000000):', '   list.append("0123456789")'];
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         self::expectException(OutOfMemoryException::class);
