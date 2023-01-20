@@ -282,15 +282,6 @@ class Component
         return $this->data['definition']['tag'];
     }
 
-    public function setNetworkType($value)
-    {
-        if (!in_array($value, ['none', 'bridge', 'no-internet'])) {
-            throw new ApplicationException("Network mode $value is not supported.");
-        } else {
-            $this->networkType = $value;
-        }
-    }
-
     public function getStagingStorage()
     {
         return $this->data['staging_storage'];
