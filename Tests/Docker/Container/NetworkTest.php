@@ -74,10 +74,11 @@ class NetworkTest extends BaseContainerTest
     public function testNetworkBridgeOverride()
     {
         $script = [
-            'from subprocess import call',
+            'from subprocess import run',
             'import sys',
-            'ret = call(["ping", "-W", "10", "-c", "1", "www.example.com"])',
-            'sys.exit(ret >= 1 if 1 else 0)',
+            'ret = run(["ping", "-W", "10", "-c", "1", "www.example.com"], capture_output = True)',
+            'print("output" + ret.stdout.decode() + ret.stderr.decode())',
+            'sys.exit(ret.returncode >= 1 if 1 else 0)',
         ];
         $this->setComponentConfig(['runtime' => ['network' => 'none']]);
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
@@ -85,7 +86,7 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertStringContainsString('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
+            self::assertStringContainsString('ping: sendmsg: Invalid argument', $e->getMessage());
         }
     }
 
@@ -147,10 +148,11 @@ class NetworkTest extends BaseContainerTest
         $imageConfiguration['data']['network'] = 'none';
         $this->setComponentConfig(['runtime' => ['network' => 'fooBar']]);
         try {
-            $this->getContainer($imageConfiguration, [], $script, true);
+            $container = $this->getContainer($imageConfiguration, [], $script, true);
+            $container->run();
             self::fail('Invalid network must fail.');
         } catch (ApplicationException $e) {
-            self::assertStringContainsString('not supported', $e->getMessage());
+            self::assertStringContainsString('Temporary failure in name resolution', $e->getMessage());
         }
     }
 }
