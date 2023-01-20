@@ -73,8 +73,14 @@ class NetworkTest extends BaseContainerTest
 
     public function testNetworkBridgeOverride()
     {
+        $script = [
+            'from subprocess import call',
+            'import sys',
+            'ret = call(["ping", "-W", "10", "-c", "1", "www.example.com"])',
+            'sys.exit(ret >= 1 if 1 else 0)',
+        ];
         $this->setComponentConfig(['runtime' => ['network' => 'none']]);
-        $container = $this->getContainer($this->getBuilderImageConfiguration(), [], [], true);
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         try {
             $container->run();
             self::fail('Ping must fail');
@@ -85,8 +91,14 @@ class NetworkTest extends BaseContainerTest
 
     public function testNetworkBridgeOverrideNoValue()
     {
+        $script = [
+            'from subprocess import call',
+            'import sys',
+            'ret = call(["ping", "-W", "10", "-c", "1", "www.example.com"])',
+            'sys.exit(ret >= 1 if 1 else 0)',
+        ];
         $this->setComponentConfig(['runtime' => []]);
-        $container = $this->getContainer($this->getBuilderImageConfiguration(), [], [], true);
+        $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
         self::assertStringContainsString('64 bytes from', $process->getOutput());
@@ -106,10 +118,17 @@ class NetworkTest extends BaseContainerTest
 
     public function testNetworkNoneOverride()
     {
-        $imageConfiguration = $this->getBuilderImageConfiguration();
+        $script = [
+            'from subprocess import run',
+            'import sys',
+            'ret = run(["ping", "-W", "10", "-c", "1", "www.example.com"], capture_output = True)',
+            'print("output" + ret.stdout.decode() + ret.stderr.decode())',
+            'sys.exit(ret.returncode >= 1 if 1 else 0)',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['network'] = 'none';
         $this->setComponentConfig(['runtime' => ['network' => 'bridge']]);
-        $container = $this->getContainer($imageConfiguration, [], [], true);
+        $container = $this->getContainer($imageConfiguration, [], $script, true);
         $process = $container->run();
         self::assertEquals(0, $process->getExitCode());
         self::assertStringContainsString('64 bytes from', $process->getOutput());
@@ -117,11 +136,18 @@ class NetworkTest extends BaseContainerTest
 
     public function testNetworkInvalidOverride()
     {
-        $imageConfiguration = $this->getBuilderImageConfiguration();
+        $script = [
+            'from subprocess import run',
+            'import sys',
+            'ret = run(["ping", "-W", "10", "-c", "1", "www.example.com"], capture_output = True)',
+            'print("output" + ret.stdout.decode() + ret.stderr.decode())',
+            'sys.exit(ret.returncode >= 1 if 1 else 0)',
+        ];
+        $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['network'] = 'none';
         $this->setComponentConfig(['runtime' => ['network' => 'fooBar']]);
         try {
-            $this->getContainer($imageConfiguration, [], [], true);
+            $this->getContainer($imageConfiguration, [], $script, true);
             self::fail('Invalid network must fail.');
         } catch (ApplicationException $e) {
             self::assertStringContainsString('not supported', $e->getMessage());
