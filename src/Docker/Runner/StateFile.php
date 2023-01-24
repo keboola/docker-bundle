@@ -187,7 +187,7 @@ class StateFile
     private function saveConfigurationRowState(ConfigurationRow $row, Client $client)
     {
         $componentsApi = new Components($client);
-        $configurationRowState = new ConfigurationRowState($row->getConfiguration());
+        $configurationRowState = new ConfigurationRowState($row->getComponentConfiguration());
         $configurationRowState->setRowId($row->getRowId());
         $configurationRowState->setState($row->getState());
         return $componentsApi->updateConfigurationRowState(

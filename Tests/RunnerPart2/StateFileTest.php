@@ -20,6 +20,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
+use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends TestCase
@@ -75,11 +76,11 @@ class StateFileTest extends TestCase
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
-        $obj = new \stdClass();
+        $obj = new stdClass();
         $obj->lastUpdate = 'today';
         self::assertEquals(
             $obj,
-            \GuzzleHttp\json_decode(file_get_contents($fileName), false)
+            json_decode(file_get_contents($fileName), false)
         );
     }
 
@@ -119,8 +120,8 @@ class StateFileTest extends TestCase
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
         self::assertEquals(
-            new \stdClass(),
-            \GuzzleHttp\json_decode(file_get_contents($fileName), false)
+            new stdClass(),
+            json_decode(file_get_contents($fileName), false)
         );
     }
 
@@ -130,9 +131,9 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
@@ -175,7 +176,7 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut');
+            ->method('apiPutJson');
         $testLogger = new TestLogger();
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -203,12 +204,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id/state"),
+                $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_COMPONENT]);
@@ -266,12 +267,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -303,9 +304,9 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [],
@@ -343,12 +344,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
-                        StateFile::NAMESPACE_COMPONENT => new \stdClass(),
+                        StateFile::NAMESPACE_COMPONENT => new stdClass(),
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
                                 StateFile::NAMESPACE_TABLES => [],
@@ -373,7 +374,7 @@ class StateFileTest extends TestCase
             new NullFilter(),
             new NullLogger()
         );
-        $stateFile->stashState(new \stdClass());
+        $stateFile->stashState(new stdClass());
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
@@ -383,9 +384,9 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
@@ -423,7 +424,7 @@ class StateFileTest extends TestCase
     {
         $fs = new Filesystem();
         $data = ['time' => ['previousStart' => 1495580620]];
-        $stateFile = \GuzzleHttp\json_encode($data);
+        $stateFile = json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile(
             $this->dataDir,
@@ -445,7 +446,7 @@ class StateFileTest extends TestCase
     {
         $fs = new Filesystem();
         $data = [];
-        $stateFile = \GuzzleHttp\json_encode($data);
+        $stateFile = json_encode($data);
         $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
         $stateFile = new StateFile(
             $this->dataDir,
@@ -459,7 +460,7 @@ class StateFileTest extends TestCase
             new NullFilter(),
             new NullLogger()
         );
-        self::assertEquals(new \stdClass(), $stateFile->loadStateFromFile());
+        self::assertEquals(new stdClass(), $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
@@ -487,12 +488,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/rows/row-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -529,12 +530,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/rows/row-id/state'),
+                self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -572,12 +573,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id/state"),
+                $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertEquals([
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
@@ -627,12 +628,12 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
         $sapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
-                $this->equalTo("components/docker-demo/configs/config-id/rows/row-id/state"),
+                $this->equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = \GuzzleHttp\json_decode($argument['state'], true);
+                    $data = json_decode($argument['state'], true);
                     self::assertEquals([
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
@@ -683,7 +684,7 @@ class StateFileTest extends TestCase
             ->getMock();
 
         $branchSapiStub->expects(self::once())
-            ->method('apiPut')
+            ->method('apiPutJson')
             ->with(
                 self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
