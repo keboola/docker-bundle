@@ -44,7 +44,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
                     ->setConfigurationId($configuration['id'])
             );
             foreach ($workspaces as $workspace) {
-                $workspacesApi->deleteWorkspace($workspace['id']);
+                $workspacesApi->deleteWorkspace($workspace['id'], [], true);
             }
             $componentsApi->deleteConfiguration(self::COMPONENT_ID, $configuration['id']);
         }

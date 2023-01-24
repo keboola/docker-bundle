@@ -44,7 +44,7 @@ class RunnerExasolTest extends BaseTableBackendTest
                     ->setConfigurationId($configuration['id'])
             );
             foreach ($workspaces as $workspace) {
-                $workspacesApi->deleteWorkspace($workspace['id']);
+                $workspacesApi->deleteWorkspace($workspace['id'], [], true);
             }
             $componentsApi->deleteConfiguration('keboola.runner-workspace-exasol-test', $configuration['id']);
         }
