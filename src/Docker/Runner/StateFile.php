@@ -2,6 +2,7 @@
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
+use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Configuration\ComponentState\Adapter;
 use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
@@ -11,8 +12,11 @@ use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
+use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
+use Keboola\StorageApi\Options\Components\ConfigurationRowState;
+use Keboola\StorageApi\Options\Components\ConfigurationState;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -170,30 +174,24 @@ class StateFile
 
     private function saveConfigurationState(Configuration $configuration, Client $client)
     {
-        return $client->apiPut(
-            sprintf(
-                'components/%s/configs/%s/state',
-                $configuration->getComponentId(),
-                $configuration->getConfigurationId()
-            ),
-            [
-                'state' => json_encode($configuration->getState())
-            ]
+        $componentsApi = new Components($client);
+        $configurationState = new ConfigurationState();
+        $configurationState->setConfigurationId($configuration->getConfigurationId());
+        $configurationState->setComponentId($configuration->getComponentId());
+        $configurationState->setState($configuration->getState());
+        return $componentsApi->updateConfigurationState(
+            $configurationState
         );
     }
 
     private function saveConfigurationRowState(ConfigurationRow $row, Client $client)
     {
-        return $client->apiPut(
-            sprintf(
-                "components/%s/configs/%s/rows/%s/state",
-                $row->getComponentConfiguration()->getComponentId(),
-                $row->getComponentConfiguration()->getConfigurationId(),
-                $row->getRowId()
-            ),
-            [
-                'state' => json_encode($row->getState())
-            ]
+        $componentsApi = new Components($client);
+        $configurationRowState = new ConfigurationRowState($row->getConfiguration());
+        $configurationRowState->setRowId($row->getRowId());
+        $configurationRowState->setState($row->getState());
+        return $componentsApi->updateConfigurationRowState(
+            $configurationRowState
         );
     }
 }
