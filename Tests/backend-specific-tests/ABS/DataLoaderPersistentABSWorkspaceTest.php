@@ -154,7 +154,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         self::assertCount(1, $workspaces);
         // cleanup after the test
         $workspacesApi = new Workspaces($this->client);
-        $workspacesApi->deleteWorkspace($workspaces[0]['id']);
+        $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains('Created a new persistent workspace'));
     }
 
@@ -229,7 +229,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         self::assertEquals($workspace['id'], $workspaces[0]['id']);
         // cleanup after the test
         $workspacesApi = new Workspaces($this->client);
-        $workspacesApi->deleteWorkspace($workspaces[0]['id']);
+        $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains(
             sprintf('Reusing persistent workspace "%s".', $workspace['id'])
         ));
@@ -308,8 +308,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 $e->getMessage()
             );
             $workspacesApi = new Workspaces($this->client);
-            $workspacesApi->deleteWorkspace($workspace1['id']);
-            $workspacesApi->deleteWorkspace($workspace2['id']);
+            $workspacesApi->deleteWorkspace($workspace1['id'], [], true);
+            $workspacesApi->deleteWorkspace($workspace2['id'], [], true);
         }
     }
 }
