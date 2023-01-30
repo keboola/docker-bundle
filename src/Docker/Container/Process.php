@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Container;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
@@ -10,7 +12,7 @@ class Process extends SymfonyProcess
 {
     private OutputFilterInterface $outputFilter;
 
-    public function __construct($commandline, $cwd = null, array $env = null, $input = null, $timeout = 60)
+    public function __construct($commandline, $cwd = null, ?array $env = null, $input = null, $timeout = 60)
     {
         parent::__construct($commandline, $cwd, $env, $input, $timeout);
         $this->outputFilter = new NullFilter();
@@ -26,7 +28,7 @@ class Process extends SymfonyProcess
         return $this->filter(parent::getErrorOutput());
     }
 
-    public function run(?callable $callback = null, array $env = array()): int
+    public function run(?callable $callback = null, array $env = []): int
     {
         $myCallback = function ($type, $buffer) use ($callback) {
             if ($callback) {

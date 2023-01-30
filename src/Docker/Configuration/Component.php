@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
@@ -86,14 +89,14 @@ class Component extends Configuration
                     ->enumNode('input')
                         ->values(['local', 's3', 'abs', 'none', 'workspace-snowflake', 'workspace-redshift',
                             'workspace-synapse', 'workspace-abs', 'workspace-exasol', 'workspace-teradata',
-                            'workspace-bigquery'
+                            'workspace-bigquery',
                         ])
                         ->defaultValue('local')
                     ->end()
                     ->enumNode('output')
                         ->values(['local', 'none', 'workspace-snowflake', 'workspace-redshift',
                             'workspace-synapse', 'workspace-abs', 'workspace-exasol', 'workspace-teradata',
-                            'workspace-bigquery'
+                            'workspace-bigquery',
                         ])
                         ->defaultValue('local')
                     ->end()

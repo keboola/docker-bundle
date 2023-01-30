@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
@@ -131,7 +133,9 @@ class DataLoaderTest extends BaseDataLoaderTest
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
         self::expectException(UserException::class);
-        self::expectExceptionMessage('Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"');
+        self::expectExceptionMessage(
+            'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"'
+        );
         $dataLoader = new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
@@ -156,7 +160,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => $input,
@@ -181,47 +185,47 @@ class DataLoaderTest extends BaseDataLoaderTest
             'snowflake-redshift' => [
                 'workspace-snowflake',
                 'workspace-redshift',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-redshift".'
+                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-redshift".',
             ],
             'redshift-snowflake' => [
                 'workspace-redshift',
                 'workspace-snowflake',
-                'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-snowflake".'
+                'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-snowflake".',
             ],
             'snowflake-synapse' => [
                 'workspace-snowflake',
                 'workspace-synapse',
-                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-synapse".'
+                'Component staging setting mismatch - input: "workspace-snowflake", output: "workspace-synapse".',
             ],
             'redshift-synapse' => [
                 'workspace-redshift',
                 'workspace-synapse',
-                'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-synapse".'
+                'Component staging setting mismatch - input: "workspace-redshift", output: "workspace-synapse".',
             ],
             'synapse-snowflake' => [
                 'workspace-synapse',
                 'workspace-snowflake',
-                'Component staging setting mismatch - input: "workspace-synapse", output: "workspace-snowflake".'
+                'Component staging setting mismatch - input: "workspace-synapse", output: "workspace-snowflake".',
             ],
             'synapse-redshift' => [
                 'workspace-synapse',
                 'workspace-redshift',
-                'Component staging setting mismatch - input: "workspace-synapse", output: "workspace-redshift".'
+                'Component staging setting mismatch - input: "workspace-synapse", output: "workspace-redshift".',
             ],
             'abs-snowflake' => [
                 'workspace-abs',
                 'workspace-snowflake',
-                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-snowflake".'
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-snowflake".',
             ],
             'abs-redshift' => [
                 'workspace-abs',
                 'workspace-redshift',
-                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-redshift".'
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-redshift".',
             ],
             'abs-synapse' => [
                 'workspace-abs',
                 'workspace-synapse',
-                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-synapse".'
+                'Component staging setting mismatch - input: "workspace-abs", output: "workspace-synapse".',
             ],
         ];
     }
@@ -234,7 +238,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-snowflake',
@@ -251,7 +255,10 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'], array_keys($credentials));
+        self::assertEquals(
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'],
+            array_keys($credentials)
+        );
         self::assertNotEmpty($credentials['user']);
         self::assertNotNull($dataLoader->getWorkspaceBackendSize());
     }
@@ -267,7 +274,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-snowflake',
@@ -281,8 +288,8 @@ class DataLoaderTest extends BaseDataLoaderTest
                     'read_only_storage_access' => $readOnlyWorkspace,
                     'tables' => [],
                     'files' => [],
-                ]
-            ]
+                ],
+            ],
         ];
         $dataLoader = new DataLoader(
             $this->clientWrapper,
@@ -346,7 +353,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-redshift',
@@ -454,7 +461,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'local',
@@ -516,7 +523,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'local',
@@ -554,7 +561,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
-            "1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02"
+            '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02'
         );
         $component = new Component([
             'id' => 'docker-demo',
@@ -562,7 +569,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'local',
@@ -578,24 +585,29 @@ class DataLoaderTest extends BaseDataLoaderTest
                             'source' => 'typed-data.csv',
                             'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
                             'columns' => ['int', 'string', 'decimal', 'float', 'bool', 'date', 'timestamp'],
-                            // TODO: Enable this once https://keboola.atlassian.net/browse/KBC-2850 is fixed
-                            // 'primary_key' => ['int'],
+                            'primary_key' => ['int'],
                             'column_metadata' => [
                                 'int' => (new GenericStorage('int', ['nullable' => false]))->toMetadata(),
-                                'string' => (new GenericStorage('varchar', ['length' => '17', 'nullable' => false]))->toMetadata(),
+                                'string' => (new GenericStorage(
+                                    'varchar',
+                                    ['length' => '17', 'nullable' => false]
+                                ))->toMetadata(),
                                 'decimal' => (new GenericStorage('decimal', ['length' => '10.2']))->toMetadata(),
                                 'float' => (new GenericStorage('float'))->toMetadata(),
                                 'bool' => (new GenericStorage('bool'))->toMetadata(),
                                 'date' => (new GenericStorage('date'))->toMetadata(),
                                 'timestamp' => (new GenericStorage('timestamp'))->toMetadata(),
-                            ]
+                            ],
                         ],
                     ],
                 ],
             ],
         ];
         $clientWrapper = new ClientWrapper(
-            new ClientOptions(STORAGE_API_URL, STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES)
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES')
+            )
         );
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -638,6 +650,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
                     'tag' => '1.6.2',
                 ],

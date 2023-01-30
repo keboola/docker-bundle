@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
+use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\SplFileInfo;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -26,7 +29,7 @@ class Adapter
     protected $format = 'json';
 
     /**
-     * Constructor.
+     *
      *
      * @param string $format Configuration file format ('yaml', 'json')
      */
@@ -77,7 +80,7 @@ class Adapter
      */
     public function setFormat($format)
     {
-        if (!in_array($format, array('yaml', 'json'))) {
+        if (!in_array($format, ['yaml', 'json'])) {
             throw new ApplicationException("Configuration format '{$format}' not supported");
         }
         $this->format = $format;
@@ -92,7 +95,7 @@ class Adapter
     public function setConfig($config)
     {
         $className = $this->configClass;
-        $this->config = (new $className())->parse(array("config" => $config));
+        $this->config = (new $className())->parse(['config' => $config]);
         return $this;
     }
 
@@ -129,7 +132,7 @@ class Adapter
     {
         foreach (['storage', 'parameters', 'image_parameters', 'authorization'] as $objectProp) {
             if (empty($config[$objectProp])) {
-                $config[$objectProp] = new \stdClass();
+                $config[$objectProp] = new stdClass();
             }
         }
         return $config;
@@ -167,9 +170,9 @@ class Adapter
     public function getContents($file)
     {
         if (!(new Filesystem())->exists($file)) {
-            throw new ApplicationException("File" . $file . " not found.");
+            throw new ApplicationException('File' . $file . ' not found.');
         }
-        $fileHandler = new SplFileInfo($file, "", basename($file));
+        $fileHandler = new SplFileInfo($file, '', basename($file));
         return $fileHandler->getContents();
     }
 }

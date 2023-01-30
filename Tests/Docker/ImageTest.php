@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -7,14 +9,13 @@ use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
-use Keboola\Temp\Temp;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 use Symfony\Component\Process\Process;
 
 class ImageTest extends BaseImageTest
 {
-    const TEST_HASH_DIGEST = 'a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a';
+    public const TEST_HASH_DIGEST = 'a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a';
 
     public function testDockerHub()
     {
@@ -53,13 +54,13 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestNotPulled()
     {
-        $command = Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI . ':test-hash');
+        $command = Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI') . ':test-hash');
         $command->run();
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'test-hash',
                 ],
@@ -70,7 +71,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
         ));
     }
 
@@ -81,7 +82,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'test-hash',
                 ],
@@ -94,7 +95,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertFalse($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
         ));
     }
 
@@ -104,7 +105,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'digest' => self::TEST_HASH_DIGEST,
                     'tag' => 'latest',
                 ],
@@ -117,7 +118,7 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'digest' => $matches[1],
                     'tag' => 'test-hash',
                 ],
@@ -128,7 +129,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
-            '"' . AWS_ECR_REGISTRY_URI .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
         ));
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\Csv\CsvFile;
@@ -20,10 +22,10 @@ use Keboola\Temp\Temp;
 
 class BranchedWorkspaceTest extends BaseRunnerTest
 {
-    const BRANCH_NAME = 'workspace-test';
-    const BUCKET_NAME = 'workspace-test';
-    const TABLE_NAME = 'test-table';
-    const TABLE_DATA = [
+    private const BRANCH_NAME = 'workspace-test';
+    private const BUCKET_NAME = 'workspace-test';
+    private const TABLE_NAME = 'test-table';
+    private const TABLE_DATA = [
         ['id', 'text'],
         ['test1', 'test1'],
     ];
@@ -128,7 +130,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
                 $storageApi->dropBucket($bucketId, ['force' => true]);
             }
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -154,7 +156,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         return $componentsApi->addConfiguration($configuration)['id'];
     }
 
-    private function cleanupAndCreateBranch(DevBranches $branchesApi, $branchName)
+    private function cleanupAndCreateBranch(DevBranches $branchesApi, $branchName): string
     {
         $branchList = $branchesApi->listBranches();
         foreach ($branchList as $branch) {
@@ -164,13 +166,12 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             }
         }
 
-        return $branchesApi->createBranch($branchName)['id'];
+        return (string) $branchesApi->createBranch($branchName)['id'];
     }
 
     private function loadDataIntoTable(Client $storageApi, $bucketId, $tableName, array $data)
     {
         $temp = new Temp();
-        $temp->initRunFolder();
 
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         foreach ($data as $row) {
@@ -232,7 +233,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $this->getLoggersService(),
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            RUNNER_MIN_LOG_PORT
+            (int) getenv('RUNNER_MIN_LOG_PORT')
         );
 
         $outputs = [];
@@ -255,8 +256,8 @@ class BranchedWorkspaceTest extends BaseRunnerTest
     private function createMasterClient()
     {
         return new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN_MASTER,
+            'url' => getenv('STORAGE_API_URL'),
+            'token' => getenv('STORAGE_API_TOKEN_MASTER'),
         ]);
     }
 

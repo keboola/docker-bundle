@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -23,7 +25,7 @@ class NullDataLoaderTest extends TestCase
                 'definition' => [
                     'type' => 'aws-ecr',
                     'uri' => 'keboola/dummy',
-                    'tag' => 'latest'
+                    'tag' => 'latest',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-abs',

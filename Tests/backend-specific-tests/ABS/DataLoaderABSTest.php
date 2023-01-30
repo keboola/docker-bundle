@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\ABS;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -33,7 +35,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
                             'source' => 'in.c-docker-demo-testConfig-abs.test',
                         ],
                     ],
-                    'files' => [['tags' => ['docker-demo-test-abs']]]
+                    'files' => [['tags' => ['docker-demo-test-abs']]],
                 ],
             ],
         ];
@@ -67,7 +69,9 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
-            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-abs.test.manifest'),
+            file_get_contents(
+                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-abs.test.manifest'
+            ),
             true
         );
 

@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\Redshift;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -28,12 +30,11 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         parent::setUp();
 
         $this->client = new Client([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
+            'url' => getenv('STORAGE_API_URL'),
+            'token' => getenv('STORAGE_API_TOKEN'),
         ]);
         $this->metadata = new Metadata($this->client);
         $this->temp = new Temp();
-        $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
     }
@@ -46,7 +47,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-redshift',
@@ -56,8 +57,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -95,7 +96,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-redshift',
@@ -105,8 +106,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -165,7 +166,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-redshift',
@@ -175,8 +176,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -245,7 +246,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-redshift',
@@ -255,8 +256,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();

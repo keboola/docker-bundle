@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Runner\Output;
@@ -13,7 +15,7 @@ class OutputTest extends TestCase
         $stateFileMock = $this->getMockBuilder(StateFile::class)->disableOriginalConstructor()->getMock();
         $images = [
             ['id' => 'apples', 'digests' => ['foo', 'baz']],
-            ['id' => 'oranges', 'digests' => ['bar']]
+            ['id' => 'oranges', 'digests' => ['bar']],
         ];
         $output = new Output();
         $output->setImages($images);
@@ -24,7 +26,7 @@ class OutputTest extends TestCase
         self::assertEquals(
             [
                 0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
-                1 => ['id' => 'oranges', 'digests' => ['bar']]
+                1 => ['id' => 'oranges', 'digests' => ['bar']],
             ],
             $output->getImages()
         );

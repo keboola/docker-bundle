@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\ABS;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -10,6 +12,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactoryFactor
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -32,15 +35,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         parent::setUp();
 
         $this->client = new Client([
-            'url' => STORAGE_API_URL_SYNAPSE,
-            'token' => STORAGE_API_TOKEN_SYNAPSE,
+            'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+            'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
         ]);
 
         self::assertDefaultTableBackend('synapse', $this->client);
 
         $this->metadata = new Metadata($this->client);
         $this->temp = new Temp();
-        $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
     }
@@ -53,7 +55,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-abs',
@@ -63,8 +65,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -99,7 +101,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-abs',
@@ -109,8 +111,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -166,7 +168,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-abs',
@@ -176,8 +178,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();
@@ -243,7 +245,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
                     'input' => 'workspace-abs',
@@ -253,8 +255,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         ]);
         $client = self::getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL_SYNAPSE,
-                'token' => STORAGE_API_TOKEN_SYNAPSE,
+                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
             ]])
             ->setMethods(['apiDelete'])
             ->getMock();

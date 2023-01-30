@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
@@ -41,8 +43,12 @@ class ConfigFile
         $this->action = $action;
     }
 
-    public function createConfigFile($configData, OutputFilterInterface $outputFilter, array $workspaceCredentials, array $imageParameters)
-    {
+    public function createConfigFile(
+        $configData,
+        OutputFilterInterface $outputFilter,
+        array $workspaceCredentials,
+        array $imageParameters
+    ) {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);
         try {
@@ -75,7 +81,7 @@ class ConfigFile
             $adapter->setConfig($configData);
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {
-            throw new UserException("Error in configuration: " . $e->getMessage(), $e);
+            throw new UserException('Error in configuration: ' . $e->getMessage(), $e);
         }
     }
 }

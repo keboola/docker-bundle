@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
@@ -28,7 +30,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
+                if ($e->getCode() !== 404) {
                     throw $e;
                 }
             }
@@ -41,7 +43,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         try {
             $cmp->deleteConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -72,14 +74,14 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         try {
             $component->deleteConfiguration('docker-demo', 'runner-configuration');
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
         try {
             $component->deleteConfiguration('keboola.runner-config-test', 'runner-configuration');
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -92,7 +94,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         try {
             $component->deleteConfiguration('docker-demo', 'runner-configuration');
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -121,11 +123,12 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
             'features' => [
-                'container-root-user'
+                'container-root-user',
             ],
         ]);
     }
@@ -183,12 +186,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
             'features' => [
-                'container-root-user'
-            ]
+                'container-root-user',
+            ],
         ]);
 
         $config = [
@@ -622,14 +626,14 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                 'after' => [
                     [
                         'definition' => [
-                            'component'=> 'keboola.processor-move-files'
+                            'component'=> 'keboola.processor-move-files',
                         ],
                         'parameters' => [
-                            'direction' => 'tables'
-                        ]
-                    ]
-                ]
-            ]
+                            'direction' => 'tables',
+                        ],
+                    ],
+                ],
+            ],
         ];
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -652,14 +656,29 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
                     'tag' => '1.2.1',
                 ],
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
+        $jobDefinition1 = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-1'
+        );
+        $jobDefinition2 = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-2'
+        );
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run(
@@ -747,7 +766,6 @@ class RunnerConfigRowsTest extends BaseRunnerTest
     public function testRunRowAdaptiveInputMapping()
     {
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -755,7 +773,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         unset($csv);
         $tableInfo = $this->getClient()->getTable('in.c-runner-test.mytable');
 
-        file_put_contents($temp->getTmpFolder() . "/upload", "test");
+        file_put_contents($temp->getTmpFolder() . '/upload', 'test');
         $fileId1 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'file1'])
@@ -813,7 +831,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                                 'source' => 'mytable',
                                 'destination' => 'in.c-runner-test.mytable-2',
                             ],
-                        ]
+                        ],
                     ],
                 ],
                 'parameters' => [
@@ -880,11 +898,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals([], $configuration['state']);
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
         );
         // confirm that the state is correct
         self::assertEquals(
             ['tags' => [['name' => 'docker-runner-test']], 'lastImportId' => $fileId2],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0]
         );
     }

@@ -1,27 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\OutputFilter;
 
 class NullFilter implements OutputFilterInterface
 {
-    /**
-     * @inheritdoc
-     */
-    public function addValue($value)
+    public function addValue(string $value): void
     {
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function collectValues(array $data)
+    public function collectValues(array $data): void
     {
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function filter($text)
+    public function filter(string $text): string
     {
         return $text;
     }

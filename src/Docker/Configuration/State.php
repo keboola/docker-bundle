@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
@@ -13,7 +15,7 @@ class State extends Configuration
         $treeBuilder = new TreeBuilder('state');
         $root = $treeBuilder->getRootNode();
         $root->children()
-            ->arrayNode(StateFile::NAMESPACE_COMPONENT)->prototype("variable")->end()->end()
+            ->arrayNode(StateFile::NAMESPACE_COMPONENT)->prototype('variable')->end()->end()
             ->arrayNode(StateFile::NAMESPACE_STORAGE)
                 ->children()
                     ->arrayNode(StateFile::NAMESPACE_INPUT)

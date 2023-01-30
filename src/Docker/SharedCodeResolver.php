@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Configuration\SharedCodeRow;
@@ -13,17 +15,10 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class SharedCodeResolver
 {
-    const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
+    private const KEBOOLA_SHARED_CODE = 'keboola.shared-code';
 
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private ClientWrapper $clientWrapper;
+    private LoggerInterface $logger;
 
     public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
@@ -35,7 +30,7 @@ class SharedCodeResolver
      * @param JobDefinition[] $jobDefinitions
      * @return JobDefinition[]
      */
-    public function resolveSharedCode(array $jobDefinitions)
+    public function resolveSharedCode(array $jobDefinitions): array
     {
         $newJobDefinitions = [];
         foreach ($jobDefinitions as $jobDefinition) {
@@ -58,8 +53,14 @@ class SharedCodeResolver
             $context = new SharedCodeContext();
             try {
                 foreach ($sharedCodeRowIds as $sharedCodeRowId) {
-                    $sharedCodeConfiguration = $components->getConfigurationRow(self::KEBOOLA_SHARED_CODE, $sharedCodeId, $sharedCodeRowId);
-                    $sharedCodeConfiguration = (new SharedCodeRow())->parse(array('config' => $sharedCodeConfiguration['configuration']));
+                    $sharedCodeConfiguration = $components->getConfigurationRow(
+                        self::KEBOOLA_SHARED_CODE,
+                        $sharedCodeId,
+                        $sharedCodeRowId
+                    );
+                    $sharedCodeConfiguration = (new SharedCodeRow())->parse(
+                        ['config' => $sharedCodeConfiguration['configuration']]
+                    );
                     $context->pushValue(
                         $sharedCodeRowId,
                         $sharedCodeConfiguration['code_content']
@@ -91,11 +92,7 @@ class SharedCodeResolver
         return $newJobDefinitions;
     }
 
-    /**
-     * @param array $configuration
-     * @param SharedCodeContext $context
-     */
-    private function replaceSharedCodeInConfiguration(&$configuration, $context)
+    private function replaceSharedCodeInConfiguration(array &$configuration, SharedCodeContext $context): void
     {
         foreach ($configuration as &$value) {
             if (is_array($value)) {
@@ -108,11 +105,7 @@ class SharedCodeResolver
         }
     }
 
-    /**
-     * @param $array
-     * @return bool
-     */
-    private function isScalarOrdinalArray($array)
+    private function isScalarOrdinalArray(array $array): bool
     {
         foreach ($array as $key => $value) {
             if (!is_scalar($value) || !is_int($key)) {
@@ -122,12 +115,7 @@ class SharedCodeResolver
         return true;
     }
 
-    /**
-     * @param array $nodes
-     * @param SharedCodeContext $context
-     * @return array
-     */
-    private function replaceSharedCodeInArray($nodes, $context)
+    private function replaceSharedCodeInArray(array $nodes, SharedCodeContext $context): array
     {
         $renderedNodes = [];
         foreach ($nodes as $node) {

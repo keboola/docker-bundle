@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
@@ -26,6 +28,7 @@ use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
+use ReflectionMethod;
 
 class RunnerTest extends BaseRunnerTest
 {
@@ -33,7 +36,8 @@ class RunnerTest extends BaseRunnerTest
 
     private function clearBuckets(): void
     {
-        foreach (['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'] as $bucket) {
+        $buckets = ['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'];
+        foreach ($buckets as $bucket) {
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
@@ -94,8 +98,8 @@ class RunnerTest extends BaseRunnerTest
     {
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['verifyToken', 'getServiceUrl'])
             ->getMock();
@@ -114,7 +118,7 @@ class RunnerTest extends BaseRunnerTest
         $this->setClientMock($clientMock);
         $runner = $this->getRunner();
 
-        $method = new \ReflectionMethod($runner, 'getOauthUrlV3');
+        $method = new ReflectionMethod($runner, 'getOauthUrlV3');
         $method->setAccessible(true);
         $response = $method->invoke($runner);
         self::assertEquals($response, 'https://someurl');
@@ -129,9 +133,10 @@ class RunnerTest extends BaseRunnerTest
                 'id' => 'keboola.processor-last-file',
                 'data' => [
                     'definition' => [
-                      'type' => 'aws-ecr',
-                      'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file',
-                      'tag' => '0.3.0',
+                        'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-last-file',
+                        'tag' => '0.3.0',
                     ],
                 ],
             ],
@@ -139,9 +144,10 @@ class RunnerTest extends BaseRunnerTest
                 'id' => 'keboola.processor-iconv',
                 'data' => [
                     'definition' => [
-                      'type' => 'aws-ecr',
-                      'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv',
-                      'tag' => '4.0.0',
+                        'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                        'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv',
+                        'tag' => '4.0.0',
                     ],
                 ],
             ],
@@ -150,6 +156,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-move-files',
                         'tag' => 'v2.2.1',
                     ],
@@ -160,6 +167,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress',
                         'tag' => 'v4.1.0',
                     ],
@@ -168,8 +176,8 @@ class RunnerTest extends BaseRunnerTest
         ];
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
@@ -196,7 +204,7 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $dataDir = __DIR__ .'/../data/';
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
@@ -216,14 +224,16 @@ class RunnerTest extends BaseRunnerTest
                     'tables' => [
                         [
                             'source' => 'texty.csv',
-                            'destination' => 'out.c-runner-test.texty'
+                            'destination' => 'out.c-runner-test.texty',
                         ],
                     ],
                 ],
             ],
             'parameters' => [
                 'script' => [
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'data <- read.csv(file = "/data/in/tables/texty.csv.gz/texty.csv", stringsAsFactors = FALSE, encoding = "UTF-8");',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'data$rev <- unlist(lapply(data[["text"]], function(x) { paste(rev(strsplit(x, NULL)[[1]]), collapse=\'\') }))',
                     'write.csv(data, file = "/data/out/tables/texty.csv", row.names = FALSE)',
                 ],
@@ -261,6 +271,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.r-transformation',
                     'tag' => '1.2.8',
                 ],
@@ -357,17 +368,18 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
                         'tag' => '1.1.0',
                     ],
-                    'image_parameters' => ['foo' => 'bar']
+                    'image_parameters' => ['foo' => 'bar'],
                 ],
-            ]
+            ],
         ];
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
@@ -409,10 +421,11 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
                     'tag' => '1.1.0',
                 ],
-                'image_parameters' => ['bar' => 'Kochba']
+                'image_parameters' => ['bar' => 'Kochba'],
             ],
         ];
         $this->setClientMock($clientMock);
@@ -460,6 +473,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress',
                         'tag' => 'v4.1.0',
                     ],
@@ -468,8 +482,8 @@ class RunnerTest extends BaseRunnerTest
         ];
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
@@ -490,7 +504,7 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $dataDir = __DIR__ .'/../data/';
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
@@ -531,6 +545,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => '1.1.22',
                 ],
@@ -560,9 +575,10 @@ class RunnerTest extends BaseRunnerTest
                 0 => [
                     'id' => 'developer-portal-v2/keboola.python-transformation:1.1.22',
                     'digests' => [
-                        'developer-portal-v2/keboola.python-transformation@sha256:34d3a0a9a10cdc9a48b4ab51e057eae85682cf2768d05e9f5344832312ad9f52'
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                        'developer-portal-v2/keboola.python-transformation@sha256:34d3a0a9a10cdc9a48b4ab51e057eae85682cf2768d05e9f5344832312ad9f52',
                     ],
-                ]
+                ],
             ],
             $outputs[0]->getImages()
         );
@@ -598,6 +614,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => 'latest',
                 ],
@@ -633,15 +650,15 @@ class RunnerTest extends BaseRunnerTest
         $contents = '';
         $config = [];
         foreach ($records as $record) {
-            if ($record['level'] == Logger::ERROR) {
-                $config = \GuzzleHttp\json_decode($record['message'], true);
+            if ($record['level'] === Logger::ERROR) {
+                $config = json_decode($record['message'], true);
             } else {
                 $contents .= $record['message'];
             }
         }
 
         // verify that the token is not passed by default
-        self::assertStringNotContainsString(STORAGE_API_TOKEN, $contents);
+        self::assertStringNotContainsString(getenv('STORAGE_API_TOKEN'), $contents);
         self::assertStringContainsString($configId, $contents);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
@@ -669,6 +686,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -707,7 +725,6 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
@@ -740,6 +757,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'default_bucket' => true,
@@ -764,7 +782,9 @@ class RunnerTest extends BaseRunnerTest
             null
         );
 
-        self::assertTrue($this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced'));
+        self::assertTrue(
+            $this->getClient()->tableExists('out.c-keboola-docker-demo-sync-runner-configuration.sliced')
+        );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 1 Storage jobs'));
         $this->clearBuckets();
     }
@@ -782,7 +802,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)',
                 ],
             ],
         ];
@@ -793,6 +813,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -841,7 +862,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"#encrypted": "secret"}, state_file)'
+                    '   json.dump({"#encrypted": "secret"}, state_file)',
                 ],
             ],
         ];
@@ -852,6 +873,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -877,7 +899,10 @@ class RunnerTest extends BaseRunnerTest
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
         self::assertCount(1, $configuration['state'][StateFile::NAMESPACE_COMPONENT]);
         self::assertArrayHasKey('#encrypted', $configuration['state'][StateFile::NAMESPACE_COMPONENT]);
-        self::assertStringStartsWith('KBC::ProjectSecure::', $configuration['state'][StateFile::NAMESPACE_COMPONENT]['#encrypted']);
+        self::assertStringStartsWith(
+            'KBC::ProjectSecure::',
+            $configuration['state'][StateFile::NAMESPACE_COMPONENT]['#encrypted']
+        );
         self::assertEquals(
             'secret',
             $this->getEncryptor()->decryptForConfiguration(
@@ -918,6 +943,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -955,22 +981,22 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)',
                 ],
             ],
             'processors' => [
                 'after' => [
                     [
                         'definition' => [
-                            'component'=> 'keboola.processor-move-files'
+                            'component'=> 'keboola.processor-move-files',
                         ],
                         'parameters' => [
-                            'direction' => 'tables'
-                        ]
-                    ]
+                            'direction' => 'tables',
+                        ],
+                    ],
 
-                ]
-            ]
+                ],
+            ],
         ];
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
@@ -979,6 +1005,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1024,7 +1051,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ["foo" => "bar"]]);
+        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -1070,6 +1097,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1078,8 +1106,22 @@ class RunnerTest extends BaseRunnerTest
         $outputs = [];
         $runner->run(
             [
-                new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
-                new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+                new JobDefinition(
+                    $configData1,
+                    new Component($componentData),
+                    'runner-configuration',
+                    'v123',
+                    [],
+                    'row-1'
+                ),
+                new JobDefinition(
+                    $configData2,
+                    new Component($componentData),
+                    'runner-configuration',
+                    'v123',
+                    [],
+                    'row-2'
+                ),
             ],
             'run',
             'run',
@@ -1110,8 +1152,12 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals('fooBar1', $row1['state'][StateFile::NAMESPACE_COMPONENT]['bazRow1']);
         self::assertArrayHasKey('bazRow2', $row2['state'][StateFile::NAMESPACE_COMPONENT]);
         self::assertEquals('fooBar2', $row2['state'][StateFile::NAMESPACE_COMPONENT]['bazRow2']);
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)'));
-        self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)'));
+        self::assertTrue(
+            $this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 1 of 2)')
+        );
+        self::assertTrue(
+            $this->getRunnerHandler()->hasInfoThatContains('Running component keboola.docker-demo-sync (row 2 of 2)')
+        );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains('Waiting for 2 Storage jobs'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-1'));
         self::assertTrue($this->client->tableExists('out.c-runner-test.my-table-2'));
@@ -1127,7 +1173,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ["foo" => "bar"]]);
+        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -1162,6 +1208,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1172,7 +1219,14 @@ class RunnerTest extends BaseRunnerTest
             $outputs = [];
             $runner->run(
                 [
-                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
+                    new JobDefinition(
+                        $configData1,
+                        new Component($componentData),
+                        'runner-configuration',
+                        'v123',
+                        [],
+                        'row-1'
+                    ),
                 ],
                 'run',
                 'run',
@@ -1184,6 +1238,7 @@ class RunnerTest extends BaseRunnerTest
             );
         } catch (UserException $e) {
             self::assertStringContainsString(
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": There are duplicate columns in CSV file: "foo"',
                 $e->getMessage()
             );
@@ -1215,7 +1270,7 @@ class RunnerTest extends BaseRunnerTest
         $configuration->setComponentId('keboola.docker-demo-sync');
         $configuration->setName('Test configuration');
         $configuration->setConfigurationId('runner-configuration');
-        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ["foo" => "bar"]]);
+        $configuration->setState([StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']]);
         $component->addConfiguration($configuration);
 
         $configurationRow = new ConfigurationRow($configuration);
@@ -1279,6 +1334,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1289,8 +1345,22 @@ class RunnerTest extends BaseRunnerTest
             $outputs = [];
             $runner->run(
                 [
-                    new JobDefinition($configData1, new Component($componentData), 'runner-configuration', 'v123', [], 'row-1'),
-                    new JobDefinition($configData2, new Component($componentData), 'runner-configuration', 'v123', [], 'row-2'),
+                    new JobDefinition(
+                        $configData1,
+                        new Component($componentData),
+                        'runner-configuration',
+                        'v123',
+                        [],
+                        'row-1'
+                    ),
+                    new JobDefinition(
+                        $configData2,
+                        new Component($componentData),
+                        'runner-configuration',
+                        'v123',
+                        [],
+                        'row-2'
+                    ),
                 ],
                 'run',
                 'run',
@@ -1344,20 +1414,20 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)',
                 ],
             ],
             'processors' => [
                 'after' => [
                     [
                         'definition' => [
-                            'component'=> 'keboola.processor-move-files'
+                            'component'=> 'keboola.processor-move-files',
                         ],
                         // required parameter direction is missing
-                    ]
+                    ],
 
-                ]
-            ]
+                ],
+            ],
         ];
         $configuration->setConfiguration($configData);
         $component->addConfiguration($configuration);
@@ -1366,6 +1436,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1390,11 +1461,18 @@ class RunnerTest extends BaseRunnerTest
             );
             self::fail('Must fail with user error');
         } catch (UserException $e) {
-            self::assertStringContainsString('child node "direction" at path "parameters" must be configured.', $e->getMessage());
+            self::assertStringContainsString(
+                'child node "direction" at path "parameters" must be configured.',
+                $e->getMessage()
+            );
         }
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals([StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']], $configuration['state'], 'State must not be changed');
+        self::assertEquals(
+            [StateFile::NAMESPACE_COMPONENT => ['foo' => 'bar']],
+            $configuration['state'],
+            'State must not be changed'
+        );
         $this->clearConfigurations();
     }
 
@@ -1407,6 +1485,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     ],
                 ],
@@ -1416,16 +1495,17 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                         'tag' => 'latest',
                     ],
                 ],
-            ]
+            ],
         ];
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['getServiceUrl', 'apiGet'])
             ->getMock();
@@ -1509,7 +1589,11 @@ class RunnerTest extends BaseRunnerTest
         self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
+        self::assertEquals(
+            ['bar' => 'Kochba'],
+            $configuration['state'][StateFile::NAMESPACE_COMPONENT],
+            'State must be changed'
+        );
     }
 
     public function testExecutorBeforeProcessorNoState(): void
@@ -1521,6 +1605,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     ],
                 ],
@@ -1530,6 +1615,7 @@ class RunnerTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                         'tag' => 'latest',
                     ],
@@ -1538,8 +1624,8 @@ class RunnerTest extends BaseRunnerTest
         ];
         $clientMock = $this->getMockBuilder(Client::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
@@ -1624,7 +1710,11 @@ class RunnerTest extends BaseRunnerTest
         self::assertStringNotContainsString('state', $output, "No state must've been passed to the processor");
         $component = new Components($this->getClient());
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
-        self::assertEquals(['bar' => 'Kochba'], $configuration['state'][StateFile::NAMESPACE_COMPONENT], 'State must be changed');
+        self::assertEquals(
+            ['bar' => 'Kochba'],
+            $configuration['state'][StateFile::NAMESPACE_COMPONENT],
+            'State must be changed'
+        );
     }
 
     public function testExecutorNoStoreState(): void
@@ -1635,7 +1725,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)',
                 ],
             ],
         ];
@@ -1644,6 +1734,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1680,6 +1771,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1689,7 +1781,7 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [
                     'import json',
                     'with open("/data/out/state.json", "w") as state_file:',
-                    '   json.dump({"baz": "fooBar"}, state_file)'
+                    '   json.dump({"baz": "fooBar"}, state_file)',
                 ],
             ],
         ];
@@ -1725,6 +1817,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1768,8 +1861,8 @@ class RunnerTest extends BaseRunnerTest
         $bucketMetadata = $metadataApi->listBucketMetadata('in.c-keboola-docker-demo-sync');
         $expectedBucketMetadata = [
             'system' => [
-                'KBC.createdBy.component.id' => 'keboola.docker-demo-sync'
-            ]
+                'KBC.createdBy.component.id' => 'keboola.docker-demo-sync',
+            ],
         ];
         self::assertEquals($expectedBucketMetadata, $this->getMetadataValues($bucketMetadata));
     }
@@ -1791,7 +1884,7 @@ class RunnerTest extends BaseRunnerTest
             'parameters' => [
                 'mode' => true,
                 'credentials' => 'tde-exporter-tde-bug-32',
-            ]
+            ],
         ];
         $runner = $this->getRunner();
         $componentData = [
@@ -1799,6 +1892,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -1828,7 +1922,6 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
@@ -1860,6 +1953,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'default_bucket' => true,
@@ -1891,7 +1985,6 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
@@ -1920,6 +2013,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'default_bucket' => true,
@@ -1951,7 +2045,6 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test', 'test']);
@@ -1981,10 +2074,11 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'staging_storage' => [
-                    'input' => 'none'
+                    'input' => 'none',
                 ],
                 'default_bucket' => true,
             ],
@@ -2017,6 +2111,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2058,7 +2153,10 @@ class RunnerTest extends BaseRunnerTest
             self::assertCount(1, $output->getImages());
             self::assertArrayHasKey('id', $output->getImages()[0]);
             self::assertArrayHasKey('digests', $output->getImages()[0]);
-            self::assertEquals('developer-portal-v2/keboola.python-transformation:latest', $output->getImages()[0]['id']);
+            self::assertEquals(
+                'developer-portal-v2/keboola.python-transformation:latest',
+                $output->getImages()[0]['id']
+            );
         }
     }
 
@@ -2069,6 +2167,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2105,6 +2204,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'logging' => [
@@ -2184,6 +2284,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2195,19 +2296,19 @@ class RunnerTest extends BaseRunnerTest
                         [
                             'source' => 'in.c-runner-test.test',
                             // erroneous lines
-                            'foo' => 'bar'
-                        ]
-                    ]
+                            'foo' => 'bar',
+                        ],
+                    ],
                 ],
                 'output' => [
                     'tables' => [
                         [
                             'source' => 'sliced.csv',
-                            'destination' => 'in.c-runner-test.out'
-                        ]
-                    ]
-                ]
-            ]
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
         ];
         $runner = $this->getRunner();
         $this->expectException(UserException::class);
@@ -2232,6 +2333,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2289,6 +2391,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2350,7 +2453,7 @@ class RunnerTest extends BaseRunnerTest
                 '',
                 '"col1"',
                 '"value1"',
-                '"value2"'
+                '"value2"',
             ],
             $lines
         );
@@ -2363,6 +2466,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2420,6 +2524,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2439,11 +2544,11 @@ class RunnerTest extends BaseRunnerTest
                 'oauth_api' => [
                     'credentials' => [
                         '#three' => 'foo',
-                        'four' => 'anotherFoo'
+                        'four' => 'anotherFoo',
                     ],
-                    'version' => 3
-                ]
-            ]
+                    'version' => 3,
+                ],
+            ],
         ];
         $runner = $this->getRunner();
         $outputs = [];
@@ -2470,7 +2575,7 @@ class RunnerTest extends BaseRunnerTest
                 $error .= $record['message'];
             }
         }
-        $config = \GuzzleHttp\json_decode($error, true);
+        $config = json_decode($error, true);
         self::assertEquals('[hidden]', $config['parameters']['#one']);
         self::assertEquals('anotherBar', $config['parameters']['two']);
         self::assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
@@ -2484,6 +2589,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
                 'forward_token' => true,
@@ -2520,7 +2626,7 @@ class RunnerTest extends BaseRunnerTest
         foreach ($records as $record) {
             $output .= $record['message'];
         }
-        self::assertStringNotContainsString(STORAGE_API_TOKEN, $output);
+        self::assertStringNotContainsString(getenv('STORAGE_API_TOKEN'), $output);
         self::assertStringContainsString('[hidden]', $output);
     }
 
@@ -2539,6 +2645,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2558,7 +2665,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertEquals(
             [[[
                 'metric' => 'kB',
-                'value' => 150
+                'value' => 150,
             ]]],
             $usageFile->getUsageData()
         );
@@ -2591,6 +2698,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -2604,8 +2712,22 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        $jobDefinition1 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-1');
-        $jobDefinition2 = new JobDefinition($configData, new Component($componentData), 'runner-configuration', null, [], 'row-2');
+        $jobDefinition1 = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-1'
+        );
+        $jobDefinition2 = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-2'
+        );
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run(
@@ -2622,12 +2744,12 @@ class RunnerTest extends BaseRunnerTest
             [
                 [[
                     'metric' => 'kB',
-                    'value' => 150
+                    'value' => 150,
                 ]],
                 [[
                     'metric' => 'kB',
-                    'value' => 150
-                ]]
+                    'value' => 150,
+                ]],
             ],
             $usageFile->getUsageData()
         );
@@ -2651,10 +2773,11 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
-            'features' => $features
+            'features' => $features,
         ];
         $configData = [
             'parameters' => [
@@ -2675,7 +2798,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearConfigurations();
 
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -2694,7 +2816,7 @@ class RunnerTest extends BaseRunnerTest
 
         self::assertNotEquals($tableInfo['lastImportDate'], $updatedTableInfo['lastImportDate']);
 
-        file_put_contents($temp->getTmpFolder() . "/upload", "test");
+        file_put_contents($temp->getTmpFolder() . '/upload', 'test');
         $fileId1 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'file1'])
@@ -2710,11 +2832,12 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
             'features' => [
-                'container-root-user'
+                'container-root-user',
             ],
         ]);
 
@@ -2814,11 +2937,13 @@ class RunnerTest extends BaseRunnerTest
         $configuration = $component->getConfiguration($componentDefinition->getId(), 'runner-configuration');
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             $configuration['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
         );
         // confirm that the file state is correct
         self::assertEquals(
             ['tags' => [['name' => 'docker-runner-test']], 'lastImportId' => $fileId2],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             $configuration['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0]
         );
     }
@@ -2826,7 +2951,7 @@ class RunnerTest extends BaseRunnerTest
     public function swapFeatureProvider(): array
     {
         return [
-            [["no-swap"]],
+            [['no-swap']],
             [[]],
         ];
     }
@@ -2836,7 +2961,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -2920,7 +3044,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -2999,7 +3122,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -3089,7 +3211,6 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -3172,7 +3293,7 @@ class RunnerTest extends BaseRunnerTest
     {
         $this->clearFiles();
         // create the file for the input file processing test
-        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $dataDir = __DIR__ .'/../data/';
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
@@ -3425,6 +3546,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -3442,6 +3564,7 @@ class RunnerTest extends BaseRunnerTest
                     'import sys',
                     'import json',
                     'with open("out/tables/write-always.csv", mode="wt", encoding="utf-8") as out_file:',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     '    writer = csv.DictWriter(out_file, fieldnames=["col1", "col2"], lineterminator="\n", delimiter=",", quotechar=\'"\')',
                     '    writer.writeheader()',
                     '    writer.writerow({\'col1\': \'hello\', \'col2\': \'world\'})',
@@ -3497,6 +3620,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.snowflake-transformation',
                     'tag' => '0.7.0',
                 ],
@@ -3584,6 +3708,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -3655,6 +3780,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -3681,6 +3807,7 @@ class RunnerTest extends BaseRunnerTest
                     'import csv',
                     'import sys',
                     'with open("out/tables/write-always.csv", mode="wt", encoding="utf-8") as out_file:',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     '    writer = csv.DictWriter(out_file, fieldnames=["col1", "col2"], lineterminator="\n", delimiter=",", quotechar=\'"\')',
                     '    writer.writeheader()',
                     '    writer.writerow({\'col1\': \'hello\', \'col2\': \'world\'})',
@@ -3731,6 +3858,7 @@ class RunnerTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],

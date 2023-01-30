@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Image;
 
 use Aws\Credentials\CredentialProvider;
@@ -12,19 +14,20 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
+use Throwable;
 
 class AWSElasticContainerRegistry extends Image
 {
     protected $awsRegion = 'us-east-1';
-    const CONNECT_TIMEOUT = 10;
-    const CONNECT_RETRIES = 0;
-    const TRANSFER_TIMEOUT = 120;
+    private const CONNECT_TIMEOUT = 10;
+    private const CONNECT_RETRIES = 0;
+    private const TRANSFER_TIMEOUT = 120;
 
     public function __construct(Component $component, LoggerInterface $logger)
     {
         parent::__construct($component, $logger);
-        if (!empty($component->getImageDefinition()["repository"]["region"])) {
-            $this->awsRegion = $component->getImageDefinition()["repository"]["region"];
+        if (!empty($component->getImageDefinition()['repository']['region'])) {
+            $this->awsRegion = $component->getImageDefinition()['repository']['region'];
         }
     }
 
@@ -60,7 +63,7 @@ class AWSElasticContainerRegistry extends Image
             'region' => $this->getAwsRegion(),
             'stsClient' => $stsClient,
         ]);
-        $ecrClient = new EcrClient(array(
+        $ecrClient = new EcrClient([
             'region' => $this->getAwsRegion(),
             'version' => '2015-09-21',
             'retries' => self::CONNECT_RETRIES,
@@ -69,7 +72,7 @@ class AWSElasticContainerRegistry extends Image
                 'timeout' => self::TRANSFER_TIMEOUT,
             ],
             'credentials' => $awsCredentials,
-        ));
+        ]);
         /** @var Result $authorization */
         $authorization = null;
         $proxy = $this->getRetryProxy();
@@ -79,12 +82,12 @@ class AWSElasticContainerRegistry extends Image
                     $authorization = $ecrClient->getAuthorizationToken(['registryIds' => [$this->getAwsAccountId()]]);
                     // \Exception because "Before PHP 7, Exception did not implement the Throwable interface."
                     // https://www.php.net/manual/en/class.exception.php
-                } catch (\Exception $e) {
+                } catch (Throwable $e) {
                     $this->logger->notice('Retrying AWS GetCredentials. error: ' . $e->getMessage());
                     throw $e;
                 }
             });
-        } catch (\Exception $e) {
+        } catch (Throwable $e) {
             throw new LoginFailedException($e->getMessage(), $e);
         }
         // decode token and extract user
@@ -104,7 +107,7 @@ class AWSElasticContainerRegistry extends Image
     {
         $logoutParams = [];
         $logoutParams[] = escapeshellarg($this->getImageId());
-        return join(" ", $logoutParams);
+        return join(' ', $logoutParams);
     }
 
     /**
@@ -114,9 +117,9 @@ class AWSElasticContainerRegistry extends Image
     {
         $proxy = $this->getRetryProxy();
 
-        $command = "sudo docker login " . $this->getLoginParams() .  " " .
-            "&& sudo docker pull " . escapeshellarg($this->getFullImageId()) . " " .
-            "&& sudo docker logout " . $this->getLogoutParams();
+        $command = 'sudo docker login ' . $this->getLoginParams() .  ' ' .
+            '&& sudo docker pull ' . escapeshellarg($this->getFullImageId()) . ' ' .
+            '&& sudo docker logout ' . $this->getLogoutParams();
 
         $process = Process::fromShellCommandline($command);
         $process->setTimeout(3600);
@@ -125,11 +128,20 @@ class AWSElasticContainerRegistry extends Image
                 $process->mustRun();
             });
             $this->logImageHash();
-        } catch (\Exception $e) {
-            if (strpos($process->getOutput(), "403 Forbidden") !== false) {
+        } catch (Throwable $e) {
+            if (str_contains($process->getOutput(), '403 Forbidden')) {
                 throw new LoginFailedException($process->getOutput());
             }
-            throw new ApplicationException("Cannot pull image '{$this->getPrintableImageId()}': ({$process->getExitCode()}) {$process->getErrorOutput()} {$process->getOutput()}", $e);
+            throw new ApplicationException(
+                sprintf(
+                    "Cannot pull image '%s': (%s) %s %s",
+                    $this->getPrintableImageId(),
+                    $process->getExitCode(),
+                    $process->getErrorOutput(),
+                    $process->getOutput()
+                ),
+                $e
+            );
         }
     }
 }

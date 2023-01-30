@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
@@ -10,132 +12,79 @@ use Keboola\OutputMapping\Table\Result as OutputTableResult;
 
 class Output
 {
-    /**
-     * @var array
-     */
-    private $images = [];
-    /**
-     * @var string
-     */
-    private $output;
-    /**
-     * @var ?string
-     */
-    private $configVersion;
-    /**
-     * @var LoadTableQueue|null
-     */
-    private $tableQueue;
-    /**
-     * @var StateFile
-     */
-    private $stateFile;
-
-    /** @var null|InputFileStateList */
-    private $inputFileStateList;
-
-    /** @var null|DataLoaderInterface */
-    private $dataLoader;
-
+    private array $images = [];
+    private string $output;
+    private ?string $configVersion = null;
+    private ?LoadTableQueue $tableQueue = null;
+    private StateFile $stateFile;
+    private ?InputFileStateList $inputFileStateList = null;
+    private ?DataLoaderInterface $dataLoader = null;
     private ?InputTableResult $inputTableResult = null;
-
     private ?OutputTableResult $outputTableResult = null;
-
     private array $artifactsDownloaded = [];
-
     private array $artifactsUploaded = [];
 
-    /**
-     * @param array $images
-     */
     public function setImages(array $images): void
     {
         $this->images = $images;
     }
 
-    /**
-     * @return array
-     */
-    public function getImages()
+    public function getImages(): array
     {
         return $this->images;
     }
 
-    /**
-     * @param string $output
-     */
     public function setOutput(string $output): void
     {
         $this->output = $output;
     }
 
-    /**
-     * @return string
-     */
-    public function getProcessOutput()
+    public function getProcessOutput(): string
     {
         return $this->output;
     }
 
-    /**
-     * @param ?string $configVersion
-     */
     public function setConfigVersion(?string $configVersion): void
     {
         $this->configVersion = $configVersion;
     }
 
-    /**
-     * @return ?string
-     */
-    public function getConfigVersion()
+    public function getConfigVersion(): ?string
     {
         return $this->configVersion;
     }
 
-    /**
-     * @param LoadTableQueue|null $tableQueue
-     */
-    public function setTableQueue($tableQueue)
+    public function setTableQueue(?LoadTableQueue $tableQueue): void
     {
         $this->tableQueue = $tableQueue;
     }
 
-    public function setInputTableResult(InputTableResult $inputTableResult)
+    public function setInputTableResult(InputTableResult $inputTableResult): void
     {
         $this->inputTableResult = $inputTableResult;
     }
 
-    public function setInputFileStateList(InputFileStateList $inputFileStateList)
+    public function setInputFileStateList(InputFileStateList $inputFileStateList): void
     {
         $this->inputFileStateList = $inputFileStateList;
     }
 
-    public function setDataLoader(DataLoaderInterface $dataLoader)
+    public function setDataLoader(DataLoaderInterface $dataLoader): void
     {
-        return $this->dataLoader = $dataLoader;
+        $this->dataLoader = $dataLoader;
     }
 
-    /**
-     * @return null|InputTableResult
-     */
-    public function getInputTableResult()
+    public function getInputTableResult(): ?InputTableResult
     {
         return $this->inputTableResult;
     }
 
-    /**
-     * @return null|InputFileStateList
-     */
-    public function getInputFileStateList()
+    public function getInputFileStateList(): ?InputFileStateList
     {
         return $this->inputFileStateList;
     }
 
-    /**
-     * @return LoadTableQueue|null
-     */
-    public function getTableQueue()
+    public function getTableQueue(): ?LoadTableQueue
     {
         return $this->tableQueue;
     }
@@ -145,15 +94,12 @@ class Output
         $this->stateFile = $stateFile;
     }
 
-    public function getStateFile()
+    public function getStateFile(): StateFile
     {
         return $this->stateFile;
     }
 
-    /**
-     * @return null|DataLoaderInterface
-     */
-    public function getDataLoader()
+    public function getDataLoader(): ?DataLoaderInterface
     {
         return $this->dataLoader;
     }

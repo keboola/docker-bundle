@@ -1,18 +1,12 @@
 parameters:
-    level: 5
+    level: max
     checkMissingIterableValueType: false
     paths:
         - src
         - Tests
-        - bootstrap.php
-
     ignoreErrors:
-        - message: '#^Constructor of class [\w\\]+ has an unused parameter \$\w+\.$#'
-          path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-        - message: "#^Unreachable statement - code above always terminates.$#"
-          path: Tests
 
 includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpstan/phpstan-symfony/extension.neon
+    - phpstan-baseline.neon

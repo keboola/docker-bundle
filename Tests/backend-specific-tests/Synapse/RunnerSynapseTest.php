@@ -1,9 +1,12 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\Synapse;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Tests\Runner\BaseTableBackendTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -17,7 +20,7 @@ use Keboola\Temp\Temp;
 
 class RunnerSynapseTest extends BaseTableBackendTest
 {
-    const ABS_TEST_FILE_TAG = 'abs-workspace-runner-test';
+    private const ABS_TEST_FILE_TAG = 'abs-workspace-runner-test';
 
     private function clearBuckets()
     {
@@ -25,7 +28,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
             try {
                 $this->getClient()->dropBucket($bucket, ['force' => true]);
             } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
+                if ($e->getCode() !== 404) {
                     throw $e;
                 }
             }
@@ -56,7 +59,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
     {
         $fileList = $this->client->listFiles((new ListFilesOptions())->setTags([
             self::ABS_TEST_FILE_TAG,
-            "componentId: keboola.runner-workspace-abs-test",
+            'componentId: keboola.runner-workspace-abs-test',
         ]));
         foreach ($fileList as $file) {
             $this->client->deleteFile($file['id']);
@@ -77,7 +80,6 @@ class RunnerSynapseTest extends BaseTableBackendTest
         $this->createBuckets();
         $this->clearConfigs();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -163,7 +165,6 @@ class RunnerSynapseTest extends BaseTableBackendTest
         $this->clearFiles();
         $this->clearConfigs();
         $temp = new Temp();
-        $temp->initRunFolder();
         file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
         $fileId = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/my-lovely-file.wtf',
@@ -227,7 +228,9 @@ class RunnerSynapseTest extends BaseTableBackendTest
             $outputs,
             null
         );
-        self::assertTrue($this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)));
+        self::assertTrue(
+            $this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId))
+        );
 
         // assert the workspace is preserved
         $options = new ListConfigurationWorkspacesOptions();
@@ -243,7 +246,6 @@ class RunnerSynapseTest extends BaseTableBackendTest
         $this->clearConfigs();
         $this->createBuckets();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);
@@ -251,7 +253,6 @@ class RunnerSynapseTest extends BaseTableBackendTest
         unset($csv);
 
         $temp = new Temp();
-        $temp->initRunFolder();
         file_put_contents($temp->getTmpFolder() . '/my-lovely-file.wtf', 'some data');
         $fileId = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/my-lovely-file.wtf',

@@ -1,20 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Container;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Service\StorageApiService;
-use Keboola\ObjectEncryptor\EncryptorOptions;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
-use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
 use Keboola\Temp\Temp;
@@ -22,6 +19,7 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
+use function GuzzleHttp\json_encode;
 
 abstract class BaseContainerTest extends TestCase
 {
@@ -33,20 +31,17 @@ abstract class BaseContainerTest extends TestCase
     private $createEventCallback;
 
     private ?LoggersService $logService;
-    private ?StorageApiService $storageServiceStub;
     private array $componentConfig;
     private Client $storageClientStub;
 
     protected function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
         $this->temp = new Temp('runner-tests');
-        $this->temp->initRunFolder();
         $this->createEventCallback = null;
         $this->logService = null;
-        $this->storageServiceStub = null;
         $this->componentConfig = [];
     }
 
@@ -56,6 +51,7 @@ abstract class BaseContainerTest extends TestCase
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                     'tag' => '1.4.0',
                 ],
@@ -64,8 +60,8 @@ abstract class BaseContainerTest extends TestCase
                     'not-secure' => [
                         'this' => 'public',
                         '#andthis' => 'isAlsoSecure',
-                    ]
-                ]
+                    ],
+                ],
             ],
         ];
     }
@@ -100,11 +96,6 @@ abstract class BaseContainerTest extends TestCase
         return $this->logService;
     }
 
-    protected function getStorageApiService()
-    {
-        return $this->storageServiceStub;
-    }
-
     protected function getStorageClientStub()
     {
         return $this->storageClientStub;
@@ -127,12 +118,6 @@ abstract class BaseContainerTest extends TestCase
         $this->storageClientStub->expects($this->any())
             ->method('createEvent')
             ->with($this->callback($this->createEventCallback));
-        $this->storageServiceStub = $this->getMockBuilder(StorageApiService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $this->storageServiceStub->expects(self::any())
-            ->method("getClientWithoutLogger")
-            ->will(self::returnValue($this->storageClientStub));
 
         $sapiHandler = new StorageApiHandler('runner-tests', $this->getStorageClientStub());
         $log = new Logger('runner-tests', [$this->testHandler]);
@@ -153,27 +138,26 @@ abstract class BaseContainerTest extends TestCase
         }
         $outputFilter = new OutputFilter(10000);
         $outputFilter->collectValues([$imageConfig]);
-        $container = new Container(
+        return new Container(
             'container-error-test',
             $image,
             $log,
             $containerLog,
             $this->temp->getTmpFolder() . '/data',
             $this->temp->getTmpFolder() . '/tmp',
-            RUNNER_COMMAND_TO_GET_HOST_IP,
-            RUNNER_MIN_LOG_PORT,
-            RUNNER_MAX_LOG_PORT,
+            getenv('RUNNER_COMMAND_TO_GET_HOST_IP'),
+            getenv('RUNNER_MIN_LOG_PORT'),
+            getenv('RUNNER_MAX_LOG_PORT'),
             $commandOptions,
             $outputFilter,
             new Limits($log, ['cpu_count' => 2], $projectLimits, [], null)
         );
-        return $container;
     }
 
     private function createScript(array $contents)
     {
         $fs = new Filesystem();
         $configFile['parameters']['script'] = $contents;
-        $fs->dumpFile($this->temp->getTmpFolder() . '/data/config.json', \GuzzleHttp\json_encode($configFile));
+        $fs->dumpFile($this->temp->getTmpFolder() . '/data/config.json', json_encode($configFile));
     }
 }

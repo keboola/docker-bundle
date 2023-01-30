@@ -1,12 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
-use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
+use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -29,13 +31,12 @@ abstract class BaseDataLoaderTest extends TestCase
 
         $this->clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN')
             )
         );
         $this->metadata = new Metadata($this->clientWrapper->getBasicClient());
         $this->temp = new Temp();
-        $this->temp->initRunFolder();
         $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
         $this->workingDir->createWorkingDir();
     }
@@ -48,7 +49,7 @@ abstract class BaseDataLoaderTest extends TestCase
                 ['force' => true]
             );
         } catch (ClientException $e) {
-            if ($e->getCode() != 404) {
+            if ($e->getCode() !== 404) {
                 throw $e;
             }
         }
@@ -89,10 +90,10 @@ abstract class BaseDataLoaderTest extends TestCase
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
-                'default_bucket' => true
-            ]
+                'default_bucket' => true,
+            ],
         ]);
     }
 
@@ -104,10 +105,10 @@ abstract class BaseDataLoaderTest extends TestCase
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
 
-            ]
+            ],
         ]);
     }
 }

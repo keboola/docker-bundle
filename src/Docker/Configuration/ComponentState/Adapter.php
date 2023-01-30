@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration\ComponentState;
 
 use Keboola\DockerBundle\Docker\Configuration;

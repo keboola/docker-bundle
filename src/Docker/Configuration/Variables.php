@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Keboola\DockerBundle\Docker\Configuration;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Variables extends Configuration
 {

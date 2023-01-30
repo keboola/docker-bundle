@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\RunnerPart2;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
@@ -40,8 +42,8 @@ class ArtifactsTest extends BaseRunnerTest
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->onlyMethods(['verifyToken', 'listFiles'])
             ->getMock()
@@ -63,8 +65,8 @@ class ArtifactsTest extends BaseRunnerTest
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->onlyMethods(['verifyToken'])
             ->getMock()
@@ -89,6 +91,7 @@ class ArtifactsTest extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -202,7 +205,7 @@ class ArtifactsTest extends BaseRunnerTest
         $config = array_merge(self::PYTHON_TRANSFORMATION_BASIC_CONFIG, [
             'artifacts' => [
                 'options' => [
-                    'zip' => false
+                    'zip' => false,
                 ],
             ],
         ]);
@@ -267,7 +270,7 @@ class ArtifactsTest extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    '# do nothing'
+                    '# do nothing',
                 ],
             ],
         ];
@@ -371,7 +374,7 @@ class ArtifactsTest extends BaseRunnerTest
             'parameters' => [
                 'script' => [
                     'import os',
-                    '# do nothing'
+                    '# do nothing',
                 ],
             ],
             'artifacts' => [

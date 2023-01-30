@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Container;
 
 class WtfWarningFilter
 {
-    const WTF_WARNING = 'WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.';
+    //phpcs:ignore Generic.Files.LineLength.MaxExceeded
+    private const WTF_WARNING = 'WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap.';
 
     /**
      * @param string $message

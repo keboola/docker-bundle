@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Docker\Container\Process;
@@ -15,7 +17,6 @@ class ProcessTest extends TestCase
     {
         parent::setUp();
         $this->temp = new Temp();
-        $this->temp->initRunFolder();
     }
 
     public function testOutputFilter(): void

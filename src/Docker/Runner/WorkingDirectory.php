@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -8,7 +10,6 @@ use Retry\BackOff\UniformRandomBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
 use Symfony\Component\Process\Process;
 
@@ -41,15 +42,15 @@ class WorkingDirectory
         $fs->mkdir($this->workingDir);
 
         $structure = [
-            $this->workingDir . "/tmp",
-            $this->workingDir . "/data",
-            $this->workingDir . "/data/in",
-            $this->workingDir . "/data/in/tables",
-            $this->workingDir . "/data/in/files",
-            $this->workingDir . "/data/in/user",
-            $this->workingDir . "/data/out",
-            $this->workingDir . "/data/out/tables",
-            $this->workingDir . "/data/out/files"
+            $this->workingDir . '/tmp',
+            $this->workingDir . '/data',
+            $this->workingDir . '/data/in',
+            $this->workingDir . '/data/in/tables',
+            $this->workingDir . '/data/in/files',
+            $this->workingDir . '/data/in/user',
+            $this->workingDir . '/data/out',
+            $this->workingDir . '/data/out/tables',
+            $this->workingDir . '/data/out/files',
         ];
 
         $fs->mkdir($structure);
@@ -69,28 +70,28 @@ class WorkingDirectory
         try {
             $proxy->call(
                 function () use (&$process) {
-                    $this->logger->notice("Normalizing working directory permissions");
+                    $this->logger->notice('Normalizing working directory permissions');
                     $command = $this->getNormalizeCommand();
                     $process = Process::fromShellCommandline($command);
                     $process->setTimeout(120);
                     $process->mustRun();
                 }
             );
-        } catch (ProcessTimedOutException $e) {
+        } catch (ProcessTimedOutException) {
             throw new ApplicationException(
-                "Could not normalize permissions."
+                'Could not normalize permissions.'
             );
         }
     }
 
     public function getDataDir()
     {
-        return $this->workingDir . "/data";
+        return $this->workingDir . '/data';
     }
 
     public function getTmpDir()
     {
-        return $this->workingDir . "/tmp";
+        return $this->workingDir . '/tmp';
     }
 
     public function dropWorkingDir(): void
@@ -106,13 +107,13 @@ class WorkingDirectory
 
         // delete input
         $fs->remove([
-            $this->workingDir . "/data/in",
-            $this->workingDir . "/tmp",
+            $this->workingDir . '/data/in',
+            $this->workingDir . '/tmp',
         ]);
 
         // delete state file
-        $fs->remove($this->workingDir . "/data/out/state.json");
-        $fs->remove($this->workingDir . "/data/out/state.yml");
+        $fs->remove($this->workingDir . '/data/out/state.json');
+        $fs->remove($this->workingDir . '/data/out/state.yml');
 
         // rename
         $fs->rename(
@@ -122,10 +123,10 @@ class WorkingDirectory
 
         // create empty output
         $fs->mkdir([
-            $this->workingDir . "/tmp",
-            $this->workingDir . "/data/out/tables",
-            $this->workingDir . "/data/out/files",
-            $this->workingDir . "/data/in/user",
+            $this->workingDir . '/tmp',
+            $this->workingDir . '/data/out/tables',
+            $this->workingDir . '/data/out/files',
+            $this->workingDir . '/data/in/user',
         ]);
     }
 }

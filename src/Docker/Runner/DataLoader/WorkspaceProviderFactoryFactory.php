@@ -1,19 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
+use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
 use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
+use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingDatabaseWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Psr\Log\LoggerInterface;
 
 class WorkspaceProviderFactoryFactory
@@ -46,10 +48,10 @@ class WorkspaceProviderFactoryFactory
     ) {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
-        if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_ABS)) {
+        if ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
-        } else if ($configId && ($stagingStorage === InputStrategyFactory::WORKSPACE_REDSHIFT)) {
+        } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_REDSHIFT)) {
             // Redshift workspaces are persistent, but only if configId is present
             $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentRedshiftWorkspace($component, $configId);
         } else {
@@ -85,17 +87,17 @@ class WorkspaceProviderFactoryFactory
                 ['backend' => RedshiftWorkspaceStaging::getType()],
                 true
             );
-            $workspaceId = $workspace['id'];
+            $workspaceId = (string) $workspace['id'];
             $password = $workspace['connection']['password'];
             $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
         } elseif (count($workspaces) === 1) {
-            $workspaceId = $workspaces[0]['id'];
+            $workspaceId = (string) $workspaces[0]['id'];
             $password = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['password'];
             $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
         } else {
             $ids = array_column($workspaces, 'id');
             sort($ids, SORT_NUMERIC);
-            $workspaceId = $ids[0];
+            $workspaceId = (string) $ids[0];
             $this->logger->warning(sprintf(
                 'Multiple workspaces (total %s) found (IDs: %s) for configuration "%s" of component "%s", using "%s".',
                 count($workspaces),
@@ -128,11 +130,11 @@ class WorkspaceProviderFactoryFactory
                 ['backend' => AbsWorkspaceStaging::getType()],
                 true
             );
-            $workspaceId = $workspace['id'];
+            $workspaceId = (string) $workspace['id'];
             $connectionString = $workspace['connection']['connectionString'];
             $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
         } elseif (count($workspaces) === 1) {
-            $workspaceId = $workspaces[0]['id'];
+            $workspaceId = (string) $workspaces[0]['id'];
             $connectionString = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
             $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
         } else {
@@ -154,7 +156,7 @@ class WorkspaceProviderFactoryFactory
 
     private function resolveWorkspaceBackendConfiguration(array $backendConfig)
     {
-        $backendType = isset($backendConfig['type']) ? $backendConfig['type'] : null;
+        $backendType = $backendConfig['type'] ?? null;
         return new WorkspaceBackendConfig($backendType);
     }
 }

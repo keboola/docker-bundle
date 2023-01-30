@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\S3;
 
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
@@ -34,12 +36,12 @@ class DataLoaderS3Test extends BaseDataLoaderTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
                 'staging-storage' => [
-                    'input' => 's3'
-                ]
-            ]
+                    'input' => 's3',
+                ],
+            ],
         ]);
     }
 
@@ -82,7 +84,6 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         self::assertCount(1, $files);
 
         $temp = new Temp();
-        $temp->initRunFolder();
         $target = $temp->getTmpFolder() . '/tmp-download.zip';
         $this->downloadFile($files[0]['id'], $target);
 
@@ -94,7 +95,8 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             $items[] = $zipArchive->getNameIndex($i);
             $data = $zipArchive->getFromIndex($i);
             $isSame = is_dir($this->temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) ||
-                (string) file_get_contents($this->temp->getTmpFolder() . '/data/' . $zipArchive->getNameIndex($i)) === (string) $data;
+                (string) file_get_contents($this->temp->getTmpFolder() . '/data/' .
+                    $zipArchive->getNameIndex($i)) === (string) $data;
             self::assertTrue($isSame, $zipArchive->getNameIndex($i) . ' data: ' . $data);
         }
         sort($items);
@@ -138,7 +140,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
-            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest'),
+            file_get_contents(
+                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest'
+            ),
             true
         );
 
@@ -156,9 +160,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         self::assertArrayHasKey('access_key_id', $manifest['s3']['credentials']);
         self::assertArrayHasKey('secret_access_key', $manifest['s3']['credentials']);
         self::assertArrayHasKey('session_token', $manifest['s3']['credentials']);
-        self::assertContains('.gz', $manifest['s3']['key']);
+        self::assertStringContainsString('.gz', $manifest['s3']['key']);
         if ($manifest['s3']['isSliced']) {
-            self::assertContains('manifest', $manifest['s3']['key']);
+            self::assertStringContainsString('manifest', $manifest['s3']['key']);
         }
     }
 
@@ -182,10 +186,10 @@ class DataLoaderS3Test extends BaseDataLoaderTest
                 'decode_content' => false,
             ],
         ]);
-        $s3Client->getObject(array(
+        $s3Client->getObject([
             'Bucket' => $fileInfo['s3Path']['bucket'],
             'Key' => $fileInfo['s3Path']['key'],
             'SaveAs' => $targetFile,
-        ));
+        ]);
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\RunnerPart2;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
@@ -32,8 +34,8 @@ class StateFileTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
 
         // Create folders
         $temp = new Temp('docker');
@@ -44,14 +46,14 @@ class StateFileTest extends TestCase
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'out');
 
         $this->clientWrapper = new ClientWrapper(new ClientOptions(
-            STORAGE_API_URL,
-            STORAGE_API_TOKEN,
+            getenv('STORAGE_API_URL'),
+            getenv('STORAGE_API_TOKEN'),
         ));
 
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(STORAGE_API_URL, PHP_URL_HOST),
-            AWS_KMS_TEST_KEY,
-            AWS_ECR_REGISTRY_REGION,
+            parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST),
+            getenv('AWS_KMS_TEST_KEY'),
+            getenv('AWS_ECR_REGISTRY_REGION'),
             null,
             null,
         ));
@@ -64,7 +66,7 @@ class StateFileTest extends TestCase
             $this->clientWrapper,
             $this->encryptor,
             [
-                StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today']
+                StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today'],
             ],
             'json',
             'docker-demo',
@@ -193,8 +195,9 @@ class StateFileTest extends TestCase
             new NullFilter(),
             $testLogger
         );
-        $stateFile->stashState(["key" => "fooBar", "foo" => "bar"]);
+        $stateFile->stashState(['key' => 'fooBar', 'foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
+        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
     }
 
@@ -232,7 +235,7 @@ class StateFileTest extends TestCase
             new NullFilter(),
             new NullLogger()
         );
-        $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(['key' => 'fooBar', '#foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
@@ -258,7 +261,7 @@ class StateFileTest extends TestCase
             new NullFilter(),
             new NullLogger()
         );
-        $stateFile->stashState(["key" => "fooBar", "#foo" => "bar"]);
+        $stateFile->stashState(['key' => 'fooBar', '#foo' => 'bar']);
     }
 
     public function testPersistsStateUpdatesFromEmpty()
@@ -390,7 +393,7 @@ class StateFileTest extends TestCase
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
-                            'key' => 'fooBar'
+                            'key' => 'fooBar',
                         ],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
@@ -500,7 +503,7 @@ class StateFileTest extends TestCase
                     return true;
                 })
             )
-            ->willThrowException(new ClientException("Test", 404));
+            ->willThrowException(new ClientException('Test', 404));
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -520,7 +523,7 @@ class StateFileTest extends TestCase
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage("Failed to store state: Test");
+        $this->expectExceptionMessage('Failed to store state: Test');
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
@@ -542,7 +545,7 @@ class StateFileTest extends TestCase
                     return true;
                 })
             )
-            ->willThrowException(new ClientException("Test", 888));
+            ->willThrowException(new ClientException('Test', 888));
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -562,7 +565,7 @@ class StateFileTest extends TestCase
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(ClientException::class);
-        $this->expectExceptionMessage("Test");
+        $this->expectExceptionMessage('Test');
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
@@ -615,8 +618,8 @@ class StateFileTest extends TestCase
         $inputTablesState = new InputTableStateList([
             [
                 'source' => 'in.c-main.test',
-                'lastImportDate' => 'today'
-            ]
+                'lastImportDate' => 'today',
+            ],
         ]);
         $stateFile->persistState($inputTablesState, new InputFileStateList([]));
     }
@@ -641,12 +644,12 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_TABLES => [
                                     [
                                         'source' => 'in.c-main.test',
-                                        'lastImportDate' => 'today'
-                                    ]
+                                        'lastImportDate' => 'today',
+                                    ],
                                 ],
                                 StateFile::NAMESPACE_FILES => [],
-                            ]
-                        ]
+                            ],
+                        ],
                     ], $data);
                     return true;
                 })
@@ -671,8 +674,8 @@ class StateFileTest extends TestCase
         $inputTablesState = new InputTableStateList([
             [
                 'source' => 'in.c-main.test',
-                'lastImportDate' => 'today'
-            ]
+                'lastImportDate' => 'today',
+            ],
         ]);
         $stateFile->persistState($inputTablesState, new InputFileStateList([]));
     }
@@ -690,7 +693,7 @@ class StateFileTest extends TestCase
                 self::equalTo(
                     ['state' => json_encode([
                         StateFile::NAMESPACE_COMPONENT => [
-                            'key' => 'fooBar'
+                            'key' => 'fooBar',
                         ],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [

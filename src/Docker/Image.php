@@ -1,23 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
-use Keboola\ObjectEncryptor\ObjectEncryptor;
+use Exception;
+use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
 use Retry\RetryProxy;
 use Symfony\Component\Process\Process;
+use Throwable;
 
 abstract class Image
 {
-    /**
-     * Image Id
-     *
-     * @var string
-     */
-    protected $id;
-
     /**
      * @var string
      */
@@ -26,17 +23,12 @@ abstract class Image
     /**
      * @var string
      */
-    protected $tag = "latest";
+    protected $tag = 'latest';
 
     /**
      * @var string
      */
     protected $digest;
-
-    /**
-     * @var ObjectEncryptor
-     */
-    protected $encryptor;
 
     /**
      * @var array
@@ -80,11 +72,6 @@ abstract class Image
 
     abstract protected function pullImage();
 
-    /**
-     * Constructor (use @see {factory()})
-     * @param Component $component
-     * @param LoggerInterface $logger
-     */
     public function __construct(Component $component, LoggerInterface $logger)
     {
         $this->component = $component;
@@ -155,11 +142,11 @@ abstract class Image
      */
     public function getFullImageId()
     {
-        return $this->getImageId() . ":" . $this->getTag();
+        return $this->getImageId() . ':' . $this->getTag();
     }
 
     /**
-     * Returns image id in a user friendly format
+     * Returns image id in a user-friendly format
      *
      * @return string
      */
@@ -179,7 +166,7 @@ abstract class Image
      * Prepare the container image so that it can be run.
      *
      * @param array $configData Configuration (same as the one stored in data config file)
-     * @throws \Exception
+     * @throws Exception
      */
     public function prepare(array $configData)
     {
@@ -237,7 +224,7 @@ abstract class Image
     public function logImageHash()
     {
         $this->logger->notice(
-            "Using image " . $this->getFullImageId() . " with repo-digest " .
+            'Using image ' . $this->getFullImageId() . ' with repo-digest ' .
             implode(', ', $this->getImageDigests())
         );
     }
@@ -249,18 +236,18 @@ abstract class Image
     public function getImageDigests()
     {
         if (empty($this->imageDigests)) {
-            $command = "sudo docker inspect " . escapeshellarg($this->getFullImageId());
+            $command = 'sudo docker inspect ' . escapeshellarg($this->getFullImageId());
             $process = Process::fromShellCommandline($command);
             $process->setTimeout(3600);
             try {
                 $process->mustRun();
                 $inspect = json_decode($process->getOutput(), true);
-                if ((json_last_error() != JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
-                    throw new \InvalidArgumentException("Inspect error " . json_last_error_msg());
+                if ((json_last_error() !== JSON_ERROR_NONE) && !empty($inspect[0]['RepoDigests'])) {
+                    throw new InvalidArgumentException('Inspect error ' . json_last_error_msg());
                 }
                 $this->imageDigests = $inspect[0]['RepoDigests'];
-            } catch (\Exception $e) {
-                $this->logger->notice("Failed to get hash for image " . $this->getFullImageId());
+            } catch (Throwable) {
+                $this->logger->notice('Failed to get hash for image ' . $this->getFullImageId());
                 $this->imageDigests = [];
             }
         }

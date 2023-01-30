@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -46,8 +48,8 @@ class VariableResolverTest extends TestCase
 
         $this->clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN,
+                getenv('STORAGE_API_URL'),
+                getenv('STORAGE_API_TOKEN'),
             )
         );
         $components = new Components($this->clientWrapper->getBasicClient());
@@ -442,7 +444,9 @@ class VariableResolverTest extends TestCase
         $variableResolver = new VariableResolver($this->clientWrapper, $logger);
         $jobDefinition = new JobDefinition($configuration, $this->component, '123', '234', [], '123', false);
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"');
+        $this->expectExceptionMessage(
+            'Variable values configuration is invalid: Unrecognized option "invalid" under "configuration"'
+        );
         $variableResolver->resolveVariables([$jobDefinition], $vRowId, []);
     }
 
@@ -561,8 +565,8 @@ class VariableResolverTest extends TestCase
     {
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN_MASTER
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_MASTER')
             )
         );
         list ($vConfigurationId, $vRowId) = $this->createVariablesConfiguration(
@@ -573,8 +577,8 @@ class VariableResolverTest extends TestCase
         $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'my-dev-branch');
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN_MASTER,
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_MASTER'),
                 $branchId
             )
         );

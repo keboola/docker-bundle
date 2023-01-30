@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
@@ -102,7 +104,7 @@ SAMPLE;
             'runtime' => [
                 'foo' => 'bar',
                 'baz' => 'next',
-            ]
+            ],
         ];
 
         if ($expectedAuthContext) {
@@ -151,7 +153,7 @@ SAMPLE;
     {
         yield 'empty config data' => [
             [],
-            null
+            null,
         ];
         yield 'backend context' => [
             [

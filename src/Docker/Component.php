@@ -1,32 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
+use InvalidArgumentException;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\Gelf\ServerFactory;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class Component
 {
-    /**
-     * @var string
-     */
-    private $id;
-
-    /**
-     * @var array
-     */
-    private $data;
-
-    /**
-     * @var string
-     */
-    private $networkType;
-
-    /**
-     * @var array
-     */
-    private $features;
+    private string $id;
+    private array $data;
+    private string $networkType;
+    private array $features;
 
     /**
      * Component constructor.
@@ -54,122 +42,82 @@ class Component
         $this->networkType = $this->data['network'];
     }
 
-    /**
-     * @return string
-     */
-    public function getId()
+    public function getId(): string
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getSanitizedComponentId()
+    public function getSanitizedComponentId(): string
     {
         return preg_replace('/[^a-zA-Z0-9-]/i', '-', $this->getId());
     }
 
-    /**
-     * @return string
-     */
-    public function getConfigurationFormat()
+    public function getConfigurationFormat(): string
     {
         return $this->data['configuration_format'];
     }
 
-    /**
-     * @return array
-     */
-    public function getImageParameters()
+    public function getImageParameters(): array
     {
         return $this->data['image_parameters'];
     }
 
-    /**
-     * @return bool
-     */
-    public function hasDefaultBucket()
+    public function hasDefaultBucket(): bool
     {
         return !empty($this->data['default_bucket']);
     }
 
-    /**
-     * @param $configId
-     * @return string
-     */
-    public function getDefaultBucketName($configId)
+    public function getDefaultBucketName(string $configId): string
     {
-        return $this->data['default_bucket_stage'] . ".c-" . $this->getSanitizedComponentId() . "-" . $configId;
+        return $this->data['default_bucket_stage'] . '.c-' . $this->getSanitizedComponentId() . '-' . $configId;
     }
 
-    public function forwardToken()
+    public function forwardToken(): bool
     {
-        return $this->data['forward_token'];
+        return (bool) $this->data['forward_token'];
     }
 
-    public function forwardTokenDetails()
+    public function forwardTokenDetails(): bool
     {
-        return $this->data['forward_token_details'];
+        return (bool) $this->data['forward_token_details'];
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->data['definition']['type'];
     }
 
-    /**
-     * @return bool
-     */
-    public function runAsRoot()
+    public function runAsRoot(): bool
     {
         return in_array('container-root-user', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function overrideKeepalive60s()
+    public function overrideKeepalive60s(): bool
     {
         return in_array('container-tcpkeepalive-60s-override', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function blockBranchJobs()
+    public function blockBranchJobs(): bool
     {
         return in_array('dev-branch-job-blocked', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function branchConfigurationsAreUnsafe()
+    public function branchConfigurationsAreUnsafe(): bool
     {
         return in_array('dev-branch-configuration-unsafe', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function allowBranchMapping()
+    public function allowBranchMapping(): bool
     {
         return in_array('dev-mapping-allowed', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasNoSwap()
+    public function hasNoSwap(): bool
     {
         return in_array('no-swap', $this->features);
     }
 
-    /**
-     * @return bool
-     */
-    public function allowUseFileStorageOnly()
+    public function allowUseFileStorageOnly(): bool
     {
         return in_array('allow-use-file-storage-only', $this->features);
     }
@@ -179,23 +127,7 @@ class Component
         return in_array('mlflow-artifacts-access', $this->features, true);
     }
 
-    /**
-     * Change type of component image
-     * @param $type
-     * @return Component
-     */
-    public function changeType($type)
-    {
-        $data = ['data' => $this->data, 'id' => $this->id];
-        $data['data']['network'] = $this->networkType;
-        $data['data']['definition']['type'] = $type;
-        return new Component($data);
-    }
-
-    /**
-     * @return string
-     */
-    public function getLoggerType()
+    public function getLoggerType(): string
     {
         if (!empty($this->data['logging'])) {
             return $this->data['logging']['type'];
@@ -203,10 +135,7 @@ class Component
         return 'standard';
     }
 
-    /**
-     * @return array
-     */
-    public function getLoggerVerbosity()
+    public function getLoggerVerbosity(): array
     {
         if (!empty($this->data['logging'])) {
             return $this->data['logging']['verbosity'];
@@ -214,10 +143,7 @@ class Component
         return [];
     }
 
-    /**
-     * @return string
-     */
-    public function getLoggerServerType()
+    public function getLoggerServerType(): string
     {
         if (!empty($this->data['logging'])) {
             switch ($this->data['logging']['gelf_server_type']) {
@@ -236,59 +162,43 @@ class Component
         return ServerFactory::SERVER_TCP;
     }
 
-    /**
-     * @return string
-     */
-    public function getNetworkType()
+    public function getNetworkType(): string
     {
         return $this->networkType;
     }
 
-    /**
-     * @return string
-     */
-    public function getMemory()
+    public function getMemory(): string
     {
         return $this->data['memory'];
     }
 
-    /**
-     * @return int
-     */
-    public function getProcessTimeout()
+    public function getProcessTimeout(): int
     {
-        return (int)($this->data['process_timeout']);
+        return (int) ($this->data['process_timeout']);
     }
 
-    public function getImageDefinition()
+    public function getImageDefinition(): array
     {
         return $this->data['definition'];
     }
 
-    public function setImageTag($tag)
+    public function setImageTag(string $tag): void
     {
-        if (!is_string($tag)) {
-            throw new \InvalidArgumentException(sprintf(
-                'Argument $tag is expected to be a string, %s given',
-                gettype($tag)
-            ));
-        }
-
         $this->data['definition']['tag'] = $tag;
     }
 
-    public function getImageTag()
+    public function getImageTag(): string
     {
         return $this->data['definition']['tag'];
     }
 
-    public function getStagingStorage()
+    public function getStagingStorage(): array
     {
         return $this->data['staging_storage'];
     }
 
-    public function isApplicationErrorDisabled()
+    public function isApplicationErrorDisabled(): bool
     {
-        return $this->data['logging']['no_application_errors'];
+        return (bool) $this->data['logging']['no_application_errors'];
     }
 }

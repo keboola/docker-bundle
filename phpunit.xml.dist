@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 backupGlobals="false"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         bootstrap="bootstrap.php"
-		 cacheResultFile="/tmp/phpunit.result.cache">
-
+         bootstrap="Tests/bootstrap.php"
+         convertDeprecationsToExceptions="false"
+		 cacheResultFile="/tmp/phpunit.result.cache"
+		 printerClass="Sempro\PHPUnitPrettyPrinter\PrettyPrinterForPhpUnit9"
+>
     <php>
         <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
     </php>
@@ -60,13 +57,11 @@
 			<directory>Tests/backend-specific-tests/BigQuery</directory>
 		</testsuite>
 	</testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">.</directory>
-            <exclude>
-                <directory suffix=".php">vendor</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
 
 </phpunit>

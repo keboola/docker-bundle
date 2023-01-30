@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 
+use Exception;
 use Keboola\DockerBundle\Docker\Configuration\Container;
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
 use Keboola\Temp\Temp;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigurationAdapterTest extends TestCase
@@ -36,7 +40,7 @@ class ConfigurationAdapterTest extends TestCase
             'parameters' => [
                 'primary_key_column' => 'id',
                 'empty_array' => [],
-                'empty_object' => new \stdClass(),
+                'empty_object' => new stdClass(),
             ],
             'authorization' => [
                 'oauth_api' => [
@@ -57,7 +61,7 @@ class ConfigurationAdapterTest extends TestCase
 
     protected function getYmlConfigFileTemplate()
     {
-        $data = <<< EOT
+        return <<< EOT
 storage:
     input:
         tables:
@@ -88,12 +92,11 @@ shared_code_row_ids: {  }
 image_parameters: {  }
 
 EOT;
-        return $data;
     }
 
     protected function getJsonConfigFileTemplate()
     {
-        $data = <<< EOT
+        return <<< EOT
 {
     "storage": {
         "input": {
@@ -135,84 +138,83 @@ EOT;
     "image_parameters": {}
 }
 EOT;
-        return $data;
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testReadYml()
     {
-        $root = "/tmp/docker/" . uniqid("", true);
+        $root = '/tmp/docker/' . uniqid('', true);
         $fs = new Filesystem();
         $fs->mkdir($root);
 
-        file_put_contents($root . "/config.yml", $this->getYmlConfigFileTemplate());
+        file_put_contents($root . '/config.yml', $this->getYmlConfigFileTemplate());
 
         $adapter = new Adapter();
-        $adapter->setFormat("yaml");
-        $adapter->readFromFile($root . "/config.yml");
+        $adapter->setFormat('yaml');
+        $adapter->readFromFile($root . '/config.yml');
 
         $str = $this->getStructure();
         $str['parameters']['empty_object'] = null;
         self::assertEquals($str, $adapter->getConfig());
 
-        $fs->remove($root . "/config.yml");
+        $fs->remove($root . '/config.yml');
         $fs->remove($root);
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function testReadJson()
     {
-        $root = "/tmp/docker/" . uniqid("", true);
+        $root = '/tmp/docker/' . uniqid('', true);
         $fs = new Filesystem();
         $fs->mkdir($root);
 
-        file_put_contents($root . "/config.json", $this->getJsonConfigFileTemplate());
+        file_put_contents($root . '/config.json', $this->getJsonConfigFileTemplate());
 
         $adapter = new Adapter();
-        $adapter->readFromFile($root . "/config.json");
+        $adapter->readFromFile($root . '/config.json');
 
         $str = $this->getStructure();
         $str['parameters']['empty_object'] = [];
         self::assertEquals($str, $adapter->getConfig());
 
-        $fs->remove($root . "/config.json");
+        $fs->remove($root . '/config.json');
         $fs->remove($root);
     }
 
     public function testWriteYml()
     {
-        $root = "/tmp/docker/" . uniqid("", true);
+        $root = '/tmp/docker/' . uniqid('', true);
         $fs = new Filesystem();
         $fs->mkdir($root);
 
         $adapter = new Adapter();
-        $adapter->setFormat("yaml");
+        $adapter->setFormat('yaml');
         $adapter->setConfig($this->getStructure());
-        $adapter->writeToFile($root . "/config.yml");
+        $adapter->writeToFile($root . '/config.yml');
 
-        self::assertEquals($this->getYmlConfigFileTemplate(), file_get_contents($root . "/config.yml"));
+        self::assertEquals($this->getYmlConfigFileTemplate(), file_get_contents($root . '/config.yml'));
 
-        $fs->remove($root . "/config.yml");
+        $fs->remove($root . '/config.yml');
         $fs->remove($root);
     }
 
     public function testWriteJson()
     {
-        $root = "/tmp/docker/" . uniqid("", true);
+        $root = '/tmp/docker/' . uniqid('', true);
         $fs = new Filesystem();
         $fs->mkdir($root);
 
         $adapter = new Adapter();
         $adapter->setConfig($this->getStructure());
-        $adapter->writeToFile($root . "/config.json");
+        $adapter->writeToFile($root . '/config.json');
 
-        self::assertEquals($this->getJsonConfigFileTemplate(), file_get_contents($root . "/config.json"));
+        self::assertEquals($this->getJsonConfigFileTemplate(), file_get_contents($root . '/config.json'));
 
-        $fs->remove($root . "/config.json");
+        $fs->remove($root . '/config.json');
         $fs->remove($root);
     }
 
@@ -220,7 +222,6 @@ EOT;
     public function testConfigurationEmpty()
     {
         $temp = new Temp();
-        $temp->initRunFolder();
         $container = new Container();
         $data = $container->parse(
             [

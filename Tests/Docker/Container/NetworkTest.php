@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
-use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseContainerTest;
 
@@ -38,7 +39,10 @@ class NetworkTest extends BaseContainerTest
             $container->run();
             self::fail('Ping must fail');
         } catch (UserException $e) {
-            self::assertStringContainsString('ping: www.example.com: Temporary failure in name resolution', $e->getMessage());
+            self::assertStringContainsString(
+                'ping: www.example.com: Temporary failure in name resolution',
+                $e->getMessage()
+            );
         }
     }
 }
