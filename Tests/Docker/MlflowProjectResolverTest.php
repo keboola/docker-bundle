@@ -56,7 +56,7 @@ class MlflowProjectResolverTest extends TestCase
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
             ],
         ]);
@@ -64,7 +64,7 @@ class MlflowProjectResolverTest extends TestCase
         $tokenInfo = [
             'owner' => [
                 'features' => $projectFeatures,
-            ]
+            ],
         ];
 
         $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient, $this->logger);
@@ -151,7 +151,7 @@ class MlflowProjectResolverTest extends TestCase
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo',
-                    'tag' => 'master'
+                    'tag' => 'master',
                 ],
             ],
         ]);
@@ -159,7 +159,7 @@ class MlflowProjectResolverTest extends TestCase
         $tokenInfo = [
             'owner' => [
                 'features' => [self::PROJECT_MLFLOW_FEATURE],
-            ]
+            ],
         ];
 
         $resolver = new MlflowProjectResolver($storageApiClient, $sandboxesApiClient, $this->logger);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -26,7 +28,7 @@ class EnvironmentTest extends TestCase
                 'name' => 'some project',
                 'fileStorageProvider' => 'aws',
             ],
-            'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+            'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         ];
     }
 
@@ -52,7 +54,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            STORAGE_API_URL,
+            getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
             'connection-string',
@@ -65,9 +67,9 @@ class EnvironmentTest extends TestCase
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertEquals('config-row-id', $envs['KBC_CONFIGROWID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
-        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);
         self::assertArrayNotHasKey('KBC_URL', $envs);
         self::assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
@@ -104,7 +106,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            STORAGE_API_URL,
+            getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -114,14 +116,14 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertArrayNotHasKey('KBC_CONFIGROWID', $envs);
-        self::assertEquals($envs['KBC_CONFIGID'], 'config-test-id');
+        self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals($envs['KBC_STACKID'], parse_url(STORAGE_API_URL, PHP_URL_HOST));
+        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
-        self::assertEquals($envs['KBC_COMPONENTID'], 'keboola.test-component');
+        self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayHasKey('KBC_TOKEN', $envs);
         self::assertArrayHasKey('KBC_URL', $envs);
-        self::assertEquals($envs['KBC_TOKEN'], $this->tokenInfo['token']);
+        self::assertEquals($this->tokenInfo['token'], $envs['KBC_TOKEN']);
         self::assertArrayNotHasKey('KBC_PROJECTNAME', $envs);
         self::assertArrayNotHasKey('KBC_TOKENID', $envs);
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
@@ -153,7 +155,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            STORAGE_API_URL,
+            getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -164,7 +166,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(STORAGE_API_URL, PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayHasKey('KBC_TOKEN', $envs);
@@ -206,7 +208,7 @@ class EnvironmentTest extends TestCase
             $parameters,
             $this->tokenInfo,
             '123',
-            STORAGE_API_URL,
+            getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             'connection-string',
@@ -217,7 +219,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(STORAGE_API_URL, PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);
@@ -260,7 +262,7 @@ class EnvironmentTest extends TestCase
             $parameters,
             $this->tokenInfo,
             '123',
-            STORAGE_API_URL,
+            getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -271,7 +273,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(STORAGE_API_URL, PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);

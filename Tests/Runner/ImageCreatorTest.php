@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\StorageApi\Client;
@@ -20,8 +21,9 @@ class ImageCreatorTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-decompress',
-                        'tag' => 'latest'
+                        'tag' => 'latest',
                     ],
                 ],
             ],
@@ -30,11 +32,12 @@ class ImageCreatorTest extends BaseRunnerTest
                 'data' => [
                     'definition' => [
                         'type' => 'aws-ecr',
+                        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                         'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.processor-iconv',
-                        'tag' => 'latest'
+                        'tag' => 'latest',
                     ],
                 ],
-            ]
+            ],
         ];
         $this->client = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -62,8 +65,8 @@ class ImageCreatorTest extends BaseRunnerTest
         $config = [
             'storage' => [],
             'parameters' => [
-                'foo' => 'bar'
-            ]
+                'foo' => 'bar',
+            ],
         ];
 
         $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
@@ -87,7 +90,7 @@ class ImageCreatorTest extends BaseRunnerTest
         $config = [
             'storage' => [],
             'parameters' => [
-                'foo' => 'bar'
+                'foo' => 'bar',
             ],
         ];
 
@@ -105,7 +108,7 @@ class ImageCreatorTest extends BaseRunnerTest
                 'definition' => [
                     'type' => 'dockerhub',
                     'uri' => 'keboola/docker-demo-app',
-                    'tag' => '1.1.6'
+                    'tag' => '1.1.6',
                 ],
             ],
         ]);

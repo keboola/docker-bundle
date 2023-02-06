@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
@@ -6,54 +9,23 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinition
 {
-    /**
-     * @var null|string
-     */
-    private $configId;
+    private ?string $configId;
+    private ?string $rowId;
+    private ?string $configVersion;
+    private Component $component;
+    private array $configuration;
+    private array $state;
+    private bool $isDisabled;
 
-    /**
-     * @var null|string
-     */
-    private $rowId;
-
-    /**
-     * @var null|string
-     */
-    private $configVersion;
-
-    /**
-     * @var Component
-     */
-    private $component;
-
-    /**
-     * @var array
-     */
-    private $configuration = [];
-
-    /**
-     * @var array
-     */
-    private $state = [];
-
-    /**
-     * @var bool
-     */
-    private $isDisabled = false;
-
-    /**
-     * JobDefinition constructor.
-     *
-     * @param array $configuration
-     * @param Component $component
-     * @param null|string $configId
-     * @param null|string $configVersion
-     * @param array $state
-     * @param null|string $rowId
-     * @param bool $isDisabled
-     */
-    public function __construct(array $configuration, Component $component, $configId = null, $configVersion = null, array $state = [], $rowId = null, $isDisabled = false)
-    {
+    public function __construct(
+        array $configuration,
+        Component $component,
+        ?string $configId = null,
+        ?string $configVersion = null,
+        array $state = [],
+        ?string $rowId = null,
+        bool $isDisabled = false
+    ) {
         $this->configuration = $this->normalizeConfiguration($configuration);
         $this->component = $component;
         $this->configId = $configId;
@@ -63,71 +35,47 @@ class JobDefinition
         $this->state = $state;
     }
 
-    /**
-     * @return string
-     */
-    public function getComponentId()
+    public function getComponentId(): string
     {
         return $this->component->getId();
     }
 
-    /**
-     * @return null|string
-     */
-    public function getConfigId()
+    public function getConfigId(): ?string
     {
         return $this->configId;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getRowId()
+    public function getRowId(): ?string
     {
         return $this->rowId;
     }
 
-    /**
-     * @return null|string
-     */
-    public function getConfigVersion()
+    public function getConfigVersion(): ?string
     {
         return $this->configVersion;
     }
 
-    /**
-     * @return Component
-     */
-    public function getComponent()
+    public function getComponent(): Component
     {
         return $this->component;
     }
 
-    /**
-     * @return array
-     */
-    public function getConfiguration()
+    public function getConfiguration(): array
     {
         return $this->configuration;
     }
 
-    /**
-     * @return array
-     */
-    public function getState()
+    public function getState(): array
     {
         return $this->state;
     }
 
-    /**
-     * @return bool
-     */
-    public function isDisabled()
+    public function isDisabled(): bool
     {
         return $this->isDisabled;
     }
 
-    private function normalizeConfiguration($configuration)
+    private function normalizeConfiguration(array $configuration): array
     {
         try {
             $configuration = (new Configuration\Container())->parse(['container' => $configuration]);

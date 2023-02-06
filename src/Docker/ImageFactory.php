@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -7,7 +9,7 @@ use Psr\Log\LoggerInterface;
 
 abstract class ImageFactory
 {
-    const KNOWN_IMAGE_TYPES = ['dockerhub', 'quayio', 'aws-ecr'];
+    public const KNOWN_IMAGE_TYPES = ['dockerhub', 'quayio', 'aws-ecr'];
 
     /**
      * @param bool $isMain True to mark the image as main image.

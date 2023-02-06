@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Service;
 
 use Keboola\DockerBundle\Monolog\ContainerLogger;
@@ -10,28 +12,15 @@ use Monolog\Logger;
 
 class LoggersService
 {
-    /**
-     * @var Logger
-     */
-    private $logger;
-
-    /**
-     * @var ContainerLogger
-     */
-    private $containerLogger;
-
-    /**
-     * @var null|StorageApiHandlerInterface
-     */
-    private $sapiHandler;
+    private Logger $logger;
+    private ContainerLogger $containerLogger;
+    private ?StorageApiHandlerInterface $sapiHandler;
 
     public function __construct(Logger $log, ContainerLogger $containerLog, ?StorageApiHandlerInterface $sapiHandler)
     {
         $this->logger = $log;
         $this->containerLogger = $containerLog;
-        if ($sapiHandler && $sapiHandler instanceof StorageApiHandlerInterface) {
-            $this->sapiHandler = $sapiHandler;
-        }
+        $this->sapiHandler = $sapiHandler;
 
         // copy all processors to ContainerLogger
         foreach ($this->logger->getProcessors() as $processor) {
@@ -56,7 +45,7 @@ class LoggersService
         }
     }
 
-    public function setComponentId($componentId)
+    public function setComponentId(string $componentId): void
     {
         // attach the processor to all handlers and channels
         $processor = new DockerProcessor($componentId);
@@ -67,26 +56,18 @@ class LoggersService
         $this->containerLogger->pushProcessor([$processor, 'processRecord']);
     }
 
-    /**
-     * @return Logger
-     */
-    public function getLog()
+    public function getLog(): Logger
     {
         return $this->logger;
     }
 
-    /**
-     * @return ContainerLogger
-     */
-    public function getContainerLog()
+    public function getContainerLog(): ContainerLogger
     {
         return $this->containerLogger;
     }
 
-    public function setVerbosity(array $verbosity)
+    public function setVerbosity(array $verbosity): void
     {
-        if ($this->sapiHandler) {
-            $this->sapiHandler->setVerbosity($verbosity);
-        }
+        $this->sapiHandler?->setVerbosity($verbosity);
     }
 }

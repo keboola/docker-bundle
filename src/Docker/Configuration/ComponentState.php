@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 class ComponentState
@@ -12,9 +14,9 @@ class ComponentState
      */
     public function parse($configurations)
     {
-        if (!$configurations["config"]) {
+        if (!$configurations['config']) {
             return (object) [];
         }
-        return $configurations["config"];
+        return $configurations['config'];
     }
 }

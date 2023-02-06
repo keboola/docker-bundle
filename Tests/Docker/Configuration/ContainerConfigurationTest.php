@@ -13,80 +13,80 @@ class ContainerConfigurationTest extends TestCase
     public function testConfiguration(): void
     {
         (new Configuration\Container())->parse([
-            "config" => [
-                "storage" => [
-                    "input" => [
-                        "tables" => [
+            'config' => [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
                             [
-                                "source" => "in.c-main.data"
-                            ]
+                                'source' => 'in.c-main.data',
+                            ],
                         ],
-                        "files" => [
+                        'files' => [
                             [
-                                "tags" => ["tag1", "tag2"],
-                                "query" => "esquery"
-                            ]
-                        ]
+                                'tags' => ['tag1', 'tag2'],
+                                'query' => 'esquery',
+                            ],
+                        ],
                     ],
-                    "output" => [
+                    'output' => [
                         'default_bucket' => 'in.c-my-bucket',
-                        "tables" => [
+                        'tables' => [
                             [
-                                "source" => "test.csv",
-                                "destination" => "out.c-main.data"
-                            ]
+                                'source' => 'test.csv',
+                                'destination' => 'out.c-main.data',
+                            ],
                         ],
-                        "files" => [
+                        'files' => [
                             [
-                                "source" => "file",
-                                "tags" => ["tag"]
-                            ]
-                        ]
-                    ]
+                                'source' => 'file',
+                                'tags' => ['tag'],
+                            ],
+                        ],
+                    ],
                 ],
-                "parameters" => [
-                    ["var1" => "val1"],
-                    ["arr1" => ["var2" => "val2"]]
+                'parameters' => [
+                    ['var1' => 'val1'],
+                    ['arr1' => ['var2' => 'val2']],
                 ],
-                "authorization" => [
-                    "oauth_api" => [
-                        "id" => 1234,
-                        "credentials" => [
-                            "token" => "123456",
-                            "params" => [
-                                "key" => "val"
-                            ]
-                        ]
+                'authorization' => [
+                    'oauth_api' => [
+                        'id' => 1234,
+                        'credentials' => [
+                            'token' => '123456',
+                            'params' => [
+                                'key' => 'val',
+                            ],
+                        ],
                     ],
                     'context' => 'wlm',
                 ],
-                "processors" => [
-                    "before" => [
+                'processors' => [
+                    'before' => [
                         [
-                            "definition" => [
-                                "component" => "a"
+                            'definition' => [
+                                'component' => 'a',
                             ],
-                            "parameters" => [
-                                "key" => "val"
-                            ]
-                        ]
+                            'parameters' => [
+                                'key' => 'val',
+                            ],
+                        ],
                     ],
-                    "after" => [
+                    'after' => [
                         [
-                            "definition" => [
-                                "component" => "a"
+                            'definition' => [
+                                'component' => 'a',
                             ],
-                            "parameters" => [
-                                "key" => "val"
-                            ]
-                        ]
-                    ]
+                            'parameters' => [
+                                'key' => 'val',
+                            ],
+                        ],
+                    ],
                 ],
-                "variables_id" => "12",
-                "variables_values_id" => "21",
-                "shared_code_id" => "34",
-                "shared_code_row_ids" => ["345", "435"]
-            ]
+                'variables_id' => '12',
+                'variables_values_id' => '21',
+                'shared_code_id' => '34',
+                'shared_code_row_ids' => ['345', '435'],
+            ],
         ]);
         self::assertTrue(true);
     }
@@ -94,79 +94,79 @@ class ContainerConfigurationTest extends TestCase
     public function testConfigurationWithWorkspaceConnection(): void
     {
         (new Configuration\Container())->parse([
-            "config" => [
-                "storage" => [
-                    "input" => [
-                        "tables" => [
+            'config' => [
+                'storage' => [
+                    'input' => [
+                        'tables' => [
                             [
-                                "source" => "in.c-main.data"
-                            ]
+                                'source' => 'in.c-main.data',
+                            ],
                         ],
-                        "files" => [
+                        'files' => [
                             [
-                                "tags" => ["tag1", "tag2"],
-                                "query" => "esquery"
-                            ]
-                        ]
+                                'tags' => ['tag1', 'tag2'],
+                                'query' => 'esquery',
+                            ],
+                        ],
                     ],
-                    "output" => [
-                        "tables" => [
+                    'output' => [
+                        'tables' => [
                             [
-                                "source" => "test.csv",
-                                "destination" => "out.c-main.data"
-                            ]
+                                'source' => 'test.csv',
+                                'destination' => 'out.c-main.data',
+                            ],
                         ],
-                        "files" => [
+                        'files' => [
                             [
-                                "source" => "file",
-                                "tags" => ["tag"]
-                            ]
-                        ]
-                    ]
+                                'source' => 'file',
+                                'tags' => ['tag'],
+                            ],
+                        ],
+                    ],
                 ],
-                "parameters" => [
-                    ["var1" => "val1"],
-                    ["arr1" => ["var2" => "val2"]]
+                'parameters' => [
+                    ['var1' => 'val1'],
+                    ['arr1' => ['var2' => 'val2']],
                 ],
-                "authorization" => [
-                    "workspace" => [
-                        "container" => 'my-container',
-                        "connectionString" => 'aVeryLongString',
-                        "account" => 'test',
-                        "credentials" => [
+                'authorization' => [
+                    'workspace' => [
+                        'container' => 'my-container',
+                        'connectionString' => 'aVeryLongString',
+                        'account' => 'test',
+                        'credentials' => [
                             'client_id' => 'client123',
                             'private_key' => 'very-secret-private-key',
-                        ]
+                        ],
                     ],
                     'context' => 'wlm',
                 ],
-                "processors" => [
-                    "before" => [
+                'processors' => [
+                    'before' => [
                         [
-                            "definition" => [
-                                "component" => "a"
+                            'definition' => [
+                                'component' => 'a',
                             ],
-                            "parameters" => [
-                                "key" => "val"
-                            ]
-                        ]
+                            'parameters' => [
+                                'key' => 'val',
+                            ],
+                        ],
                     ],
-                    "after" => [
+                    'after' => [
                         [
-                            "definition" => [
-                                "component" => "a"
+                            'definition' => [
+                                'component' => 'a',
                             ],
-                            "parameters" => [
-                                "key" => "val"
-                            ]
-                        ]
-                    ]
+                            'parameters' => [
+                                'key' => 'val',
+                            ],
+                        ],
+                    ],
                 ],
-                "variables_id" => "12",
-                "variables_values_id" => "21",
-                "shared_code_id" => "34",
-                "shared_code_row_ids" => ["345", "435"]
-            ]
+                'variables_id' => '12',
+                'variables_values_id' => '21',
+                'shared_code_id' => '34',
+                'shared_code_row_ids' => ['345', '435'],
+            ],
         ]);
         self::assertTrue(true);
     }
@@ -181,7 +181,7 @@ class ContainerConfigurationTest extends TestCase
                     'backend' => [
                         'type' => 'foo',
                         'context' => 'wml',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -215,7 +215,7 @@ class ContainerConfigurationTest extends TestCase
                         'type' => 'foo',
                         'context' => 'wml',
                         'bar' => 'baz',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -225,17 +225,17 @@ class ContainerConfigurationTest extends TestCase
     public function testConfigurationWithTableFiles(): void
     {
         (new Configuration\Container())->parse([
-            "config" => [
-                "storage" => [
-                    "input" => [
-                        "tables" => [],
-                        "files" => [],
+            'config' => [
+                'storage' => [
+                    'input' => [
+                        'tables' => [],
+                        'files' => [],
                     ],
-                    "output" => [
-                        "tables" => [],
-                        "files" => [],
-                        "table_files" => [
-                            "tags" => ["tag"],
+                    'output' => [
+                        'tables' => [],
+                        'files' => [],
+                        'table_files' => [
+                            'tags' => ['tag'],
                         ],
                     ],
                 ],
@@ -254,7 +254,7 @@ class ContainerConfigurationTest extends TestCase
                 'artifacts' => [
                     'backend' => [
                         'type' => 'foo',
-                    ]
+                    ],
                 ],
             ],
         ]);
@@ -338,6 +338,7 @@ class ContainerConfigurationTest extends TestCase
             [
                 'enabled' => true,
             ],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'Invalid configuration for path "container.artifacts.runs": At least one of "date_since" or "limit" parameters must be defined.',
         ];
         yield 'enabled - invalid enabled value' => [
@@ -596,6 +597,7 @@ class ContainerConfigurationTest extends TestCase
             [
                 'enabled' => true,
             ],
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'Invalid configuration for path "container.artifacts.custom": "component_id", "config_id" and "branch_id" parameters must be defined.',
         ];
         yield 'enabled - invalid enabled value' => [
@@ -693,18 +695,18 @@ class ContainerConfigurationTest extends TestCase
     public function testConfigurationWithReadonlyRole(): void
     {
         (new Configuration\Container())->parse([
-            "config" => [
-                "storage" => [
-                    "input" => [
-                        "read_only_storage_access" => true,
-                        "tables" => [],
-                        "files" => [],
+            'config' => [
+                'storage' => [
+                    'input' => [
+                        'read_only_storage_access' => true,
+                        'tables' => [],
+                        'files' => [],
                     ],
-                    "output" => [
-                        "tables" => [],
-                        "files" => [],
-                        "table_files" => [
-                            "tags" => ["tag"],
+                    'output' => [
+                        'tables' => [],
+                        'files' => [],
+                        'table_files' => [
+                            'tags' => ['tag'],
                         ],
                     ],
                 ],

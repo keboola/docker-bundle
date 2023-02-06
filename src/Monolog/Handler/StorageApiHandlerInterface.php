@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Monolog\Handler;
 
 use Monolog\Handler\HandlerInterface;
@@ -10,22 +12,22 @@ interface StorageApiHandlerInterface extends HandlerInterface, ResettableInterfa
     /**
      * Verbosity None - event will not be stored in Storage at all.
      */
-    const VERBOSITY_NONE = 'none';
+    public const VERBOSITY_NONE = 'none';
 
     /**
      * Verbosity Camouflage - event will be stored in Storage only as a generic message.
      */
-    const VERBOSITY_CAMOUFLAGE = 'camouflage';
+    public const VERBOSITY_CAMOUFLAGE = 'camouflage';
 
     /**
      * Verbosity Normal - event will be stored in Storage as received.
      */
-    const VERBOSITY_NORMAL = 'normal';
+    public const VERBOSITY_NORMAL = 'normal';
 
     /**
      * Verbosity Verbose - event will be stored in Storage including all additonal event data.
      */
-    const VERBOSITY_VERBOSE = 'verbose';
+    public const VERBOSITY_VERBOSE = 'verbose';
 
     /**
      * Set verbosity for each error level. If a level is not provided, its verbosity will not be changed.

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Monolog\Processor;
 
 /**
@@ -22,7 +24,7 @@ class DockerContainerProcessor
 
 
     /**
-     * Constructor.
+     *
      * @param $componentName string Component name.
      */
     public function __construct($componentName)

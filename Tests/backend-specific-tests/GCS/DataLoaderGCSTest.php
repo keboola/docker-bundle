@@ -1,12 +1,15 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\GCS;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -37,7 +40,7 @@ class DataLoaderGCSTest extends BaseDataLoaderTest
                             'source' => 'in.c-docker-demo-testConfig-gcs.test',
                         ],
                     ],
-                    'files' => [['tags' => ['docker-demo-test-gcs']]]
+                    'files' => [['tags' => ['docker-demo-test-gcs']]],
                 ],
             ],
         ];
@@ -71,7 +74,9 @@ class DataLoaderGCSTest extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
-            file_get_contents($this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-gcs.test.manifest'),
+            file_get_contents(
+                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-gcs.test.manifest'
+            ),
             true
         );
 

@@ -1,13 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
-use Keboola\DockerBundle\Docker\Runner;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -40,8 +42,8 @@ abstract class BaseRunnerTest extends TestCase
     {
         $this->client = new Client(
             [
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]
         );
     }
@@ -49,12 +51,12 @@ abstract class BaseRunnerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(STORAGE_API_URL, PHP_URL_HOST),
-            AWS_KMS_TEST_KEY,
-            AWS_ECR_REGISTRY_REGION,
+            parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST),
+            getenv('AWS_KMS_TEST_KEY'),
+            getenv('AWS_ECR_REGISTRY_REGION'),
             null,
             null,
         ));
@@ -73,16 +75,16 @@ abstract class BaseRunnerTest extends TestCase
         $this->projectId = (string) $tokenInfo['owner']['id'];
         $this->containerHandler = new TestHandler();
         $this->runnerHandler = new TestHandler();
-        $log = new Logger("test-logger", [$this->runnerHandler]);
-        $containerLogger = new ContainerLogger("test-container-logger", [$this->containerHandler]);
+        $log = new Logger('test-logger', [$this->runnerHandler]);
+        $containerLogger = new ContainerLogger('test-container-logger', [$this->containerHandler]);
         $this->loggersServiceStub = $this->getMockBuilder(LoggersService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->loggersServiceStub->expects(self::any())
-            ->method("getLog")
+            ->method('getLog')
             ->will($this->returnValue($log));
         $this->loggersServiceStub->expects(self::any())
-            ->method("getContainerLog")
+            ->method('getContainerLog')
             ->will($this->returnValue($containerLogger));
     }
 
@@ -144,7 +146,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            RUNNER_MIN_LOG_PORT
+            (int) getenv('RUNNER_MIN_LOG_PORT')
         );
     }
 

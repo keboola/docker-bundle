@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
-use Keboola\DockerBundle\Tests\BaseContainerTest;
-use Symfony\Component\Process\Process;
 use Keboola\DockerBundle\Docker\RunCommandOptions;
+use Keboola\DockerBundle\Tests\BaseContainerTest;
 
 class ContainerTest extends BaseContainerTest
 {
@@ -21,15 +22,15 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration['features'] = ['container-root-user'];
         $container = $this->getContainer($imageConfiguration, $runCommandOptions, [], false);
 
-        $expected = "sudo timeout --signal=SIGKILL 3600"
-            . " docker run"
+        $expected = 'sudo timeout --signal=SIGKILL 3600'
+            . ' docker run'
             . " --volume '" . $this->getTempDir() . "/data:/data'"
             . " --volume '" . $this->getTempDir() . "/tmp:/tmp'"
             . " --memory '256M'"
             . " --net 'bridge'"
             . " --cpus '2'"
-            . " --env \"var=val\""
-            . " --env \"příliš=žluťoučký\""
+            . ' --env "var=val"'
+            . ' --env "příliš=žluťoučký"'
             . " --env \"var2=weird = '\\\"value\""
             . " --label 'com.keboola.runner.jobId=12345678'"
             . " --label 'com.keboola.runner.runId=10.20.30'"
@@ -43,13 +44,13 @@ class ContainerTest extends BaseContainerTest
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['container-tcpkeepalive-60s-override'];
         $container = $this->getContainer($imageConfiguration, [], [], false);
-        self::assertStringContainsString(" --sysctl net.ipv4.tcp_keepalive_time=60", $container->getRunCommand('name'));
+        self::assertStringContainsString(' --sysctl net.ipv4.tcp_keepalive_time=60', $container->getRunCommand('name'));
     }
 
     public function testRunCommandContainerWithoutRootUserFeature()
     {
         $container = $this->getContainer($this->getImageConfiguration(), [], [], false);
-        self::assertStringContainsString(" --user \$(id -u):\$(id -g)", $container->getRunCommand('name'));
+        self::assertStringContainsString(' --user $(id -u):$(id -g)', $container->getRunCommand('name'));
     }
 
     public function testRunCommandContainerWithoutSwap()

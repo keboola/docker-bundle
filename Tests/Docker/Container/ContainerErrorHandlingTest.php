@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Docker\RunCommandOptions;
@@ -103,7 +105,8 @@ class ContainerErrorHandlingTest extends BaseContainerTest
     public function testInvalidImage()
     {
         $imageConfiguration = $this->getImageConfiguration();
-        $imageConfiguration['data']['definition']['uri'] = '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/non-existent';
+        $imageConfiguration['data']['definition']['uri'] =
+            '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/non-existent';
         self::expectExceptionMessage('Cannot pull');
         self::expectException(ApplicationException::class);
         $this->getContainer($imageConfiguration, [], [], true);

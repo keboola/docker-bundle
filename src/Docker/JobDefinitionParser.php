@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
@@ -28,28 +30,34 @@ class JobDefinitionParser
      */
     public function parseConfig(Component $component, $config)
     {
-        $this->validateConfig($component, $config);
+        $this->validateConfig($config);
         $this->jobDefinitions = [];
-        if (count($config['rows']) == 0) {
-            $jobDefinition = new JobDefinition($config['configuration'] ?? [], $component, $config['id'], $config['version'], $config['state'] ?? []);
+        if (count($config['rows']) === 0) {
+            $jobDefinition = new JobDefinition(
+                $config['configuration'] ? (array) $config['configuration'] : [],
+                $component,
+                (string) $config['id'],
+                (string) $config['version'],
+                $config['state'] ? (array) $config['state'] : []
+            );
             $this->jobDefinitions[] = $jobDefinition;
         } else {
             foreach ($config['rows'] as $row) {
                 $jobDefinition = new JobDefinition(
                     array_replace_recursive($config['configuration'], $row['configuration']),
                     $component,
-                    $config['id'],
-                    $config['version'],
-                    $row['state'],
-                    $row['id'],
-                    $row['isDisabled']
+                    (string) $config['id'],
+                    (string) $config['version'],
+                    $row['state'] ? (array) $row['state'] : [],
+                    (string) $row['id'],
+                    (bool) $row['isDisabled']
                 );
                 $this->jobDefinitions[] = $jobDefinition;
             }
         }
     }
 
-    private function validateConfig(Component $component, $config)
+    private function validateConfig($config)
     {
         $hasProcessors = !empty($config['configuration']['processors']['before'])
             || !empty($config['configuration']['processors']['after']);

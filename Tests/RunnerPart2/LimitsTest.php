@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Generator;
@@ -31,7 +33,7 @@ class LimitsTest extends TestCase
         $this->expectExceptionMessage(
             'cpu_count is set incorrectly in parameters.yml: This value should be a valid number.'
         );
-        $limits->getCpuLimit($this->getImageMock());
+        $limits->getCpuLimit();
     }
 
     public function testProjectCpuLimitsInvalid()
@@ -49,7 +51,7 @@ class LimitsTest extends TestCase
         $this->expectExceptionMessage(
             'runner.cpuParallelism limit is set incorrectly: This value should be between 1 and 96.'
         );
-        $limits->getCpuLimit($this->getImageMock());
+        $limits->getCpuLimit();
     }
 
     public function testCpuLimitsInstance()
@@ -63,7 +65,7 @@ class LimitsTest extends TestCase
             ['foo', 'bar', 'pay-as-you-go'],
             null
         );
-        self::assertEquals(1, $limits->getCpuLimit($this->getImageMock()));
+        self::assertEquals(1, $limits->getCpuLimit());
         self::assertStringContainsString('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
     }
 
@@ -76,7 +78,7 @@ class LimitsTest extends TestCase
             ['pay-as-you-go'],
             null
         );
-        self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
+        self::assertEquals(2, $limits->getCpuLimit());
     }
 
     public function testCpuLimitsProject()
@@ -88,7 +90,7 @@ class LimitsTest extends TestCase
             ['pay-as-you-go'],
             null
         );
-        self::assertEquals(10, $limits->getCpuLimit($this->getImageMock()));
+        self::assertEquals(10, $limits->getCpuLimit());
     }
 
     public function testCpuLimitsProjectInstance()
@@ -100,7 +102,7 @@ class LimitsTest extends TestCase
             ['pay-as-you-go'],
             null
         );
-        self::assertEquals(2, $limits->getCpuLimit($this->getImageMock()));
+        self::assertEquals(2, $limits->getCpuLimit());
     }
 
     public function testProjectMemoryLimitsInvalid()
@@ -193,7 +195,10 @@ class LimitsTest extends TestCase
             null
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
-        self::assertStringContainsString("Memory limits - component: '256m' project: NULL", $handler->getRecords()[0]['message']);
+        self::assertStringContainsString(
+            "Memory limits - component: '256m' project: NULL",
+            $handler->getRecords()[0]['message']
+        );
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.python-transformation')));
     }
 
@@ -227,8 +232,8 @@ class LimitsTest extends TestCase
      */
     public function testDynamicBackend(
         ?string $containerType,
-        string  $expectedMemoryLimit,
-        string  $expectedCpuLimit
+        string $expectedMemoryLimit,
+        string $expectedCpuLimit
     ) {
         $component = new Component([
             'id' => 'keboola.runner-config-test',
@@ -256,11 +261,11 @@ class LimitsTest extends TestCase
 
         self::assertEquals($expectedMemoryLimit, $limits->getMemoryLimit($image));
         self::assertEquals($expectedMemoryLimit, $limits->getMemorySwapLimit($image));
-        self::assertEquals($expectedCpuLimit, $limits->getCpuLimit($image));
+        self::assertEquals($expectedCpuLimit, $limits->getCpuLimit());
         self::assertTrue($logger->hasNoticeThatContains(
             sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit)
         ));
-        self::assertTrue($logger->hasNoticeThatContains(sprintf("CPU limit: %s", $expectedCpuLimit)));
+        self::assertTrue($logger->hasNoticeThatContains(sprintf('CPU limit: %s', $expectedCpuLimit)));
     }
 
     public function dynamicBackendProvider(): Generator

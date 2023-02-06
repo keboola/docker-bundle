@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Exception\UserException;

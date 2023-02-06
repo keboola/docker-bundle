@@ -18,11 +18,8 @@ stages:
           - script: docker-compose build
             displayName: 'Build Image'
 
-          - script: docker-compose run tests ./vendor/bin/phpcs --standard=psr2 --ignore=vendor -v -n .
-            displayName: 'PHP CS'
-
-          - script: docker-compose run tests ./vendor/bin/phpstan
-            displayName: 'PHPStan'
+          - script: docker-compose run tests composer check
+            displayName: 'Static check'
 
   - stage: Tests
     dependsOn: beforeTests
@@ -31,7 +28,7 @@ stages:
         displayName: 'Base Tests'
         steps:
           - script: |
-              docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite base-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -40,6 +37,8 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: containerTests
         displayName: 'Container Tests'
@@ -48,7 +47,8 @@ stages:
         steps:
           - script: |
               ip -4 addr show
-              docker-compose run host-tests ./vendor/bin/phpunit --testsuite container-tests --debug
+              chmod a+rwx /tmp/
+              docker-compose run host-tests ./vendor/bin/phpunit --testsuite container-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -57,6 +57,8 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: runnerTests
         displayName: 'Runner Tests'
@@ -64,7 +66,7 @@ stages:
         steps:
           - script: |
               docker-compose build --pull
-              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -76,6 +78,8 @@ stages:
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
               STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES: $(STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: runnerTestsPart2
         displayName: 'Runner Tests Part 2'
@@ -84,7 +88,8 @@ stages:
         steps:
           - script: |
               docker-compose build --pull
-              docker-compose run tests /code/phpunit.sh runner-tests-2
+              chmod a+rwx /tmp/
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests-2
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -95,12 +100,14 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: s3Tests
         displayName: 'S3 Tests'
         steps:
           - script: |
-              docker-compose run tests ./vendor/bin/phpunit --testsuite s3-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite s3-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -111,12 +118,14 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: absTests
         displayName: 'ABS Tests'
         steps:
           - script: |
-              docker-compose run tests ./vendor/bin/phpunit --testsuite abs-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite abs-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -127,12 +136,14 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: gcsTests
         displayName: 'GCS Tests'
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_CONTROL_PLANE tests ./vendor/bin/phpunit --testsuite gcs-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_CONTROL_PLANE tests ./vendor/bin/phpunit --testsuite gcs-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -144,13 +155,15 @@ stages:
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
               STORAGE_API_TOKEN_CONTROL_PLANE: $(STORAGE_API_TOKEN_CONTROL_PLANE)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: synapseTests
         displayName: 'Synapse Tests'
         condition: eq(variables.RUN_SYNAPSE_TESTS, '1')
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_SYNAPSE tests ./vendor/bin/phpunit --testsuite synapse-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_SYNAPSE tests ./vendor/bin/phpunit --testsuite synapse-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -160,13 +173,15 @@ stages:
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: exasolTests
         displayName: 'Exasol Tests'
         condition: eq(variables.RUN_EXASOL_TESTS, '1')
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -176,12 +191,14 @@ stages:
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: redshiftTests
         displayName: 'Redshift Tests'
         steps:
           - script: |
-              docker-compose run tests ./vendor/bin/phpunit --testsuite redshift-tests --debug
+              docker-compose run tests ./vendor/bin/phpunit --testsuite redshift-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -192,13 +209,15 @@ stages:
               STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: teradataTests
         displayName: 'Teradata Tests'
         condition: eq(variables.RUN_TERADATA_TESTS, '1')
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_TERADATA tests ./vendor/bin/phpunit --testsuite teradata-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_TERADATA tests ./vendor/bin/phpunit --testsuite teradata-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -208,13 +227,15 @@ stages:
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: bigqueryTests
         displayName: 'BiqQuery Tests'
         condition: eq(variables.RUN_BIGQUERY_TESTS, '1')
         steps:
           - script: |
-              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests --debug
+              docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -224,3 +245,5 @@ stages:
               STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
               STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
               STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
@@ -41,7 +43,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->will(self::returnValue($oauthResponse));
         $config = ['oauth_api' => [
             'id' => 'whatever',
-            'version' => 3
+            'version' => 3,
         ]];
 
         $jobScopedEncryptor = new JobScopedEncryptor(
@@ -187,7 +189,9 @@ class AuthorizationTest extends BaseRunnerTest
         $oauthClientStub->expects(self::once())
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
-            ->will(self::throwException(new ClientException('OAuth API error: No data found for api: keboola.docker-demo', 400)));
+            ->will(self::throwException(
+                new ClientException('OAuth API error: No data found for api: keboola.docker-demo', 400)
+            ));
 
         $jobScopedEncryptor = new JobScopedEncryptor(
             $encryptor,
@@ -347,6 +351,7 @@ class AuthorizationTest extends BaseRunnerTest
     public function testOauthV2DeprecationMessage(): void
     {
         $this->expectException(UserException::class);
+        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         $this->expectExceptionMessage('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
 
         $encryptor = $this->getEncryptor();
@@ -367,7 +372,6 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null
         );
-
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');

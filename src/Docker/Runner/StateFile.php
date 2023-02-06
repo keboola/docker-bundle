@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Configuration\ComponentState\Adapter;
 use Keboola\DockerBundle\Docker\Configuration\State;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
@@ -77,7 +78,7 @@ class StateFile
         try {
             $parsedState = (new State())->parse(['state' => $state]);
         } catch (InvalidConfigurationException $e) {
-            throw new UserException("Invalid state: " . $e->getMessage(), $e, $state);
+            throw new UserException('Invalid state: ' . $e->getMessage(), $e, $state);
         }
         if (isset($parsedState[self::NAMESPACE_COMPONENT])) {
             $this->state = $parsedState[self::NAMESPACE_COMPONENT];
@@ -106,7 +107,7 @@ class StateFile
 
     public function persistState(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
     {
-        $this->outputFilter->collectValues((array)$this->currentState);
+        $this->outputFilter->collectValues((array) $this->currentState);
 
         if ($this->clientWrapper->hasBranch()) {
             $client = $this->clientWrapper->getBranchClient();
@@ -133,10 +134,10 @@ class StateFile
                     self::NAMESPACE_INPUT => [
                         self::NAMESPACE_TABLES => $inputTableStateList->jsonSerialize(),
                         self::NAMESPACE_FILES => $inputFileStateList->jsonSerialize(),
-                    ]
-                ]
+                    ],
+                ],
             ];
-            $this->logger->notice("Storing state: " . json_encode($state));
+            $this->logger->notice('Storing state: ' . json_encode($state));
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
@@ -148,7 +149,7 @@ class StateFile
             }
         } catch (ClientException $e) {
             if ($e->getCode() === 404) {
-                throw new UserException("Failed to store state: " . $e->getMessage(), $e);
+                throw new UserException('Failed to store state: ' . $e->getMessage(), $e);
             }
             throw $e;
         }

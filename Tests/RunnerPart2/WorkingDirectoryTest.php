@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
@@ -36,8 +38,14 @@ class WorkingDirectoryTest extends TestCase
         $workingDir->normalizePermissions();
         $workingDir->dropWorkingDir();
         self::assertCount(2, $handler->getRecords());
-        self::assertStringContainsString($handler->getRecords()[0]['message'], 'Normalizing working directory permissions');
-        self::assertStringContainsString($handler->getRecords()[1]['message'], 'Normalizing working directory permissions');
+        self::assertStringContainsString(
+            $handler->getRecords()[0]['message'],
+            'Normalizing working directory permissions'
+        );
+        self::assertStringContainsString(
+            $handler->getRecords()[1]['message'],
+            'Normalizing working directory permissions'
+        );
     }
 
     public function testWorkingDirectoryMove()
@@ -55,7 +63,10 @@ class WorkingDirectoryTest extends TestCase
         $fs->dumpFile($workingDir->getDataDir() . '/out/state.json', $stateFile);
         $workingDir->moveOutputToInput();
         self::assertEquals($tableFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table'));
-        self::assertEquals($tableManifestFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest'));
+        self::assertEquals(
+            $tableManifestFile,
+            file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest')
+        );
         self::assertFalse(file_exists($workingDir->getDataDir() . '/in/state.json'));
         $workingDir->dropWorkingDir();
     }

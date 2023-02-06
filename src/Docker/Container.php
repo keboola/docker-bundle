@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
+use Keboola\DockerBundle\Docker\Container\Process;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -12,7 +15,7 @@ use Keboola\Gelf\ServerFactory;
 use Monolog\Logger;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
-use Keboola\DockerBundle\Docker\Container\Process;
+use Symfony\Component\Process\Process as SymfonyProcess;
 
 class Container
 {
@@ -147,26 +150,6 @@ class Container
     }
 
     /**
-     *
-     */
-    public function cleanUp()
-    {
-        // Check if container not running
-        $process = Process::fromShellCommandline('sudo docker ps | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->mustRun();
-        if (trim($process->getOutput()) !== '0') {
-            throw new UserException("Container '{$this->id}' already running.");
-        }
-
-        // Check old containers, delete if found
-        $process = Process::fromShellCommandline('sudo docker ps -a | grep ' . escapeshellarg($this->id) . ' | wc -l');
-        $process->mustRun();
-        if (trim($process->getOutput()) !== '0') {
-            $this->removeContainer($this->id);
-        }
-    }
-
-    /**
      * @return Process
      * @throws ApplicationException
      */
@@ -176,7 +159,7 @@ class Container
         $startTime = time();
         try {
             $this->logger->notice("Executing docker process {$this->getImage()->getFullImageId()}.");
-            if ($this->getImage()->getSourceComponent()->getLoggerType() == 'gelf') {
+            if ($this->getImage()->getSourceComponent()->getLoggerType() === 'gelf') {
                 $process = $this->runWithLogger($this->id);
             } else {
                 $process = Process::fromShellCommandline($this->getRunCommand($this->id));
@@ -197,28 +180,23 @@ class Container
         } finally {
             try {
                 $this->removeContainer($this->id);
-            } catch (ProcessFailedException $e) {
-                $this->logger->notice(
-                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                );
-                // continue
-            } catch (ProcessTimedOutException $e) {
-                $this->logger->notice(
-                    "Cannot remove container {$this->getImage()->getFullImageId()} {$this->id}: {$e->getMessage()}"
-                );
+            } catch (ProcessFailedException|ProcessTimedOutException $e) {
+                $this->logger->notice(sprintf(
+                    'Cannot remove container %s %s: %s',
+                    $this->getImage()->getFullImageId(),
+                    $this->id,
+                    $e->getMessage()
+                ));
                 // continue
             }
         }
         return $process;
     }
 
-    /**
-     * @param Process $process
-     */
     private function runWithoutLogger(Process $process)
     {
         $process->run(function ($type, $buffer) {
-            if ($type === Process::OUT) {
+            if ($type === SymfonyProcess::OUT) {
                 $this->containerLogger->info($buffer);
             }
         });
@@ -230,8 +208,8 @@ class Container
         $containerId = '';
         $process = null;
         $server->start(
-            $this->minLogPort,
-            $this->maxLogPort,
+            (int) $this->minLogPort,
+            (int) $this->maxLogPort,
             function ($port) use (&$process) {
                 // get IP address of host from container
                 $processIp = Process::fromShellCommandline($this->commandToGetHostIp);
@@ -252,10 +230,10 @@ class Container
             function (&$terminated) use (&$process) {
                 if (!$process->isRunning()) {
                     $terminated = true;
-                    if (trim($process->getOutput()) != '') {
+                    if (trim($process->getOutput()) !== '') {
                         $this->containerLogger->info($process->getOutput());
                     }
-                    if (trim($process->getErrorOutput()) != '') {
+                    if (trim($process->getErrorOutput()) !== '') {
                         $this->containerLogger->error($process->getErrorOutput());
                     }
                 }
@@ -271,20 +249,20 @@ class Container
                     empty($event['timestamp']) ||
                     empty($event['short_message'])
                 ) {
-                    $this->logger->notice("Missing required field from event.", $event);
+                    $this->logger->notice('Missing required field from event.', $event);
                     return;
                 }
-                if ($event['host'] != substr($containerId, 0, strlen($event['host']))) {
-                    $this->logger->notice("Invalid container host " . $event['host'], $event);
+                if (!str_starts_with($containerId, $event['host'])) {
+                    $this->logger->notice('Invalid container host ' . $event['host'], $event);
                     return;
                 }
                 array_walk_recursive($event, function (&$value) {
-                    $value = $this->outputFilter->filter($value);
+                    $value = $this->outputFilter->filter((string) $value);
                 });
                 $this->containerLogger->addRawRecord(
-                    $event['level'],
-                    $event['timestamp'],
-                    $event['short_message'],
+                    (int) $event['level'],
+                    (int) $event['timestamp'],
+                    (string) $event['short_message'],
                     $event
                 );
                 if ($event['level'] <= 4) {
@@ -293,7 +271,7 @@ class Container
             },
             null,
             function ($event) {
-                $this->containerLogger->error("Invalid message: " . $event);
+                $this->containerLogger->error('Invalid message: ' . $event);
             }
         );
         return $process;
@@ -317,21 +295,21 @@ class Container
             $message = $this->lastError;
         }
         if (!$message) {
-            $message = "No error message.";
+            $message = 'No error message.';
         }
 
         // make the exception message reasonably short
         if (mb_strlen($message) > 4000) {
-            $message = mb_substr($message, 0, 2000) . " ... " . mb_substr($message, -2000);
+            $message = mb_substr($message, 0, 2000) . ' ... ' . mb_substr($message, -2000);
         }
 
         // put the whole message to exception data, but make sure not use too much memory
         $data = [
-            "output" => mb_substr($output, -1000000),
-            "errorOutput" => mb_substr($errorOutput, -1000000),
-            "container" => [
-                "id" => $this->getId(),
-                "image" => $this->getImage()->getPrintableImageId(),
+            'output' => mb_substr($output, -1000000),
+            'errorOutput' => mb_substr($errorOutput, -1000000),
+            'container' => [
+                'id' => $this->getId(),
+                'image' => $this->getImage()->getPrintableImageId(),
             ],
         ];
 
@@ -341,32 +319,44 @@ class Container
             if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
                 throw new UserException(
                     "Running {$this->getImage()->getPrintableImageId()} container exceeded the timeout of " .
-                    $this->getImage()->getSourceComponent()->getProcessTimeout() . " seconds.",
+                    $this->getImage()->getSourceComponent()->getProcessTimeout() . ' seconds.',
                     null,
                     $data
                 );
             } else {
                 throw new OutOfMemoryException(
-                    "Component terminated. Possibly due to out of memory error",
+                    'Component terminated. Possibly due to out of memory error',
                     null,
                     $data
                 );
             }
-        } elseif ($process->getExitCode() == 1) {
+        } elseif ($process->getExitCode() === 1) {
             // syrup will log the process error output as part of the exception body
             throw new UserException($message, null, $data);
         } else {
             if ($this->getImage()->getSourceComponent()->isApplicationErrorDisabled()) {
                 // syrup will log the process error output as part of the exception body
                 throw new UserException(
-                    "{$this->getImage()->getPrintableImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    sprintf(
+                        "%s container '%s' failed: (%s) %s",
+                        $this->getImage()->getPrintableImageId(),
+                        $this->getId(),
+                        $process->getExitCode(),
+                        $message
+                    ),
                     null,
                     $data
                 );
             } else {
                 // syrup will log the process error output as part of the exception body
                 throw new ApplicationException(
-                    "{$this->getImage()->getPrintableImageId()} container '{$this->getId()}' failed: ({$process->getExitCode()}) {$message}",
+                    sprintf(
+                        "%s container '%s' failed: (%s) %s",
+                        $this->getImage()->getPrintableImageId(),
+                        $this->getId(),
+                        $process->getExitCode(),
+                        $message
+                    ),
                     null,
                     $data
                 );
@@ -380,30 +370,36 @@ class Container
      */
     public function getRunCommand($containerId)
     {
-        setlocale(LC_CTYPE, "en_US.UTF-8");
-        $envs = "";
+        setlocale(LC_CTYPE, 'en_US.UTF-8');
+        $envs = '';
         foreach ($this->runCommandOptions->getEnvironmentVariables() as $key => $value) {
-            $envs .= " --env \"" . str_replace('"', '\"', $key) . "=" . str_replace('"', '\"', $value). "\"";
+            $envs .= ' --env "' .
+                str_replace('"', '\"', (string) $key) . '=' .
+                str_replace('"', '\"', (string) $value). '"';
         }
+        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
 
         $labels = '';
         foreach ($this->runCommandOptions->getLabels() as $label) {
-            $labels .= ' --label ' . escapeshellarg($label);
+            $labels .= ' --label ' . escapeshellarg((string) $label);
         }
 
-        $command .= " --volume " . escapeshellarg($this->dataDir . ":/data")
-            . " --volume " . escapeshellarg($this->tmpDir . ":/tmp")
-            . " --memory " . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
-            . ($this->getImage()->getSourceComponent()->hasNoSwap() ? " --memory-swap " . escapeshellarg($this->limits->getMemorySwapLimit($this->getImage())) : "")
-            . " --net " . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
-            . " --cpus " . escapeshellarg($this->limits->getCpuLimit($this->getImage()))
+        $command .= ' --volume ' . escapeshellarg($this->dataDir . ':/data')
+            . ' --volume ' . escapeshellarg($this->tmpDir . ':/tmp')
+            . ' --memory ' . escapeshellarg($this->limits->getMemoryLimit($this->getImage()))
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+            . ($this->getImage()->getSourceComponent()->hasNoSwap() ? ' --memory-swap ' .
+                escapeshellarg($this->limits->getMemorySwapLimit($this->getImage())) : '')
+            . ' --net ' . escapeshellarg($this->limits->getNetworkLimit($this->getImage()))
+            . ' --cpus ' . escapeshellarg((string) $this->limits->getCpuLimit())
             . $envs
             . $labels
-            . " --name " . escapeshellarg($containerId)
-            . (!$this->getImage()->getSourceComponent()->runAsRoot() ? ' --user $(id -u):$(id -g)' : "")
-            . ($this->getImage()->getSourceComponent()->overrideKeepalive60s() ? ' --sysctl net.ipv4.tcp_keepalive_time=60' : "")
-            . " " . escapeshellarg($this->getImage()->getFullImageId());
+            . ' --name ' . escapeshellarg((string) $containerId)
+            . (!$this->getImage()->getSourceComponent()->runAsRoot() ? ' --user $(id -u):$(id -g)' : '')
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+            . ($this->getImage()->getSourceComponent()->overrideKeepalive60s() ? ' --sysctl net.ipv4.tcp_keepalive_time=60' : '')
+            . ' ' . escapeshellarg($this->getImage()->getFullImageId());
         return $command;
     }
 
@@ -413,9 +409,9 @@ class Container
      */
     public function getRemoveCommand($containerId)
     {
-        setlocale(LC_CTYPE, "en_US.UTF-8");
-        $command = "sudo docker rm -f ";
-        $command .= escapeshellarg($containerId);
+        setlocale(LC_CTYPE, 'en_US.UTF-8');
+        $command = 'sudo docker rm -f ';
+        $command .= escapeshellarg((string) $containerId);
         return $command;
     }
 
@@ -425,9 +421,9 @@ class Container
      */
     public function getInspectCommand($containerId)
     {
-        setlocale(LC_CTYPE, "en_US.UTF-8");
-        $command = "sudo docker inspect ";
-        $command .= escapeshellarg($containerId);
+        setlocale(LC_CTYPE, 'en_US.UTF-8');
+        $command = 'sudo docker inspect ';
+        $command .= escapeshellarg((string) $containerId);
         return $command;
     }
 
@@ -453,13 +449,7 @@ class Container
             $process->mustRun();
             $inspect = json_decode($process->getOutput(), true);
             $inspect = array_pop($inspect);
-        } catch (ProcessFailedException $e) {
-            $this->logger->notice(
-                "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
-                $e->getMessage()
-            );
-            $inspect = [];
-        } catch (ProcessTimedOutException $e) {
+        } catch (ProcessFailedException|ProcessTimedOutException $e) {
             $this->logger->notice(
                 "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
                 $e->getMessage()
@@ -475,11 +465,11 @@ class Container
      */
     private function checkOOM(array $inspect)
     {
-        if (isset($inspect["State"]["OOMKilled"]) && $inspect["State"]["OOMKilled"] === true) {
+        if (isset($inspect['State']['OOMKilled']) && $inspect['State']['OOMKilled'] === true) {
             $data = [
-                "container" => [
-                    "id" => $this->getId()
-                ]
+                'container' => [
+                    'id' => $this->getId(),
+                ],
             ];
             throw new OutOfMemoryException(
                 "Component out of memory (exceeded {$this->limits->getMemoryLimit($this->getImage())})",

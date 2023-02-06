@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\OutputFilter;
 
 use Keboola\DockerBundle\Docker\Container\WtfWarningFilter;
@@ -21,7 +23,7 @@ class OutputFilter implements OutputFilterInterface
     /**
      * @inheritdoc
      */
-    public function addValue($value)
+    public function addValue(string $value): void
     {
         $this->filterValues[] = $value;
         // this is reversible, so hide it too
@@ -32,21 +34,18 @@ class OutputFilter implements OutputFilterInterface
     /**
      * @inheritdoc
      */
-    public function collectValues(array $data)
+    public function collectValues(array $data): void
     {
         array_walk_recursive($data, function ($value, $key) {
-            if ((substr($key, 0, 1) == '#') && (is_scalar($value))) {
-                $this->addValue($value);
+            if ((str_starts_with((string) $key, '#')) && (is_scalar($value))) {
+                $this->addValue((string) $value);
             }
         });
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function filter($text)
+    public function filter(string $text): string
     {
-        return $this->filterGarbage($this->filterSecrets((string) $text));
+        return $this->filterGarbage($this->filterSecrets($text));
     }
 
     private function filterSecrets(string $text): string
@@ -62,6 +61,6 @@ class OutputFilter implements OutputFilterInterface
         if (mb_strlen($value) > $this->maxMessageChars) {
             $value = mb_substr($value, 0, $this->maxMessageChars) . ' ' . self::TRIMMED;
         }
-        return WtfWarningFilter::filter(trim(sanitizeUtf8($value)));
+        return WtfWarningFilter::filter(trim((string) sanitizeUtf8($value)));
     }
 }

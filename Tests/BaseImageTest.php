@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
@@ -15,13 +17,13 @@ abstract class BaseImageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID);
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
 
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(STORAGE_API_URL, PHP_URL_HOST),
-            AWS_KMS_TEST_KEY,
-            AWS_ECR_REGISTRY_REGION,
+            parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST),
+            getenv('AWS_KMS_TEST_KEY'),
+            getenv('AWS_ECR_REGISTRY_REGION'),
             null,
             null,
         ));

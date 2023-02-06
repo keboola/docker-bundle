@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Image;
@@ -11,11 +13,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Limits
 {
-    const MAX_CPU_LIMIT = 96;
+    private const MAX_CPU_LIMIT = 96;
 
-    const DEFAULT_CPU_LIMIT = 2;
+    private const DEFAULT_CPU_LIMIT = 2;
 
-    const MAX_MEMORY_LIMIT = 64000;
+    private const MAX_MEMORY_LIMIT = 64000;
     public const PAY_AS_YOU_GO_FEATURE = 'pay-as-you-go';
 
     private array $projectFeatures;
@@ -70,7 +72,7 @@ class Limits
         return $image->getSourceComponent()->getNetworkType();
     }
 
-    public function getCpuLimit(Image $image)
+    public function getCpuLimit()
     {
         if (!in_array(self::PAY_AS_YOU_GO_FEATURE, $this->projectFeatures)) {
             switch ($this->containerType) {
@@ -91,12 +93,12 @@ class Limits
                     $this->logger->warning(sprintf('Unknown containerType "%s"', $this->containerType));
                     $cpuLimit = 1;
             }
-            $this->logger->notice("CPU limit: " . $cpuLimit);
+            $this->logger->notice('CPU limit: ' . $cpuLimit);
             return $cpuLimit;
         }
         $instance = $this->getInstanceCpuLimit();
         $projectLimit = $this->getProjectCpuLimit();
-        $this->logger->notice("CPU limits - instance: " . $instance . " project: " . $projectLimit);
+        $this->logger->notice('CPU limits - instance: ' . $instance . ' project: ' . $projectLimit);
         return min($instance, $projectLimit);
     }
 
@@ -106,7 +108,7 @@ class Limits
     private function getCPUValidatorConstraints()
     {
         return [
-            new Range(['min' => 1, 'max' => self::MAX_CPU_LIMIT])
+            new Range(['min' => 1, 'max' => self::MAX_CPU_LIMIT]),
         ];
     }
 
@@ -116,7 +118,7 @@ class Limits
     private function getMemoryValidatorConstraints()
     {
         return [
-            new Range(['min' => 1, 'max' => self::MAX_MEMORY_LIMIT])
+            new Range(['min' => 1, 'max' => self::MAX_MEMORY_LIMIT]),
         ];
     }
 
@@ -131,10 +133,10 @@ class Limits
                 return $this->instanceLimits['cpu_count'];
             }
             throw new ApplicationException(
-                "cpu_count is set incorrectly in parameters.yml: " . $errors[0]->getMessage()
+                'cpu_count is set incorrectly in parameters.yml: ' . $errors[0]->getMessage()
             );
         }
-        throw new ApplicationException("cpu_count is not set in parameters.yml");
+        throw new ApplicationException('cpu_count is not set in parameters.yml');
     }
 
     private function getNodeTypeMultiplier(?string $containerType): float
@@ -168,7 +170,7 @@ class Limits
                 return $this->projectLimits['runner.cpuParallelism']['value'];
             }
             throw new ApplicationException(
-                "runner.cpuParallelism limit is set incorrectly: " . $errors[0]->getMessage()
+                'runner.cpuParallelism limit is set incorrectly: ' . $errors[0]->getMessage()
             );
         }
         return self::DEFAULT_CPU_LIMIT;

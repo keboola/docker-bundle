@@ -1,11 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
-use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -37,7 +38,6 @@ class ImageCreator
         $this->after = empty($componentConfig['processors']['after']) ? [] : $componentConfig['processors']['after'];
         $this->componentConfig = $componentConfig;
         $this->temp = new Temp();
-        $this->temp->initRunFolder();
     }
 
     /**

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
 use Keboola\DockerBundle\Docker\Component;
@@ -8,7 +10,6 @@ use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\DockerBundle\Tests\Docker\ImageTest;
-use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
@@ -26,9 +27,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'repository' => [
-                        'region' => AWS_ECR_REGISTRY_REGION,
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
                     ],
                 ],
             ],
@@ -41,15 +42,15 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testInvalidCredentials()
     {
-        putenv('AWS_ACCESS_KEY_ID=' . AWS_ECR_ACCESS_KEY_ID . '_invalid');
-        putenv('AWS_SECRET_ACCESS_KEY=' . AWS_ECR_SECRET_ACCESS_KEY);
+        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID') . '_invalid');
+        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'repository' => [
-                        'region' => AWS_ECR_REGISTRY_REGION,
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
                     ],
                 ],
             ],
@@ -68,8 +69,12 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testDownloadedImage()
     {
-        Process::fromShellCommandline('sudo docker rmi -f $(sudo docker images -aq ' . AWS_ECR_REGISTRY_URI . ')')->run();
-        $process = Process::fromShellCommandline('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . ' | wc -l');
+        Process::fromShellCommandline(
+            'sudo docker rmi -f $(sudo docker images -aq ' . getenv('AWS_ECR_REGISTRY_URI') . ')'
+        )->run();
+        $process = Process::fromShellCommandline(
+            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . ' | wc -l'
+        );
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
 
@@ -77,24 +82,26 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'repository' => [
-                        'region' => AWS_ECR_REGISTRY_REGION,
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
                     ],
                 ],
             ],
         ]);
         $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
         $image->prepare([]);
-        self::assertEquals(AWS_ECR_REGISTRY_URI . ':latest', $image->getFullImageId());
-        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        self::assertEquals(getenv('AWS_ECR_REGISTRY_URI') . ':latest', $image->getFullImageId());
+        $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
         array_shift($repoParts);
         self::assertEquals(implode('/', $repoParts) . ':latest', $image->getPrintableImageId());
 
-        $process = Process::fromShellCommandline('sudo docker images | grep ' . AWS_ECR_REGISTRY_URI . '| wc -l');
+        $process = Process::fromShellCommandline(
+            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . '| wc -l'
+        );
         $process->run();
         self::assertEquals(1, trim($process->getOutput()));
-        Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI);
+        Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI'));
     }
 
     public function testGetAwsAccountId()
@@ -103,16 +110,16 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'repository' => [
-                        'region' => AWS_ECR_REGISTRY_REGION,
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
                     ],
                 ],
             ],
         ]);
         /** @var AWSElasticContainerRegistry $image */
         $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
-        self::assertEquals(AWS_ECR_REGISTRY_ACCOUNT_ID, $image->getAwsAccountId());
+        self::assertEquals(getenv('AWS_ECR_REGISTRY_ACCOUNT_ID'), $image->getAwsAccountId());
     }
 
     public function testLogger()
@@ -121,9 +128,9 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
-                    'uri' => AWS_ECR_REGISTRY_URI,
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
                     'repository' => [
-                        'region' => AWS_ECR_REGISTRY_REGION,
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
                     ],
                     'tag' => 'test-hash',
                 ],
@@ -134,25 +141,25 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $image = ImageFactory::getImage($logger, $imageConfig, true);
         $image->prepare([]);
 
-        self::assertEquals(AWS_ECR_REGISTRY_URI . ':test-hash', $image->getFullImageId());
-        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        self::assertEquals(getenv('AWS_ECR_REGISTRY_URI') . ':test-hash', $image->getFullImageId());
+        $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
         array_shift($repoParts);
         self::assertEquals(implode('/', $repoParts) . ':test-hash', $image->getPrintableImageId());
         self::assertTrue($testHandler->hasNotice(
-            'Using image ' . AWS_ECR_REGISTRY_URI .
-            ':test-hash with repo-digest ' . AWS_ECR_REGISTRY_URI . '@sha256:' .
+            'Using image ' . getenv('AWS_ECR_REGISTRY_URI') .
+            ':test-hash with repo-digest ' . getenv('AWS_ECR_REGISTRY_URI') . '@sha256:' .
             ImageTest::TEST_HASH_DIGEST
         ));
         self::assertEquals(
-            [AWS_ECR_REGISTRY_URI . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
+            [getenv('AWS_ECR_REGISTRY_URI') . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getImageDigests()
         );
-        $repoParts = explode('/', AWS_ECR_REGISTRY_URI);
+        $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
         array_shift($repoParts);
         self::assertEquals(
             [implode('/', $repoParts) . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
             $image->getPrintableImageDigests()
         );
-        Process::fromShellCommandline('sudo docker rmi ' . AWS_ECR_REGISTRY_URI)->run();
+        Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI'))->run();
     }
 }

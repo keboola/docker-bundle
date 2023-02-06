@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests;
 
 use Keboola\DockerBundle\Monolog\Handler\StorageApiHandlerInterface;
@@ -7,6 +9,7 @@ use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Event;
 use Monolog\Handler\AbstractHandler;
 use Monolog\Logger;
+use function Keboola\Utils\sanitizeUtf8;
 
 /**
  * Class StorageApiHandler
@@ -56,7 +59,7 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
      */
     public function handle(array $record): bool
     {
-        if (($this->verbosity[$record['level']] == self::VERBOSITY_NONE) || empty($record['message'])) {
+        if (($this->verbosity[$record['level']] === self::VERBOSITY_NONE) || empty($record['message'])) {
             return false;
         }
 
@@ -66,26 +69,24 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
         } else {
             $event->setComponent($this->appName);
         }
-        $event->setMessage(\Keboola\Utils\sanitizeUtf8($record['message']));
+        $event->setMessage(sanitizeUtf8($record['message']));
         $event->setRunId($this->storageApiClient->getRunId());
         $event->setParams([]);
 
-        if ($this->verbosity[$record['level']] == self::VERBOSITY_VERBOSE) {
+        if ($this->verbosity[$record['level']] === self::VERBOSITY_VERBOSE) {
             $results = $record['context'];
         } else {
             $results = [];
         }
         $event->setResults($results);
 
-        if ($this->verbosity[$record['level']] == self::VERBOSITY_CAMOUFLAGE) {
-            $event->setMessage("Application error");
-            $event->setDescription("Contact support@keboola.com");
+        if ($this->verbosity[$record['level']] === self::VERBOSITY_CAMOUFLAGE) {
+            $event->setMessage('Application error');
+            $event->setDescription('Contact support@keboola.com');
         }
 
         switch ($record['level']) {
             case Logger::ERROR:
-                $type = Event::TYPE_ERROR;
-                break;
             case Logger::CRITICAL:
             case Logger::EMERGENCY:
             case Logger::ALERT:

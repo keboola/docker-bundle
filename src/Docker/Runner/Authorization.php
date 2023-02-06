@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
@@ -30,9 +32,10 @@ class Authorization
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
         } else {
-            if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] == 3)) {
+            if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] === 3)) {
                 $client = $this->oauthClientV3;
             } else {
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 throw new UserException('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
             }
             if (isset($configData['oauth_api']['id'])) {

@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Exception;
 
-class ApplicationException extends \Exception
+use Exception;
+
+class ApplicationException extends Exception
 {
-    protected $data = array();
+    protected $data = [];
 
     public function __construct($message, $previous = null, array $data = [])
     {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Runner\UsageFile;
 
 class NullUsageFile implements UsageFileInterface
@@ -8,11 +10,11 @@ class NullUsageFile implements UsageFileInterface
     {
     }
 
-    public function setDataDir($dataDir)
+    public function setDataDir(string $dataDir): void
     {
     }
 
-    public function storeUsage()
+    public function storeUsage(): void
     {
     }
 }

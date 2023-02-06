@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
-use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Keboola\DockerBundle\Docker\Configuration;
+use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class SharedCodeRow extends Configuration
 {
@@ -20,7 +22,7 @@ class SharedCodeRow extends Configuration
                         // phpcs:ignore
                         ->then( function ($v) { return [$v]; } )
                     ->end()
-                    ->prototype("scalar")->end()
+                    ->prototype('scalar')->end()
                 ->end()
             ->end();
         return $treeBuilder;

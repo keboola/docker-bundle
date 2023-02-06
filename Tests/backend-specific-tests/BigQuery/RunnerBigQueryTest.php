@@ -1,9 +1,12 @@
 <?php
 
-namespace Keboola\DockerBundle\Tests\Runner;
+declare(strict_types=1);
+
+namespace Keboola\DockerBundle\BackendTests\BigQuery;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
+use Keboola\DockerBundle\Tests\Runner\BaseTableBackendTest;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -21,9 +24,9 @@ class RunnerBigQueryTest extends BaseTableBackendTest
     {
         foreach (['in.c-bigquery-runner-test', 'out.c-bigquery-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
-                if ($e->getCode() != 404) {
+                if ($e->getCode() !== 404) {
                     throw $e;
                 }
             }
@@ -64,7 +67,6 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         $this->createBuckets();
         $this->clearConfigs();
         $temp = new Temp();
-        $temp->initRunFolder();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
         $csv->writeRow(['test1', 'test1']);

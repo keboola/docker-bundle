@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker;
 
 use InvalidArgumentException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 class ComponentTest extends TestCase
 {
@@ -199,7 +202,11 @@ class ComponentTest extends TestCase
                 ],
             ],
             'features' => [
-                'container-root-user', 'dev-branch-configuration-unsafe', 'dev-branch-job-blocked', 'dev-mapping-allowed', 'container-tcpkeepalive-60s-override'
+                'container-root-user',
+                'dev-branch-configuration-unsafe',
+                'dev-branch-job-blocked',
+                'dev-mapping-allowed',
+                'container-tcpkeepalive-60s-override',
             ],
         ];
         $component = new Component($componentData);
@@ -236,8 +243,8 @@ class ComponentTest extends TestCase
                 ],
             ],
             'features' => [
-                'no-swap'
-            ]
+                'no-swap',
+            ],
         ];
         $component = new Component($componentData);
         self::assertTrue($component->hasNoSwap());
@@ -254,31 +261,11 @@ class ComponentTest extends TestCase
                 ],
             ],
             'features' => [
-                'no-swap'
-            ]
+                'no-swap',
+            ],
         ];
         $component = new Component($componentData);
         $component->setImageTag('1.2.3');
         self::assertSame('1.2.3', $component->getImageTag());
-    }
-
-    public function testSetTagInvalid()
-    {
-        $componentData = [
-            'id' => 'keboola.ex-generic',
-            'data' => [
-                'definition' => [
-                    'type' => 'dockerhub',
-                    'uri' => 'dummy',
-                ],
-            ],
-            'features' => [
-                'no-swap'
-            ]
-        ];
-        $component = new Component($componentData);
-        self::expectExceptionMessage('Argument $tag is expected to be a string, object given');
-        self::expectException(InvalidArgumentException::class);
-        $component->setImageTag(new \stdClass());
     }
 }

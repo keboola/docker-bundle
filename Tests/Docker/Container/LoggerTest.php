@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Docker\Container;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -11,6 +13,7 @@ use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\DockerBundle\Tests\StorageApiHandler;
 use Keboola\StorageApi\Event;
 use Monolog\Handler\TestHandler;
+use Monolog\Logger as MonologLogger;
 use Symfony\Bridge\Monolog\Logger;
 
 class LoggerTest extends BaseContainerTest
@@ -52,6 +55,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfUdpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -96,6 +100,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -140,6 +145,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfHttpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")), compress=False))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -174,7 +180,7 @@ class LoggerTest extends BaseContainerTest
 
     public function testGelfLogInvalid()
     {
-        /* install a broken version of pygelf which does not sent required 'host' field
+        /* install a broken version of pygelf which does not send required 'host' field
         and check that it is handled gracefully. */
         $script = [
             'import subprocess',
@@ -185,6 +191,7 @@ class LoggerTest extends BaseContainerTest
             'import os',
             'logging.basicConfig(level=logging.INFO)',
             'logging.getLogger().removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'pygelf_handler = pygelf.GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=os.getenv("KBC_LOGGER_PORT"), debug=False)',
             'logging.getLogger().addHandler(pygelf_handler)',
             'logging.info("A sample info message (pygelf)")',
@@ -201,7 +208,7 @@ class LoggerTest extends BaseContainerTest
                     (array_keys($record['context']) === ['version', 'short_message', 'timestamp', 'level', 'source']) &&
                     ($record['context']['short_message'] === 'A sample info message (pygelf)');
             },
-            \Monolog\Logger::NOTICE
+            MonologLogger::NOTICE
         ));
     }
 
@@ -218,6 +225,7 @@ class LoggerTest extends BaseContainerTest
             'logger = logging.getLogger()',
             'logging.basicConfig(level=logging.INFO)',
             'logging.getLogger().removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logging_gelf_handler = logging_gelf.handlers.GELFTCPSocketHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")))',
             '#logging_gelf_handler.setFormatter(logging_gelf.formatters.GELFFormatter(null_character=True))',
             'logger.addHandler(logging_gelf_handler)',
@@ -237,7 +245,7 @@ class LoggerTest extends BaseContainerTest
         $records = $this->getLogHandler()->getRecords();
         self::assertGreaterThan(0, count($records));
         self::assertEquals('', $err);
-        self::assertStringContainsString("Client finished", $out);
+        self::assertStringContainsString('Client finished', $out);
         $records = $this->getContainerLogHandler()->getRecords();
         self::assertEquals(3, count($records));
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
@@ -245,6 +253,7 @@ class LoggerTest extends BaseContainerTest
             'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample info message (invalid)".'
         ));
         self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains(
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample warning message (invalid)".'
         ));
     }
@@ -261,6 +270,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -275,13 +285,13 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info) {
-                if ($event->getType() == 'error') {
+                if ($event->getType() === 'error') {
                     $error[] = $event->getMessage();
                 }
-                if ($event->getType() == 'info') {
+                if ($event->getType() === 'info') {
                     $info[] = $event->getMessage();
                 }
-                if ($event->getType() == 'warn') {
+                if ($event->getType() === 'warn') {
                     $warn[] = $event->getMessage();
                 }
                 return true;
@@ -319,6 +329,7 @@ class LoggerTest extends BaseContainerTest
             '       record.structure = {"foo": "bar", "baz": "isAlsoSecure"}',
             '       return True',
             'logger.addFilter(ContextFilter())',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT")), debug=True, include_extra_fields=True))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -332,14 +343,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
-            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::DEBUG => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::INFO => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::NOTICE => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::WARNING => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::ERROR => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::ALERT => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
+            MonologLogger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
         ];
 
         $error = [];
@@ -349,16 +360,16 @@ class LoggerTest extends BaseContainerTest
         $structured = null;
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info, &$structured) {
-                if ($event->getType() == 'error') {
+                if ($event->getType() === 'error') {
                     $error[] = $event->getMessage();
                 }
-                if ($event->getType() == 'info') {
+                if ($event->getType() === 'info') {
                     $info[] = $event->getMessage();
                 }
-                if ($event->getType() == 'warn') {
+                if ($event->getType() === 'warn') {
                     $warn[] = $event->getMessage();
                 }
-                if ($event->getMessage() == 'A critical example.') {
+                if ($event->getMessage() === 'A critical example.') {
                     $structured = $event;
                 }
                 return true;
@@ -404,6 +415,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
             'logging.debug("A debug message.")',
             'logging.info("An info message.")',
@@ -416,14 +428,14 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
         $imageConfiguration['data']['logging']['verbosity'] = [
-            Logger::DEBUG => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::INFO => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::WARNING => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::ERROR => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::ALERT => StorageApiHandlerInterface::VERBOSITY_NONE,
-            Logger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::DEBUG => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::INFO => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::NOTICE => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::WARNING => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::ERROR => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::CRITICAL => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::ALERT => StorageApiHandlerInterface::VERBOSITY_NONE,
+            MonologLogger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_NONE,
         ];
         $records = [];
         $this->setCreateEventCallback(
@@ -449,6 +461,7 @@ class LoggerTest extends BaseContainerTest
             'logging.basicConfig(level=logging.DEBUG)',
             'logger = logging.getLogger()',
             'logger.removeHandler(logging.getLogger().handlers[0])',
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
             'logger.addHandler(GelfTcpHandler(host=os.getenv("KBC_LOGGER_ADDR"), port=int(os.getenv("KBC_LOGGER_PORT"))))',
             'logging.info("Info message.")',
             'logging.error("My Error message.")',
@@ -484,10 +497,10 @@ class LoggerTest extends BaseContainerTest
         $errors = [];
         $this->setCreateEventCallback(
             function (Event $event) use (&$infoText, &$errors) {
-                if ($event->getType() == 'info') {
+                if ($event->getType() === 'info') {
                     $infoText .= $event->getMessage();
                 }
-                if ($event->getType() == 'error') {
+                if ($event->getType() === 'error') {
                     $errors[] = $event->getMessage();
                 }
                 return true;
@@ -511,10 +524,10 @@ class LoggerTest extends BaseContainerTest
         $info = [];
         $this->setCreateEventCallback(
             function (Event $event) use (&$info, &$error) {
-                if ($event->getType() == 'error') {
+                if ($event->getType() === 'error') {
                     $error[] = $event->getMessage();
                 }
-                if ($event->getType() == 'info') {
+                if ($event->getType() === 'info') {
                     $info[] = $event->getMessage();
                 }
                 return true;
@@ -532,7 +545,7 @@ class LoggerTest extends BaseContainerTest
             'import sys',
             'print("first message to stdout", file=sys.stdout)',
             'print("first message to stderr", file=sys.stderr)',
-            'sys.exit(2)'
+            'sys.exit(2)',
         ];
         $contents = '';
         $this->setCreateEventCallback(
@@ -559,7 +572,7 @@ class LoggerTest extends BaseContainerTest
             'import sys',
             'print("first message to stdout", file=sys.stdout)',
             'print("first message to stderr" * 100000, file=sys.stderr)',
-            'sys.exit(1)'
+            'sys.exit(1)',
         ];
         $contents = '';
         $this->setCreateEventCallback(
@@ -591,7 +604,7 @@ class LoggerTest extends BaseContainerTest
             'print("message to stdout", file=sys.stdout)',
             'print("message to stderr", file=sys.stderr)',
             'time.sleep(15)',
-            'sys.exit(2)'
+            'sys.exit(2)',
         ];
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['data']['process_timeout'] = 10;
@@ -620,13 +633,13 @@ class LoggerTest extends BaseContainerTest
         $warn = [];
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info) {
-                if ($event->getType() == 'error') {
+                if ($event->getType() === 'error') {
                     $error[] = $event->getMessage();
                 }
-                if ($event->getType() == 'warn') {
+                if ($event->getType() === 'warn') {
                     $warn[] = $event->getMessage();
                 }
-                if ($event->getType() == 'info') {
+                if ($event->getType() === 'info') {
                     $info[] = $event->getMessage();
                 }
                 return true;

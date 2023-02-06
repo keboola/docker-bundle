@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -94,8 +96,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
     {
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN_MASTER
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_MASTER')
             )
         );
         foreach ($clientWrapper->getBasicClient()->listBuckets() as $bucket) {
@@ -117,9 +119,9 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'test-branch');
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
-                STORAGE_API_URL,
-                STORAGE_API_TOKEN_MASTER,
-                $branchId
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_MASTER'),
+                (string) $branchId
             )
         );
         $dataLoader = new DataLoader(

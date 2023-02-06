@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\DockerBundle\Docker\Runner\Output;
@@ -19,17 +21,12 @@ class Runner2Test extends BaseRunnerTest
 {
     use ReflectionPropertyAccessTestCase;
 
-    public function setUp(): void
-    {
-        parent::setUp();
-    }
-
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
         $client = new StorageApiClient([
-            'url' => STORAGE_API_URL,
-            'token' => STORAGE_API_TOKEN,
+            'url' => getenv('STORAGE_API_URL'),
+            'token' => getenv('STORAGE_API_TOKEN'),
         ]);
         $transformationTestComponentId = 'keboola.python-transformation';
         $components = new Components($client);
@@ -40,7 +37,7 @@ class Runner2Test extends BaseRunnerTest
         foreach ($configurations as $configuration) {
             try {
                 $components->deleteConfiguration($transformationTestComponentId, $configuration['id']);
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // do nothing
             }
         }
@@ -53,6 +50,7 @@ class Runner2Test extends BaseRunnerTest
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                     'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
                 ],
             ],
@@ -117,8 +115,8 @@ class Runner2Test extends BaseRunnerTest
         // set project feature
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->onlyMethods(['verifyToken'])
             ->getMock()
@@ -207,8 +205,8 @@ class Runner2Test extends BaseRunnerTest
         // set project feature
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
             ->setConstructorArgs([[
-                'url' => STORAGE_API_URL,
-                'token' => STORAGE_API_TOKEN,
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
             ]])
             ->onlyMethods(['verifyToken'])
             ->getMock()
@@ -221,7 +219,6 @@ class Runner2Test extends BaseRunnerTest
             ],
         ]);
         $this->setClientMock($storageApiMock);
-
 
         $runner = $this->getRunner();
 

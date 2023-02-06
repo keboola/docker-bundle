@@ -1,72 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="false"
          colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         bootstrap="bootstrap.php"
-		 cacheResultFile="/tmp/phpunit.result.cache">
-
+         bootstrap="Tests/bootstrap.php"
+         convertDeprecationsToExceptions="false"
+         cacheResultFile="/tmp/phpunit.result.cache"
+         printerClass="Sempro\PHPUnitPrettyPrinter\PrettyPrinterForPhpUnit9"
+>
     <php>
-        <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/" />
+        <server name="KERNEL_DIR" value="vendor/keboola/syrup/app/"/>
     </php>
 
     <testsuites>
-	    <testsuite name="base-tests">
-	        <directory>Tests</directory>
-	        <exclude>Tests/Command</exclude>
-	        <exclude>Tests/Controller</exclude>
-	        <exclude>Tests/Runner</exclude>
-	        <exclude>Tests/RunnerPart2</exclude>
-	        <exclude>Tests/Executor</exclude>
-	        <exclude>Tests/Docker/Container</exclude>
-	        <exclude>Tests/backend-specific-tests</exclude>
-	    </testsuite>
-	    <testsuite name="runner-tests">
-	        <directory>Tests/Runner</directory>
-	    </testsuite>
-	    <testsuite name="runner-tests-2">
-	        <directory>Tests/RunnerPart2</directory>
-	    </testsuite>
-	    <testsuite name="container-tests">
-	        <directory>Tests/Docker/Container</directory>
-			<file>Tests/Docker/Container/ProcessTest.php</file>
-	    </testsuite>
-	    <testsuite name="s3-tests">
-	        <directory>Tests/backend-specific-tests/S3</directory>
-	    </testsuite>
-	    <testsuite name="abs-tests">
-	        <directory>Tests/backend-specific-tests/ABS</directory>
-	    </testsuite>
-	    <testsuite name="gcs-tests">
-	        <directory>Tests/backend-specific-tests/GCS</directory>
-	    </testsuite>
-	    <testsuite name="synapse-tests">
-	        <directory>Tests/backend-specific-tests/Synapse</directory>
-	    </testsuite>
-		<testsuite name="exasol-tests">
-			<directory>Tests/backend-specific-tests/Exasol</directory>
-		</testsuite>
-		<testsuite name="redshift-tests">
-			<directory>Tests/backend-specific-tests/Redshift</directory>
-		</testsuite>
-		<testsuite name="teradata-tests">
-			<directory>Tests/backend-specific-tests/Teradata</directory>
-		</testsuite>
-		<testsuite name="bigquery-tests">
-			<directory>Tests/backend-specific-tests/BigQuery</directory>
-		</testsuite>
-	</testsuites>
-    <filter>
-        <whitelist processUncoveredFilesFromWhitelist="true">
-            <directory suffix=".php">.</directory>
-            <exclude>
-                <directory suffix=".php">vendor</directory>
-            </exclude>
-        </whitelist>
-    </filter>
+        <testsuite name="base-tests">
+            <directory>Tests</directory>
+            <exclude>Tests/Command</exclude>
+            <exclude>Tests/Controller</exclude>
+            <exclude>Tests/Runner</exclude>
+            <exclude>Tests/RunnerPart2</exclude>
+            <exclude>Tests/Executor</exclude>
+            <exclude>Tests/Docker/Container</exclude>
+            <exclude>Tests/backend-specific-tests</exclude>
+        </testsuite>
+        <testsuite name="runner-tests">
+            <directory>Tests/Runner</directory>
+        </testsuite>
+        <testsuite name="runner-tests-2">
+            <directory>Tests/RunnerPart2</directory>
+        </testsuite>
+        <testsuite name="container-tests">
+            <directory>Tests/Docker/Container</directory>
+            <file>Tests/Docker/Container/ProcessTest.php</file>
+        </testsuite>
+        <testsuite name="s3-tests">
+            <directory>Tests/backend-specific-tests/S3</directory>
+        </testsuite>
+        <testsuite name="abs-tests">
+            <directory>Tests/backend-specific-tests/ABS</directory>
+        </testsuite>
+        <testsuite name="gcs-tests">
+            <directory>Tests/backend-specific-tests/GCS</directory>
+        </testsuite>
+        <testsuite name="synapse-tests">
+            <directory>Tests/backend-specific-tests/Synapse</directory>
+        </testsuite>
+        <testsuite name="exasol-tests">
+            <directory>Tests/backend-specific-tests/Exasol</directory>
+        </testsuite>
+        <testsuite name="redshift-tests">
+            <directory>Tests/backend-specific-tests/Redshift</directory>
+        </testsuite>
+        <testsuite name="teradata-tests">
+            <directory>Tests/backend-specific-tests/Teradata</directory>
+        </testsuite>
+        <testsuite name="bigquery-tests">
+            <directory>Tests/backend-specific-tests/BigQuery</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
 
 </phpunit>

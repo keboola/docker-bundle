@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
@@ -18,8 +21,8 @@ class Container extends Configuration
         // System
         $root
             ->children()
-                ->variableNode("parameters")->end()
-                ->arrayNode("runtime")
+                ->variableNode('parameters')->end()
+                ->arrayNode('runtime')
                     ->ignoreExtraKeys(false)
                     ->children()
                         ->booleanNode('safe')->defaultNull()->end()
@@ -34,40 +37,40 @@ class Container extends Configuration
                         ->end()
                     ->end()
                 ->end()
-                ->scalarNode("variables_id")->end()
-                ->scalarNode("variables_values_id")->end()
-                ->scalarNode("shared_code_id")->end()
-                ->arrayNode("shared_code_row_ids")
-                    ->prototype("scalar")->end()
+                ->scalarNode('variables_id')->end()
+                ->scalarNode('variables_values_id')->end()
+                ->scalarNode('shared_code_id')->end()
+                ->arrayNode('shared_code_row_ids')
+                    ->prototype('scalar')->end()
                 ->end()
-                ->variableNode("image_parameters")->end()
+                ->variableNode('image_parameters')->end()
         ;
         $storage = $root
             ->children()
-                ->arrayNode("storage");
+                ->arrayNode('storage');
 
         $input = $storage
             ->children()
-                ->arrayNode("input");
+                ->arrayNode('input');
 
         $inputTable = $input
             ->children()
-                ->booleanNode("read_only_storage_access")->end()
-                ->arrayNode("tables")
-                    ->prototype("array")
+                ->booleanNode('read_only_storage_access')->end()
+                ->arrayNode('tables')
+                    ->prototype('array')
         ;
         InputTable::configureNode($inputTable);
 
         $inputFile = $input
             ->children()
-                ->arrayNode("files")
-                    ->prototype("array")
+                ->arrayNode('files')
+                    ->prototype('array')
         ;
         InputFile::configureNode($inputFile);
 
         $output = $storage
             ->children()
-                ->arrayNode("output");
+                ->arrayNode('output');
 
         $outputTable = $output
             ->children()
@@ -79,8 +82,8 @@ class Container extends Configuration
 
         $outputFile = $output
             ->children()
-                ->arrayNode("files")
-                    ->prototype("array")
+                ->arrayNode('files')
+                    ->prototype('array')
         ;
         OutputFile::configureNode($outputFile);
 
@@ -92,36 +95,36 @@ class Container extends Configuration
 
         // authorization
         $root->children()
-            ->arrayNode("authorization")
+            ->arrayNode('authorization')
             ->children()
-                ->arrayNode("oauth_api")
+                ->arrayNode('oauth_api')
                     ->children()
-                        ->scalarNode("id")->end()
-                        ->scalarNode("version")->defaultValue(2)->end()
-                        ->variableNode("credentials")->end()
+                        ->scalarNode('id')->end()
+                        ->scalarNode('version')->defaultValue(2)->end()
+                        ->variableNode('credentials')->end()
                     ->end()
                 ->end()
-                ->arrayNode("workspace")
+                ->arrayNode('workspace')
                     ->children()
-                        ->scalarNode("host")->end()
-                        ->scalarNode("account")->end()
-                        ->scalarNode("warehouse")->end()
-                        ->scalarNode("database")->end()
-                        ->scalarNode("schema")->end()
-                        ->scalarNode("user")->end()
-                        ->scalarNode("password")->end()
-                        ->scalarNode("container")->end()
-                        ->scalarNode("connectionString")->end()
-                        ->scalarNode("account")->end()
-                        ->variableNode("credentials")->end()
+                        ->scalarNode('host')->end()
+                        ->scalarNode('account')->end()
+                        ->scalarNode('warehouse')->end()
+                        ->scalarNode('database')->end()
+                        ->scalarNode('schema')->end()
+                        ->scalarNode('user')->end()
+                        ->scalarNode('password')->end()
+                        ->scalarNode('container')->end()
+                        ->scalarNode('connectionString')->end()
+                        ->scalarNode('account')->end()
+                        ->variableNode('credentials')->end()
                     ->end()
                 ->end()
-                ->scalarNode("context")->end()
+                ->scalarNode('context')->end()
             ->end()
         ->end();
 
         // action
-        $root->children()->scalarNode("action")->end();
+        $root->children()->scalarNode('action')->end();
 
         // processors
         $root->children()
@@ -192,6 +195,7 @@ class Container extends Configuration
                     ->validate()
                         ->ifTrue(function ($v) {
                             if ($v['enabled'] === true) {
+                                //phpcs:ignore Generic.Files.LineLength.MaxExceeded
                                 if (!isset($v['filter']['component_id']) && !isset($v['filter']['config_id']) && !isset($v['filter']['branch_id'])) {
                                     return true;
                                 }

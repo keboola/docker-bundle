@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Configuration\Variables;
@@ -15,29 +17,18 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class VariableResolver
 {
-    /**
-     * @var ClientWrapper
-     */
-    private $clientWrapper;
+    private const KEBOOLA_VARIABLES = 'keboola.variables';
 
-    const KEBOOLA_VARIABLES = 'keboola.variables';
-
-    /**
-     * @var Mustache_Engine
-     */
-    private $moustache;
-
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
+    private ClientWrapper $clientWrapper;
+    private Mustache_Engine $moustache;
+    private LoggerInterface $logger;
 
     public function __construct(ClientWrapper $clientWrapper, LoggerInterface $logger)
     {
         $this->clientWrapper = $clientWrapper;
         $this->moustache = new Mustache_Engine([
             'escape' => function ($string) {
-                return trim(json_encode($string), '"');
+                return trim((string) json_encode($string), '"');
             },
         ]);
         $this->logger = $logger;
@@ -46,8 +37,11 @@ class VariableResolver
     /**
      * @param JobDefinition[] $jobDefinitions
      */
-    public function resolveVariables(array $jobDefinitions, $variableValuesId, $variableValuesData)
-    {
+    public function resolveVariables(
+        array $jobDefinitions,
+        ?string $variableValuesId,
+        ?array $variableValuesData
+    ): array {
         if ($variableValuesId && $variableValuesData) {
             throw new UserException('Only one of variableValuesId and variableValuesData can be entered.');
         }
@@ -72,7 +66,7 @@ class VariableResolver
                 }
                 try {
                     $vConfiguration = $components->getConfiguration(self::KEBOOLA_VARIABLES, $variablesId);
-                    $vConfiguration = (new Variables())->parse(array('config' => $vConfiguration['configuration']));
+                    $vConfiguration = (new Variables())->parse(['config' => $vConfiguration['configuration']]);
                 } catch (ClientException $e) {
                     throw new UserException('Variable configuration cannot be read: ' . $e->getMessage(), $e);
                 } catch (InvalidConfigurationException $e) {
@@ -132,7 +126,7 @@ class VariableResolver
                     ));
                 }
                 try {
-                    $vRow = (new VariableValues())->parse(array('config' => $vRow));
+                    $vRow = (new VariableValues())->parse(['config' => $vRow]);
                 } catch (InvalidConfigurationException $e) {
                     throw new UserException('Variable values configuration is invalid: ' . $e->getMessage(), $e);
                 }
@@ -146,8 +140,8 @@ class VariableResolver
                 }
                 $this->logger->info(sprintf('Replaced values for variables: "%s".', implode(', ', $variableNames)));
 
-                $newConfiguration = json_decode(
-                    $this->moustache->render(json_encode($jobDefinition->getConfiguration()), $context),
+                $newConfiguration = (array) json_decode(
+                    $this->moustache->render((string) json_encode($jobDefinition->getConfiguration()), $context),
                     true
                 );
                 if (json_last_error() !== JSON_ERROR_NONE) {
