@@ -28,6 +28,7 @@ class Container extends Configuration
                         ->booleanNode('safe')->defaultNull()->end()
                         ->scalarNode('image_tag')->defaultNull()->end()
                         ->arrayNode('backend')
+                            ->ignoreExtraKeys(true)
                             ->treatNullLike([])
                             ->addDefaultsIfNotSet()
                             ->children()

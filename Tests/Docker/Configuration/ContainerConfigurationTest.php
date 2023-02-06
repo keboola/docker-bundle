@@ -203,23 +203,27 @@ class ContainerConfigurationTest extends TestCase
         self::assertSame([], $config['runtime']['backend']);
     }
 
-    public function testRuntimeBackendConfigurationDoesNotAcceptExtraKeys(): void
+    public function testRuntimeBackendConfigurationIgnoreExtraKeys(): void
     {
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('Unrecognized option "bar" under "container.runtime.backend"');
-
-        (new Configuration\Container())->parse([
+        $config = (new Configuration\Container())->parse([
             'config' => [
                 'runtime' => [
                     'backend' => [
                         'type' => 'foo',
                         'context' => 'wml',
-                        'bar' => 'baz',
+                        'extraKey' => 'ignored',
                     ],
                 ],
             ],
         ]);
-        self::assertTrue(true);
+
+        self::assertSame(
+            [
+                'type' => 'foo',
+                'context' => 'wml',
+            ],
+            $config['runtime']['backend']
+        );
     }
 
     public function testConfigurationWithTableFiles(): void
