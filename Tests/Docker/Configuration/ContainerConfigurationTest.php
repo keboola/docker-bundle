@@ -19,13 +19,13 @@ class ContainerConfigurationTest extends TestCase
                         'tables' => [
                             [
                                 'source' => 'in.c-main.data',
-                        ],
+                            ],
                         ],
                         'files' => [
                             [
                                 'tags' => ['tag1', 'tag2'],
                                 'query' => 'esquery',
-                    ],
+                            ],
                         ],
                     ],
                     'output' => [
@@ -34,14 +34,14 @@ class ContainerConfigurationTest extends TestCase
                             [
                                 'source' => 'test.csv',
                                 'destination' => 'out.c-main.data',
-                        ],
+                            ],
                         ],
                         'files' => [
                             [
                                 'source' => 'file',
                                 'tags' => ['tag'],
-                ],
-                ],
+                            ],
+                        ],
                     ],
                 ],
                 'parameters' => [
@@ -68,7 +68,7 @@ class ContainerConfigurationTest extends TestCase
                             ],
                             'parameters' => [
                                 'key' => 'val',
-                    ],
+                            ],
                         ],
                     ],
                     'after' => [
@@ -78,7 +78,7 @@ class ContainerConfigurationTest extends TestCase
                             ],
                             'parameters' => [
                                 'key' => 'val',
-                ],
+                            ],
                         ],
                     ],
                 ],
@@ -100,13 +100,13 @@ class ContainerConfigurationTest extends TestCase
                         'tables' => [
                             [
                                 'source' => 'in.c-main.data',
-                        ],
+                            ],
                         ],
                         'files' => [
                             [
                                 'tags' => ['tag1', 'tag2'],
                                 'query' => 'esquery',
-                    ],
+                            ],
                         ],
                     ],
                     'output' => [
@@ -114,14 +114,14 @@ class ContainerConfigurationTest extends TestCase
                             [
                                 'source' => 'test.csv',
                                 'destination' => 'out.c-main.data',
-                        ],
+                            ],
                         ],
                         'files' => [
                             [
                                 'source' => 'file',
                                 'tags' => ['tag'],
-                ],
-                ],
+                            ],
+                        ],
                     ],
                 ],
                 'parameters' => [
@@ -136,7 +136,7 @@ class ContainerConfigurationTest extends TestCase
                         'credentials' => [
                             'client_id' => 'client123',
                             'private_key' => 'very-secret-private-key',
-                    ],
+                        ],
                     ],
                     'context' => 'wlm',
                 ],
@@ -148,7 +148,7 @@ class ContainerConfigurationTest extends TestCase
                             ],
                             'parameters' => [
                                 'key' => 'val',
-                    ],
+                            ],
                         ],
                     ],
                     'after' => [
@@ -158,7 +158,7 @@ class ContainerConfigurationTest extends TestCase
                             ],
                             'parameters' => [
                                 'key' => 'val',
-                ],
+                            ],
                         ],
                     ],
                 ],
@@ -181,8 +181,8 @@ class ContainerConfigurationTest extends TestCase
                     'backend' => [
                         'type' => 'foo',
                         'context' => 'wml',
+                    ],
                 ],
-            ],
             ],
         ]);
 
@@ -212,11 +212,10 @@ class ContainerConfigurationTest extends TestCase
                         'type' => 'foo',
                         'context' => 'wml',
                         'extraKey' => 'ignored',
+                    ],
                 ],
             ],
-            ],
         ]);
-
 
         self::assertSame(
             [
@@ -259,8 +258,8 @@ class ContainerConfigurationTest extends TestCase
                 'artifacts' => [
                     'backend' => [
                         'type' => 'foo',
+                    ],
                 ],
-            ],
             ],
         ]);
     }
