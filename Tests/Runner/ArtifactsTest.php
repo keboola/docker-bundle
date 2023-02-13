@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\Artifacts\Result;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
@@ -141,7 +142,7 @@ class ArtifactsTest extends BaseRunnerTest
         );
     }
 
-    public function testArtifactsUpload()
+    public function testArtifactsUpload(): void
     {
         /** @var StorageApiClient&MockObject $storageApiMock */
         $storageApiMock = $this->getStorageClientMockUpload();
@@ -188,18 +189,14 @@ class ArtifactsTest extends BaseRunnerTest
         $output = $outputs[0];
         self::assertSame(
             [
-                'current' => [
-                    ['storageFileId' => $currentFile['id']],
-                ],
-                'shared' => [
-                    ['storageFileId' => $sharedFile['id']],
-                ],
+                new Result($currentFile['id']),
+                new Result($sharedFile['id'], true),
             ],
             $output->getArtifactsUploaded()
         );
     }
 
-    public function testArtifactsUploadNoZip()
+    public function testArtifactsUploadNoZip(): void
     {
         $storageApiMock = $this->getStorageClientMockUpload();
         $config = array_merge(self::PYTHON_TRANSFORMATION_BASIC_CONFIG, [
@@ -256,13 +253,13 @@ class ArtifactsTest extends BaseRunnerTest
         $output = $outputs[0];
         $uploadedResult = $output->getArtifactsUploaded();
 
-        self::assertContainsEquals(['storageFileId' => $currentFiles[0]['id']], $uploadedResult['current']);
-        self::assertContainsEquals(['storageFileId' => $currentFiles[1]['id']], $uploadedResult['current']);
-        self::assertContainsEquals(['storageFileId' => $sharedFiles[0]['id']], $uploadedResult['shared']);
-        self::assertContainsEquals(['storageFileId' => $sharedFiles[1]['id']], $uploadedResult['shared']);
+        self::assertContainsEquals(new Result($currentFiles[0]['id']), $uploadedResult);
+        self::assertContainsEquals(new Result($currentFiles[1]['id']), $uploadedResult);
+        self::assertContainsEquals(new Result($currentFiles[0]['id'], true), $uploadedResult);
+        self::assertContainsEquals(new Result($currentFiles[1]['id'], true), $uploadedResult);
     }
 
-    public function testArtifactsUploadEmpty()
+    public function testArtifactsUploadEmpty(): void
     {
         $storageApiMock = $this->getStorageClientMockUpload();
         $config = [
@@ -295,13 +292,10 @@ class ArtifactsTest extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertSame([
-            'current' => [],
-            'shared' => [],
-        ], $output->getArtifactsUploaded());
+        self::assertEmpty($output->getArtifactsUploaded());
     }
 
-    public function testArtifactsDownload()
+    public function testArtifactsDownload(): void
     {
         $storageApiMock = $this->getStorageClientMockDownload();
 
@@ -361,12 +355,10 @@ class ArtifactsTest extends BaseRunnerTest
         /** @var Output $output */
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
-        self::assertSame([
-            ['storageFileId' => $uploadedFileId],
-        ], $output->getArtifactsDownloaded());
+        self::assertSame([new Result($uploadedFileId)], $output->getArtifactsDownloaded());
     }
 
-    public function testArtifactsDownloadEmpty()
+    public function testArtifactsDownloadEmpty(): void
     {
         $storageApiMock = $this->getStorageClientMockDownload();
         $config = [
@@ -397,7 +389,7 @@ class ArtifactsTest extends BaseRunnerTest
         self::assertSame([], $output->getArtifactsDownloaded());
     }
 
-    public function testArtifactsDownloadNoZip()
+    public function testArtifactsDownloadNoZip(): void
     {
         $storageApiMock = $this->getStorageClientMockDownload();
         $previousJobId = (string) rand(0, 999999);
@@ -438,9 +430,9 @@ class ArtifactsTest extends BaseRunnerTest
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
         self::assertSame([
-            ['storageFileId' => $uploadedFiles[2]],
-            ['storageFileId' => $uploadedFiles[1]],
-            ['storageFileId' => $uploadedFiles[0]],
+            new Result($uploadedFiles[2]),
+            new Result($uploadedFiles[1]),
+            new Result($uploadedFiles[0]),
         ], $output->getArtifactsDownloaded());
     }
 

@@ -13,7 +13,7 @@
         "php": ">=8.1",
         "ext-json": "*",
         "ext-zip": "*",
-        "keboola/artifacts": "^1.0",
+        "keboola/artifacts": "dev-miro-PST-393 as 1.0",
         "keboola/common-exceptions": "^1.0",
         "keboola/gelf-server": "^4.0",
         "keboola/input-mapping": "^17.0",
