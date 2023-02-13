@@ -255,8 +255,8 @@ class ArtifactsTest extends BaseRunnerTest
 
         self::assertContainsEquals(new Result($currentFiles[0]['id']), $uploadedResult);
         self::assertContainsEquals(new Result($currentFiles[1]['id']), $uploadedResult);
-        self::assertContainsEquals(new Result($currentFiles[0]['id'], true), $uploadedResult);
-        self::assertContainsEquals(new Result($currentFiles[1]['id'], true), $uploadedResult);
+        self::assertContainsEquals(new Result($sharedFiles[0]['id'], true), $uploadedResult);
+        self::assertContainsEquals(new Result($sharedFiles[1]['id'], true), $uploadedResult);
     }
 
     public function testArtifactsUploadEmpty(): void
