@@ -187,7 +187,7 @@ class ArtifactsTest extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertSame(
+        self::assertEquals(
             [
                 new Result($currentFile['id']),
                 new Result($sharedFile['id'], true),
@@ -355,7 +355,7 @@ class ArtifactsTest extends BaseRunnerTest
         /** @var Output $output */
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
-        self::assertSame([new Result($uploadedFileId)], $output->getArtifactsDownloaded());
+        self::assertEquals([new Result($uploadedFileId)], $output->getArtifactsDownloaded());
     }
 
     public function testArtifactsDownloadEmpty(): void
@@ -386,7 +386,7 @@ class ArtifactsTest extends BaseRunnerTest
 
         /** @var Output $output */
         $output = $outputs[0];
-        self::assertSame([], $output->getArtifactsDownloaded());
+        self::assertEquals([], $output->getArtifactsDownloaded());
     }
 
     public function testArtifactsDownloadNoZip(): void
@@ -429,7 +429,7 @@ class ArtifactsTest extends BaseRunnerTest
         /** @var Output $output */
         $output = $outputs[0];
         self::assertStringContainsString('value1', $output->getProcessOutput());
-        self::assertSame([
+        self::assertEquals([
             new Result($uploadedFiles[2]),
             new Result($uploadedFiles[1]),
             new Result($uploadedFiles[0]),
