@@ -1796,36 +1796,6 @@ parameters:
 			path: Tests/Runner/RunnerTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsDownload\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsDownloadEmpty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsDownloadNoZip\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsUpload\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsUploadEmpty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ArtifactsTest\\:\\:testArtifactsUploadNoZip\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/ArtifactsTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\BranchedWorkspaceTest\\:\\:cleanupAndCreateBranch\\(\\) has parameter \\$branchName with no type specified\\.$#"
 			count: 1
 			path: Tests/RunnerPart2/BranchedWorkspaceTest.php
