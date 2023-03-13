@@ -571,16 +571,6 @@ parameters:
 			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Environment\\:\\:getEnvironmentVariables\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/Environment.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Environment\\:\\:\\$stackId \\(string\\) does not accept string\\|false\\|null\\.$#"
-			count: 1
-			path: src/Docker/Runner/Environment.php
-
-		-
 			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ImageCreator\\:\\:\\$temp is never read, only written\\.$#"
 			count: 1
 			path: src/Docker/Runner/ImageCreator.php
@@ -1899,41 +1889,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$bucketId of method Keboola\\\\StorageApi\\\\Client\\:\\:dropBucket\\(\\) expects string, string\\|true given\\.$#"
 			count: 1
 			path: Tests/RunnerPart2/BranchedWorkspaceTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\EnvironmentTest\\:\\:testExecutorEnvs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\EnvironmentTest\\:\\:testExecutorForwardDetails\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\EnvironmentTest\\:\\:testExecutorForwardDetailsSaml\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\EnvironmentTest\\:\\:testExecutorForwardToken\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\EnvironmentTest\\:\\:testExecutorForwardTokenAndDetails\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of function parse_url expects string, string\\|false given\\.$#"
-			count: 5
-			path: Tests/RunnerPart2/EnvironmentTest.php
-
-		-
-			message: "#^Parameter \\#7 \\$url of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Environment constructor expects string, string\\|false given\\.$#"
-			count: 5
-			path: Tests/RunnerPart2/EnvironmentTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\LimitsTest\\:\\:testCpuLimitsDefault\\(\\) has no return type specified\\.$#"
