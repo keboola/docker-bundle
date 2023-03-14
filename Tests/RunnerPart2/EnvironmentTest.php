@@ -12,10 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 class EnvironmentTest extends TestCase
 {
-    /**
-     * @var array
-     */
-    private $tokenInfo;
+    private array $tokenInfo;
 
     public function setUp(): void
     {
@@ -27,12 +24,15 @@ class EnvironmentTest extends TestCase
                 'id' => '321',
                 'name' => 'some project',
                 'fileStorageProvider' => 'aws',
+                'features' => [
+                    'feature1', 'feature2', 'feature3',
+                ],
             ],
             'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         ];
     }
 
-    public function testExecutorEnvs()
+    public function testExecutorEnvs(): void
     {
         $component = new Component([
             'id' => 'keboola.test-component',
@@ -54,7 +54,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            getenv('STORAGE_API_URL'),
+            (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
             'connection-string',
@@ -67,7 +67,7 @@ class EnvironmentTest extends TestCase
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertEquals('config-row-id', $envs['KBC_CONFIGROWID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);
@@ -80,9 +80,10 @@ class EnvironmentTest extends TestCase
         self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
         self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
+        self::assertSame('feature1,feature2,feature3', $envs['KBC_PROJECT_FEATURE_GATES']);
     }
 
-    public function testExecutorForwardToken()
+    public function testExecutorForwardToken(): void
     {
         $this->tokenInfo['admin']['samlParameters'] = [
             'userId' => 'boo',
@@ -106,7 +107,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            getenv('STORAGE_API_URL'),
+            (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -118,7 +119,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_CONFIGROWID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayHasKey('KBC_TOKEN', $envs);
@@ -135,7 +136,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
     }
 
-    public function testExecutorForwardTokenAndDetails()
+    public function testExecutorForwardTokenAndDetails(): void
     {
         $component = new Component([
             'id' => 'keboola.test-component',
@@ -155,7 +156,7 @@ class EnvironmentTest extends TestCase
             [],
             $this->tokenInfo,
             '123',
-            getenv('STORAGE_API_URL'),
+            (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -166,7 +167,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayHasKey('KBC_TOKEN', $envs);
@@ -182,7 +183,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
     }
 
-    public function testExecutorForwardDetails()
+    public function testExecutorForwardDetails(): void
     {
         $component = new Component([
             'id' => 'keboola.test-component',
@@ -208,7 +209,7 @@ class EnvironmentTest extends TestCase
             $parameters,
             $this->tokenInfo,
             '123',
-            getenv('STORAGE_API_URL'),
+            (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             'connection-string',
@@ -219,7 +220,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);
@@ -234,7 +235,7 @@ class EnvironmentTest extends TestCase
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
     }
 
-    public function testExecutorForwardDetailsSaml()
+    public function testExecutorForwardDetailsSaml(): void
     {
         $this->tokenInfo['admin']['samlParameters'] = [
             'userId' => 'boo',
@@ -262,7 +263,7 @@ class EnvironmentTest extends TestCase
             $parameters,
             $this->tokenInfo,
             '123',
-            getenv('STORAGE_API_URL'),
+            (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
@@ -273,7 +274,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
-        self::assertEquals(parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
+        self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
         self::assertEquals('keboola.test-component', $envs['KBC_COMPONENTID']);
         self::assertArrayNotHasKey('KBC_TOKEN', $envs);

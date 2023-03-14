@@ -44,7 +44,7 @@ class Environment
         $this->tokenInfo = $tokenInfo;
         $this->runId = $runId;
         $this->url = $url;
-        $this->stackId = parse_url($url, PHP_URL_HOST);
+        $this->stackId = (string) parse_url($url, PHP_URL_HOST);
         $this->token = $token;
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
@@ -52,7 +52,7 @@ class Environment
         $this->mlflowTracking = $mlflowTracking;
     }
 
-    public function getEnvironmentVariables(OutputFilterInterface $outputFilter)
+    public function getEnvironmentVariables(OutputFilterInterface $outputFilter): array
     {
         // set environment variables
         $envs = [
@@ -63,6 +63,7 @@ class Environment
             'KBC_COMPONENTID' => $this->component->getId(),
             'KBC_STACKID' => $this->stackId,
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
+            'KBC_PROJECT_FEATURE_GATES' => implode(',', $this->tokenInfo['owner']['features']),
         ];
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
