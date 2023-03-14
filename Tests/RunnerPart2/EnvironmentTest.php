@@ -80,7 +80,7 @@ class EnvironmentTest extends TestCase
         self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
         self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
-        self::assertSame('feature1,feature2,feature3', $envs['KBC_PROJECT_FEATURES']);
+        self::assertSame('feature1,feature2,feature3', $envs['KBC_PROJECT_FEATURE_GATES']);
     }
 
     public function testExecutorForwardToken(): void
