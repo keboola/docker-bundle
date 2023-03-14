@@ -63,7 +63,7 @@ class Environment
             'KBC_COMPONENTID' => $this->component->getId(),
             'KBC_STACKID' => $this->stackId,
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
-            'KBC_FEATURES' => implode(',', $this->tokenInfo['owner']['features']),
+            'KBC_PROJECT_FEATURES' => implode(',', $this->tokenInfo['owner']['features']),
         ];
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
