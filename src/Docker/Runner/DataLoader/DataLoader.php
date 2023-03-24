@@ -255,7 +255,9 @@ class DataLoader implements DataLoaderInterface
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
                 $fileSystemMetadata,
-                $this->getStagingStorageOutput()
+                $this->getStagingStorageOutput(),
+                [],
+                $isFailedJob
             );
             if ($this->useFileStorageOnly()) {
                 $fileWriter->uploadFiles(
@@ -263,7 +265,8 @@ class DataLoader implements DataLoaderInterface
                     [],
                     $fileSystemMetadata,
                     $this->getStagingStorageOutput(),
-                    $outputTableFilesConfig
+                    $outputTableFilesConfig,
+                    $isFailedJob
                 );
                 if (isset($this->storageConfig['input']['files'])) {
                     // tag input files
