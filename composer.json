@@ -19,7 +19,7 @@
         "keboola/input-mapping": "^17.0",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.2",
-        "keboola/output-mapping": "dev-odin-PST-773 as 20.0.1",
+        "keboola/output-mapping": "^21.0",
         "keboola/php-utils": "^5.0",
         "keboola/sandboxes-api-php-client": "^6.7",
         "keboola/staging-provider": "^6.0",
