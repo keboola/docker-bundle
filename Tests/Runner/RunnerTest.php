@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -3834,7 +3835,7 @@ class RunnerTest extends BaseRunnerTest
                 null
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "non-existent.csv"',
                 $e->getMessage()
@@ -3902,7 +3903,7 @@ class RunnerTest extends BaseRunnerTest
                 null
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "write-always.csv"',
                 $e->getMessage()

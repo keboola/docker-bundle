@@ -18,31 +18,9 @@ class NullDataLoaderTest extends TestCase
 {
     public function testAccessors()
     {
-        $clientWrapper = self::createMock(ClientWrapper::class);
-        $component = new Component([
-            'id' => 'keboola.dummy',
-            'data' => [
-                'definition' => [
-                    'type' => 'aws-ecr',
-                    'uri' => 'keboola/dummy',
-                    'tag' => 'latest',
-                ],
-                'staging-storage' => [
-                    'input' => 'workspace-abs',
-                    'output' => 'workspace-abs',
-                ],
-            ],
-        ]);
-        /** @var ClientWrapper $clientWrapper */
-        $dataLoader = new NullDataLoader(
-            $clientWrapper,
-            new NullLogger(),
-            '',
-            new JobDefinition([], $component),
-            new OutputFilter(10**6)
-        );
+        $dataLoader = new NullDataLoader();
         self::assertSame([], $dataLoader->getWorkspaceCredentials());
-        $result = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $result = $dataLoader->loadInputData();
         self::assertNotNull($result->getInputFileStateList());
         self::assertNotNull($result->getInputTableResult());
         self::assertNotNull($result->getInputTableResult()->getInputTableStateList());

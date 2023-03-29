@@ -227,16 +227,10 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $this->outputFilter
+                $this->outputFilter,
             );
         } else {
-            $dataLoader = new NullDataLoader(
-                $this->clientWrapper,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-                $jobDefinition,
-                $this->outputFilter
-            );
+            $dataLoader = new NullDataLoader();
         }
 
         $stateFile = new StateFile(
@@ -267,25 +261,6 @@ class Runner
             $configData
         );
 
-        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES])) {
-            $inputTableStateList = new InputTableStateList(
-                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES]
-            );
-        } else {
-            $inputTableStateList = new InputTableStateList([]);
-        }
-        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES])) {
-            $inputFileStateList = new InputFileStateList(
-                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES]
-            );
-        } else {
-            $inputFileStateList = new InputFileStateList([]);
-        }
-
         try {
             $this->runComponent(
                 $jobId,
@@ -300,8 +275,6 @@ class Runner
                 $configFile,
                 $this->outputFilter,
                 $mode,
-                $inputTableStateList,
-                $inputFileStateList,
                 $currentOutput,
                 $artifacts,
                 $backendSize,
@@ -434,29 +407,6 @@ class Runner
         }
     }
 
-    /**
-     * @param string $jobId
-     * @param string|null $configId
-     * @param string|null $rowId
-     * @param Component $component
-     * @param UsageFileInterface $usageFile
-     * @param DataLoaderInterface $dataLoader
-     * @param WorkingDirectory $workingDirectory
-     * @param StateFile $stateFile
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param OutputFilterInterface $outputFilter
-     * @param string $mode
-     * @param InputTableStateList $inputTableStateList
-     * @param InputFileStateList $inputFileStateList
-     * @param Output $output
-     * @param Artifacts $artifacts
-     * @param string|null $backendSize
-     * @param bool $storeState
-     * @return Output
-     * @throws ApplicationException
-     * @throws UserException
-     */
     private function runComponent(
         string $jobId,
         ?string $configId,
@@ -470,18 +420,16 @@ class Runner
         ConfigFile $configFile,
         OutputFilterInterface $outputFilter,
         string $mode,
-        InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList,
         Output $output,
         Artifacts $artifacts,
         ?string $backendSize,
         bool $storeState,
         ?string $orchestrationId,
         JobScopedEncryptor $jobScopedEncryptor
-    ) {
+    ): Output {
         // initialize
         $workingDirectory->createWorkingDir();
-        $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
+        $storageState = $dataLoader->loadInputData();
 
         try {
             $this->runImages(

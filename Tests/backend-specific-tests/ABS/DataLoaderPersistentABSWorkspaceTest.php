@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\BackendTests\ABS;
 
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactoryFactory;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
-use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
+use Keboola\JobQueue\JobConfiguration\Component as JobConfigurationComponent;
+use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactoryFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -239,7 +240,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 
     public function testAbsWorkspaceConfigMultipleWorkspace()
     {
-        $component = new Component([
+        $component = new JobConfigurationComponent([
             'id' => 'keboola.runner-config-test',
             'data' => [
                 'definition' => [
@@ -295,10 +296,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 'workspace-abs',
                 $component,
                 $configurationId,
-                [],
-                null
+                null,
+                null,
             );
-        } catch (ApplicationException $e) {
+        } catch (ApplicationExceptionInterface $e) {
             self::assertEquals(
                 sprintf(
                     'Multiple workspaces (total 2) found (IDs: %s, %s) for configuration "%s" of component "%s".',

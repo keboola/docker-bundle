@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\Common;
 use Keboola\Datatype\Definition\GenericStorage;
@@ -17,7 +18,6 @@ use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
-use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -60,7 +60,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->clientWrapper->getBasicClient()->tableExists('in.c-docker-demo-testConfig.sliced')
         );
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
-        self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testExecutorDefaultBucketOverride()
@@ -92,20 +91,21 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertFalse($this->clientWrapper->getBasicClient()->tableExists('in.c-test-demo-testConfig.sliced'));
         self::assertTrue($this->clientWrapper->getBasicClient()->tableExists('in.c-test-override.sliced'));
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
-        self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
     public function testNoConfigDefaultBucketException()
     {
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Configuration ID not set');
-        new DataLoader(
+        $dataLoader = new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
             new OutputFilter(10000)
         );
+
+        self::expectException(UserExceptionInterface::class);
+        self::expectExceptionMessage('Configuration ID not set');
+        $dataLoader->storeOutput();
     }
 
     public function testExecutorInvalidOutputMapping()
@@ -263,7 +263,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             array_keys($credentials)
         );
         self::assertNotEmpty($credentials['user']);
-        self::assertNotNull($dataLoader->getWorkspaceBackendSize());
     }
 
     /**
@@ -410,7 +409,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition($config, $component, $configId),
             new OutputFilter(10000)
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['host', 'warehouse', 'database', 'schema', 'user', 'password'], array_keys($credentials));
         self::assertNotEmpty($credentials['user']);
@@ -491,12 +490,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition($config, $component),
             new OutputFilter(10000)
         );
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage(
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
             'branch and must not be used directly in input mapping.'
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
     }
 
     public function testBranchMappingEnabled()
@@ -554,7 +553,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition($config, $component),
             new OutputFilter(10000)
         );
-        $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $storageState = $dataLoader->loadInputData();
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
         self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
     }
