@@ -66,7 +66,10 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testExecutorDefaultBucketOverride()
     {
         try {
-            $this->clientWrapper->getBasicClient()->dropBucket('in.c-test-override', ['force' => true]);
+            $this->clientWrapper->getBasicClient()->dropBucket(
+                'in.c-test-override',
+                ['force' => true, 'async' => true],
+            );
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {
                 throw $e;
@@ -326,7 +329,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
                 'in.c-testWorkspaceRedshiftNoPreserve',
-                ['force' => true]
+                ['force' => true, 'async' => true]
             );
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {

@@ -39,7 +39,7 @@ class RunnerTest extends BaseRunnerTest
         $buckets = ['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'];
         foreach ($buckets as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() !== 404) {
                     throw $e;

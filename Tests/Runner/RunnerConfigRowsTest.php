@@ -28,7 +28,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
     {
         foreach (['in.c-runner-test', 'out.c-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() !== 404) {
                     throw $e;

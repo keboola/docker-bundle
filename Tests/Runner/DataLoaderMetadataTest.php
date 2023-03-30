@@ -102,7 +102,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         foreach ($clientWrapper->getBasicClient()->listBuckets() as $bucket) {
             if (preg_match('/^in\.c\-[0-9]+\-docker\-demo\-testConfig$/', $bucket['id'])) {
-                $clientWrapper->getBasicClient()->dropBucket($bucket['id'], ['force' => true]);
+                $clientWrapper->getBasicClient()->dropBucket($bucket['id'], ['force' => true, 'async' => true]);
             }
         }
 

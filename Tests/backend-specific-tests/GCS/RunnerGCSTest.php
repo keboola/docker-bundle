@@ -34,7 +34,7 @@ class RunnerGCSTest extends BaseRunnerTest
     {
         foreach (['in.c-snowflake-runner-test', 'out.c-snowflake-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() !== 404) {
                     throw $e;
