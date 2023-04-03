@@ -20,11 +20,6 @@ class RunnerTeradataTest extends BaseTableBackendTest
 {
     private const COMPONENT_ID = 'keboola.runner-workspace-teradata-test';
 
-    public function setUp(): void
-    {
-        $this->markTestSkipped('Teradata is not functional in KBC now');
-    }
-
     private function clearBuckets()
     {
         foreach (['in.c-teradata-runner-test', 'out.c-teradata-runner-test'] as $bucket) {

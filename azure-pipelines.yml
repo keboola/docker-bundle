@@ -214,7 +214,7 @@ stages:
 
       - job: teradataTests
         displayName: 'Teradata Tests'
-        condition: eq(variables.RUN_TERADATA_TESTS, '1')
+        condition: eq(variables.RUN_TERADATA_TESTS, '0')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_TERADATA tests ./vendor/bin/phpunit --testsuite teradata-tests
@@ -232,7 +232,7 @@ stages:
 
       - job: bigqueryTests
         displayName: 'BiqQuery Tests'
-        condition: eq(variables.RUN_BIGQUERY_TESTS, '1')
+        condition: eq(variables.RUN_BIGQUERY_TESTS, '0')
         steps:
           - script: |
               docker-compose run -e STORAGE_API_URL=$STORAGE_API_URL_BIGQUERY tests ./vendor/bin/phpunit --testsuite bigquery-tests
