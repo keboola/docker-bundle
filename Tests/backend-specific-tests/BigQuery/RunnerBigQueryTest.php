@@ -20,6 +20,11 @@ class RunnerBigQueryTest extends BaseTableBackendTest
 {
     private const COMPONENT_ID = 'keboola.runner-workspace-bigquery-test';
 
+    public function setUp(): void
+    {
+        $this->markTestSkipped('BigQuery is not functional in KBC now');
+    }
+
     private function clearBuckets()
     {
         foreach (['in.c-bigquery-runner-test', 'out.c-bigquery-runner-test'] as $bucket) {
