@@ -127,7 +127,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $bucketId = $storageApi->getBucketId('c-'. $bucketName, $bucketStage);
 
             if ($bucketId !== false) {
-                $storageApi->dropBucket($bucketId, ['force' => true]);
+                $storageApi->dropBucket($bucketId, ['force' => true, 'async' => true]);
             }
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {

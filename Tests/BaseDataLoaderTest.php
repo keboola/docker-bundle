@@ -46,7 +46,7 @@ abstract class BaseDataLoaderTest extends TestCase
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
                 'in.c-docker-demo-testConfig' . $suffix,
-                ['force' => true]
+                ['force' => true, 'async' => true]
             );
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {

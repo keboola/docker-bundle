@@ -26,7 +26,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
     {
         foreach (['in.c-synapse-runner-test', 'out.c-synapse-runner-test'] as $bucket) {
             try {
-                $this->getClient()->dropBucket($bucket, ['force' => true]);
+                $this->getClient()->dropBucket($bucket, ['force' => true, 'async' => true]);
             } catch (ClientException $e) {
                 if ($e->getCode() !== 404) {
                     throw $e;
