@@ -12,7 +12,7 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
-use Keboola\JobQueue\JobConfiguration\Component as JobConfigurationComponent;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\Component as JobConfigurationComponent;
 use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactoryFactory;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;

@@ -2313,7 +2313,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
+        $this->expectExceptionMessage('Unrecognized option "foo" under "configuration.storage.input.tables.0"');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
@@ -2371,7 +2371,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
+        $this->expectExceptionMessage('Invalid type for path "configuration.storage.input.tables.0.columns.0".');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),

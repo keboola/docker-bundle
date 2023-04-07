@@ -135,10 +135,10 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
         );
+
         self::expectException(UserException::class);
-        self::expectExceptionMessage(
-            'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"'
-        );
+        //phpcs:ignore Generic.Files.LineLength.MaxExceeded
+        self::expectExceptionMessage('Invalid type for path "configuration.storage.output.tables.0.primary_key". Expected "array", but got "string"');
         $dataLoader = new DataLoader(
             $this->clientWrapper,
             new NullLogger(),

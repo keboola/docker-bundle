@@ -61,11 +61,6 @@ parameters:
 			path: src/Docker/Configuration/ComponentState/Adapter.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\\\Image\\:\\:configureNode\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Configuration/Image.php
-
-		-
 			message: "#^Cannot call method getErrorOutput\\(\\) on Keboola\\\\DockerBundle\\\\Docker\\\\Container\\\\Process\\|null\\.$#"
 			count: 2
 			path: src/Docker/Container.php
@@ -796,71 +791,6 @@ parameters:
 			path: Tests/BaseRunnerTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfigurationDefaults\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOff\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOn\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameNoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameTwoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasNoSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyUri\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentNoDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testSetTag\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -949,51 +879,6 @@ parameters:
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\SharedCodeRowConfigurationTest\\:\\:testSharedCodeRowConfigurationStringToArray\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/SharedCodeRowConfigurationTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testComponentState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testEmptyState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testInvalidRootKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesStateExtraKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesStateMissingKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesStateExtraKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesStateMissingKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Container\\\\ContainerErrorHandlingTest\\:\\:testEnvironmentPassing\\(\\) has no return type specified\\.$#"

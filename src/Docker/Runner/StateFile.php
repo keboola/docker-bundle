@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\State\StateSpec;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -25,11 +26,11 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFile
 {
-    public const NAMESPACE_COMPONENT = 'component';
-    public const NAMESPACE_STORAGE = 'storage';
-    public const NAMESPACE_INPUT = 'input';
-    public const NAMESPACE_TABLES = 'tables';
-    public const NAMESPACE_FILES = 'files';
+    public const NAMESPACE_COMPONENT = StateSpec::NAMESPACE_COMPONENT;
+    public const NAMESPACE_STORAGE = StateSpec::NAMESPACE_STORAGE;
+    public const NAMESPACE_INPUT = StateSpec::NAMESPACE_INPUT;
+    public const NAMESPACE_TABLES = StateSpec::NAMESPACE_TABLES;
+    public const NAMESPACE_FILES = StateSpec::NAMESPACE_FILES;
 
     private string $dataDirectory;
     private ClientWrapper $clientWrapper;

@@ -78,7 +78,7 @@ class JobDefinition
     private function normalizeConfiguration(array $configuration): array
     {
         try {
-            $configuration = (new Configuration\Container())->parse(['container' => $configuration]);
+            $configuration = (new Configuration\Container())->parse(['configuration' => $configuration]);
         } catch (InvalidConfigurationException $e) {
             throw new UserException($e->getMessage(), $e);
         }
