@@ -137,7 +137,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
             new OutputFilter(10000)
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
 
         $manifest = json_decode(
             file_get_contents(

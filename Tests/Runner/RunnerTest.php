@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
@@ -2312,7 +2313,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
+        $this->expectExceptionMessage('Unrecognized option "foo" under "configuration.storage.input.tables.0"');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
@@ -2370,7 +2371,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
         $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
+        $this->expectExceptionMessage('Invalid type for path "configuration.storage.input.tables.0.columns.0".');
         $outputs = [];
         $runner->run(
             $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
@@ -3834,7 +3835,7 @@ class RunnerTest extends BaseRunnerTest
                 null
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "non-existent.csv"',
                 $e->getMessage()
@@ -3902,7 +3903,7 @@ class RunnerTest extends BaseRunnerTest
                 null
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "write-always.csv"',
                 $e->getMessage()

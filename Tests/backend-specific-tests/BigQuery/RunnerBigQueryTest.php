@@ -63,7 +63,6 @@ class RunnerBigQueryTest extends BaseTableBackendTest
 
     public function testWorkspaceBigQueryMapping()
     {
-        $this->clearBuckets();
         $this->createBuckets();
         $this->clearConfigs();
         $temp = new Temp();

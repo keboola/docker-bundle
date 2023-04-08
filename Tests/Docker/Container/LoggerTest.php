@@ -283,16 +283,23 @@ class LoggerTest extends BaseContainerTest
         $imageConfiguration['features'] = ['container-root-user'];
         $imageConfiguration['data']['logging']['type'] = 'gelf';
         $imageConfiguration['data']['logging']['gelf_server_type'] = 'tcp';
+
+        /** @var string[] $error */
+        $error = [];
+        /** @var string[] $warn */
+        $warn = [];
+        /** @var string[] $info */
+        $info = [];
         $this->setCreateEventCallback(
             function (Event $event) use (&$error, &$warn, &$info) {
                 if ($event->getType() === 'error') {
-                    $error[] = $event->getMessage();
+                    $error[] = (string) $event->getMessage();
                 }
                 if ($event->getType() === 'info') {
-                    $info[] = $event->getMessage();
+                    $info[] = (string) $event->getMessage();
                 }
                 if ($event->getType() === 'warn') {
-                    $warn[] = $event->getMessage();
+                    $warn[] = (string) $event->getMessage();
                 }
                 return true;
             }
@@ -353,9 +360,12 @@ class LoggerTest extends BaseContainerTest
             MonologLogger::EMERGENCY => StorageApiHandlerInterface::VERBOSITY_VERBOSE,
         ];
 
+        /** @var string[] $error */
         $error = [];
-        $info = [];
+        /** @var string[] $warn */
         $warn = [];
+        /** @var string[] $info */
+        $info = [];
         /** @var Event $structured */
         $structured = null;
         $this->setCreateEventCallback(

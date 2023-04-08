@@ -71,7 +71,7 @@ class DataLoaderGCSTest extends BaseDataLoaderTest
             $jobDefinition,
             new OutputFilter(10000)
         );
-        $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
+        $dataLoader->loadInputData();
 
         $manifest = json_decode(
             file_get_contents(

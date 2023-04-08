@@ -42,6 +42,15 @@ class Component
         $this->networkType = $this->data['network'];
     }
 
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'data' => $this->data,
+            'features' => $this->features,
+        ];
+    }
+
     public function getId(): string
     {
         return $this->id;
