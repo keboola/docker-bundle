@@ -901,42 +901,7 @@ parameters:
 			path: Tests/BaseDataLoaderTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$stackId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string, string\\|false\\|null given\\.$#"
-			count: 1
-			path: Tests/BaseImageTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$kmsKeyId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseImageTest.php
-
-		-
-			message: "#^Parameter \\#3 \\$kmsRegion of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseImageTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseRunnerTest\\:\\:prepareJobDefinitions\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$stackId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string, string\\|false\\|null given\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of function parse_url expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$kmsKeyId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
-			message: "#^Parameter \\#3 \\$kmsRegion of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
 			count: 1
 			path: Tests/BaseRunnerTest.php
 
@@ -2116,21 +2081,6 @@ parameters:
 			path: Tests/Runner/StateFileTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$stackId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string, string\\|false\\|null given\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of function parse_url expects string, string\\|false given\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
 			count: 4
 			path: Tests/Runner/StateFileTest.php
@@ -2138,21 +2088,6 @@ parameters:
 		-
 			message: "#^Parameter \\#2 \\$content of method Symfony\\\\Component\\\\Filesystem\\\\Filesystem\\:\\:dumpFile\\(\\) expects resource\\|string, string\\|false given\\.$#"
 			count: 2
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$kmsKeyId of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$token of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#3 \\$kmsRegion of class Keboola\\\\ObjectEncryptor\\\\EncryptorOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
 			path: Tests/Runner/StateFileTest.php
 
 		-

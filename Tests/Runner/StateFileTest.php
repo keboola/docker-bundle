@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\DockerBundle\Tests\TestEnvVarsTrait;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\ObjectEncryptor\EncryptorOptions;
@@ -27,6 +28,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StateFileTest extends TestCase
 {
+    use TestEnvVarsTrait;
+
     private string $dataDir;
     private ObjectEncryptor $encryptor;
     private ClientWrapper $clientWrapper;
@@ -34,8 +37,8 @@ class StateFileTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
-        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
+        putenv('AWS_ACCESS_KEY_ID=' . self::getOptionalEnv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . self::getOptionalEnv('AWS_ECR_SECRET_ACCESS_KEY'));
 
         // Create folders
         $temp = new Temp('docker');
@@ -46,14 +49,17 @@ class StateFileTest extends TestCase
         $fs->mkdir($this->dataDir . DIRECTORY_SEPARATOR . 'out');
 
         $this->clientWrapper = new ClientWrapper(new ClientOptions(
-            getenv('STORAGE_API_URL'),
-            getenv('STORAGE_API_TOKEN'),
+            self::getRequiredEnv('STORAGE_API_URL'),
+            self::getRequiredEnv('STORAGE_API_TOKEN'),
         ));
 
+        $stackId = parse_url(self::getRequiredEnv('STORAGE_API_URL'), PHP_URL_HOST);
+        self::assertNotEmpty($stackId);
+
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST),
-            getenv('AWS_KMS_TEST_KEY'),
-            getenv('AWS_ECR_REGISTRY_REGION'),
+            $stackId,
+            self::getRequiredEnv('AWS_KMS_TEST_KEY'),
+            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
             null,
             null,
         ));
