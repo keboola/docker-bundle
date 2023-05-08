@@ -9,17 +9,18 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 
 class Environment
 {
-    private ?string $configId;
-    private array $tokenInfo;
-    private ?string $runId;
-    private string $url;
-    private Component $component;
-    private string $stackId;
-    private ?string $configRowId;
-    private string $token;
-    private ?string $branchId;
-    private ?string $absConnectionString;
-    private ?MlflowTracking $mlflowTracking;
+    readonly private ?string $configId;
+    readonly private array $tokenInfo;
+    readonly private ?string $runId;
+    readonly private string $url;
+    readonly private Component $component;
+    readonly private string $stackId;
+    readonly private ?string $configRowId;
+    readonly private string $token;
+    readonly private ?string $branchId;
+    readonly private ?string $absConnectionString;
+    readonly private ?MlflowTracking $mlflowTracking;
+    readonly private string $mode;
 
     public function __construct(
         ?string $configId,
@@ -32,14 +33,10 @@ class Environment
         string $token,
         ?string $branchId,
         ?string $absConnectionString,
-        ?MlflowTracking $mlflowTracking
+        ?MlflowTracking $mlflowTracking,
+        string $mode,
     ) {
-        if ($configId) {
-            $this->configId = $configId;
-        } else {
-            $this->configId = sha1(serialize($config));
-        }
-
+        $this->configId = $configId ?: sha1(serialize($config));
         $this->component = $component;
         $this->tokenInfo = $tokenInfo;
         $this->runId = $runId;
@@ -50,6 +47,7 @@ class Environment
         $this->branchId = $branchId;
         $this->absConnectionString = $absConnectionString;
         $this->mlflowTracking = $mlflowTracking;
+        $this->mode = $mode;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter): array
@@ -64,6 +62,7 @@ class Environment
             'KBC_STACKID' => $this->stackId,
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
             'KBC_PROJECT_FEATURE_GATES' => implode(',', $this->tokenInfo['owner']['features']),
+            'KBC_COMPONENT_RUN_MODE' => $this->mode,
         ];
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
