@@ -638,7 +638,8 @@ class Runner
                 $this->clientWrapper->getBasicClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
                 $absConnectionString,
-                $mlflowTracking
+                $mlflowTracking,
+                $mode,
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),

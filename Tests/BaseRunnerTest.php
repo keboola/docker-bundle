@@ -22,6 +22,8 @@ use PHPUnit\Framework\TestCase;
 
 abstract class BaseRunnerTest extends TestCase
 {
+    use TestEnvVarsTrait;
+
     private TestHandler $containerHandler;
     private TestHandler $runnerHandler;
     private ObjectEncryptor $encryptor;
@@ -42,8 +44,8 @@ abstract class BaseRunnerTest extends TestCase
     {
         $this->client = new Client(
             [
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
+                'url' => self::getOptionalEnv('STORAGE_API_URL'),
+                'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
             ]
         );
     }
@@ -51,12 +53,16 @@ abstract class BaseRunnerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID'));
-        putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
+        putenv('AWS_ACCESS_KEY_ID=' . self::getOptionalEnv('AWS_ECR_ACCESS_KEY_ID'));
+        putenv('AWS_SECRET_ACCESS_KEY=' . self::getOptionalEnv('AWS_ECR_SECRET_ACCESS_KEY'));
+
+        $stackId = parse_url(self::getRequiredEnv('STORAGE_API_URL'), PHP_URL_HOST);
+        self::assertNotEmpty($stackId);
+
         $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            parse_url(getenv('STORAGE_API_URL'), PHP_URL_HOST),
-            getenv('AWS_KMS_TEST_KEY'),
-            getenv('AWS_ECR_REGISTRY_REGION'),
+            $stackId,
+            self::getRequiredEnv('AWS_KMS_TEST_KEY'),
+            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
             null,
             null,
         ));
@@ -146,7 +152,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            (int) getenv('RUNNER_MIN_LOG_PORT')
+            (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT')
         );
     }
 
