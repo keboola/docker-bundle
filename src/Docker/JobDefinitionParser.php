@@ -30,6 +30,7 @@ class JobDefinitionParser
      */
     public function parseConfig(Component $component, $config)
     {
+        $config['rows'] = $config['rows'] ?? [];
         $this->validateConfig($config);
         $this->jobDefinitions = [];
         if (count($config['rows']) === 0) {

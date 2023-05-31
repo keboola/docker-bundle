@@ -592,4 +592,32 @@ class JobDefinitionParserTest extends TestCase
         );
         $parser->parseConfig($this->getComponent(), $config);
     }
+
+    public function testNullRows(): void
+    {
+        $config = [
+            'id' => 'my-config',
+            'version' => 1,
+            'configuration' => [
+                'storage' => [],
+                'parameters' => ['first' => 'second'],
+            ],
+            'state' => ['key' => 'val'],
+            'rows' => null,
+        ];
+
+        $expected = [
+            'storage' => [],
+            'parameters' => ['first' => 'second'],
+            'processors' => [],
+            'shared_code_row_ids' => [],
+        ];
+
+        $parser = new JobDefinitionParser();
+        $parser->parseConfig($this->getComponent(), $config);
+
+        self::assertCount(1, $parser->getJobDefinitions());
+        self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
+        self::assertEquals($expected, $parser->getJobDefinitions()[0]->getConfiguration());
+    }
 }
