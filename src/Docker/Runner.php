@@ -208,7 +208,8 @@ class Runner
             $this->encryptor,
             $jobDefinition->getComponentId(),
             (string) $tokenInfo['owner']['id'],
-            $jobDefinition->getConfigId()
+            $jobDefinition->getConfigId(),
+            $jobDefinition->getBranchType(),
         );
 
         $configData = $jobDefinition->getConfiguration();

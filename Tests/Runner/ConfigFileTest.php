@@ -12,6 +12,7 @@ use Keboola\DockerBundle\Docker\Runner\ConfigFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\OAuthV2Api\Credentials;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 
 class ConfigFileTest extends BaseRunnerTest
@@ -26,7 +27,8 @@ class ConfigFileTest extends BaseRunnerTest
             $this->getEncryptor(),
             'keboola.docker-demo-sync',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */

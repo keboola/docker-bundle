@@ -8,17 +8,16 @@ use Keboola\ObjectEncryptor\ObjectEncryptor;
 
 class JobScopedEncryptor
 {
-    private ObjectEncryptor $encryptor;
-    private string $componentId;
-    private string $projectId;
-    private ?string $configId;
-
-    public function __construct(ObjectEncryptor $encryptor, string $componentId, string $projectId, ?string $configId)
-    {
-        $this->encryptor = $encryptor;
-        $this->componentId = $componentId;
-        $this->projectId = $projectId;
-        $this->configId = $configId;
+    /**
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
+     */
+    public function __construct(
+        private readonly ObjectEncryptor $encryptor,
+        private readonly string $componentId,
+        private readonly string $projectId,
+        private readonly ?string $configId,
+        private readonly string $branchType,
+    ) {
     }
 
     /**
@@ -28,10 +27,21 @@ class JobScopedEncryptor
     public function encrypt($data)
     {
         if ($this->configId === null) {
-            return $this->encryptor->encryptForProject($data, $this->componentId, $this->projectId);
+            return $this->encryptor->encryptForBranchType(
+                $data,
+                $this->componentId,
+                $this->projectId,
+                $this->branchType,
+            );
         }
 
-        return $this->encryptor->encryptForConfiguration($data, $this->componentId, $this->projectId, $this->configId);
+        return $this->encryptor->encryptForBranchTypeConfiguration(
+            $data,
+            $this->componentId,
+            $this->projectId,
+            $this->configId,
+            $this->branchType,
+        );
     }
 
     /**
@@ -41,9 +51,20 @@ class JobScopedEncryptor
     public function decrypt($data)
     {
         if ($this->configId === null) {
-            return $this->encryptor->decryptForProject($data, $this->componentId, $this->projectId);
+            return $this->encryptor->decryptForBranchType(
+                $data,
+                $this->componentId,
+                $this->projectId,
+                $this->branchType,
+            );
         }
 
-        return $this->encryptor->decryptForConfiguration($data, $this->componentId, $this->projectId, $this->configId);
+        return $this->encryptor->decryptForBranchTypeConfiguration(
+            $data,
+            $this->componentId,
+            $this->projectId,
+            $this->configId,
+            $this->branchType,
+        );
     }
 }

@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\OAuthV2Api\Exception\ClientException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\Temp\Temp;
 
 class AuthorizationTest extends BaseRunnerTest
@@ -50,7 +51,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -94,7 +96,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         $temp = new Temp();
@@ -164,7 +167,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -197,7 +201,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -227,7 +232,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -268,7 +274,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -310,7 +317,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
@@ -370,7 +378,8 @@ class AuthorizationTest extends BaseRunnerTest
             $encryptor,
             'keboola.docker-demo',
             '12345',
-            null
+            null,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
         );
 
         /** @var Credentials $oauthClientStub */
