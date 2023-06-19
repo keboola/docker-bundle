@@ -271,7 +271,7 @@ parameters:
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchType\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
@@ -286,22 +286,22 @@ parameters:
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForConfiguration\\(\\)$#"
+			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\)$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForProject\\(\\)$#"
+			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchType\\(\\)$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForConfiguration\\(\\)$#"
+			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchTypeConfiguration\\(\\)$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForProject\\(\\)$#"
+			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchType\\(\\)$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 

@@ -19,13 +19,18 @@ class JobScopedEncryptorTest extends TestCase
         string $methodNotCalled,
         string $method,
     ): void {
+        $expectedArguments = $arguments;
+        if ($expectedArguments['configId'] === null) {
+            unset($expectedArguments['configId']);
+        }
+
         $objectEncryptorMock = $this->createMock(ObjectEncryptor::class);
         $objectEncryptorMock
             ->expects(self::once())
             ->method($methodCalled)
             ->with(
                 'my-data',
-                ... $arguments
+                ... $expectedArguments
             )
             ->willReturn('my-data');
         $objectEncryptorMock
