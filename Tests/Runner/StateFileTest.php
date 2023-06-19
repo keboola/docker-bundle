@@ -143,7 +143,7 @@ class StateFileTest extends TestCase
             ->with(
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
-                    ['state' => json_encode([
+                    ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar',
                         ],
@@ -153,7 +153,7 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ])]
+                    ]]
                 )
             );
 
@@ -218,7 +218,7 @@ class StateFileTest extends TestCase
                 $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_COMPONENT]);
@@ -281,7 +281,7 @@ class StateFileTest extends TestCase
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -317,7 +317,7 @@ class StateFileTest extends TestCase
             ->with(
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
-                    ['state' => json_encode([
+                    ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
@@ -325,7 +325,7 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ])]
+                    ]]
                 )
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
@@ -357,7 +357,7 @@ class StateFileTest extends TestCase
             ->with(
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
-                    ['state' => json_encode([
+                    ['state' => [
                         StateFile::NAMESPACE_COMPONENT => new stdClass(),
                         StateFile::NAMESPACE_STORAGE => [
                             StateFile::NAMESPACE_INPUT => [
@@ -365,7 +365,7 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ])]
+                    ]]
                 )
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
@@ -397,7 +397,7 @@ class StateFileTest extends TestCase
             ->with(
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 self::equalTo(
-                    ['state' => json_encode([
+                    ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar',
                         ],
@@ -407,7 +407,7 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ])]
+                    ]]
                 )
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
@@ -502,7 +502,7 @@ class StateFileTest extends TestCase
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -544,7 +544,7 @@ class StateFileTest extends TestCase
                 self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertArrayHasKey(StateFile::NAMESPACE_COMPONENT, $data);
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
@@ -587,7 +587,7 @@ class StateFileTest extends TestCase
                 $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertEquals([
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
@@ -642,7 +642,7 @@ class StateFileTest extends TestCase
                 $this->equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
-                    $data = json_decode($argument['state'], true);
+                    $data = $argument['state'];
                     self::assertEquals([
                         StateFile::NAMESPACE_COMPONENT => [],
                         StateFile::NAMESPACE_STORAGE => [
@@ -697,7 +697,7 @@ class StateFileTest extends TestCase
             ->with(
                 self::equalTo('components/docker-demo/configs/config-id/state'),
                 self::equalTo(
-                    ['state' => json_encode([
+                    ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
                             'key' => 'fooBar',
                         ],
@@ -707,7 +707,7 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ])]
+                    ]]
                 )
             );
 
