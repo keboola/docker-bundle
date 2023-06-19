@@ -2016,11 +2016,6 @@ parameters:
 			path: Tests/Runner/StateFileTest.php
 
 		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 4
-			path: Tests/Runner/StateFileTest.php
-
-		-
 			message: "#^Parameter \\#2 \\$content of method Symfony\\\\Component\\\\Filesystem\\\\Filesystem\\:\\:dumpFile\\(\\) expects resource\\|string, string\\|false given\\.$#"
 			count: 2
 			path: Tests/Runner/StateFileTest.php
