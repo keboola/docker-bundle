@@ -241,7 +241,7 @@ parameters:
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 
 		-
-			message: "#^Parameter \\#1 \\$string of function base64_decode expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$str of function base64_decode expects string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 
@@ -266,52 +266,22 @@ parameters:
 			path: src/Docker/Image/QuayIO.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:hasRowProcessors\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:hasRowProcessors\\(\\) has parameter \\$config with no type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:parseConfig\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:parseConfigData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:validateConfig\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\JobDefinitionParser\\:\\:validateConfig\\(\\) has parameter \\$config with no type specified\\.$#"
-			count: 1
-			path: src/Docker/JobDefinitionParser.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForProject\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForProject\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchType\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/JobScopedEncryptor.php
 
@@ -1376,37 +1346,7 @@ parameters:
 			path: Tests/Docker/ImageTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:getComponent\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testMultiRowConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testMultiRowConfigurationWithInvalidProcessors1\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testMultiRowConfigurationWithInvalidProcessors2\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testSimpleConfigData\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testSimpleConfigDataWithConfigId\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testSingleRowConfiguration\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/JobDefinitionParserTest.php
 
