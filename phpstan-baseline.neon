@@ -1916,11 +1916,6 @@ parameters:
 			path: Tests/RunnerPart2/SharedCodeResolverTest.php
 
 		-
-			message: "#^Cannot access offset 'component' on mixed\\.$#"
-			count: 4
-			path: Tests/Runner/StateFileTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testCreateStateFileFromStateWithNamespace\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Runner/StateFileTest.php
