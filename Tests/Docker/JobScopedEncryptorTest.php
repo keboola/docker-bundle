@@ -44,7 +44,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => null,
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => [],
+                'projectFeatures' => [],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -59,7 +59,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => null,
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => [],
+                'projectFeatures' => [],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -75,7 +75,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => [],
+                'projectFeatures' => [],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -90,7 +90,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => [],
+                'projectFeatures' => [],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -107,7 +107,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => null,
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => ['protected-default-branch'],
+                'projectFeatures' => ['protected-default-branch'],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -123,7 +123,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => null,
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => ['protected-default-branch'],
+                'projectFeatures' => ['protected-default-branch'],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -139,7 +139,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => ['protected-default-branch'],
+                'projectFeatures' => ['protected-default-branch'],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
@@ -155,7 +155,7 @@ class JobScopedEncryptorTest extends TestCase
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-                'features' => ['protected-default-branch'],
+                'projectFeatures' => ['protected-default-branch'],
             ],
             'expectedArguments' => [
                 'componentId' => 'my-component',
