@@ -20,7 +20,7 @@ class JobScopedEncryptor
         private readonly string $projectId,
         private readonly ?string $configId,
         private readonly string $branchType,
-        private readonly array $features,
+        private readonly array $projectFeatures,
     ) {
     }
 
@@ -35,7 +35,7 @@ class JobScopedEncryptor
         transferable. For both types of projects, the configId is ignored, because currently this method is
         used only to encrypt state. The question whether configId should be included in the state cipher or not
         is to be resolved https://keboola.atlassian.net/browse/PST-960 . */
-        if (in_array(self::PROTECTED_DEFAULT_BRANCH_FEATURE, $this->features, true)) {
+        if (in_array(self::PROTECTED_DEFAULT_BRANCH_FEATURE, $this->projectFeatures, true)) {
             return $this->encryptor->encryptForBranchType(
                 $data,
                 $this->componentId,
