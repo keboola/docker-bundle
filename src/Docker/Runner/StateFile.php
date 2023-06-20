@@ -6,11 +6,11 @@ namespace Keboola\DockerBundle\Docker\Runner;
 
 use Keboola\DockerBundle\Docker\Configuration\ComponentState\Adapter;
 use Keboola\DockerBundle\Docker\Configuration\State;
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
-use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -20,6 +20,7 @@ use Keboola\StorageApi\Options\Components\ConfigurationRowState;
 use Keboola\StorageApi\Options\Components\ConfigurationState;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
+use stdClass;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -33,10 +34,9 @@ class StateFile
 
     private string $dataDirectory;
     private ClientWrapper $clientWrapper;
-    private ObjectEncryptor $encryptor;
+    private JobScopedEncryptor $encryptor;
     private string $format;
     private string $componentId;
-    private string $projectId;
     private ?string $configurationId;
     private ?string $configurationRowId;
     private OutputFilterInterface $outputFilter;
@@ -48,18 +48,17 @@ class StateFile
     private $state;
 
     /**
-     * @var mixed
+     * @var array|stdClass
      */
     private $currentState;
 
     public function __construct(
         string $dataDirectory,
         ClientWrapper $clientWrapper,
-        ObjectEncryptor $encryptor,
+        JobScopedEncryptor $encryptor,
         array $state,
         string $format,
         string $componentId,
-        string $projectId,
         ?string $configurationId,
         OutputFilterInterface $outputFilter,
         LoggerInterface $logger,
@@ -70,7 +69,6 @@ class StateFile
         $this->encryptor = $encryptor;
         $this->format = $format;
         $this->componentId = $componentId;
-        $this->projectId = $projectId;
         $this->logger = $logger;
         $this->configurationId = $configurationId;
         $this->configurationRowId = $configurationRowId;
@@ -90,7 +88,7 @@ class StateFile
         $this->outputFilter->collectValues($state);
     }
 
-    public function createStateFile()
+    public function createStateFile(): void
     {
         // Store state
         $stateAdapter = new Adapter($this->format);
@@ -100,13 +98,18 @@ class StateFile
         $stateAdapter->writeToFile($stateFileName);
     }
 
-    public function stashState($currentState)
+    /**
+     * @param array|stdClass $currentState
+     */
+    public function stashState($currentState): void
     {
         $this->currentState = $currentState;
     }
 
-    public function persistState(InputTableStateList $inputTableStateList, InputFileStateList $inputFileStateList)
-    {
+    public function persistState(
+        InputTableStateList $inputTableStateList,
+        InputFileStateList $inputFileStateList
+    ): void {
         $this->outputFilter->collectValues((array) $this->currentState);
 
         if ($this->clientWrapper->hasBranch()) {
@@ -120,11 +123,7 @@ class StateFile
         $configuration->setConfigurationId($this->configurationId);
         try {
             if ($this->currentState !== null) {
-                $encryptedStateData = $this->encryptor->encryptForProject(
-                    $this->currentState,
-                    $this->componentId,
-                    $this->projectId
-                );
+                $encryptedStateData = $this->encryptor->encrypt($this->currentState);
             } else {
                 $encryptedStateData = [];
             }

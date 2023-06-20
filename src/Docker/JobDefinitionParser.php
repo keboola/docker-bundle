@@ -5,41 +5,52 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 
 class JobDefinitionParser
 {
     /**
      * @var JobDefinition[]
      */
-    private $jobDefinitions = [];
+    private array $jobDefinitions = [];
 
     /**
-     * @param Component $component
-     * @param array $configData
-     * @param string $configId
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
      */
-    public function parseConfigData(Component $component, array $configData, $configId = null)
-    {
-        $jobDefinition = new JobDefinition($configData, $component, $configId);
+    public function parseConfigData(
+        Component $component,
+        array $configData,
+        ?string $configId,
+        string $branchType,
+    ): void {
+        $jobDefinition = new JobDefinition(
+            configuration: $configData,
+            component: $component,
+            configId: $configId,
+            branchType: $branchType,
+        );
         $this->jobDefinitions = [$jobDefinition];
     }
 
     /**
-     * @param Component $component
-     * @param array $config
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
      */
-    public function parseConfig(Component $component, $config)
-    {
+    public function parseConfig(
+        Component $component,
+        array $config,
+        string $branchType,
+    ): void {
         $config['rows'] = $config['rows'] ?? [];
         $this->validateConfig($config);
         $this->jobDefinitions = [];
         if (count($config['rows']) === 0) {
             $jobDefinition = new JobDefinition(
-                $config['configuration'] ? (array) $config['configuration'] : [],
-                $component,
-                (string) $config['id'],
-                (string) $config['version'],
-                $config['state'] ? (array) $config['state'] : []
+                configuration: $config['configuration'] ? (array) $config['configuration'] : [],
+                component: $component,
+                configId: (string) $config['id'],
+                configVersion: (string) $config['version'],
+                state: $config['state'] ? (array) $config['state'] : [],
+                branchType: $branchType
             );
             $this->jobDefinitions[] = $jobDefinition;
         } else {
@@ -51,14 +62,15 @@ class JobDefinitionParser
                     (string) $config['version'],
                     $row['state'] ? (array) $row['state'] : [],
                     (string) $row['id'],
-                    (bool) $row['isDisabled']
+                    (bool) $row['isDisabled'],
+                    $branchType
                 );
                 $this->jobDefinitions[] = $jobDefinition;
             }
         }
     }
 
-    private function validateConfig($config)
+    private function validateConfig(array $config): void
     {
         $hasProcessors = !empty($config['configuration']['processors']['before'])
             || !empty($config['configuration']['processors']['after']);
@@ -70,7 +82,7 @@ class JobDefinitionParser
         }
     }
 
-    private function hasRowProcessors($config)
+    private function hasRowProcessors(array $config): bool
     {
         foreach ($config['rows'] as $row) {
             if (!empty($row['configuration']['processors']['before'])
@@ -85,7 +97,7 @@ class JobDefinitionParser
     /**
      * @return JobDefinition[]
      */
-    public function getJobDefinitions()
+    public function getJobDefinitions(): array
     {
         return $this->jobDefinitions;
     }

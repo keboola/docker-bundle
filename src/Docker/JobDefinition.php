@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinition
@@ -16,7 +17,12 @@ class JobDefinition
     private array $configuration;
     private array $state;
     private bool $isDisabled;
+    /** @var ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT */
+    private string $branchType;
 
+    /**
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
+     */
     public function __construct(
         array $configuration,
         Component $component,
@@ -24,7 +30,8 @@ class JobDefinition
         ?string $configVersion = null,
         array $state = [],
         ?string $rowId = null,
-        bool $isDisabled = false
+        bool $isDisabled = false,
+        string $branchType = ObjectEncryptor::BRANCH_TYPE_DEFAULT,
     ) {
         $this->configuration = $this->normalizeConfiguration($configuration);
         $this->component = $component;
@@ -33,6 +40,7 @@ class JobDefinition
         $this->rowId = $rowId;
         $this->isDisabled = $isDisabled;
         $this->state = $state;
+        $this->branchType = $branchType;
     }
 
     public function getComponentId(): string
@@ -68,6 +76,14 @@ class JobDefinition
     public function getState(): array
     {
         return $this->state;
+    }
+
+    /**
+     * @return ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT
+     */
+    public function getBranchType(): string
+    {
+        return $this->branchType;
     }
 
     public function isDisabled(): bool

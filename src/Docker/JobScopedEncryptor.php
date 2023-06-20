@@ -5,45 +5,79 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\ObjectEncryptor\ObjectEncryptor;
+use stdClass;
 
 class JobScopedEncryptor
 {
-    private ObjectEncryptor $encryptor;
-    private string $componentId;
-    private string $projectId;
-    private ?string $configId;
+    private const PROTECTED_DEFAULT_BRANCH_FEATURE = 'protected-default-branch';
 
-    public function __construct(ObjectEncryptor $encryptor, string $componentId, string $projectId, ?string $configId)
-    {
-        $this->encryptor = $encryptor;
-        $this->componentId = $componentId;
-        $this->projectId = $projectId;
-        $this->configId = $configId;
+    /**
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
+     */
+    public function __construct(
+        private readonly ObjectEncryptor $encryptor,
+        private readonly string $componentId,
+        private readonly string $projectId,
+        private readonly ?string $configId,
+        private readonly string $branchType,
+        private readonly array $projectFeatures,
+    ) {
     }
 
     /**
-     * @param mixed $data
-     * @return mixed
+     * @template T of array|stdClass|string
+     * @param T $data
+     * @return T
      */
     public function encrypt($data)
     {
-        if ($this->configId === null) {
-            return $this->encryptor->encryptForProject($data, $this->componentId, $this->projectId);
+        /* For SOX project, the cipher is created non transferable between branches. For normal projects, it is
+        transferable. For both types of projects, the configId is ignored, because currently this method is
+        used only to encrypt state. The question whether configId should be included in the state cipher or not
+        is to be resolved https://keboola.atlassian.net/browse/PST-960 . */
+        if (in_array(self::PROTECTED_DEFAULT_BRANCH_FEATURE, $this->projectFeatures, true)) {
+            return $this->encryptor->encryptForBranchType(
+                $data,
+                $this->componentId,
+                $this->projectId,
+                $this->branchType,
+            );
         }
 
-        return $this->encryptor->encryptForConfiguration($data, $this->componentId, $this->projectId, $this->configId);
+        return $this->encryptor->encryptForProject(
+            $data,
+            $this->componentId,
+            $this->projectId,
+        );
     }
 
     /**
-     * @param mixed $data
-     * @return mixed
+     * @template T of array|stdClass|string
+     * @param T $data
+     * @return T
      */
     public function decrypt($data)
     {
+        /* no need to check for PROTECTED_DEFAULT_BRANCH_FEATURE because, decryptForBranchType and
+            decryptForBranchTypeConfiguration can also decrypt ciphers without branchType. This is intentional behavior,
+            covered by object encryptor:
+            https://github.com/keboola/object-encryptor/blob/46555af72554a860fedf651198f520ff6e34bd31/tests/ObjectEncryptorTest.php#L1020
+        */
         if ($this->configId === null) {
-            return $this->encryptor->decryptForProject($data, $this->componentId, $this->projectId);
+            return $this->encryptor->decryptForBranchType(
+                $data,
+                $this->componentId,
+                $this->projectId,
+                $this->branchType,
+            );
         }
 
-        return $this->encryptor->decryptForConfiguration($data, $this->componentId, $this->projectId, $this->configId);
+        return $this->encryptor->decryptForBranchTypeConfiguration(
+            $data,
+            $this->componentId,
+            $this->projectId,
+            $this->configId,
+            $this->branchType,
+        );
     }
 }

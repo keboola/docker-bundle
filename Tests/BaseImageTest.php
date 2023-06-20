@@ -44,6 +44,13 @@ abstract class BaseImageTest extends TestCase
         string $projectId = 'bar',
         ?string $configId = null
     ): JobScopedEncryptor {
-        return new JobScopedEncryptor($this->encryptor, $componentId, $projectId, $configId);
+        return new JobScopedEncryptor(
+            $this->encryptor,
+            $componentId,
+            $projectId,
+            $configId,
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            []
+        );
     }
 }

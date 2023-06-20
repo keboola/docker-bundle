@@ -208,7 +208,9 @@ class Runner
             $this->encryptor,
             $jobDefinition->getComponentId(),
             (string) $tokenInfo['owner']['id'],
-            $jobDefinition->getConfigId()
+            $jobDefinition->getConfigId(),
+            $jobDefinition->getBranchType(),
+            $tokenInfo['owner']['features']
         );
 
         $configData = $jobDefinition->getConfiguration();
@@ -242,11 +244,10 @@ class Runner
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
             $this->clientWrapper,
-            $this->encryptor,
+            $jobScopedEncryptor,
             $jobDefinition->getState(),
             $component->getConfigurationFormat(),
             $component->getId(),
-            (string) $tokenInfo['owner']['id'],
             $jobDefinition->getConfigId() ? (string) $jobDefinition->getConfigId() : null,
             $this->outputFilter,
             $this->loggersService->getLog(),

@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 class JobDefinitionParserTest extends TestCase
 {
-    private function getComponent()
+    private function getComponent(): Component
     {
         return new Component(
             [
@@ -26,7 +26,7 @@ class JobDefinitionParserTest extends TestCase
         );
     }
 
-    public function testSimpleConfigData()
+    public function testSimpleConfigData(): void
     {
         $configData = [
             'storage' => [
@@ -105,7 +105,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfigData($this->getComponent(), $configData);
+        $parser->parseConfigData($this->getComponent(), $configData, null, 'default');
 
         self::assertCount(1, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
@@ -115,9 +115,10 @@ class JobDefinitionParserTest extends TestCase
         self::assertNull($parser->getJobDefinitions()[0]->getRowId());
         self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         self::assertEmpty($parser->getJobDefinitions()[0]->getState());
+        self::assertSame('default', $parser->getJobDefinitions()[0]->getBranchType());
     }
 
-    public function testSingleRowConfiguration()
+    public function testSingleRowConfiguration(): void
     {
         $config = [
             'id' => 'my-config',
@@ -204,7 +205,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'default');
 
         self::assertCount(1, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
@@ -214,9 +215,10 @@ class JobDefinitionParserTest extends TestCase
         self::assertNull($parser->getJobDefinitions()[0]->getRowId());
         self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         self::assertEquals($config['state'], $parser->getJobDefinitions()[0]->getState());
+        self::assertSame('default', $parser->getJobDefinitions()[0]->getBranchType());
     }
 
-    public function testMultiRowConfiguration()
+    public function testMultiRowConfiguration(): void
     {
         $config = [
             'id' => 'my-config',
@@ -321,7 +323,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'dev');
 
         self::assertCount(2, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
@@ -331,6 +333,7 @@ class JobDefinitionParserTest extends TestCase
         self::assertEquals('row1', $parser->getJobDefinitions()[0]->getRowId());
         self::assertTrue($parser->getJobDefinitions()[0]->isDisabled());
         self::assertEquals(['key1' => 'val1'], $parser->getJobDefinitions()[0]->getState());
+        self::assertSame('dev', $parser->getJobDefinitions()[0]->getBranchType());
 
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[1]->getComponentId());
         self::assertEquals($expectedRow2, $parser->getJobDefinitions()[1]->getConfiguration());
@@ -339,9 +342,10 @@ class JobDefinitionParserTest extends TestCase
         self::assertEquals('row2', $parser->getJobDefinitions()[1]->getRowId());
         self::assertFalse($parser->getJobDefinitions()[1]->isDisabled());
         self::assertEquals(['key2' => 'val2'], $parser->getJobDefinitions()[1]->getState());
+        self::assertSame('dev', $parser->getJobDefinitions()[1]->getBranchType());
     }
 
-    public function testSimpleConfigDataWithConfigId()
+    public function testSimpleConfigDataWithConfigId(): void
     {
         $configData = [
             'storage' => [
@@ -420,7 +424,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfigData($this->getComponent(), $configData, '1234');
+        $parser->parseConfigData($this->getComponent(), $configData, '1234', 'dev');
 
         self::assertCount(1, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
@@ -430,6 +434,7 @@ class JobDefinitionParserTest extends TestCase
         self::assertNull($parser->getJobDefinitions()[0]->getRowId());
         self::assertFalse($parser->getJobDefinitions()[0]->isDisabled());
         self::assertEmpty($parser->getJobDefinitions()[0]->getState());
+        self::assertSame('dev', $parser->getJobDefinitions()[0]->getBranchType());
     }
 
     public function testMultiRowConfigurationWithInvalidProcessors1()
@@ -498,7 +503,7 @@ class JobDefinitionParserTest extends TestCase
         self::expectExceptionMessage(
             'Processors may be set either in configuration or in configuration row, but not in both places'
         );
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'default');
     }
 
     public function testEmptyConfig(): void
@@ -512,7 +517,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'default');
         self::assertSame(
             [
                 'shared_code_row_ids' => [],
@@ -524,7 +529,7 @@ class JobDefinitionParserTest extends TestCase
         );
     }
 
-    public function testMultiRowConfigurationWithInvalidProcessors2()
+    public function testMultiRowConfigurationWithInvalidProcessors2(): void
     {
         $config = [
             'id' => 'my-config',
@@ -590,7 +595,7 @@ class JobDefinitionParserTest extends TestCase
         self::expectExceptionMessage(
             'Processors may be set either in configuration or in configuration row, but not in both places'
         );
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'default');
     }
 
     public function testNullRows(): void
@@ -614,7 +619,7 @@ class JobDefinitionParserTest extends TestCase
         ];
 
         $parser = new JobDefinitionParser();
-        $parser->parseConfig($this->getComponent(), $config);
+        $parser->parseConfig($this->getComponent(), $config, 'default');
 
         self::assertCount(1, $parser->getJobDefinitions());
         self::assertEquals('keboola.r-transformation', $parser->getJobDefinitions()[0]->getComponentId());
