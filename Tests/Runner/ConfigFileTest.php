@@ -29,6 +29,7 @@ class ConfigFileTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */

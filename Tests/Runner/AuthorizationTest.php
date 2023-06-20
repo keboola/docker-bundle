@@ -53,6 +53,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
@@ -98,6 +99,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         $temp = new Temp();
@@ -105,7 +107,10 @@ class AuthorizationTest extends BaseRunnerTest
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
-        $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+        $data = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true
+        );
         $sampleData = [
             'authorization' => [
                 'oauth_api' => [
@@ -169,6 +174,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
@@ -203,6 +209,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
@@ -234,6 +241,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
@@ -276,6 +284,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
@@ -319,13 +328,17 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         $configFile = new ConfigFile($temp->getTmpFolder(), $auth, 'run', 'json');
         $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
-        $data = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+        $data = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true
+        );
         $sampleData = [
             'authorization' => [
                 'oauth_api' => [
@@ -380,6 +393,7 @@ class AuthorizationTest extends BaseRunnerTest
             '12345',
             null,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            [],
         );
 
         /** @var Credentials $oauthClientStub */

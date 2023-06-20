@@ -266,46 +266,6 @@ parameters:
 			path: src/Docker/Image/QuayIO.php
 
 		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchType\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchTypeConfiguration\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchType\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchTypeConfiguration\\(\\)$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:decryptForBranchType\\(\\)$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchTypeConfiguration\\(\\)$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForBranchType\\(\\)$#"
-			count: 1
-			path: src/Docker/JobScopedEncryptor.php
-
-		-
 			message: "#^Cannot cast mixed to string\\.$#"
 			count: 1
 			path: src/Docker/OutputFilter/OutputFilter.php
@@ -356,7 +316,17 @@ parameters:
 			path: src/Docker/Runner.php
 
 		-
-			message: "#^Parameter \\#4 \\$imageParameters of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ConfigFile\\:\\:createConfigFile\\(\\) expects array, mixed given\\.$#"
+			message: "#^Unable to resolve the template type T in call to method Keboola\\\\DockerBundle\\\\Docker\\\\JobScopedEncryptor\\:\\:decrypt\\(\\)#"
+			count: 1
+			path: src/Docker/Runner.php
+
+		-
+			message: "#^Parameter \\#1 \\$currentState of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) expects array\\|stdClass, array\\|object given\\.#"
+			count: 1
+			path: src/Docker/Runner.php
+
+		-
+			message: "#^Parameter \\#4 \\$imageParameters of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ConfigFile\\:\\:createConfigFile\\(\\) expects array, array|stdClass|string given\\.$#"
 			count: 1
 			path: src/Docker/Runner.php
 
@@ -626,42 +596,12 @@ parameters:
 			path: src/Docker/Runner/SharedCodeContext.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:createStateFile\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:persistState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:saveConfigurationRowState\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/StateFile.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:saveConfigurationState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) has parameter \\$currentState with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
-			message: "#^Parameter \\#1 \\$data of method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForProject\\(\\) expects array\\|stdClass\\|string, mixed given\\.$#"
-			count: 1
-			path: src/Docker/Runner/StateFile.php
-
-		-
-			message: "#^Unable to resolve the template type T in call to method Keboola\\\\ObjectEncryptor\\\\ObjectEncryptor\\:\\:encryptForProject\\(\\)$#"
 			count: 1
 			path: src/Docker/Runner/StateFile.php
 
@@ -1356,11 +1296,6 @@ parameters:
 			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
 
 		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/Runner/AuthorizationTest.php
-
-		-
 			message: "#^Cannot access offset 'authorization' on mixed\\.$#"
 			count: 3
 			path: Tests/Runner/ConfigFileTest.php
@@ -1914,111 +1849,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$token of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
 			count: 3
 			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testCreateStateFileFromStateWithNamespace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testCreateStateFileWithEmptyState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testInitializeStateFileFromStateWithoutNamespace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testLoadStateFromFile\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testLoadStateFromFileEmptyState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testLoadStateFromFileMissingStateFile\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersisStatePassOtherExceptions\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateEncrypts\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateLogsSavingState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateStoresInputTablesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateThrowsAnExceptionOn404\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateUsesBranchClient\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistStateWithoutStateChange\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistsStateSavesUnchangedState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistsStateUpdatesFromEmpty\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistsStateUpdatesToEmptyArray\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testPersistsStateUpdatesToEmptyObject\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testRowPersistStateStoresInputTablesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\StateFileTest\\:\\:testStashStateDoesNotUpdate\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/Runner/StateFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$content of method Symfony\\\\Component\\\\Filesystem\\\\Filesystem\\:\\:dumpFile\\(\\) expects resource\\|string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/Runner/StateFileTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\VariableResolverTest\\:\\:createBranch\\(\\) has parameter \\$branchName with no type specified\\.$#"

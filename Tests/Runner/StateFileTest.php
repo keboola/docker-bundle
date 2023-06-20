@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Generator;
+use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Exception\UserException;
@@ -31,7 +33,6 @@ class StateFileTest extends TestCase
     use TestEnvVarsTrait;
 
     private string $dataDir;
-    private ObjectEncryptor $encryptor;
     private ClientWrapper $clientWrapper;
 
     public function setUp(): void
@@ -52,31 +53,44 @@ class StateFileTest extends TestCase
             self::getRequiredEnv('STORAGE_API_URL'),
             self::getRequiredEnv('STORAGE_API_TOKEN'),
         ));
-
-        $stackId = parse_url(self::getRequiredEnv('STORAGE_API_URL'), PHP_URL_HOST);
-        self::assertNotEmpty($stackId);
-
-        $this->encryptor = ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
-            $stackId,
-            self::getRequiredEnv('AWS_KMS_TEST_KEY'),
-            self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
-            null,
-            null,
-        ));
     }
 
-    public function testCreateStateFileFromStateWithNamespace()
+    /**
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
+     */
+    private function getJobScopedEncryptor(
+        string $branchType = 'default',
+        array $features = []
+    ): JobScopedEncryptor {
+        $stackId = parse_url(self::getRequiredEnv('STORAGE_API_URL'), PHP_URL_HOST);
+        self::assertNotEmpty($stackId);
+        return new JobScopedEncryptor(
+            ObjectEncryptorFactory::getEncryptor(new EncryptorOptions(
+                $stackId,
+                self::getRequiredEnv('AWS_KMS_TEST_KEY'),
+                self::getRequiredEnv('AWS_ECR_REGISTRY_REGION'),
+                null,
+                null,
+            )),
+            'my-component',
+            'project-id',
+            'config-id',
+            $branchType,
+            $features,
+        );
+    }
+
+    public function testCreateStateFileFromStateWithNamespace(): void
     {
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [
                 StateFile::NAMESPACE_COMPONENT => ['lastUpdate' => 'today'],
             ],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -88,38 +102,36 @@ class StateFileTest extends TestCase
         $obj->lastUpdate = 'today';
         self::assertEquals(
             $obj,
-            json_decode(file_get_contents($fileName), false)
+            json_decode((string) file_get_contents($fileName), false)
         );
     }
 
-    public function testInitializeStateFileFromStateWithoutNamespace()
+    public function testInitializeStateFileFromStateWithoutNamespace(): void
     {
         $this->expectException(UserException::class);
         $this->expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
         new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             ['lastUpdate' => 'today'],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
         );
     }
 
-    public function testCreateStateFileWithEmptyState()
+    public function testCreateStateFileWithEmptyState(): void
     {
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -129,11 +141,11 @@ class StateFileTest extends TestCase
         self::assertTrue(file_exists($fileName));
         self::assertEquals(
             new stdClass(),
-            json_decode(file_get_contents($fileName), false)
+            json_decode((string) file_get_contents($fileName), false)
         );
     }
 
-    public function testPersistStateWithoutStateChange()
+    public function testPersistStateWithoutStateChange(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -141,7 +153,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
                 self::equalTo(
                     ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
@@ -164,11 +176,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             $testLogger
@@ -178,7 +189,7 @@ class StateFileTest extends TestCase
     }
 
 
-    public function testPersistStateLogsSavingState()
+    public function testPersistStateLogsSavingState(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -192,11 +203,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             $testLogger
@@ -207,7 +217,11 @@ class StateFileTest extends TestCase
         self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
     }
 
-    public function testPersistStateEncrypts()
+    /**
+     * @dataProvider stateEncryptionOptionsProvider
+     * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
+     */
+    public function testPersistStateEncrypts(array $features, string $branchType, string $expectedPrefix): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -215,14 +229,14 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
-                $this->callback(function ($argument) {
+                $this->equalTo('branch/default/components/my-component/configs/config-id/state'),
+                $this->callback(function ($argument) use ($expectedPrefix) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_COMPONENT]);
-                    self::assertStringStartsWith('KBC::ProjectSecure::', $data[StateFile::NAMESPACE_COMPONENT]['#foo']);
+                    self::assertStringStartsWith($expectedPrefix, $data[StateFile::NAMESPACE_COMPONENT]['#foo']);
                     return true;
                 })
             );
@@ -232,11 +246,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor($branchType, $features),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -245,7 +258,31 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testStashStateDoesNotUpdate()
+    public function stateEncryptionOptionsProvider(): Generator
+    {
+        yield 'default branch no feature' => [
+            'features' => [],
+            'branchType' => 'default',
+            'expectedPrefix' => 'KBC::ProjectSecure::',
+        ];
+        yield 'default branch with feature' => [
+            'features' => ['protected-default-branch'],
+            'branchType' => 'default',
+            'expectedPrefix' => 'KBC::BranchTypeSecure::',
+        ];
+        yield 'non-default branch no feature' => [
+            'features' => [],
+            'branchType' => 'dev',
+            'expectedPrefix' => 'KBC::ProjectSecure::',
+        ];
+        yield 'non-default branch with feature' => [
+            'features' => ['protected-default-branch'],
+            'branchType' => 'dev',
+            'expectedPrefix' => 'KBC::BranchTypeSecure::',
+        ];
+    }
+
+    public function testStashStateDoesNotUpdate(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -258,11 +295,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -270,7 +306,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar', '#foo' => 'bar']);
     }
 
-    public function testPersistsStateUpdatesFromEmpty()
+    public function testPersistsStateUpdatesFromEmpty(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -278,7 +314,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
@@ -294,11 +330,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -307,7 +342,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testPersistsStateUpdatesToEmptyArray()
+    public function testPersistsStateUpdatesToEmptyArray(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -315,7 +350,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
                 self::equalTo(
                     ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [],
@@ -334,11 +369,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -347,7 +381,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testPersistsStateUpdatesToEmptyObject()
+    public function testPersistsStateUpdatesToEmptyObject(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -355,7 +389,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
                 self::equalTo(
                     ['state' => [
                         StateFile::NAMESPACE_COMPONENT => new stdClass(),
@@ -374,11 +408,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -387,7 +420,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testPersistsStateSavesUnchangedState()
+    public function testPersistsStateSavesUnchangedState(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -395,7 +428,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
                 self::equalTo(
                     ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
@@ -416,11 +449,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBar']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -429,20 +461,18 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testLoadStateFromFile()
+    public function testLoadStateFromFile(): void
     {
         $fs = new Filesystem();
         $data = ['time' => ['previousStart' => 1495580620]];
-        $stateFile = json_encode($data);
-        $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
+        $fs->dumpFile($this->dataDir . '/out/state.json', (string) json_encode($data));
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -451,20 +481,18 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testLoadStateFromFileEmptyState()
+    public function testLoadStateFromFileEmptyState(): void
     {
         $fs = new Filesystem();
         $data = [];
-        $stateFile = json_encode($data);
-        $fs->dumpFile($this->dataDir . '/out/state.json', $stateFile);
+        $fs->dumpFile($this->dataDir . '/out/state.json', (string) json_encode($data));
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -473,16 +501,15 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testLoadStateFromFileMissingStateFile()
+    public function testLoadStateFromFileMissingStateFile(): void
     {
         $stateFile = new StateFile(
             $this->dataDir,
             $this->clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -491,7 +518,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPersistStateThrowsAnExceptionOn404()
+    public function testPersistStateThrowsAnExceptionOn404(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -499,7 +526,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
@@ -517,11 +544,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -533,7 +559,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testPersisStatePassOtherExceptions()
+    public function testPersisStatePassOtherExceptions(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -541,7 +567,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
+                self::equalTo('branch/default/components/my-component/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
@@ -559,11 +585,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -576,7 +601,7 @@ class StateFileTest extends TestCase
     }
 
 
-    public function testPersistStateStoresInputTablesState()
+    public function testPersistStateStoresInputTablesState(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -584,7 +609,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                $this->equalTo('branch/default/components/docker-demo/configs/config-id/state'),
+                $this->equalTo('branch/default/components/my-component/configs/config-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
@@ -611,11 +636,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger()
@@ -631,7 +655,7 @@ class StateFileTest extends TestCase
     }
 
 
-    public function testRowPersistStateStoresInputTablesState()
+    public function testRowPersistStateStoresInputTablesState(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -639,7 +663,7 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                $this->equalTo('branch/default/components/docker-demo/configs/config-id/rows/row-id/state'),
+                $this->equalTo('branch/default/components/my-component/configs/config-id/rows/row-id/state'),
                 $this->callback(function ($argument) {
                     self::assertArrayHasKey('state', $argument);
                     $data = $argument['state'];
@@ -666,11 +690,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => ['key' => 'fooBarBaz']],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             new NullLogger(),
@@ -686,7 +709,7 @@ class StateFileTest extends TestCase
         $stateFile->persistState($inputTablesState, new InputFileStateList([]));
     }
 
-    public function testPersistStateUsesBranchClient()
+    public function testPersistStateUsesBranchClient(): void
     {
         $branchSapiStub = $this->getMockBuilder(BranchAwareClient::class)
             ->disableOriginalConstructor()
@@ -695,7 +718,7 @@ class StateFileTest extends TestCase
         $branchSapiStub->expects(self::once())
             ->method('apiPutJson')
             ->with(
-                self::equalTo('components/docker-demo/configs/config-id/state'),
+                self::equalTo('components/my-component/configs/config-id/state'),
                 self::equalTo(
                     ['state' => [
                         StateFile::NAMESPACE_COMPONENT => [
@@ -725,11 +748,10 @@ class StateFileTest extends TestCase
         $stateFile = new StateFile(
             $this->dataDir,
             $wrapper,
-            $this->encryptor,
+            $this->getJobScopedEncryptor(),
             [StateFile::NAMESPACE_COMPONENT => $state],
             'json',
-            'docker-demo',
-            'project-id',
+            'my-component',
             'config-id',
             new NullFilter(),
             $testLogger

@@ -49,7 +49,8 @@ abstract class BaseImageTest extends TestCase
             $componentId,
             $projectId,
             $configId,
-            ObjectEncryptor::BRANCH_TYPE_DEFAULT
+            ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            []
         );
     }
 }

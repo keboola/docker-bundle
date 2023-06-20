@@ -15,15 +15,10 @@ class JobScopedEncryptorTest extends TestCase
     /** @dataProvider provideArgumentsWithoutConfig */
     public function testEncryptDecryptWithoutConfig(
         array $arguments,
+        array $expectedArguments,
         string $methodCalled,
-        string $methodNotCalled,
         string $method,
     ): void {
-        $expectedArguments = $arguments;
-        if ($expectedArguments['configId'] === null) {
-            unset($expectedArguments['configId']);
-        }
-
         $objectEncryptorMock = $this->createMock(ObjectEncryptor::class);
         $objectEncryptorMock
             ->expects(self::once())
@@ -33,9 +28,6 @@ class JobScopedEncryptorTest extends TestCase
                 ... $expectedArguments
             )
             ->willReturn('my-data');
-        $objectEncryptorMock
-            ->expects(self::never())
-            ->method($methodNotCalled);
 
         $jobScopedEncryptor = new JobScopedEncryptor(
             $objectEncryptorMock,
@@ -46,48 +38,132 @@ class JobScopedEncryptorTest extends TestCase
 
     public function provideArgumentsWithoutConfig(): Generator
     {
-        yield 'encrypt without configuration' => [
+        yield 'encrypt without configuration without feature' => [
             'arguments' => [
                 'componentId' => 'my-component',
                 'projectId' => 'my-project',
                 'configId' => null,
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => [],
             ],
-            'methodCalled' => 'encryptForBranchType',
-            'methodNotCalled' => 'encryptForBranchTypeConfiguration',
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+            ],
+            'methodCalled' => 'encryptForProject',
             'method' => 'encrypt',
         ];
-        yield 'decrypt without configuration' => [
+        yield 'decrypt without configuration without feature' => [
             'arguments' => [
                 'componentId' => 'my-component',
                 'projectId' => 'my-project',
                 'configId' => null,
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => [],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
             ],
             'methodCalled' => 'decryptForBranchType',
-            'methodNotCalled' => 'decryptForBranchTypeConfiguration',
             'method' => 'decrypt',
         ];
-        yield 'encrypt with configuration' => [
+        yield 'encrypt with configuration without feature' => [
             'arguments' => [
                 'componentId' => 'my-component',
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => [],
             ],
-            'methodCalled' => 'encryptForBranchTypeConfiguration',
-            'methodNotCalled' => 'encryptForBranchType',
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+            ],
+            'methodCalled' => 'encryptForProject',
             'method' => 'encrypt',
         ];
-        yield 'decrypt with configuration' => [
+        yield 'decrypt with configuration without feature' => [
             'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => [],
+            ],
+            'expectedArguments' => [
                 'componentId' => 'my-component',
                 'projectId' => 'my-project',
                 'configId' => 'my-config',
                 'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
             ],
             'methodCalled' => 'decryptForBranchTypeConfiguration',
-            'methodNotCalled' => 'decryptForBranchType',
+            'method' => 'decrypt',
+        ];
+        yield 'encrypt without configuration with feature' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => null,
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => ['protected-default-branch'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'encryptForBranchType',
+            'method' => 'encrypt',
+        ];
+        yield 'decrypt without configuration with feature' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => null,
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => ['protected-default-branch'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'decryptForBranchType',
+            'method' => 'decrypt',
+        ];
+        yield 'encrypt with configuration with feature' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => ['protected-default-branch'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'encryptForBranchType',
+            'method' => 'encrypt',
+        ];
+        yield 'decrypt with configuration with feature' => [
+            'arguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+                'features' => ['protected-default-branch'],
+            ],
+            'expectedArguments' => [
+                'componentId' => 'my-component',
+                'projectId' => 'my-project',
+                'configId' => 'my-config',
+                'branchType' => ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+            ],
+            'methodCalled' => 'decryptForBranchTypeConfiguration',
             'method' => 'decrypt',
         ];
     }
