@@ -24,7 +24,7 @@
         "keboola/sandboxes-api-php-client": "^6.7",
         "keboola/staging-provider": "^6.0",
         "keboola/storage-api-client": "^14.6",
-        "keboola/storage-api-php-client-branch-wrapper": "dev-odin-SOX-138-b as 3.3.0",
+        "keboola/storage-api-php-client-branch-wrapper": "dev-odin-SOX-138 as 3.3.0",
         "monolog/monolog": "^2.5",
         "mustache/mustache": "^2.13",
         "symfony/http-foundation": "^5.4|^6.2",
