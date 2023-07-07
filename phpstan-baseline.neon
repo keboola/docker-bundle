@@ -686,11 +686,6 @@ parameters:
 			path: src/Monolog/ContainerLogger.php
 
 		-
-			message: "#^Parameter \\#1 \\$record of method Monolog\\\\Handler\\\\HandlerInterface\\:\\:handle\\(\\) expects array\\{message\\: string, context\\: array, level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600, level_name\\: 'ALERT'\\|'CRITICAL'\\|'DEBUG'\\|'EMERGENCY'\\|'ERROR'\\|'INFO'\\|'NOTICE'\\|'WARNING', channel\\: string, datetime\\: DateTimeImmutable, extra\\: array\\}, mixed given\\.$#"
-			count: 1
-			path: src/Monolog/ContainerLogger.php
-
-		-
 			message: "#^Parameter \\#1 \\$record of method Monolog\\\\Handler\\\\HandlerInterface\\:\\:isHandling\\(\\) expects array\\{level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600\\}, array\\{level\\: int\\} given\\.$#"
 			count: 1
 			path: src/Monolog/ContainerLogger.php
