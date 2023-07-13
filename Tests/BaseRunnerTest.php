@@ -146,6 +146,7 @@ abstract class BaseRunnerTest extends TestCase
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($storageClientStub);
         return new Runner(
             $this->encryptor,
             $clientWrapper,
