@@ -157,7 +157,7 @@ abstract class BaseRunnerTest extends TestCase
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($storageClientStub);
-        $clientWrapper->method('getDefaultBranch')->willReturn(['branchId' => $defaultBranchId]);
+        $clientWrapper->method('getDefaultBranch')->willReturn(['branchId' => (string) $defaultBranchId]);
         return new Runner(
             $this->encryptor,
             $clientWrapper,
