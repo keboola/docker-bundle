@@ -14,6 +14,7 @@ use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
 use Keboola\StorageApi\Client;
+use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -143,10 +144,20 @@ abstract class BaseRunnerTest extends TestCase
             $storageClientStub = $this->client;
         }
 
+        $defaultBranchId = null;
+        $devBranches = new DevBranches($this->client);
+        foreach ($devBranches->listBranches() as $branch) {
+            if ($branch['isDefault']) {
+                $defaultBranchId = $branch['id'];
+                break;
+            }
+        }
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
         $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($storageClientStub);
+        $clientWrapper->method('getDefaultBranch')->willReturn(['branchId' => (string) $defaultBranchId]);
         return new Runner(
             $this->encryptor,
             $clientWrapper,
