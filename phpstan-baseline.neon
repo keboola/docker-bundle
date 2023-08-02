@@ -556,46 +556,6 @@ parameters:
 			path: src/Docker/Runner/Limits.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:__get\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:__get\\(\\) has parameter \\$name with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:__isset\\(\\) has parameter \\$name with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:getKeys\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:pushValue\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:pushValue\\(\\) has parameter \\$key with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:pushValue\\(\\) has parameter \\$value with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\SharedCodeContext\\:\\:\\$values has no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/SharedCodeContext.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:saveConfigurationRowState\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/StateFile.php
@@ -1281,11 +1241,6 @@ parameters:
 			path: Tests/Docker/ImageTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\JobDefinitionParserTest\\:\\:testMultiRowConfigurationWithInvalidProcessors1\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/JobDefinitionParserTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoaderTest\\:\\:testAccessors\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
@@ -1799,66 +1754,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$object of static method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\Runner2Test\\:\\:setPrivatePropertyValue\\(\\) expects object, mixed given\\.$#"
 			count: 1
 			path: Tests/RunnerPart2/Runner2Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:createBranch\\(\\) has parameter \\$branchName with no type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeBranch\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeInvalidRow\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeNoConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeNoRows\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeNonExistentConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\SharedCodeResolverTest\\:\\:testResolveSharedCodeNonExistentRow\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 3
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$token of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 3
-			path: Tests/RunnerPart2/SharedCodeResolverTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\VariableResolverTest\\:\\:createBranch\\(\\) has parameter \\$branchName with no type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/VariableResolverTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/VariableResolverTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$token of class Keboola\\\\StorageApiBranch\\\\Factory\\\\ClientOptions constructor expects string\\|null, string\\|false given\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/VariableResolverTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\WorkingDirectoryTest\\:\\:testWorkingDirectoryMove\\(\\) has no return type specified\\.$#"
