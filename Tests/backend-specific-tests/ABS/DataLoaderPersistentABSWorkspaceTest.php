@@ -13,6 +13,7 @@ use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -63,17 +64,21 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects($this->once())->method('apiDelete')->with(self::stringContains('workspaces/'));
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -109,11 +114,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -125,7 +133,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -176,11 +185,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -198,7 +210,8 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -253,11 +266,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
+                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -283,12 +299,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         try {
             $workspaceFactory = new WorkspaceProviderFactoryFactory(
-                new Components($clientWrapper->getBranchClientIfAvailable()),
-                new Workspaces($clientWrapper->getBranchClientIfAvailable()),
+                new Components($clientWrapper->getBranchClient()),
+                new Workspaces($clientWrapper->getBranchClient()),
                 $logger
             );
             $workspaceFactory->getWorkspaceProviderFactory(

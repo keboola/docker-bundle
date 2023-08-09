@@ -738,7 +738,7 @@ class StateFileTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $wrapper->expects(self::once())->method('hasBranch')->willReturn(true);
+        $wrapper->expects(self::once())->method('isDevelopmentBranch')->willReturn(true);
         $wrapper->expects(self::never())->method('getBasicClient');
         $wrapper->expects(self::once())->method('getBranchClient')->willReturn($branchSapiStub);
 

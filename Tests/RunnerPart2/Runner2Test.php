@@ -11,7 +11,7 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\Sandboxes\Api\Project;
-use Keboola\StorageApi\Client as StorageApiClient;
+use Keboola\StorageApi\BranchAwareClient as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
@@ -24,10 +24,13 @@ class Runner2Test extends BaseRunnerTest
     public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
-        $client = new StorageApiClient([
-            'url' => getenv('STORAGE_API_URL'),
-            'token' => getenv('STORAGE_API_TOKEN'),
-        ]);
+        $client = new StorageApiClient(
+            'default',
+            [
+                'url' => getenv('STORAGE_API_URL'),
+                'token' => getenv('STORAGE_API_TOKEN'),
+            ]
+        );
         $transformationTestComponentId = 'keboola.python-transformation';
         $components = new Components($client);
         $configurations = $components->listComponentConfigurations(
@@ -114,10 +117,13 @@ class Runner2Test extends BaseRunnerTest
 
         // set project feature
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->onlyMethods(['verifyToken'])
             ->getMock()
         ;
@@ -204,10 +210,13 @@ class Runner2Test extends BaseRunnerTest
 
         // set project feature
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->onlyMethods(['verifyToken'])
             ->getMock()
         ;

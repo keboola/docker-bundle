@@ -19,6 +19,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -663,7 +664,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientMock = $this->createMock(Client::class);
+        $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
 
         // exception is not thrown outside
@@ -673,7 +674,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getBranchClientIfAvailable')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
 
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');

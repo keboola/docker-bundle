@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -55,17 +56,21 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects($this->once())->method('apiDelete')->with(self::stringContains('workspaces/'));
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -104,11 +109,14 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -120,7 +128,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -174,11 +183,14 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -196,7 +208,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -254,11 +267,14 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $client = self::getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiDelete'])
             ->getMock();
         $client->expects(self::never())->method('apiDelete');
@@ -283,7 +299,8 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($client);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
+        $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
 
         $dataLoader = new DataLoader(

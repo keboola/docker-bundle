@@ -8,6 +8,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -17,7 +18,7 @@ use Psr\Log\LoggerInterface;
 class ImageCreator
 {
     private LoggerInterface $logger;
-    private Client $storageClient;
+    private BranchAwareClient $storageClient;
     private Component $mainComponent;
     private array $componentConfig;
 
@@ -27,7 +28,7 @@ class ImageCreator
 
     public function __construct(
         LoggerInterface $logger,
-        Client $storageClient,
+        BranchAwareClient $storageClient,
         Component $mainComponent,
         array $componentConfig
     ) {

@@ -7,6 +7,8 @@ namespace Keboola\DockerBundle\Tests\Runner;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
@@ -16,9 +18,11 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
+use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
@@ -26,6 +30,8 @@ use Keboola\StorageApi\Options\Components\ListConfigurationRowsOptions;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApiBranch\Branch;
+use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
 use Monolog\Logger;
 use ReflectionMethod;
@@ -96,11 +102,14 @@ class RunnerTest extends BaseRunnerTest
 
     public function testGetOauthUrl(): void
     {
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['verifyToken', 'getServiceUrl'])
             ->getMock();
         $clientMock->expects(self::any())
@@ -115,8 +124,20 @@ class RunnerTest extends BaseRunnerTest
                 'https://someurl'
             );
 
-        $this->setClientMock($clientMock);
-        $runner = $this->getRunner();
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        // basicClient TODO: should be removed after https://keboola.atlassian.net/browse/SOX-368
+        $clientWrapper->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapper->method('getDefaultBranch')->willReturn(
+            new Branch((string) '123', 'default branch', true, null)
+        );
+        $runner = new Runner(
+            $this->encryptor,
+            $clientWrapper,
+            $this->loggersServiceStub,
+            new OutputFilter(10000),
+            ['cpu_count' => 2],
+            (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT')
+        );
 
         $method = new ReflectionMethod($runner, 'getOauthUrlV3');
         $method->setAccessible(true);
@@ -174,11 +195,14 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
         $clientMock
@@ -191,13 +215,13 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'branch/default/components/keboola.processor-last-file') {
+                if ($url === 'components/keboola.processor-last-file') {
                     return $components[0];
-                } elseif ($url === 'branch/default/components/keboola.processor-iconv') {
+                } elseif ($url === 'components/keboola.processor-iconv') {
                     return $components[1];
-                } elseif ($url === 'branch/default/components/keboola.processor-move-files') {
+                } elseif ($url === 'components/keboola.processor-move-files') {
                     return $components[2];
-                } elseif ($url === 'branch/default/components/keboola.processor-decompress') {
+                } elseif ($url === 'components/keboola.processor-decompress') {
                     return $components[3];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -376,11 +400,14 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
         $clientMock
@@ -393,7 +420,7 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'branch/default/components/keboola.runner-config-test') {
+                if ($url === 'components/keboola.runner-config-test') {
                     return $components[0];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -480,11 +507,14 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
         $clientMock
@@ -497,7 +527,7 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'branch/default/components/keboola.processor-decompress') {
+                if ($url === 'components/keboola.processor-decompress') {
                     return $components[0];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -1502,19 +1532,22 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['getServiceUrl', 'apiGet'])
             ->getMock();
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'branch/default/components/keboola.docker-demo-sync') {
+                if ($url === 'components/keboola.docker-demo-sync') {
                     return $components[0];
-                } elseif ($url === 'branch/default/components/keboola.processor-dumpy') {
+                } elseif ($url === 'components/keboola.processor-dumpy') {
                     return $components[1];
                 } else {
                     return $this->client->apiGet($url, $filename);
@@ -1622,11 +1655,14 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $clientMock = $this->getMockBuilder(Client::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+        $clientMock = $this->getMockBuilder(BranchAwareClient::class)
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->setMethods(['apiGet', 'getServiceUrl'])
             ->getMock();
         $clientMock
@@ -1639,9 +1675,9 @@ class RunnerTest extends BaseRunnerTest
         $clientMock
             ->method('apiGet')
             ->willReturnCallback(function ($url, $filename) use ($components) {
-                if ($url === 'branch/default/components/keboola.docker-demo-sync') {
+                if ($url === 'components/keboola.docker-demo-sync') {
                     return $components[0];
-                } elseif ($url === 'branch/default/components/keboola.processor-dumpy') {
+                } elseif ($url === 'components/keboola.processor-dumpy') {
                     return $components[1];
                 } else {
                     return $this->client->apiGet($url, $filename);

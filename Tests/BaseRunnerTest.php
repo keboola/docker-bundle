@@ -13,8 +13,10 @@ use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
+use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\DevBranches;
+use Keboola\StorageApiBranch\Branch;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -27,7 +29,7 @@ abstract class BaseRunnerTest extends TestCase
 
     private TestHandler $containerHandler;
     private TestHandler $runnerHandler;
-    private ObjectEncryptor $encryptor;
+    protected ObjectEncryptor $encryptor;
     private string $projectId;
     protected Client $client;
 
@@ -39,11 +41,12 @@ abstract class BaseRunnerTest extends TestCase
     /**
      * @var LoggersService&MockObject
      */
-    private $loggersServiceStub;
+    protected $loggersServiceStub;
 
     protected function initStorageClient(): void
     {
-        $this->client = new Client(
+        $this->client = new BranchAwareClient(
+            'default',
             [
                 'url' => self::getOptionalEnv('STORAGE_API_URL'),
                 'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
@@ -145,7 +148,13 @@ abstract class BaseRunnerTest extends TestCase
         }
 
         $defaultBranchId = null;
-        $devBranches = new DevBranches($this->client);
+        $basicClient = new Client(
+            [
+                'url' => self::getOptionalEnv('STORAGE_API_URL'),
+                'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
+            ]
+        );
+        $devBranches = new DevBranches($basicClient);
         foreach ($devBranches->listBranches() as $branch) {
             if ($branch['isDefault']) {
                 $defaultBranchId = $branch['id'];
@@ -154,10 +163,15 @@ abstract class BaseRunnerTest extends TestCase
         }
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
-        $clientWrapper->method('getBasicClient')->willReturn($storageClientStub);
-        $clientWrapper->method('getBranchClientIfAvailable')->willReturn($storageClientStub);
-        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($storageClientStub);
-        $clientWrapper->method('getDefaultBranch')->willReturn(['branchId' => (string) $defaultBranchId]);
+        // basicClient TODO: should be removed after https://keboola.atlassian.net/browse/SOX-368
+        $clientWrapper->method('getBasicClient')->willReturn($basicClient);
+        $clientWrapper->method('getBranchClient')->willReturn($storageClientStub);
+        $clientWrapper->method('getTableAndFileStorageClient')->willReturn($basicClient);
+        $clientWrapper->method('getClientForBranch')->willReturn($storageClientStub);
+        $clientWrapper->method('getDefaultBranch')->willReturn(
+            new Branch((string) $defaultBranchId, 'default branch', true, null)
+        );
+        $clientWrapper->method('getBranchId')->willReturn((string) $defaultBranchId);
         return new Runner(
             $this->encryptor,
             $clientWrapper,

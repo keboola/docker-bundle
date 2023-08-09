@@ -241,7 +241,7 @@ parameters:
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 
 		-
-			message: "#^Parameter \\#1 \\$str of function base64_decode expects string, mixed given\\.$#"
+			message: "#^Parameter \\#1 \\$string of function base64_decode expects string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 

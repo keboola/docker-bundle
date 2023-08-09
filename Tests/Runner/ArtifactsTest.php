@@ -8,7 +8,8 @@ use Keboola\Artifacts\Result;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\StorageApi\Client as StorageApiClient;
+use Keboola\StorageApi\BranchAwareClient as StorageApiClient;
+use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -42,10 +43,13 @@ class ArtifactsTest extends BaseRunnerTest
     private function getStorageClientMockUpload(): MockObject
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->onlyMethods(['verifyToken', 'listFiles'])
             ->getMock()
         ;
@@ -65,10 +69,13 @@ class ArtifactsTest extends BaseRunnerTest
     private function getStorageClientMockDownload(): MockObject
     {
         $storageApiMock = $this->getMockBuilder(StorageApiClient::class)
-            ->setConstructorArgs([[
-                'url' => getenv('STORAGE_API_URL'),
-                'token' => getenv('STORAGE_API_TOKEN'),
-            ]])
+            ->setConstructorArgs([
+                'default',
+                [
+                    'url' => getenv('STORAGE_API_URL'),
+                    'token' => getenv('STORAGE_API_TOKEN'),
+                ],
+            ])
             ->onlyMethods(['verifyToken'])
             ->getMock()
         ;
@@ -144,6 +151,10 @@ class ArtifactsTest extends BaseRunnerTest
 
     public function testArtifactsUpload(): void
     {
+        $this->client = new Client([
+            'url' => getenv('STORAGE_API_URL'),
+            'token' => getenv('STORAGE_API_TOKEN'),
+        ]);
         /** @var StorageApiClient&MockObject $storageApiMock */
         $storageApiMock = $this->getStorageClientMockUpload();
         $configuration = $this->createConfiguration($storageApiMock, self::PYTHON_TRANSFORMATION_BASIC_CONFIG);
