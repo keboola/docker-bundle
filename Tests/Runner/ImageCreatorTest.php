@@ -6,12 +6,14 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
-use Keboola\DockerBundle\Tests\BaseRunnerTest;
-use Keboola\StorageApi\Client;
+use Keboola\StorageApi\BranchAwareClient;
+use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 
-class ImageCreatorTest extends BaseRunnerTest
+class ImageCreatorTest extends TestCase
 {
+    protected BranchAwareClient $client;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -39,7 +41,7 @@ class ImageCreatorTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $this->client = $this->getMockBuilder(Client::class)
+        $this->client = $this->getMockBuilder(BranchAwareClient::class)
             ->disableOriginalConstructor()
             ->getMock();
         $this->client->expects($this->any())

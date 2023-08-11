@@ -105,7 +105,7 @@ class DataLoader implements DataLoaderInterface
             $this->component->getConfigurationFormat()
         );
 
-        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
         $this->projectFeatures = $tokenInfo['owner']['features'];
 
         /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
@@ -113,8 +113,8 @@ class DataLoader implements DataLoaderInterface
         $dataDirectory = dirname($this->dataDirectory);
 
         $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory(
-            new Components($this->clientWrapper->getBranchClientIfAvailable()),
-            new Workspaces($this->clientWrapper->getBranchClientIfAvailable()),
+            new Components($this->clientWrapper->getBranchClient()),
+            new Workspaces($this->clientWrapper->getBranchClient()),
             $this->logger
         );
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
@@ -232,11 +232,11 @@ class DataLoader implements DataLoaderInterface
             $commonSystemMetadata[AbstractWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
         $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
-        if ($this->clientWrapper->hasBranch()) {
+        if ($this->clientWrapper->isDevelopmentBranch()) {
             $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
 
-        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBasicClient()->getRunId();
+        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBranchClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {

@@ -112,7 +112,7 @@ class StateFile
     ): void {
         $this->outputFilter->collectValues((array) $this->currentState);
 
-        if ($this->clientWrapper->hasBranch()) {
+        if ($this->clientWrapper->isDevelopmentBranch()) {
             $client = $this->clientWrapper->getBranchClient();
         } else {
             $client = $this->clientWrapper->getBasicClient();

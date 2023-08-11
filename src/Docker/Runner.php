@@ -163,7 +163,7 @@ class Runner
             $storeState = true;
 
             // Do not store state if configuration does not exist
-            $components = new Components($this->clientWrapper->getBasicClient());
+            $components = new Components($this->clientWrapper->getBranchClient());
             try {
                 $components->getConfiguration($componentId, $configurationId);
             } catch (ClientException $e) {
@@ -203,7 +203,7 @@ class Runner
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $usageFile->setDataDir($workingDirectory->getDataDir());
 
-        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
         $jobScopedEncryptor = new JobScopedEncryptor(
             $this->encryptor,
             $jobDefinition->getComponentId(),
@@ -263,7 +263,7 @@ class Runner
 
         $imageCreator = new ImageCreator(
             $this->loggersService->getLog(),
-            $this->clientWrapper->getBasicClient(),
+            $this->clientWrapper->getBranchClient(),
             $component,
             $configData
         );
@@ -579,7 +579,7 @@ class Runner
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
-        $tokenInfo = $this->clientWrapper->getBasicClient()->verifyToken();
+        $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
         $limits = new Limits(
             $this->loggersService->getLog(),
             $this->instanceLimits,
@@ -600,11 +600,12 @@ class Runner
             $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
             $mlflowTracking = new MlflowTracking(
                 $mlflowProject->getMlflowUri(),
-                $this->clientWrapper->getBasicClient()->getTokenString()
+                $this->clientWrapper->getBranchClient()->getTokenString()
             );
         }
 
-        $branchId = $this->clientWrapper->getBranchId() ?? ClientWrapper::BRANCH_DEFAULT;
+        $branchId = ($this->clientWrapper->getDefaultBranch()->id === $this->clientWrapper->getBranchId())
+            ? 'default' : $this->clientWrapper->getBranchId();
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
@@ -634,9 +635,9 @@ class Runner
                 $image->getSourceComponent(),
                 $image->getConfigData()['parameters'],
                 $tokenInfo,
-                $this->clientWrapper->getBasicClient()->getRunId(),
-                $this->clientWrapper->getBasicClient()->getApiUrl(),
-                $this->clientWrapper->getBasicClient()->getTokenString(),
+                $this->clientWrapper->getBranchClient()->getRunId(),
+                $this->clientWrapper->getBranchClient()->getApiUrl(),
+                $this->clientWrapper->getBranchClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
                 $absConnectionString,
                 $mlflowTracking,
@@ -656,7 +657,7 @@ class Runner
 
             $containerIdParts = [
                 $jobId,
-                $this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid',
+                $this->clientWrapper->getBranchClient()->getRunId() ?: 'norunid',
                 $rowId,
                 $priority,
                 $image->getSourceComponent()->getSanitizedComponentId(),
@@ -664,7 +665,7 @@ class Runner
             $containerNameParts = [
                 $image->getSourceComponent()->getSanitizedComponentId(),
                 $jobId,
-                $this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid',
+                $this->clientWrapper->getBranchClient()->getRunId() ?: 'norunid',
                 $priority,
             ];
 
@@ -675,7 +676,7 @@ class Runner
                     [
                         'com.keboola.docker-runner.jobId=' . $jobId,
                         'com.keboola.docker-runner.runId=' .
-                            ($this->clientWrapper->getBasicClient()->getRunId() ?: 'norunid'),
+                            ($this->clientWrapper->getBranchClient()->getRunId() ?: 'norunid'),
                         'com.keboola.docker-runner.rowId=' . $rowId,
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts),
                         'com.keboola.docker-runner.projectId=' . $tokenInfo['owner']['id'],
