@@ -14,6 +14,8 @@ use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
+use Keboola\StorageApiBranch\ClientWrapper;
+use Keboola\StorageApiBranch\Factory\ClientOptions;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Process\Process;
 
@@ -151,6 +153,12 @@ class ArtifactsTest extends BaseRunnerTest
 
     public function testArtifactsUpload(): void
     {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: getenv('STORAGE_API_URL'),
+            token: getenv('STORAGE_API_TOKEN'),
+        ));
+        $branchId = $clientWrapper->getDefaultBranch()->id;
+
         $this->client = new Client([
             'url' => getenv('STORAGE_API_URL'),
             'token' => getenv('STORAGE_API_TOKEN'),
@@ -167,29 +175,31 @@ class ArtifactsTest extends BaseRunnerTest
 
         // current
         $files = $this->listStorageFiles(sprintf(
-            'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+            'tags:(artifact AND branchId-%s AND componentId-keboola.python-transformation '
             . 'AND configId-%s AND jobId-%s NOT shared)',
+            $branchId,
             $configId,
             $jobId
         ));
 
         $currentFile = $files[0];
         self::assertEquals('artifacts.tar.gz', $currentFile['name']);
-        self::assertContains('branchId-default', $currentFile['tags']);
+        self::assertContains('branchId-' . $branchId, $currentFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $currentFile['tags']);
         self::assertContains('configId-' . $configId, $currentFile['tags']);
         self::assertContains('jobId-' . $jobId, $currentFile['tags']);
 
         // shared
         $files = $this->listStorageFiles(sprintf(
-            'tags:(artifact AND shared AND branchId-default '
+            'tags:(artifact AND shared AND branchId-' . $branchId . ' '
             . 'AND componentId-keboola.python-transformation AND orchestrationId-%s)',
             $orchestrationId
         ));
 
+        self::assertGreaterThan(0, count($files));
         $sharedFile = $files[0];
         self::assertEquals('artifacts.tar.gz', $sharedFile['name']);
-        self::assertContains('branchId-default', $sharedFile['tags']);
+        self::assertContains('branchId-' . $branchId, $sharedFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $sharedFile['tags']);
         self::assertContains('configId-' . $configId, $sharedFile['tags']);
         self::assertContains('jobId-' . $jobId, $sharedFile['tags']);
@@ -209,6 +219,12 @@ class ArtifactsTest extends BaseRunnerTest
 
     public function testArtifactsUploadNoZip(): void
     {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: getenv('STORAGE_API_URL'),
+            token: getenv('STORAGE_API_TOKEN'),
+        ));
+        $branchId = $clientWrapper->getDefaultBranch()->id;
+
         $storageApiMock = $this->getStorageClientMockUpload();
         $config = array_merge(self::PYTHON_TRANSFORMATION_BASIC_CONFIG, [
             'artifacts' => [
@@ -227,8 +243,9 @@ class ArtifactsTest extends BaseRunnerTest
 
         // current
         $currentFiles = $this->listStorageFiles(sprintf(
-            'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+            'tags:(artifact AND branchId-%s AND componentId-keboola.python-transformation '
             . 'AND configId-%s AND jobId-%s NOT shared)',
+            $branchId,
             $configId,
             $jobId
         ), 10);
@@ -237,14 +254,14 @@ class ArtifactsTest extends BaseRunnerTest
 
         $currentFile = $currentFiles[0];
         self::assertEquals('myartifact1', $currentFile['name']);
-        self::assertContains('branchId-default', $currentFile['tags']);
+        self::assertContains('branchId-' . $branchId, $currentFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $currentFile['tags']);
         self::assertContains('configId-' . $configId, $currentFile['tags']);
         self::assertContains('jobId-' . $jobId, $currentFile['tags']);
 
         // shared
         $sharedFiles = $this->listStorageFiles(sprintf(
-            'tags:(artifact AND shared AND branchId-default '
+            'tags:(artifact AND shared AND branchId-' . $branchId . ' '
             . 'AND componentId-keboola.python-transformation AND orchestrationId-%s)',
             $orchestrationId
         ), 10);
@@ -253,7 +270,7 @@ class ArtifactsTest extends BaseRunnerTest
 
         $sharedFile = $sharedFiles[0];
         self::assertEquals('myartifact1', $sharedFile['name']);
-        self::assertContains('branchId-default', $sharedFile['tags']);
+        self::assertContains('branchId-' . $branchId, $sharedFile['tags']);
         self::assertContains('componentId-keboola.python-transformation', $sharedFile['tags']);
         self::assertContains('configId-' . $configId, $sharedFile['tags']);
         self::assertContains('jobId-' . $jobId, $sharedFile['tags']);
@@ -272,6 +289,12 @@ class ArtifactsTest extends BaseRunnerTest
 
     public function testArtifactsUploadEmpty(): void
     {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: getenv('STORAGE_API_URL'),
+            token: getenv('STORAGE_API_TOKEN'),
+        ));
+        $branchId = $clientWrapper->getDefaultBranch()->id;
+
         $storageApiMock = $this->getStorageClientMockUpload();
         $config = [
             'storage' => [],
@@ -292,8 +315,9 @@ class ArtifactsTest extends BaseRunnerTest
         $files = $this->client->listFiles(
             (new ListFilesOptions())
                 ->setQuery(sprintf(
-                    'tags:(artifact AND branchId-default AND componentId-keboola.python-transformation '
+                    'tags:(artifact AND branchId-%s AND componentId-keboola.python-transformation '
                     . 'AND configId-%s AND jobId-%s)',
+                    $branchId,
                     $configId,
                     $jobId
                 ))
@@ -308,6 +332,7 @@ class ArtifactsTest extends BaseRunnerTest
 
     public function testArtifactsDownload(): void
     {
+
         $storageApiMock = $this->getStorageClientMockDownload();
 
         $previousJobId = rand(0, 999999);
@@ -331,6 +356,11 @@ class ArtifactsTest extends BaseRunnerTest
         ];
         $configuration = $this->createConfiguration($storageApiMock, $config);
         $configId = $configuration['id'];
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: getenv('STORAGE_API_URL'),
+            token: getenv('STORAGE_API_TOKEN'),
+        ));
+        $branchId = $clientWrapper->getDefaultBranch()->id;
 
         if (!is_dir('/tmp/artifact/')) {
             mkdir('/tmp/artifact/');
@@ -352,7 +382,7 @@ class ArtifactsTest extends BaseRunnerTest
             (new FileUploadOptions())
                 ->setTags([
                     'artifact',
-                    'branchId-default',
+                    'branchId-' . $branchId,
                     'componentId-keboola.python-transformation',
                     'configId-' . $configId,
                     'jobId-' . $previousJobId,
@@ -466,6 +496,11 @@ class ArtifactsTest extends BaseRunnerTest
 
     private function uploadToStorage(array $files, string $configId, string $jobId): array
     {
+        $clientWrapper = new ClientWrapper(new ClientOptions(
+            url: getenv('STORAGE_API_URL'),
+            token: getenv('STORAGE_API_TOKEN'),
+        ));
+        $branchId = $clientWrapper->getDefaultBranch()->id;
         $uploadedFileIds = [];
         foreach ($files as $filePath) {
             $uploadedFileIds[] = $this->client->uploadFile(
@@ -473,7 +508,7 @@ class ArtifactsTest extends BaseRunnerTest
                 (new FileUploadOptions())
                     ->setTags([
                         'artifact',
-                        'branchId-default',
+                        'branchId-' . $branchId,
                         'componentId-keboola.python-transformation',
                         'configId-' . $configId,
                         'jobId-' . $jobId,
