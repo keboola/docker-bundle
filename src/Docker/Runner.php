@@ -256,7 +256,7 @@ class Runner
         $currentOutput->setStateFile($stateFile);
 
         $artifacts = new Artifacts(
-            $this->clientWrapper->getBasicClient(),
+            $this->clientWrapper,
             $this->loggersService->getLog(),
             $temp
         );
@@ -604,15 +604,13 @@ class Runner
             );
         }
 
-        $branchId = ($this->clientWrapper->getDefaultBranch()->id === $this->clientWrapper->getBranchId())
-            ? 'default' : $this->clientWrapper->getBranchId();
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
                 $stateFile->createStateFile();
                 if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                     $downloadedArtifacts = $artifacts->download(
                         new Tags(
-                            $branchId,
+                            $this->clientWrapper->getBranchId(),
                             $component->getId(),
                             $configId,
                             $jobId,
