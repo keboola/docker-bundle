@@ -703,7 +703,7 @@ class Runner
                     if ($storeState && in_array('artifacts', $tokenInfo['owner']['features'])) {
                         try {
                             $uploadedArtifacts = $artifacts->upload(new Tags(
-                                $branchId,
+                                $this->clientWrapper->getBranchId(),
                                 $component->getId(),
                                 $configId,
                                 $jobId,
