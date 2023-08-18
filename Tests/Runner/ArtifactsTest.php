@@ -154,8 +154,8 @@ class ArtifactsTest extends BaseRunnerTest
     public function testArtifactsUpload(): void
     {
         $clientWrapper = new ClientWrapper(new ClientOptions(
-            url: getenv('STORAGE_API_URL'),
-            token: getenv('STORAGE_API_TOKEN'),
+            url: (string) getenv('STORAGE_API_URL'),
+            token: (string) getenv('STORAGE_API_TOKEN'),
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -220,8 +220,8 @@ class ArtifactsTest extends BaseRunnerTest
     public function testArtifactsUploadNoZip(): void
     {
         $clientWrapper = new ClientWrapper(new ClientOptions(
-            url: getenv('STORAGE_API_URL'),
-            token: getenv('STORAGE_API_TOKEN'),
+            url: (string) getenv('STORAGE_API_URL'),
+            token: (string) getenv('STORAGE_API_TOKEN'),
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -290,8 +290,8 @@ class ArtifactsTest extends BaseRunnerTest
     public function testArtifactsUploadEmpty(): void
     {
         $clientWrapper = new ClientWrapper(new ClientOptions(
-            url: getenv('STORAGE_API_URL'),
-            token: getenv('STORAGE_API_TOKEN'),
+            url: (string) getenv('STORAGE_API_URL'),
+            token: (string) getenv('STORAGE_API_TOKEN'),
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -357,8 +357,8 @@ class ArtifactsTest extends BaseRunnerTest
         $configuration = $this->createConfiguration($storageApiMock, $config);
         $configId = $configuration['id'];
         $clientWrapper = new ClientWrapper(new ClientOptions(
-            url: getenv('STORAGE_API_URL'),
-            token: getenv('STORAGE_API_TOKEN'),
+            url: (string) getenv('STORAGE_API_URL'),
+            token: (string) getenv('STORAGE_API_TOKEN'),
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
 
@@ -497,8 +497,8 @@ class ArtifactsTest extends BaseRunnerTest
     private function uploadToStorage(array $files, string $configId, string $jobId): array
     {
         $clientWrapper = new ClientWrapper(new ClientOptions(
-            url: getenv('STORAGE_API_URL'),
-            token: getenv('STORAGE_API_TOKEN'),
+            url: (string) getenv('STORAGE_API_URL'),
+            token: (string) getenv('STORAGE_API_TOKEN'),
         ));
         $branchId = $clientWrapper->getDefaultBranch()->id;
         $uploadedFileIds = [];
