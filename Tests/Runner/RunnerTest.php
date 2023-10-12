@@ -3811,6 +3811,13 @@ class RunnerTest extends BaseRunnerTest
         $this->clearFiles();
         $this->clearBuckets();
 
+        // create the file for the input file processing test (it shouldn't mark the file as processed if job fails
+        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $this->getClient()->uploadFile(
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
+        );
+
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
@@ -3823,6 +3830,14 @@ class RunnerTest extends BaseRunnerTest
         ];
         $configurationData = [
             'storage' => [
+                'input' => [
+                    'files' => [
+                        [
+                            'tags' => ['texty.csv.gz'],
+                            'processed_tags' => ['processed'],
+                        ],
+                    ],
+                ],
                 'output' => [
                     'files' => [],
                     'tables' => [
@@ -3882,6 +3897,12 @@ class RunnerTest extends BaseRunnerTest
 
         // but the write-always table should exist
         self::assertTrue($this->client->tableExists('out.c-runner-test.write-always'));
+
+        // check that the input file is not tagged as processed because the job failed
+        $inputFileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
+            'tags:"docker-runner-test" AND tags:"processed"'
+        ));
+        self::assertCount(0, $inputFileList);
     }
 
     public function testOutputTablesOnJobFailureNonRecoverableOutputMappingError(): void
