@@ -20,7 +20,7 @@ interface DataLoaderInterface
         LoggerInterface $logger,
         $dataDirectory,
         JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter
+        OutputFilterInterface $outputFilter,
     );
 
     /**
@@ -28,7 +28,7 @@ interface DataLoaderInterface
      */
     public function loadInputData(
         InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList
+        InputFileStateList $inputFileStateList,
     );
 
     /**

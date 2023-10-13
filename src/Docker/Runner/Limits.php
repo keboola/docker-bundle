@@ -32,7 +32,7 @@ class Limits
         array $instanceLimits,
         array $projectLimits,
         array $projectFeatures,
-        ?string $containerType
+        ?string $containerType,
     ) {
         $this->logger = $logger;
         $this->instanceLimits = $instanceLimits;
@@ -49,8 +49,8 @@ class Limits
             sprintf(
                 "Memory limits - component: '%s' project: %s",
                 $image->getSourceComponent()->getMemory(),
-                var_export($projectLimit, true)
-            )
+                var_export($projectLimit, true),
+            ),
         );
         if ($projectLimit) {
             return $projectLimit;
@@ -127,13 +127,13 @@ class Limits
         if (isset($this->instanceLimits['cpu_count'])) {
             $errors = $this->validator->validate(
                 $this->instanceLimits['cpu_count'],
-                $this->getCPUValidatorConstraints()
+                $this->getCPUValidatorConstraints(),
             );
             if ($errors->count() === 0) {
                 return $this->instanceLimits['cpu_count'];
             }
             throw new ApplicationException(
-                'cpu_count is set incorrectly in parameters.yml: ' . $errors[0]->getMessage()
+                'cpu_count is set incorrectly in parameters.yml: ' . $errors[0]->getMessage(),
             );
         }
         throw new ApplicationException('cpu_count is not set in parameters.yml');
@@ -164,13 +164,13 @@ class Limits
         if (isset($this->projectLimits['runner.cpuParallelism']['value'])) {
             $errors = $this->validator->validate(
                 $this->projectLimits['runner.cpuParallelism']['value'],
-                $this->getCPUValidatorConstraints()
+                $this->getCPUValidatorConstraints(),
             );
             if ($errors->count() === 0) {
                 return $this->projectLimits['runner.cpuParallelism']['value'];
             }
             throw new ApplicationException(
-                'runner.cpuParallelism limit is set incorrectly: ' . $errors[0]->getMessage()
+                'runner.cpuParallelism limit is set incorrectly: ' . $errors[0]->getMessage(),
             );
         }
         return self::DEFAULT_CPU_LIMIT;
@@ -196,14 +196,14 @@ class Limits
         if (isset($this->projectLimits[$limitName]['value'])) {
             $errors = $this->validator->validate(
                 $this->projectLimits[$limitName]['value'],
-                $this->getMemoryValidatorConstraints()
+                $this->getMemoryValidatorConstraints(),
             );
             if ($errors->count() === 0) {
                 // limit is just number of megabytes
                 return $this->projectLimits[$limitName]['value'] . 'M';
             }
             throw new ApplicationException(
-                sprintf("'%s' limit is set incorrectly: %s", $limitName, $errors[0]->getMessage())
+                sprintf("'%s' limit is set incorrectly: %s", $limitName, $errors[0]->getMessage()),
             );
         }
         return null;

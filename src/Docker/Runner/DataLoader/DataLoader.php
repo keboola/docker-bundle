@@ -75,7 +75,7 @@ class DataLoader implements DataLoaderInterface
         LoggerInterface $logger,
         $dataDirectory,
         JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter
+        OutputFilterInterface $outputFilter,
     ) {
         $this->clientWrapper = $clientWrapper;
         $this->logger = $logger;
@@ -96,13 +96,13 @@ class DataLoader implements DataLoaderInterface
         $this->inputStrategyFactory = new InputStrategyFactory(
             $this->clientWrapper,
             $this->logger,
-            $this->component->getConfigurationFormat()
+            $this->component->getConfigurationFormat(),
         );
 
         $this->outputStrategyFactory = new OutputStrategyFactory(
             $this->clientWrapper,
             $this->logger,
-            $this->component->getConfigurationFormat()
+            $this->component->getConfigurationFormat(),
         );
 
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
@@ -115,7 +115,7 @@ class DataLoader implements DataLoaderInterface
         $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory(
             new Components($this->clientWrapper->getBranchClient()),
             new Workspaces($this->clientWrapper->getBranchClient()),
-            $this->logger
+            $this->logger,
         );
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
@@ -124,26 +124,26 @@ class DataLoader implements DataLoaderInterface
             $this->component,
             $this->configId,
             $this->runtimeConfig['backend'] ?? [],
-            $this->storageConfig['input']['read_only_storage_access'] ?? null
+            $this->storageConfig['input']['read_only_storage_access'] ?? null,
         );
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
             $workspaceProviderFactory,
-            $dataDirectory
+            $dataDirectory,
         );
         $inputProviderInitializer->initializeProviders(
             $this->getStagingStorageInput(),
-            $tokenInfo
+            $tokenInfo,
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
             $this->outputStrategyFactory,
             $workspaceProviderFactory,
-            $dataDirectory
+            $dataDirectory,
         );
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
-            $tokenInfo
+            $tokenInfo,
         );
     }
 
@@ -152,7 +152,7 @@ class DataLoader implements DataLoaderInterface
      */
     public function loadInputData(
         InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList
+        InputFileStateList $inputFileStateList,
     ): StorageState {
         $reader = new Reader($this->inputStrategyFactory);
         $inputTableResult = new InputTableResult();
@@ -164,7 +164,7 @@ class DataLoader implements DataLoaderInterface
                 Redshift workspaces are reusable, but still cleaned up before each run (preserve = false). Other
                 workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
             */
-            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS
+            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS,
         );
 
         try {
@@ -175,7 +175,7 @@ class DataLoader implements DataLoaderInterface
                     $inputTableStateList,
                     'data/in/tables/',
                     $this->getStagingStorageInput(),
-                    $readerOptions
+                    $readerOptions,
                 );
             }
             if (isset($this->storageConfig['input']['files']) &&
@@ -186,7 +186,7 @@ class DataLoader implements DataLoaderInterface
                     $this->storageConfig['input']['files'],
                     'data/in/files/',
                     $this->getStagingStorageInput(),
-                    $inputFileStateList
+                    $inputFileStateList,
                 );
             }
         } catch (ClientException $e) {
@@ -257,7 +257,7 @@ class DataLoader implements DataLoaderInterface
                 $fileSystemMetadata,
                 $this->getStagingStorageOutput(),
                 [],
-                $isFailedJob
+                $isFailedJob,
             );
             if ($this->useFileStorageOnly()) {
                 $fileWriter->uploadFiles(
@@ -266,7 +266,7 @@ class DataLoader implements DataLoaderInterface
                     $fileSystemMetadata,
                     $this->getStagingStorageOutput(),
                     $outputTableFilesConfig,
-                    $isFailedJob
+                    $isFailedJob,
                 );
                 if (isset($this->storageConfig['input']['files'])) {
                     // tag input files
@@ -282,7 +282,7 @@ class DataLoader implements DataLoaderInterface
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
                 $createTypedTables,
-                $isFailedJob
+                $isFailedJob,
             );
             if (isset($this->storageConfig['input']['files'])) {
                 // tag input files
@@ -435,7 +435,7 @@ class DataLoader implements DataLoaderInterface
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
                 $this->getStagingStorageInput(),
-                $this->getStagingStorageOutput()
+                $this->getStagingStorageOutput(),
             ));
         }
     }
@@ -445,7 +445,7 @@ class DataLoader implements DataLoaderInterface
         $cleanedProviders = [];
         $maps = array_merge(
             $this->inputStrategyFactory->getStrategyMap(),
-            $this->outputStrategyFactory->getStrategyMap()
+            $this->outputStrategyFactory->getStrategyMap(),
         );
         foreach ($maps as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {

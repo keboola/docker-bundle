@@ -27,9 +27,9 @@ class DockerHub extends Image
                     "Cannot pull image '%s': (%s) %s",
                     $this->getPrintableImageId(),
                     $process->getExitCode(),
-                    $process->getErrorOutput()
+                    $process->getErrorOutput(),
                 ),
-                $e
+                $e,
             );
         }
     }

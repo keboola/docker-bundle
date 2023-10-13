@@ -50,7 +50,7 @@ abstract class BaseRunnerTest extends TestCase
             [
                 'url' => self::getOptionalEnv('STORAGE_API_URL'),
                 'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
-            ]
+            ],
         );
     }
 
@@ -79,7 +79,7 @@ abstract class BaseRunnerTest extends TestCase
             $tokenInfo['id'],
             $tokenInfo['owner']['name'],
             $tokenInfo['owner']['id'],
-            $this->client->getApiUrl()
+            $this->client->getApiUrl(),
         ));
 
         $this->projectId = (string) $tokenInfo['owner']['id'];
@@ -152,7 +152,7 @@ abstract class BaseRunnerTest extends TestCase
             [
                 'url' => self::getOptionalEnv('STORAGE_API_URL'),
                 'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
-            ]
+            ],
         );
         $devBranches = new DevBranches($basicClient);
         foreach ($devBranches->listBranches() as $branch) {
@@ -169,7 +169,7 @@ abstract class BaseRunnerTest extends TestCase
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($basicClient);
         $clientWrapper->method('getClientForBranch')->willReturn($storageClientStub);
         $clientWrapper->method('getDefaultBranch')->willReturn(
-            new Branch((string) $defaultBranchId, 'default branch', true, null)
+            new Branch((string) $defaultBranchId, 'default branch', true, null),
         );
         $clientWrapper->method('getBranchId')->willReturn((string) $defaultBranchId);
         return new Runner(
@@ -178,7 +178,7 @@ abstract class BaseRunnerTest extends TestCase
             $this->loggersServiceStub,
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT')
+            (int) self::getOptionalEnv('RUNNER_MIN_LOG_PORT'),
         );
     }
 

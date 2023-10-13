@@ -36,7 +36,7 @@ class Component
                 'Component definition is invalid. Verify the deployment setup and the repository settings ' .
                 'in the Developer Portal. Detail: ' . $e->getMessage(),
                 $e,
-                $data
+                $data,
             );
         }
         $this->networkType = $this->data['network'];
@@ -155,7 +155,7 @@ class Component
                     return ServerFactory::SERVER_HTTP;
                 default:
                     throw new ApplicationException(
-                        "Server type '{$this->data['logging']['gelf_server_type']}' not supported"
+                        "Server type '{$this->data['logging']['gelf_server_type']}' not supported",
                     );
             }
         }

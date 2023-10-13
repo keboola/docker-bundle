@@ -70,10 +70,10 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
     public function testDownloadedImage()
     {
         Process::fromShellCommandline(
-            'sudo docker rmi -f $(sudo docker images -aq ' . getenv('AWS_ECR_REGISTRY_URI') . ')'
+            'sudo docker rmi -f $(sudo docker images -aq ' . getenv('AWS_ECR_REGISTRY_URI') . ')',
         )->run();
         $process = Process::fromShellCommandline(
-            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . ' | wc -l'
+            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . ' | wc -l',
         );
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
@@ -97,7 +97,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         self::assertEquals(implode('/', $repoParts) . ':latest', $image->getPrintableImageId());
 
         $process = Process::fromShellCommandline(
-            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . '| wc -l'
+            'sudo docker images | grep ' . getenv('AWS_ECR_REGISTRY_URI') . '| wc -l',
         );
         $process->run();
         self::assertEquals(1, trim($process->getOutput()));
@@ -148,17 +148,17 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         self::assertTrue($testHandler->hasNotice(
             'Using image ' . getenv('AWS_ECR_REGISTRY_URI') .
             ':test-hash with repo-digest ' . getenv('AWS_ECR_REGISTRY_URI') . '@sha256:' .
-            ImageTest::TEST_HASH_DIGEST
+            ImageTest::TEST_HASH_DIGEST,
         ));
         self::assertEquals(
             [getenv('AWS_ECR_REGISTRY_URI') . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
-            $image->getImageDigests()
+            $image->getImageDigests(),
         );
         $repoParts = explode('/', getenv('AWS_ECR_REGISTRY_URI'));
         array_shift($repoParts);
         self::assertEquals(
             [implode('/', $repoParts) . '@sha256:' . ImageTest::TEST_HASH_DIGEST],
-            $image->getPrintableImageDigests()
+            $image->getPrintableImageDigests(),
         );
         Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI'))->run();
     }

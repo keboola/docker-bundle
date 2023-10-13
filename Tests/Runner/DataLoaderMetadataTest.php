@@ -40,11 +40,11 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced'])
+            json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
@@ -97,8 +97,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
                 (string) getenv('STORAGE_API_URL'),
-                (string) getenv('STORAGE_API_TOKEN_MASTER')
-            )
+                (string) getenv('STORAGE_API_TOKEN_MASTER'),
+            ),
         );
         foreach ($clientWrapper->getBasicClient()->listBuckets() as $bucket) {
             if (preg_match('/^in\.c\-[0-9]+\-docker\-demo\-testConfig$/', $bucket['id'])) {
@@ -109,11 +109,11 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced'])
+            json_encode(['destination' => 'sliced']),
         );
 
         $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'test-branch');
@@ -121,15 +121,15 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             new ClientOptions(
                 (string) getenv('STORAGE_API_URL'),
                 (string) getenv('STORAGE_API_TOKEN_MASTER'),
-                (string) $branchId
-            )
+                (string) $branchId,
+            ),
         );
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent(), 'testConfig'),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
@@ -165,11 +165,11 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced'])
+            json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([], 'testRow');
         $tableQueue = $dataLoader->storeOutput();
@@ -215,7 +215,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
 
         $config = [
@@ -300,7 +300,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $manifest = '
             {
@@ -371,7 +371,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
@@ -380,7 +380,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             '{"key":"column.key.one","value":"column value one id"},'.
             '{"key":"column.key.two","value":"column value two id"}],'.
             '"text":[{"key":"column.key.one","value":"column value one text"},'.
-            '{"key":"column.key.two","value":"column value two text"}]}}'
+            '{"key":"column.key.two","value":"column value two text"}]}}',
         );
 
         $config = [

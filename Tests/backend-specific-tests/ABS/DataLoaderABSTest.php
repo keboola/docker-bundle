@@ -43,18 +43,18 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         $filePath = $this->workingDir->getDataDir() . '/upload/tables/test.csv';
         $fs->dumpFile(
             $filePath,
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
 
         $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig-abs', 'in');
         $this->clientWrapper->getBasicClient()->createTable(
             'in.c-docker-demo-testConfig-abs',
             'test',
-            new CsvFile($filePath)
+            new CsvFile($filePath),
         );
         $this->clientWrapper->getBasicClient()->uploadFile(
             $filePath,
-            (new FileUploadOptions())->setTags(['docker-demo-test-abs'])
+            (new FileUploadOptions())->setTags(['docker-demo-test-abs']),
         );
         sleep(1);
 
@@ -64,15 +64,15 @@ class DataLoaderABSTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
             file_get_contents(
-                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-abs.test.manifest'
+                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-abs.test.manifest',
             ),
-            true
+            true,
         );
 
         $finder = new Finder();
@@ -84,7 +84,7 @@ class DataLoaderABSTest extends BaseDataLoaderTest
         foreach ($finder as $file) {
             $this->assertEquals(
                 "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
-                file_get_contents($file->getPathname())
+                file_get_contents($file->getPathname()),
             );
 
             $fileManifest = json_decode(file_get_contents($file->getPathname() . '.manifest'), true);

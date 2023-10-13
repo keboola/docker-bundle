@@ -17,8 +17,8 @@ trait BackendAssertsTrait
             new RuntimeException(sprintf(
                 'Project "%s" is not configured with %s file storage backend',
                 $tokenData['owner']['id'],
-                mb_strtoupper($expectedProvider)
-            ))
+                mb_strtoupper($expectedProvider),
+            )),
         );
     }
 
@@ -31,8 +31,8 @@ trait BackendAssertsTrait
             new RuntimeException(sprintf(
                 'Project "%s" is not configured with %s table storage backend',
                 $owner['id'],
-                $expectedBackend
-            ))
+                $expectedBackend,
+            )),
         );
     }
 }

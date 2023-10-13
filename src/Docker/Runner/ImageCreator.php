@@ -30,7 +30,7 @@ class ImageCreator
         LoggerInterface $logger,
         BranchAwareClient $storageClient,
         Component $mainComponent,
-        array $componentConfig
+        array $componentConfig,
     ) {
         $this->logger = $logger;
         $this->mainComponent = $mainComponent;

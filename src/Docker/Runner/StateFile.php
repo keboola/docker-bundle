@@ -62,7 +62,7 @@ class StateFile
         ?string $configurationId,
         OutputFilterInterface $outputFilter,
         LoggerInterface $logger,
-        ?string $configurationRowId = null
+        ?string $configurationRowId = null,
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->clientWrapper = $clientWrapper;
@@ -108,7 +108,7 @@ class StateFile
 
     public function persistState(
         InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList
+        InputFileStateList $inputFileStateList,
     ): void {
         $this->outputFilter->collectValues((array) $this->currentState);
 
@@ -180,7 +180,7 @@ class StateFile
         $configurationState->setComponentId($configuration->getComponentId());
         $configurationState->setState($configuration->getState());
         return $componentsApi->updateConfigurationState(
-            $configurationState
+            $configurationState,
         );
     }
 
@@ -191,7 +191,7 @@ class StateFile
         $configurationRowState->setRowId($row->getRowId());
         $configurationRowState->setState($row->getState());
         return $componentsApi->updateConfigurationRowState(
-            $configurationRowState
+            $configurationRowState,
         );
     }
 }

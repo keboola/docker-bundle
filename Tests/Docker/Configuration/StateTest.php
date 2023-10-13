@@ -102,7 +102,7 @@ class StateTest extends TestCase
 
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage(
-            'The child config "lastImportDate" under "state.storage.input.tables.0" must be configured'
+            'The child config "lastImportDate" under "state.storage.input.tables.0" must be configured',
         );
         (new Configuration\State())->parse(['state' => $state]);
     }
@@ -192,7 +192,7 @@ class StateTest extends TestCase
 
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage(
-            'The child config "lastImportId" under "state.storage.input.files.0" must be configured'
+            'The child config "lastImportId" under "state.storage.input.files.0" must be configured',
         );
         (new Configuration\State())->parse(['state' => $state]);
     }

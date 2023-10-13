@@ -77,7 +77,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -85,7 +85,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
             ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
-            array_keys($credentials)
+            array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
@@ -136,7 +136,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -144,13 +144,13 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
             ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
-            array_keys($credentials)
+            array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         $dataLoader->cleanWorkspace();
@@ -158,7 +158,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         // cleanup after the test
@@ -204,7 +204,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'redshift'],
-            true
+            true,
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
@@ -216,7 +216,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -224,13 +224,13 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
             ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
-            array_keys($credentials)
+            array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         $dataLoader->cleanWorkspace();
@@ -238,7 +238,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         // and it must be the same workspace we created beforehand
@@ -247,7 +247,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $workspacesApi = new Workspaces($this->client);
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains(
-            sprintf('Reusing persistent workspace "%s".', $workspace['id'])
+            sprintf('Reusing persistent workspace "%s".', $workspace['id']),
         ));
     }
 
@@ -288,13 +288,13 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'redshift'],
-            true
+            true,
         );
         $workspace2 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'redshift'],
-            true
+            true,
         );
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
@@ -308,7 +308,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
 
@@ -318,19 +318,19 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
                 implode(',', [$workspace1['id'], $workspace2['id']]),
                 $configurationId,
                 'keboola.runner-config-test',
-                $workspace1['id']
-            )
+                $workspace1['id'],
+            ),
         ));
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
             ['host', 'warehouse', 'database', 'schema', 'user', 'password'],
-            array_keys($credentials)
+            array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(2, $workspaces);
 

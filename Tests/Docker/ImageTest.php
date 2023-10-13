@@ -71,7 +71,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
     }
 
@@ -95,7 +95,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertFalse($logger->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
     }
 
@@ -129,7 +129,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         self::assertTrue($logger->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
-            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.'
+            '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
     }
 }

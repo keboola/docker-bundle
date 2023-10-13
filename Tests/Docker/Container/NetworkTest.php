@@ -41,7 +41,7 @@ class NetworkTest extends BaseContainerTest
         } catch (UserException $e) {
             self::assertStringContainsString(
                 'ping: www.example.com: Temporary failure in name resolution',
-                $e->getMessage()
+                $e->getMessage(),
             );
         }
     }

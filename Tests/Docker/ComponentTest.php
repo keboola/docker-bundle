@@ -45,7 +45,7 @@ class ComponentTest extends TestCase
                 550 => 'camouflage',
                 600 => 'camouflage',
             ],
-            $component->getLoggerVerbosity()
+            $component->getLoggerVerbosity(),
         );
         self::assertEquals(true, $component->forwardToken());
         self::assertEquals(true, $component->forwardTokenDetails());
@@ -81,7 +81,7 @@ class ComponentTest extends TestCase
                 550 => 'camouflage',
                 600 => 'camouflage',
             ],
-            $component->getLoggerVerbosity()
+            $component->getLoggerVerbosity(),
         );
         self::assertEquals(false, $component->forwardToken());
         self::assertEquals(false, $component->forwardTokenDetails());
@@ -93,7 +93,7 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in ' .
-            'the Developer Portal. Detail: The child config "definition" under "component" must be configured.'
+            'the Developer Portal. Detail: The child config "definition" under "component" must be configured.',
         );
         new Component([]);
     }
@@ -103,7 +103,7 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
-            'Developer Portal. Detail: The child config "definition" under "component" must be configured'
+            'Developer Portal. Detail: The child config "definition" under "component" must be configured',
         );
         new Component([
             'data' => [
@@ -116,7 +116,7 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
-            'Developer Portal. Detail: The path "component.definition.uri" cannot contain an empty value, but got "".'
+            'Developer Portal. Detail: The path "component.definition.uri" cannot contain an empty value, but got "".',
         );
         new Component([
             'data' => [

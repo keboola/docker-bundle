@@ -59,7 +59,7 @@ class Runner
         OutputFilterInterface $outputFilter,
         array $instanceLimits,
         int $minLogPort = 12202,
-        int $maxLogPort = 13202
+        int $maxLogPort = 13202,
     ) {
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
@@ -72,7 +72,7 @@ class Runner
 
         $sandboxesApiClient = new SandboxesApiClient(
             $storageApiClient->getServiceUrl('sandboxes'),
-            $storageApiToken
+            $storageApiToken,
         );
 
         $this->oauthClient3 = new Credentials($storageApiToken, [
@@ -81,7 +81,7 @@ class Runner
         $this->mlflowProjectResolver = new MlflowProjectResolver(
             $storageApiClient,
             $sandboxesApiClient,
-            $loggersService->getLog()
+            $loggersService->getLog(),
         );
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
@@ -127,7 +127,7 @@ class Runner
         RunCommandOptions $runCommandOptions,
         WorkingDirectory $workingDirectory,
         OutputFilterInterface $outputFilter,
-        Limits $limits
+        Limits $limits,
     ) {
         return new Container(
             $containerId,
@@ -141,7 +141,7 @@ class Runner
             $this->maxLogPort,
             $runCommandOptions,
             $outputFilter,
-            $limits
+            $limits,
         );
     }
 
@@ -186,12 +186,12 @@ class Runner
         array &$outputs,
         ?string $backendSize,
         bool $storeState,
-        ?string $orchestrationId
+        ?string $orchestrationId,
     ) {
         $this->loggersService->getLog()->notice(
             'Using configuration id: ' . $jobDefinition->getConfigId() .
             ' version:' . $jobDefinition->getConfigVersion()
-            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
+            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState()),
         );
         $currentOutput = new Output();
         $outputs[] = $currentOutput;
@@ -210,7 +210,7 @@ class Runner
             (string) $tokenInfo['owner']['id'],
             $jobDefinition->getConfigId(),
             $jobDefinition->getBranchType(),
-            $tokenInfo['owner']['features']
+            $tokenInfo['owner']['features'],
         );
 
         $configData = $jobDefinition->getConfiguration();
@@ -220,7 +220,7 @@ class Runner
             $workingDirectory->getDataDir(),
             $authorization,
             $action,
-            $component->getConfigurationFormat()
+            $component->getConfigurationFormat(),
         );
 
         if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
@@ -229,7 +229,7 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $this->outputFilter
+                $this->outputFilter,
             );
         } else {
             $dataLoader = new NullDataLoader(
@@ -237,7 +237,7 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $this->outputFilter
+                $this->outputFilter,
             );
         }
 
@@ -258,21 +258,21 @@ class Runner
         $artifacts = new Artifacts(
             $this->clientWrapper,
             $this->loggersService->getLog(),
-            $temp
+            $temp,
         );
 
         $imageCreator = new ImageCreator(
             $this->loggersService->getLog(),
             $this->clientWrapper->getBranchClient(),
             $component,
-            $configData
+            $configData,
         );
 
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES])) {
             $inputTableStateList = new InputTableStateList(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES]
+                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES],
             );
         } else {
             $inputTableStateList = new InputTableStateList([]);
@@ -281,7 +281,7 @@ class Runner
         if (isset($jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES])) {
             $inputFileStateList = new InputFileStateList(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES]
+                $jobDefinition->getState()[StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES],
             );
         } else {
             $inputFileStateList = new InputFileStateList([]);
@@ -308,7 +308,7 @@ class Runner
                 $backendSize,
                 $storeState,
                 $orchestrationId,
-                $jobScopedEncryptor
+                $jobScopedEncryptor,
             );
         } catch (Throwable $e) {
             $dataLoader->cleanWorkspace();
@@ -337,7 +337,7 @@ class Runner
         array $rowIds,
         array &$outputs,
         ?string $backendSize,
-        ?string $orchestrationId = null
+        ?string $orchestrationId = null,
     ): void {
         if ($rowIds) {
             $jobDefinitions = array_filter($jobDefinitions, function ($jobDefinition) use ($rowIds) {
@@ -361,20 +361,20 @@ class Runner
                     $this->loggersService->getLog()->info(
                         'Force running disabled configuration: ' . $jobDefinition->getConfigId()
                         . ', version: ' . $jobDefinition->getConfigVersion()
-                        . ', row: ' . $jobDefinition->getRowId()
+                        . ', row: ' . $jobDefinition->getRowId(),
                     );
                 } else {
                     $this->loggersService->getLog()->info(
                         'Skipping disabled configuration: ' . $jobDefinition->getConfigId()
                         . ', version: ' . $jobDefinition->getConfigVersion()
-                        . ', row: ' . $jobDefinition->getRowId()
+                        . ', row: ' . $jobDefinition->getRowId(),
                     );
                     continue;
                 }
             }
             $this->loggersService->getLog()->info(
                 'Running component ' . $jobDefinition->getComponentId() .
-                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
+                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')',
             );
             $this->runRow(
                 $jobDefinition,
@@ -385,11 +385,11 @@ class Runner
                 $outputs,
                 $backendSize,
                 $storeState,
-                $orchestrationId
+                $orchestrationId,
             );
             $this->loggersService->getLog()->info(
                 'Finished component ' . $jobDefinition->getComponentId() .
-                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')'
+                ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')',
             );
         }
         $this->waitForStorageJobs($outputs);
@@ -398,7 +398,7 @@ class Runner
             if (($mode !== self::MODE_DEBUG) && $storeState) {
                 $output->getStateFile()->persistState(
                     $output->getInputTableResult()?->getInputTableStateList() ?? new InputTableStateList([]),
-                    $output->getInputFileStateList() ?? new InputFileStateList([])
+                    $output->getInputFileStateList() ?? new InputFileStateList([]),
                 );
             }
         }
@@ -478,7 +478,7 @@ class Runner
         ?string $backendSize,
         bool $storeState,
         ?string $orchestrationId,
-        JobScopedEncryptor $jobScopedEncryptor
+        JobScopedEncryptor $jobScopedEncryptor,
     ) {
         // initialize
         $workingDirectory->createWorkingDir();
@@ -503,7 +503,7 @@ class Runner
                 $backendSize,
                 $storeState,
                 $orchestrationId,
-                $jobScopedEncryptor
+                $jobScopedEncryptor,
             );
             $output->setInputTableResult($storageState->getInputTableResult());
             $output->setInputFileStateList($storageState->getInputFileStateList());
@@ -512,7 +512,7 @@ class Runner
             if ($mode === self::MODE_DEBUG) {
                 $dataLoader->storeDataArchive(
                     'stage_output',
-                    [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId]
+                    [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId],
                 );
             } else {
                 $tableQueue = $dataLoader->storeOutput();
@@ -575,7 +575,7 @@ class Runner
         ?string $backendSize,
         bool $storeState,
         ?string $orchestrationId,
-        JobScopedEncryptor $jobScopedEncryptor
+        JobScopedEncryptor $jobScopedEncryptor,
     ) {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
@@ -585,7 +585,7 @@ class Runner
             $this->instanceLimits,
             !empty($tokenInfo['owner']['limits']) ? $tokenInfo['owner']['limits'] : [],
             !empty($tokenInfo['owner']['features']) ? $tokenInfo['owner']['features'] : [],
-            $backendSize
+            $backendSize,
         );
 
         $counter = 0;
@@ -600,7 +600,7 @@ class Runner
             $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
             $mlflowTracking = new MlflowTracking(
                 $mlflowProject->getMlflowUri(),
-                $this->clientWrapper->getBranchClient()->getTokenString()
+                $this->clientWrapper->getBranchClient()->getTokenString(),
             );
         }
 
@@ -614,9 +614,9 @@ class Runner
                             $component->getId(),
                             $configId,
                             $jobId,
-                            $orchestrationId
+                            $orchestrationId,
                         ),
-                        $image->getConfigData()
+                        $image->getConfigData(),
                     );
                     $output->setArtifactsDownloaded($downloadedArtifacts);
                 }
@@ -679,11 +679,11 @@ class Runner
                         'com.keboola.docker-runner.containerName=' . join('-', $containerNameParts),
                         'com.keboola.docker-runner.projectId=' . $tokenInfo['owner']['id'],
                     ],
-                    $environment->getEnvironmentVariables($outputFilter)
+                    $environment->getEnvironmentVariables($outputFilter),
                 ),
                 $workingDirectory,
                 $outputFilter,
-                $limits
+                $limits,
             );
             if ($mode === self::MODE_DEBUG) {
                 $dataLoader->storeDataArchive(
@@ -692,7 +692,7 @@ class Runner
                         self::MODE_DEBUG, $image->getSourceComponent()->getId(),
                         'RowId:' . $rowId,
                         'JobId:' . $jobId, $image->getImageId(),
-                    ]
+                    ],
                 );
             }
             try {
@@ -707,12 +707,12 @@ class Runner
                                 $component->getId(),
                                 $configId,
                                 $jobId,
-                                $orchestrationId
+                                $orchestrationId,
                             ), $image->getConfigData());
                             $output->setArtifactsUploaded($uploadedArtifacts);
                         } catch (ArtifactsException $e) {
                             $this->loggersService->getLog()->warning(
-                                sprintf('Error uploading artifacts "%s"', $e->getMessage())
+                                sprintf('Error uploading artifacts "%s"', $e->getMessage()),
                             );
                         }
                     }

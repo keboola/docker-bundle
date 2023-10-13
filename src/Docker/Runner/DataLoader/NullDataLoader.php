@@ -20,13 +20,13 @@ class NullDataLoader implements DataLoaderInterface
         LoggerInterface $logger,
         $dataDirectory,
         JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter
+        OutputFilterInterface $outputFilter,
     ) {
     }
 
     public function loadInputData(
         InputTableStateList $inputTableStateList,
-        InputFileStateList $inputFileStateList
+        InputFileStateList $inputFileStateList,
     ) {
         $result = new Result();
         $result->setInputTableStateList(new InputTableStateList([]));

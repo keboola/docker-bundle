@@ -67,19 +67,19 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $dataLoader = new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
         sleep(1);
         $files = $this->clientWrapper->getBasicClient()->listFiles(
-            (new ListFilesOptions())->setTags(['docker-demo-test-s3'])
+            (new ListFilesOptions())->setTags(['docker-demo-test-s3']),
         );
         self::assertCount(1, $files);
 
@@ -102,7 +102,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         sort($items);
         self::assertEquals(
             ['in/', 'in/files/', 'in/tables/', 'in/tables/sliced.csv', 'in/user/', 'out/', 'out/files/', 'out/tables/'],
-            $items
+            $items,
         );
     }
 
@@ -121,13 +121,13 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $filePath = $this->workingDir->getDataDir() . '/in/tables/test.csv';
         $fs->dumpFile(
             $filePath,
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig-s3', 'in');
         $this->clientWrapper->getBasicClient()->createTable(
             'in.c-docker-demo-testConfig-s3',
             'test',
-            new CsvFile($filePath)
+            new CsvFile($filePath),
         );
 
         $dataLoader = new DataLoader(
@@ -135,15 +135,15 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 
         $manifest = json_decode(
             file_get_contents(
-                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest'
+                $this->workingDir->getDataDir() . '/in/tables/in.c-docker-demo-testConfig-s3.test.manifest',
             ),
-            true
+            true,
         );
 
         $this->assertS3info($manifest);
@@ -170,7 +170,7 @@ class DataLoaderS3Test extends BaseDataLoaderTest
     {
         $fileInfo = $this->clientWrapper->getBasicClient()->getFile(
             $fileId,
-            (new GetFileOptions())->setFederationToken(true)
+            (new GetFileOptions())->setFederationToken(true),
         );
         // Initialize S3Client with credentials from Storage API
         $s3Client = new S3Client([

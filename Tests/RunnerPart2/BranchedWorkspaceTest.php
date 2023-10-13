@@ -50,7 +50,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             (new Configuration())
                 ->setComponentId('keboola.runner-workspace-test')
                 ->setName($configId)
-                ->setConfigurationId($configId)
+                ->setConfigurationId($configId),
         );
 
         // create branch
@@ -59,7 +59,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $storageApiWrapper = new ClientWrapper(new ClientOptions(
             $storageApi->getApiUrl(),
             $storageApi->getTokenString(),
-            $branchId
+            $branchId,
         ));
 
         // run testing job
@@ -69,7 +69,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $branchOutBucketId = sprintf('%s.c-%s-%s', $storageApi::STAGE_OUT, $branchId, self::BUCKET_NAME);
         self::assertSame(
             self::TABLE_DATA,
-            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME)
+            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME),
         );
     }
 
@@ -90,7 +90,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $storageApiWrapper = new ClientWrapper(new ClientOptions(
             $storageApi->getApiUrl(),
             $storageApi->getTokenString(),
-            $branchId
+            $branchId,
         ));
 
         // setup configuration inside branch
@@ -102,7 +102,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             (new Configuration())
                 ->setComponentId('keboola.runner-workspace-test')
                 ->setName('runner-tests')
-                ->setConfigurationId($configId)
+                ->setConfigurationId($configId),
         );
 
         // run testing job
@@ -112,7 +112,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
         $branchOutBucketId = sprintf('%s.c-%s-%s', $storageApi::STAGE_OUT, $branchId, self::BUCKET_NAME);
         self::assertSame(
             self::TABLE_DATA,
-            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME)
+            $this->loadDataFromTable($storageApi, $branchOutBucketId, self::TABLE_NAME),
         );
     }
 
@@ -233,7 +233,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             $this->getLoggersService(),
             new OutputFilter(10000),
             ['cpu_count' => 2],
-            (int) getenv('RUNNER_MIN_LOG_PORT')
+            (int) getenv('RUNNER_MIN_LOG_PORT'),
         );
 
         $outputs = [];
@@ -245,7 +245,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         return $outputs;
     }

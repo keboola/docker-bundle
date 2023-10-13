@@ -32,8 +32,8 @@ abstract class BaseDataLoaderTest extends TestCase
         $this->clientWrapper = new ClientWrapper(
             new ClientOptions(
                 (string) getenv('STORAGE_API_URL'),
-                (string) getenv('STORAGE_API_TOKEN')
-            )
+                (string) getenv('STORAGE_API_TOKEN'),
+            ),
         );
         $this->metadata = new Metadata($this->clientWrapper->getBasicClient());
         $this->temp = new Temp();
@@ -46,7 +46,7 @@ abstract class BaseDataLoaderTest extends TestCase
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
                 'in.c-docker-demo-testConfig' . $suffix,
-                ['force' => true, 'async' => true]
+                ['force' => true, 'async' => true],
             );
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {
@@ -54,7 +54,7 @@ abstract class BaseDataLoaderTest extends TestCase
             }
         }
         $files = $this->clientWrapper->getBasicClient()->listFiles(
-            (new ListFilesOptions())->setTags(['docker-demo-test' . $suffix])
+            (new ListFilesOptions())->setTags(['docker-demo-test' . $suffix]),
         );
         foreach ($files as $file) {
             $this->clientWrapper->getBasicClient()->deleteFile($file['id']);
@@ -70,14 +70,14 @@ abstract class BaseDataLoaderTest extends TestCase
             'testConfig',
             null,
             [],
-            $configRow
+            $configRow,
         );
         return new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
     }
 

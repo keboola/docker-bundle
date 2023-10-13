@@ -16,7 +16,7 @@ class ContainerTest extends BaseContainerTest
                 'com.keboola.runner.jobId=12345678',
                 'com.keboola.runner.runId=10.20.30',
             ],
-            ['var' => 'val', 'příliš' => 'žluťoučký', 'var2' => 'weird = \'"value' ]
+            ['var' => 'val', 'příliš' => 'žluťoučký', 'var2' => 'weird = \'"value' ],
         );
         $imageConfiguration = $this->getImageConfiguration();
         $imageConfiguration['features'] = ['container-root-user'];

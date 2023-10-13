@@ -60,7 +60,7 @@ class AuthorizationTest extends BaseRunnerTest
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         self::assertEquals(
             $credentials,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            $auth->getAuthorization($config)['oauth_api']['credentials'],
         );
     }
 
@@ -109,7 +109,7 @@ class AuthorizationTest extends BaseRunnerTest
         $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
         $data = json_decode(
             (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
-            true
+            true,
         );
         $sampleData = [
             'authorization' => [
@@ -181,7 +181,7 @@ class AuthorizationTest extends BaseRunnerTest
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         self::assertEquals(
             $credentials,
-            $auth->getAuthorization($config)['oauth_api']['credentials']
+            $auth->getAuthorization($config)['oauth_api']['credentials'],
         );
     }
 
@@ -200,7 +200,7 @@ class AuthorizationTest extends BaseRunnerTest
             ->method('getDetail')
             ->with('keboola.docker-demo', 'test-credentials-45')
             ->will(self::throwException(
-                new ClientException('OAuth API error: No data found for api: keboola.docker-demo', 400)
+                new ClientException('OAuth API error: No data found for api: keboola.docker-demo', 400),
             ));
 
         $jobScopedEncryptor = new JobScopedEncryptor(
@@ -291,7 +291,7 @@ class AuthorizationTest extends BaseRunnerTest
         $auth = new Authorization($oauthClientStub, $jobScopedEncryptor, 'keboola.docker-demo');
         self::assertEquals(
             $expectedConfig,
-            $auth->getAuthorization($config)
+            $auth->getAuthorization($config),
         );
     }
 
@@ -337,7 +337,7 @@ class AuthorizationTest extends BaseRunnerTest
         $configFile->createConfigFile($config, new OutputFilter(10000), [], ['fooBar' => 'baz']);
         $data = json_decode(
             (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
-            true
+            true,
         );
         $sampleData = [
             'authorization' => [

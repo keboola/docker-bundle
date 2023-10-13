@@ -138,9 +138,9 @@ class AWSElasticContainerRegistry extends Image
                     $this->getPrintableImageId(),
                     $process->getExitCode(),
                     $process->getErrorOutput(),
-                    $process->getOutput()
+                    $process->getOutput(),
                 ),
-                $e
+                $e,
             );
         }
     }

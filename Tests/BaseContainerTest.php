@@ -126,7 +126,7 @@ abstract class BaseContainerTest extends TestCase
         $image = ImageFactory::getImage(
             $log,
             new Component($imageConfig),
-            true
+            true,
         );
         if ($prepare) {
             $image->setRetryLimits(100, 100, 1);
@@ -150,7 +150,7 @@ abstract class BaseContainerTest extends TestCase
             getenv('RUNNER_MAX_LOG_PORT'),
             $commandOptions,
             $outputFilter,
-            new Limits($log, ['cpu_count' => 2], $projectLimits, [], null)
+            new Limits($log, ['cpu_count' => 2], $projectLimits, [], null),
         );
     }
 

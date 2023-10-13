@@ -28,8 +28,7 @@ class ProcessTest extends TestCase
 
 fwrite(STDOUT, 'pho boo foo' . PHP_EOL);
 fwrite(STDERR, 'foo boo bar' . PHP_EOL);
-PHP
-        );
+PHP);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->run();
         $process->setOutputFilter($outputFilter);
@@ -46,8 +45,7 @@ PHP
 
 fwrite(STDOUT, 'pho boo foo' . PHP_EOL);
 fwrite(STDERR, 'foo boo bar' . PHP_EOL);
-PHP
-        );
+PHP);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $events = [];
         $process->setOutputFilter($outputFilter);
@@ -63,7 +61,7 @@ PHP
                     'foo [hidden] bar',
                 ],
             ],
-            $events
+            $events,
         );
         self::assertSame('pho [hidden] foo', $process->getOutput());
         self::assertSame('foo [hidden] bar', $process->getErrorOutput());
@@ -76,8 +74,7 @@ PHP
 
 fwrite(STDOUT, substr('a😀b', 0, 3) . PHP_EOL);
 fwrite(STDERR, substr('b😀c', 0, 3) . PHP_EOL);
-PHP
-        );
+PHP);
         $outputFilter = new OutputFilter(10000);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->setOutputFilter($outputFilter);
@@ -93,8 +90,7 @@ PHP
 
 fwrite(STDOUT, 'a' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
 fwrite(STDERR, 'b' . str_repeat(substr('😀', 0, 1), 90*(10**6)) . PHP_EOL);
-PHP
-        );
+PHP);
         $outputFilter = new OutputFilter(10000);
         $process = new Process(['php', $this->temp->getTmpFolder() . '/run.php']);
         $process->setOutputFilter($outputFilter);

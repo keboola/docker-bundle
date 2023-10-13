@@ -47,14 +47,14 @@ class RunnerGCSTest extends BaseRunnerTest
     {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
-            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-test')
+            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-test'),
         );
         $workspacesApi = new Workspaces($this->client);
         foreach ($configurations as $configuration) {
             $workspaces = $componentsApi->listConfigurationWorkspaces(
                 (new ListConfigurationWorkspacesOptions())
                     ->setComponentId('keboola.runner-workspace-test')
-                    ->setConfigurationId($configuration['id'])
+                    ->setConfigurationId($configuration['id']),
             );
             foreach ($workspaces as $workspace) {
                 $workspacesApi->deleteWorkspace($workspace['id'], [], true);
@@ -149,7 +149,7 @@ class RunnerGCSTest extends BaseRunnerTest
                         'operation' => 'copy',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -157,7 +157,7 @@ class RunnerGCSTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $options = new ListConfigurationWorkspacesOptions();

@@ -44,7 +44,7 @@ class ConfigFileTest extends BaseRunnerTest
             ['parameters' => ['key1' => 'value1', 'key2' => ['key3' => 'value3', 'key4' => []]]],
             new OutputFilter(10000),
             [],
-            ['fooBar' => 'baz']
+            ['fooBar' => 'baz'],
         );
         $data = file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json');
         $sampleData = <<<SAMPLE
@@ -182,7 +182,7 @@ SAMPLE;
             $configData,
             new OutputFilter(10000),
             ['host' => 'foo', 'user' => 'bar'],
-            $imageConfig
+            $imageConfig,
         );
         $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
 

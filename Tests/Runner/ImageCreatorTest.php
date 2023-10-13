@@ -48,7 +48,7 @@ class ImageCreatorTest extends TestCase
             ->method('apiGet')
             ->willReturnOnConsecutiveCalls(
                 $components[0],
-                $components[1]
+                $components[1],
             );
     }
 

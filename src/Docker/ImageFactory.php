@@ -18,7 +18,7 @@ abstract class ImageFactory
     public static function getImage(
         LoggerInterface $logger,
         Component $component,
-        $isMain
+        $isMain,
     ) {
         switch ($component->getType()) {
             case 'dockerhub':
