@@ -173,7 +173,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -237,7 +237,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -294,7 +294,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             ['row-2'],
             $outputs,
-            null
+            null,
         );
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -328,7 +328,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             ['row-2'],
             $outputs,
-            null
+            null,
         );
     }
 
@@ -344,7 +344,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue(true);
     }
@@ -400,10 +400,10 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
-            'Skipping disabled configuration: my-config, version: 1, row: disabled-row'
+            'Skipping disabled configuration: my-config, version: 1, row: disabled-row',
         ));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -431,7 +431,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent()
+            $this->getComponent(),
         );
         $jobDefinition2 = new JobDefinition(
             [
@@ -458,7 +458,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             '1',
             [],
             'disabled-row',
-            true
+            true,
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
@@ -471,10 +471,10 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             ['disabled-row'],
             $outputs,
-            null
+            null,
         );
         self::assertTrue($this->getRunnerHandler()->hasInfoThatContains(
-            'Force running disabled configuration: my-config, version: 1, row: disabled-row'
+            'Force running disabled configuration: my-config, version: 1, row: disabled-row',
         ));
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable'));
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
@@ -532,7 +532,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         $metadata = new Metadata($this->getClient());
         $table1Metadata = $this->getMetadataValues($metadata->listTableMetadata('in.c-runner-test.mytable'));
@@ -596,7 +596,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $configuration = $component->getConfiguration('keboola.docker-demo-sync', 'runner-configuration');
@@ -669,7 +669,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'runner-configuration',
             null,
             [],
-            'row-1'
+            'row-1',
         );
         $jobDefinition2 = new JobDefinition(
             $configData,
@@ -677,7 +677,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             'runner-configuration',
             null,
             [],
-            'row-2'
+            'row-2',
         );
         $runner = $this->getRunner();
         $outputs = [];
@@ -689,7 +689,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $configuration = $component->getConfiguration('keboola.runner-config-test', 'runner-configuration');
@@ -721,7 +721,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent()
+            $this->getComponent(),
         );
         $jobDefinition2 = new JobDefinition(
             [
@@ -743,7 +743,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            $this->getComponent()
+            $this->getComponent(),
         );
         $jobDefinitions = [$jobDefinition1, $jobDefinition2];
         $runner = $this->getRunner();
@@ -756,7 +756,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertCount(2, $outputs);
         self::assertCount(1, $outputs[0]->getImages());
@@ -776,11 +776,11 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         file_put_contents($temp->getTmpFolder() . '/upload', 'test');
         $fileId1 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1'])
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1']),
         );
         $fileId2 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2'])
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2']),
         );
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
         $csv->writeRow(['id', 'text']);
@@ -869,7 +869,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
                     ],
                 ],
             ],
-            'row-1'
+            'row-1',
         );
 
         $jobDefinitions = [$jobDefinition1];
@@ -883,7 +883,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
             new NullUsageFile(),
             ['row-1'],
             $outputs,
-            null
+            null,
         );
 
         // the script logs all the input files, so fileId2 should be there, but not fileId1
@@ -899,13 +899,13 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals(
             ['source' => 'in.c-runner-test.mytable', 'lastImportDate' => $updatedTableInfo['lastImportDate']],
             // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0]
+            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_TABLES][0],
         );
         // confirm that the state is correct
         self::assertEquals(
             ['tags' => [['name' => 'docker-runner-test']], 'lastImportId' => $fileId2],
             // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0]
+            $configuration['rows'][0]['state'][StateFile::NAMESPACE_STORAGE][StateFile::NAMESPACE_INPUT][StateFile::NAMESPACE_FILES][0],
         );
     }
 }

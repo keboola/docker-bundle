@@ -14,7 +14,7 @@ class StorageState
 
     public function __construct(
         InputTableResult $inputTableResult,
-        InputFileStateList $inputFileStateList
+        InputFileStateList $inputFileStateList,
     ) {
         $this->inputTableResult = $inputTableResult;
         $this->inputFileStateList = $inputFileStateList;

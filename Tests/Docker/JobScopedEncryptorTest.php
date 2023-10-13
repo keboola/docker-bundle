@@ -25,7 +25,7 @@ class JobScopedEncryptorTest extends TestCase
             ->method($methodCalled)
             ->with(
                 'my-data',
-                ... $expectedArguments
+                ... $expectedArguments,
             )
             ->willReturn('my-data');
 

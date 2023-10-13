@@ -30,7 +30,7 @@ class WorkingDirectoryTest extends TestCase
             ->method('getNormalizeCommand')
             ->will(self::onConsecutiveCalls(
                 'sleep 130 && sudo chown 0 ' . $temp->getTmpFolder() . ' -R',
-                'sudo chown ' . $uid . ' ' . $temp->getTmpFolder() . ' -R'
+                'sudo chown ' . $uid . ' ' . $temp->getTmpFolder() . ' -R',
             ));
 
         /** @var WorkingDirectory $workingDir */
@@ -40,11 +40,11 @@ class WorkingDirectoryTest extends TestCase
         self::assertCount(2, $handler->getRecords());
         self::assertStringContainsString(
             $handler->getRecords()[0]['message'],
-            'Normalizing working directory permissions'
+            'Normalizing working directory permissions',
         );
         self::assertStringContainsString(
             $handler->getRecords()[1]['message'],
-            'Normalizing working directory permissions'
+            'Normalizing working directory permissions',
         );
     }
 
@@ -65,7 +65,7 @@ class WorkingDirectoryTest extends TestCase
         self::assertEquals($tableFile, file_get_contents($workingDir->getDataDir() . '/in/tables/table'));
         self::assertEquals(
             $tableManifestFile,
-            file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest')
+            file_get_contents($workingDir->getDataDir() . '/in/tables/table.manifest'),
         );
         self::assertFalse(file_exists($workingDir->getDataDir() . '/in/state.json'));
         $workingDir->dropWorkingDir();

@@ -22,7 +22,7 @@ class MlflowProjectResolver
     public function __construct(
         StorageApiClient $storageApiClient,
         SandboxesApiClient $sandboxesApiClient,
-        LoggerInterface $logger
+        LoggerInterface $logger,
     ) {
         $this->storageApiClient = $storageApiClient;
         $this->sandboxesApiClient = $sandboxesApiClient;
@@ -55,7 +55,7 @@ class MlflowProjectResolver
                 'Failed to fetch MLflow project details. Access to MLflow artifacts will not be enabled!',
                 [
                     'exception' => $e,
-                ]
+                ],
             );
             return null;
         }

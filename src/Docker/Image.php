@@ -207,7 +207,7 @@ abstract class Image
         });
         if (!in_array($this->digest, $digests)) {
             $this->logger->notice(
-                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId())
+                sprintf('Digest "%s" for image "%s" not found.', $this->digest, $this->getFullImageId()),
             );
             $this->pullImage();
         }
@@ -225,7 +225,7 @@ abstract class Image
     {
         $this->logger->notice(
             'Using image ' . $this->getFullImageId() . ' with repo-digest ' .
-            implode(', ', $this->getImageDigests())
+            implode(', ', $this->getImageDigests()),
         );
     }
 

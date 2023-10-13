@@ -85,7 +85,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -141,7 +141,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -152,7 +152,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         $dataLoader->cleanWorkspace();
@@ -160,7 +160,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         // cleanup after the test
@@ -206,7 +206,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'abs'],
-            true
+            true,
         );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
@@ -218,7 +218,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configurationId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
 
         $dataLoader->storeOutput();
@@ -229,7 +229,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         $dataLoader->cleanWorkspace();
@@ -237,7 +237,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('keboola.runner-config-test')
-                ->setConfigurationId($configurationId)
+                ->setConfigurationId($configurationId),
         );
         self::assertCount(1, $workspaces);
         // and it must be the same workspace we created beforehand
@@ -246,7 +246,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $workspacesApi = new Workspaces($this->client);
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains(
-            sprintf('Reusing persistent workspace "%s".', $workspace['id'])
+            sprintf('Reusing persistent workspace "%s".', $workspace['id']),
         ));
     }
 
@@ -288,13 +288,13 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'abs'],
-            true
+            true,
         );
         $workspace2 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
             $configurationId,
             ['backend' => 'abs'],
-            true
+            true,
         );
 
         $clientWrapper = $this->createMock(ClientWrapper::class);
@@ -305,14 +305,14 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
             $workspaceFactory = new WorkspaceProviderFactoryFactory(
                 new Components($clientWrapper->getBranchClient()),
                 new Workspaces($clientWrapper->getBranchClient()),
-                $logger
+                $logger,
             );
             $workspaceFactory->getWorkspaceProviderFactory(
                 'workspace-abs',
                 $component,
                 $configurationId,
                 [],
-                null
+                null,
             );
         } catch (ApplicationException $e) {
             self::assertEquals(
@@ -321,9 +321,9 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                     $workspace1['id'],
                     $workspace2['id'],
                     $configurationId,
-                    'keboola.runner-config-test'
+                    'keboola.runner-config-test',
                 ),
-                $e->getMessage()
+                $e->getMessage(),
             );
             $workspacesApi = new Workspaces($this->client);
             $workspacesApi->deleteWorkspace($workspace1['id'], [], true);

@@ -42,7 +42,7 @@ abstract class BaseImageTest extends TestCase
     protected function getJobScopedEncryptor(
         string $componentId = 'foo',
         string $projectId = 'bar',
-        ?string $configId = null
+        ?string $configId = null,
     ): JobScopedEncryptor {
         return new JobScopedEncryptor(
             $this->encryptor,
@@ -50,7 +50,7 @@ abstract class BaseImageTest extends TestCase
             $projectId,
             $configId,
             ObjectEncryptor::BRANCH_TYPE_DEFAULT,
-            []
+            [],
         );
     }
 }

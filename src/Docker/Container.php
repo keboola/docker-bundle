@@ -133,7 +133,7 @@ class Container
         $maxLogPort,
         RunCommandOptions $runCommandOptions,
         OutputFilterInterface $outputFilter,
-        Limits $limits
+        Limits $limits,
     ) {
         $this->logger = $logger;
         $this->containerLogger = $containerLogger;
@@ -185,7 +185,7 @@ class Container
                     'Cannot remove container %s %s: %s',
                     $this->getImage()->getFullImageId(),
                     $this->id,
-                    $e->getMessage()
+                    $e->getMessage(),
                 ));
                 // continue
             }
@@ -219,8 +219,8 @@ class Container
                 $this->runCommandOptions->setEnvironmentVariables(
                     array_merge(
                         $this->runCommandOptions->getEnvironmentVariables(),
-                        ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port]
-                    )
+                        ['KBC_LOGGER_ADDR' => $hostIp, 'KBC_LOGGER_PORT' => $port],
+                    ),
                 );
                 $process = Process::fromShellCommandline($this->getRunCommand($this->id));
                 $process->setOutputFilter($this->outputFilter);
@@ -263,7 +263,7 @@ class Container
                     (int) $event['level'],
                     (int) $event['timestamp'],
                     (string) $event['short_message'],
-                    $event
+                    $event,
                 );
                 if ($event['level'] <= 4) {
                     $this->lastError = $event['short_message'];
@@ -272,7 +272,7 @@ class Container
             null,
             function ($event) {
                 $this->containerLogger->error('Invalid message: ' . $event);
-            }
+            },
         );
         return $process;
     }
@@ -321,13 +321,13 @@ class Container
                     "Running {$this->getImage()->getPrintableImageId()} container exceeded the timeout of " .
                     $this->getImage()->getSourceComponent()->getProcessTimeout() . ' seconds.',
                     null,
-                    $data
+                    $data,
                 );
             } else {
                 throw new OutOfMemoryException(
                     'Component terminated. Possibly due to out of memory error',
                     null,
-                    $data
+                    $data,
                 );
             }
         } elseif ($process->getExitCode() === 1) {
@@ -342,10 +342,10 @@ class Container
                         $this->getImage()->getPrintableImageId(),
                         $this->getId(),
                         $process->getExitCode(),
-                        $message
+                        $message,
                     ),
                     null,
-                    $data
+                    $data,
                 );
             } else {
                 // syrup will log the process error output as part of the exception body
@@ -355,10 +355,10 @@ class Container
                         $this->getImage()->getPrintableImageId(),
                         $this->getId(),
                         $process->getExitCode(),
-                        $message
+                        $message,
                     ),
                     null,
-                    $data
+                    $data,
                 );
             }
         }
@@ -452,7 +452,7 @@ class Container
         } catch (ProcessFailedException|ProcessTimedOutException $e) {
             $this->logger->notice(
                 "Cannot inspect container {$this->getImage()->getFullImageId()} '{$containerId}' on failure: " .
-                $e->getMessage()
+                $e->getMessage(),
             );
             $inspect = [];
         }
@@ -474,7 +474,7 @@ class Container
             throw new OutOfMemoryException(
                 "Component out of memory (exceeded {$this->limits->getMemoryLimit($this->getImage())})",
                 null,
-                $data
+                $data,
             );
         }
     }

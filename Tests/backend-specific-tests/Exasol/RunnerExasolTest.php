@@ -35,14 +35,14 @@ class RunnerExasolTest extends BaseTableBackendTest
     {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
-            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-exasol-test')
+            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-exasol-test'),
         );
         $workspacesApi = new Workspaces($this->client);
         foreach ($configurations as $configuration) {
             $workspaces = $componentsApi->listConfigurationWorkspaces(
                 (new ListConfigurationWorkspacesOptions())
                     ->setComponentId('keboola.runner-workspace-exasol-test')
-                    ->setConfigurationId($configuration['id'])
+                    ->setConfigurationId($configuration['id']),
             );
             foreach ($workspaces as $workspace) {
                 $workspacesApi->deleteWorkspace($workspace['id'], [], true);
@@ -124,7 +124,7 @@ class RunnerExasolTest extends BaseTableBackendTest
                         'operation' => 'copy-exasol',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -132,7 +132,7 @@ class RunnerExasolTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $options = new ListConfigurationWorkspacesOptions();

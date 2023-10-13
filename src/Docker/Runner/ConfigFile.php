@@ -35,7 +35,7 @@ class ConfigFile
         $dataDirectory,
         Authorization $authorization,
         $action,
-        $format
+        $format,
     ) {
         $this->dataDirectory = $dataDirectory;
         $this->format = $format;
@@ -47,7 +47,7 @@ class ConfigFile
         $configData,
         OutputFilterInterface $outputFilter,
         array $workspaceCredentials,
-        array $imageParameters
+        array $imageParameters,
     ) {
         // create configuration file injected into docker
         $adapter = new Adapter($this->format);

@@ -15,7 +15,7 @@ class QuayIORepositoryTest extends BaseImageTest
     public function testDownloadedImage()
     {
         Process::fromShellCommandline(
-            'sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)'
+            'sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)',
         )->run();
 
         $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');

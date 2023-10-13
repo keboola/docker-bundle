@@ -121,7 +121,7 @@ class ImageConfigurationTest extends TestCase
         ];
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage(
-            'Invalid configuration for path "component.definition.type": Invalid image type "whatever".'
+            'Invalid configuration for path "component.definition.type": Invalid image type "whatever".',
         );
         (new Configuration\Component())->parse(['config' => $config]);
     }
@@ -138,7 +138,7 @@ class ImageConfigurationTest extends TestCase
         ];
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage(
-            'Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".'
+            'Invalid configuration for path "component.configuration_format": Invalid configuration_format "fail".',
         );
         (new Configuration\Component())->parse(['config' => $config]);
     }
@@ -169,7 +169,7 @@ class ImageConfigurationTest extends TestCase
         ];
         self::expectException(InvalidConfigurationException::class);
         self::expectExceptionMessage(
-            'Invalid configuration for path "component.network": Invalid network type "whatever".'
+            'Invalid configuration for path "component.network": Invalid network type "whatever".',
         );
         (new Configuration\Component())->parse(['config' => $config]);
     }
@@ -180,7 +180,7 @@ class ImageConfigurationTest extends TestCase
         $this->expectExceptionMessage(
             'The value "whatever" is not allowed for path "component.staging_storage.input". ' .
             'Permissible values: "local", "s3", "abs", "none", "workspace-snowflake", ' .
-            '"workspace-redshift", "workspace-synapse", "workspace-abs"'
+            '"workspace-redshift", "workspace-synapse", "workspace-abs"',
         );
         $config = [
             'definition' => [
@@ -201,7 +201,7 @@ class ImageConfigurationTest extends TestCase
         $this->expectExceptionMessage(
             'The value "whatever" is not allowed for path "component.staging_storage.output". ' .
             'Permissible values: "local", "none", "workspace-snowflake", ' .
-            '"workspace-redshift", "workspace-synapse", "workspace-abs"'
+            '"workspace-redshift", "workspace-synapse", "workspace-abs"',
         );
         $config = [
             'definition' => [

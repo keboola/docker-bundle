@@ -208,7 +208,7 @@ class LoggerTest extends BaseContainerTest
                     (array_keys($record['context']) === ['version', 'short_message', 'timestamp', 'level', 'source']) &&
                     ($record['context']['short_message'] === 'A sample info message (pygelf)');
             },
-            MonologLogger::NOTICE
+            MonologLogger::NOTICE,
         ));
     }
 
@@ -250,11 +250,12 @@ class LoggerTest extends BaseContainerTest
         self::assertEquals(3, count($records));
         self::assertTrue($this->getContainerLogHandler()->hasInfoThatContains('Client finished'));
         self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains(
-            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample info message (invalid)".'
+            // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample info message (invalid)".',
         ));
         self::assertTrue($this->getContainerLogHandler()->hasErrorThatContains(
             // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample warning message (invalid)".'
+            'Invalid message: Cannot parse JSON data in event: "Syntax error". Data: "A sample warning message (invalid)".',
         ));
     }
 
@@ -302,7 +303,7 @@ class LoggerTest extends BaseContainerTest
                     $warn[] = (string) $event->getMessage();
                 }
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
@@ -383,7 +384,7 @@ class LoggerTest extends BaseContainerTest
                     $structured = $event;
                 }
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
@@ -452,7 +453,7 @@ class LoggerTest extends BaseContainerTest
             function ($event) use (&$records) {
                 $records[] = $event;
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         $container->run();
@@ -514,7 +515,7 @@ class LoggerTest extends BaseContainerTest
                     $errors[] = $event->getMessage();
                 }
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
@@ -541,7 +542,7 @@ class LoggerTest extends BaseContainerTest
                     $info[] = $event->getMessage();
                 }
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         $container->run();
@@ -562,7 +563,7 @@ class LoggerTest extends BaseContainerTest
             function (Event $event) use (&$contents) {
                 $contents .= $event->getMessage();
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         try {
@@ -589,7 +590,7 @@ class LoggerTest extends BaseContainerTest
             function (Event $event) use (&$contents) {
                 $contents .= $event->getMessage();
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($this->getImageConfiguration(), [], $script, true);
         try {
@@ -622,7 +623,7 @@ class LoggerTest extends BaseContainerTest
             function (Event $event) use (&$contents) {
                 $contents .= $event->getMessage();
                 return true;
-            }
+            },
         );
         $container = $this->getContainer($imageConfiguration, [], $script, true);
         try {
@@ -653,7 +654,7 @@ class LoggerTest extends BaseContainerTest
                     $info[] = $event->getMessage();
                 }
                 return true;
-            }
+            },
         );
         $this->getContainer($this->getImageConfiguration(), [], [], false);
         $testHandler = new TestHandler();

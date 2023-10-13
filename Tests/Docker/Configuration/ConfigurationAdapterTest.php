@@ -232,11 +232,11 @@ EOT;
                     'parameters' => [],
                     'image_parameters' => [],
                 ],
-            ]
+            ],
         );
         self::assertEquals(
             ['parameters' => [], 'image_parameters' => [], 'shared_code_row_ids' => []],
-            $data
+            $data,
         );
         $adapter = new Adapter('json');
         $adapter->setConfig($data);
@@ -245,7 +245,7 @@ EOT;
         self::assertEquals(
             "{\n    \"parameters\": {},\n    \"image_parameters\": {},\n    " .
             "\"shared_code_row_ids\": [],\n    \"storage\": {},\n    \"authorization\": {}\n}",
-            $string
+            $string,
         );
     }
 }

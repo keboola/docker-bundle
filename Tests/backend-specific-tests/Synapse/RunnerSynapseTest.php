@@ -39,14 +39,14 @@ class RunnerSynapseTest extends BaseTableBackendTest
     {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
-            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-synapse-test')
+            (new ListComponentConfigurationsOptions())->setComponentId('keboola.runner-workspace-synapse-test'),
         );
         $workspacesApi = new Workspaces($this->client);
         foreach ($configurations as $configuration) {
             $workspaces = $componentsApi->listConfigurationWorkspaces(
                 (new ListConfigurationWorkspacesOptions())
                     ->setComponentId('keboola.runner-workspace-synapse-test')
-                    ->setConfigurationId($configuration['id'])
+                    ->setConfigurationId($configuration['id']),
             );
             foreach ($workspaces as $workspace) {
                 $workspacesApi->deleteWorkspace($workspace['id'], [], true);
@@ -142,7 +142,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
                         'operation' => 'copy-synapse',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -150,7 +150,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $options = new ListConfigurationWorkspacesOptions();
@@ -169,7 +169,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
         $fileId = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/my-lovely-file.wtf',
             (new FileUploadOptions())
-                ->setTags([self::ABS_TEST_FILE_TAG])
+                ->setTags([self::ABS_TEST_FILE_TAG]),
         );
 
         $componentData = [
@@ -226,10 +226,10 @@ class RunnerSynapseTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue(
-            $this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId))
+            $this->getContainerHandler()->hasInfoThatContains(sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)),
         );
 
         // assert the workspace is preserved
@@ -257,7 +257,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
         $fileId = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/my-lovely-file.wtf',
             (new FileUploadOptions())
-                ->setTags([self::ABS_TEST_FILE_TAG])
+                ->setTags([self::ABS_TEST_FILE_TAG]),
         );
 
         $componentData = [
@@ -312,7 +312,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
                         'operation' => 'list-abs',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -320,10 +320,10 @@ class RunnerSynapseTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains(
-            sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId)
+            sprintf('data/in/files/my_lovely_file.wtf/%s', $fileId),
         ));
         self::assertTrue($this->getContainerHandler()->hasInfoThatContains('data/in/tables/mytable3.csvmanifest'));
         // assert the workspace is preserved
@@ -384,7 +384,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
                         'operation' => 'create-abs-table',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -392,7 +392,7 @@ class RunnerSynapseTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
         $data = $this->client->getTableDataPreview('out.c-synapse-runner-test.test-table');
         self::assertEquals("\"first\",\"second\"\n\"1a\",\"2b\"\n", $data);

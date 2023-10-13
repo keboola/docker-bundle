@@ -114,7 +114,7 @@ class ArtifactsTest extends BaseRunnerTest
                 $componentData,
                 $configuration['id'],
                 $configuration['configuration'],
-                []
+                [],
             ),
             'run',
             'run',
@@ -123,7 +123,7 @@ class ArtifactsTest extends BaseRunnerTest
             [],
             $outputs,
             null,
-            $orchestrationId
+            $orchestrationId,
         );
 
         return $outputs;
@@ -134,7 +134,7 @@ class ArtifactsTest extends BaseRunnerTest
         return $this->client->listFiles(
             (new ListFilesOptions())
                 ->setQuery($query)
-                ->setLimit($limit)
+                ->setLimit($limit),
         );
     }
 
@@ -147,7 +147,7 @@ class ArtifactsTest extends BaseRunnerTest
             (new Configuration())
                 ->setComponentId('keboola.python-transformation')
                 ->setConfiguration($configuration)
-                ->setName('artifacts tests')
+                ->setName('artifacts tests'),
         );
     }
 
@@ -179,7 +179,7 @@ class ArtifactsTest extends BaseRunnerTest
             . 'AND configId-%s AND jobId-%s NOT shared)',
             $branchId,
             $configId,
-            $jobId
+            $jobId,
         ));
 
         $currentFile = $files[0];
@@ -193,7 +193,7 @@ class ArtifactsTest extends BaseRunnerTest
         $files = $this->listStorageFiles(sprintf(
             'tags:(artifact AND shared AND branchId-' . $branchId . ' '
             . 'AND componentId-keboola.python-transformation AND orchestrationId-%s)',
-            $orchestrationId
+            $orchestrationId,
         ));
 
         self::assertGreaterThan(0, count($files));
@@ -213,7 +213,7 @@ class ArtifactsTest extends BaseRunnerTest
                 new Result($currentFile['id']),
                 new Result($sharedFile['id'], true),
             ],
-            $output->getArtifactsUploaded()
+            $output->getArtifactsUploaded(),
         );
     }
 
@@ -247,7 +247,7 @@ class ArtifactsTest extends BaseRunnerTest
             . 'AND configId-%s AND jobId-%s NOT shared)',
             $branchId,
             $configId,
-            $jobId
+            $jobId,
         ), 10);
 
         usort($currentFiles, fn ($a, $b) => strcmp($a['name'], $b['name']));
@@ -263,7 +263,7 @@ class ArtifactsTest extends BaseRunnerTest
         $sharedFiles = $this->listStorageFiles(sprintf(
             'tags:(artifact AND shared AND branchId-' . $branchId . ' '
             . 'AND componentId-keboola.python-transformation AND orchestrationId-%s)',
-            $orchestrationId
+            $orchestrationId,
         ), 10);
 
         usort($sharedFiles, fn ($a, $b) => strcmp($a['name'], $b['name']));
@@ -319,9 +319,9 @@ class ArtifactsTest extends BaseRunnerTest
                     . 'AND configId-%s AND jobId-%s)',
                     $branchId,
                     $configId,
-                    $jobId
+                    $jobId,
                 ))
-                ->setLimit(1)
+                ->setLimit(1),
         );
         self::assertEmpty($files);
 
@@ -386,7 +386,7 @@ class ArtifactsTest extends BaseRunnerTest
                     'componentId-keboola.python-transformation',
                     'configId-' . $configId,
                     'jobId-' . $previousJobId,
-                ])
+                ]),
         );
 
         sleep(2);
@@ -512,7 +512,7 @@ class ArtifactsTest extends BaseRunnerTest
                         'componentId-keboola.python-transformation',
                         'configId-' . $configId,
                         'jobId-' . $jobId,
-                    ])
+                    ]),
             );
         }
 

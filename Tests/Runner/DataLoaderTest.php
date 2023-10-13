@@ -46,11 +46,11 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced'])
+            json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
@@ -58,7 +58,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         $tableQueue->waitForAll();
         self::assertTrue(
-            $this->clientWrapper->getBasicClient()->tableExists('in.c-docker-demo-testConfig.sliced')
+            $this->clientWrapper->getBasicClient()->tableExists('in.c-docker-demo-testConfig.sliced'),
         );
         self::assertEquals([], $dataLoader->getWorkspaceCredentials());
         self::assertNull($dataLoader->getWorkspaceBackendSize());
@@ -79,11 +79,11 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced'])
+            json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader(['output' => ['default_bucket' => 'in.c-test-override']]);
         $tableQueue = $dataLoader->storeOutput();
@@ -105,7 +105,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
     }
 
@@ -134,18 +134,18 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         self::expectException(UserException::class);
         self::expectExceptionMessage(
-            'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"'
+            'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"',
         );
         $dataLoader = new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
     }
@@ -179,7 +179,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
     }
 
@@ -255,13 +255,13 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
             ['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'],
-            array_keys($credentials)
+            array_keys($credentials),
         );
         self::assertNotEmpty($credentials['user']);
         self::assertNotNull($dataLoader->getWorkspaceBackendSize());
@@ -300,7 +300,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -330,7 +330,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
                 'in.c-testWorkspaceRedshiftNoPreserve',
-                ['force' => true, 'async' => true]
+                ['force' => true, 'async' => true],
             );
         } catch (ClientException $e) {
             if ($e->getCode() !== 404) {
@@ -341,12 +341,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             'testWorkspaceRedshiftNoPreserve',
             'in',
             'description',
-            'redshift'
+            'redshift',
         );
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->temp->getTmpFolder() . '/data.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
         $this->clientWrapper->getBasicClient()->createTable('in.c-testWorkspaceRedshiftNoPreserve', 'test', $csv);
@@ -389,7 +389,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             'docker-demo',
             $configId,
             ['backend' => 'redshift'],
-            true
+            true,
         );
         $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
         $workspaceApi->loadWorkspaceData(
@@ -401,7 +401,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                         'destination' => 'original',
                     ],
                 ],
-            ]
+            ],
         );
 
         $dataLoader = new DataLoader(
@@ -409,7 +409,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component, $configId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -419,7 +419,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
                 ->setComponentId('docker-demo')
-                ->setConfigurationId($configId)
+                ->setConfigurationId($configId),
         );
         self::assertCount(1, $workspaces);
 
@@ -431,7 +431,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         try {
             $this->clientWrapper->getBasicClient()->writeTableAsyncDirect(
                 'in.c-testWorkspaceRedshiftNoPreserve.test',
-                ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'original']
+                ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'original'],
             );
             self::fail('Must throw exception');
         } catch (ClientException $e) {
@@ -441,7 +441,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         // the loaded table exists
         $this->clientWrapper->getBasicClient()->writeTableAsyncDirect(
             'in.c-testWorkspaceRedshiftNoPreserve.test',
-            ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'test']
+            ['dataWorkspaceId' => $workspaces[0]['id'], 'dataTableName' => 'test'],
         );
     }
 
@@ -457,7 +457,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                     'key' => 'KBC.createdBy.branch.id',
                     'value' => '1234',
                 ],
-            ]
+            ],
         );
         $component = new Component([
             'id' => 'docker-demo',
@@ -490,12 +490,12 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         self::expectException(UserException::class);
         self::expectExceptionMessage(
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
-            'branch and must not be used directly in input mapping.'
+            'branch and must not be used directly in input mapping.',
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
     }
@@ -506,7 +506,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->temp->getTmpFolder() . '/data.csv',
-            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3"
+            "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
         $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
         $this->clientWrapper->getBasicClient()->createTable('in.c-docker-demo-testConfig', 'test', $csv);
@@ -519,7 +519,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                     'key' => 'KBC.createdBy.branch.id',
                     'value' => '1234',
                 ],
-            ]
+            ],
         );
         $component = new Component([
             'id' => 'docker-demo',
@@ -553,7 +553,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
@@ -565,7 +565,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
-            '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02'
+            '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
         );
         $component = new Component([
             'id' => 'docker-demo',
@@ -594,7 +594,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                                 'int' => (new GenericStorage('int', ['nullable' => false]))->toMetadata(),
                                 'string' => (new GenericStorage(
                                     'varchar',
-                                    ['length' => '17', 'nullable' => false]
+                                    ['length' => '17', 'nullable' => false],
                                 ))->toMetadata(),
                                 'decimal' => (new GenericStorage('decimal', ['length' => '10.2']))->toMetadata(),
                                 'float' => (new GenericStorage('float'))->toMetadata(),
@@ -610,15 +610,15 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
                 (string) getenv('STORAGE_API_URL'),
-                (string) getenv('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES')
-            )
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NATIVE_TYPES'),
+            ),
         );
         $dataLoader = new DataLoader(
             $clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -669,7 +669,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         // exception is not thrown outside
         $clientMock->expects(self::once())->method('apiPostJson')->willThrowException(
-            new ClientException('boo')
+            new ClientException('boo'),
         );
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
@@ -689,7 +689,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000)
+            new OutputFilter(10000),
         );
         $dataLoader->cleanWorkspace();
         self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));

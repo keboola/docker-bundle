@@ -19,7 +19,7 @@ class Authorization
     public function __construct(
         Credentials $clientV3,
         JobScopedEncryptor $encryptor,
-        string $componentId
+        string $componentId,
     ) {
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
@@ -43,7 +43,7 @@ class Authorization
                 try {
                     $credentials = $client->getDetail(
                         $this->componentId,
-                        $configData['oauth_api']['id']
+                        $configData['oauth_api']['id'],
                     );
                     $decrypted = $this->encryptor->decrypt($credentials);
                     $data['oauth_api']['credentials'] = $decrypted;

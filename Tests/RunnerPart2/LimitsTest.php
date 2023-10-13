@@ -27,11 +27,11 @@ class LimitsTest extends TestCase
             ['cpu_count' => 'invalid'],
             [],
             ['pay-as-you-go'],
-            null
+            null,
         );
         $this->expectException(ApplicationException::class);
         $this->expectExceptionMessage(
-            'cpu_count is set incorrectly in parameters.yml: This value should be a valid number.'
+            'cpu_count is set incorrectly in parameters.yml: This value should be a valid number.',
         );
         $limits->getCpuLimit();
     }
@@ -45,11 +45,11 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 1000]],
             ['pay-as-you-go'],
-            null
+            null,
         );
         $this->expectException(ApplicationException::class);
         $this->expectExceptionMessage(
-            'runner.cpuParallelism limit is set incorrectly: This value should be between 1 and 96.'
+            'runner.cpuParallelism limit is set incorrectly: This value should be between 1 and 96.',
         );
         $limits->getCpuLimit();
     }
@@ -63,7 +63,7 @@ class LimitsTest extends TestCase
             ['cpu_count' => 1],
             ['components.jobsParallelism' => ['name' => 'components.jobsParallelism', 'value' => 10]],
             ['foo', 'bar', 'pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals(1, $limits->getCpuLimit());
         self::assertStringContainsString('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
@@ -76,7 +76,7 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             [],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals(2, $limits->getCpuLimit());
     }
@@ -88,7 +88,7 @@ class LimitsTest extends TestCase
             ['cpu_count' => 14],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals(10, $limits->getCpuLimit());
     }
@@ -100,7 +100,7 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             ['runner.cpuParallelism' => ['name' => 'runner.cpuParallelism', 'value' => 10]],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals(2, $limits->getCpuLimit());
     }
@@ -116,12 +116,12 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             ['pay-as-you-go'],
-            null
+            null,
         );
         $this->expectException(ApplicationException::class);
         $this->expectExceptionMessage(
             "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: " .
-            'This value should be between 1 and 64000.'
+            'This value should be between 1 and 64000.',
         );
         $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation'));
     }
@@ -137,12 +137,12 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 120000000],
             ],
             ['pay-as-you-go'],
-            null
+            null,
         );
         $this->expectException(ApplicationException::class);
         $this->expectExceptionMessage(
             "'runner.keboola.r-transformation.memoryLimitMBs' limit is set incorrectly: " .
-            'This value should be between 1 and 64000.'
+            'This value should be between 1 and 64000.',
         );
         $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation'));
     }
@@ -154,7 +154,7 @@ class LimitsTest extends TestCase
             ['cpu_count' => 2],
             [],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
@@ -171,12 +171,12 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertStringContainsString(
             "Memory limits - component: '256m' project: '60000M'",
-            $handler->getRecords()[0]['message']
+            $handler->getRecords()[0]['message'],
         );
         self::assertEquals('60000M', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
     }
@@ -192,12 +192,12 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.r-transformation.memoryLimitMBs', 'value' => 60000],
             ],
             ['pay-as-you-go'],
-            null
+            null,
         );
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
         self::assertStringContainsString(
             "Memory limits - component: '256m' project: NULL",
-            $handler->getRecords()[0]['message']
+            $handler->getRecords()[0]['message'],
         );
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.python-transformation')));
     }
@@ -233,7 +233,7 @@ class LimitsTest extends TestCase
     public function testDynamicBackend(
         ?string $containerType,
         string $expectedMemoryLimit,
-        string $expectedCpuLimit
+        string $expectedCpuLimit,
     ) {
         $component = new Component([
             'id' => 'keboola.runner-config-test',
@@ -256,14 +256,14 @@ class LimitsTest extends TestCase
                 ['name' => 'runner.keboola.runner-config-test.memoryLimitMBs', 'value' => 60000],
             ],
             [],
-            $containerType
+            $containerType,
         );
 
         self::assertEquals($expectedMemoryLimit, $limits->getMemoryLimit($image));
         self::assertEquals($expectedMemoryLimit, $limits->getMemorySwapLimit($image));
         self::assertEquals($expectedCpuLimit, $limits->getCpuLimit());
         self::assertTrue($logger->hasNoticeThatContains(
-            sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit)
+            sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit),
         ));
         self::assertTrue($logger->hasNoticeThatContains(sprintf('CPU limit: %s', $expectedCpuLimit)));
     }

@@ -29,13 +29,13 @@ class Runner2Test extends BaseRunnerTest
             [
                 'url' => getenv('STORAGE_API_URL'),
                 'token' => getenv('STORAGE_API_TOKEN'),
-            ]
+            ],
         );
         $transformationTestComponentId = 'keboola.python-transformation';
         $components = new Components($client);
         $configurations = $components->listComponentConfigurations(
             (new ListComponentConfigurationsOptions())
-                ->setComponentId($transformationTestComponentId)
+                ->setComponentId($transformationTestComponentId),
         );
         foreach ($configurations as $configuration) {
             try {
@@ -93,7 +93,7 @@ class Runner2Test extends BaseRunnerTest
                 $componentData,
                 'runner-configuration',
                 $config,
-                []
+                [],
             ),
             'run',
             'run',
@@ -101,7 +101,7 @@ class Runner2Test extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
     }
 
@@ -175,7 +175,7 @@ class Runner2Test extends BaseRunnerTest
                         'operation' => 'dump-env',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -183,18 +183,18 @@ class Runner2Test extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $containerOutput = $outputs[0]->getProcessOutput();
         $containerOutput = explode("\n", $containerOutput);
         self::assertContains(
             'Environment "AZURE_STORAGE_CONNECTION_STRING" has value "connection-string".',
-            $containerOutput
+            $containerOutput,
         );
         self::assertContains(
             'Environment "MLFLOW_TRACKING_URI" has value "https://mlflow".',
-            $containerOutput
+            $containerOutput,
         );
     }
 
@@ -258,7 +258,7 @@ class Runner2Test extends BaseRunnerTest
                         'operation' => 'dump-env',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -266,7 +266,7 @@ class Runner2Test extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $containerOutput = $outputs[0]->getProcessOutput();

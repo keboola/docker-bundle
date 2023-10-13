@@ -37,14 +37,14 @@ class RunnerTeradataTest extends BaseTableBackendTest
     {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
-            (new ListComponentConfigurationsOptions())->setComponentId(self::COMPONENT_ID)
+            (new ListComponentConfigurationsOptions())->setComponentId(self::COMPONENT_ID),
         );
         $workspacesApi = new Workspaces($this->client);
         foreach ($configurations as $configuration) {
             $workspaces = $componentsApi->listConfigurationWorkspaces(
                 (new ListConfigurationWorkspacesOptions())
                     ->setComponentId(self::COMPONENT_ID)
-                    ->setConfigurationId($configuration['id'])
+                    ->setConfigurationId($configuration['id']),
             );
             foreach ($workspaces as $workspace) {
                 $workspacesApi->deleteWorkspace($workspace['id'], [], true);
@@ -118,7 +118,7 @@ class RunnerTeradataTest extends BaseTableBackendTest
                         'operation' => 'copy-teradata',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -126,7 +126,7 @@ class RunnerTeradataTest extends BaseTableBackendTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $options = new ListConfigurationWorkspacesOptions();

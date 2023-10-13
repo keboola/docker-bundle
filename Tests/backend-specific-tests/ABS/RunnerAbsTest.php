@@ -94,7 +94,7 @@ class RunnerAbsTest extends BaseRunnerTest
                         'filename' => 'local-table.manifest',
                     ],
                 ],
-                []
+                [],
             ),
             'run',
             'run',
@@ -102,7 +102,7 @@ class RunnerAbsTest extends BaseRunnerTest
             new NullUsageFile(),
             [],
             $outputs,
-            null
+            null,
         );
 
         $records = $this->getContainerHandler()->getRecords();

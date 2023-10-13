@@ -75,11 +75,11 @@ class WorkingDirectory
                     $process = Process::fromShellCommandline($command);
                     $process->setTimeout(120);
                     $process->mustRun();
-                }
+                },
             );
         } catch (ProcessTimedOutException) {
             throw new ApplicationException(
-                'Could not normalize permissions.'
+                'Could not normalize permissions.',
             );
         }
     }
@@ -118,7 +118,7 @@ class WorkingDirectory
         // rename
         $fs->rename(
             $this->workingDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'out',
-            $this->workingDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'in'
+            $this->workingDir . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR . 'in',
         );
 
         // create empty output

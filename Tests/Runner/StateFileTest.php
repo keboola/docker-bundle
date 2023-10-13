@@ -60,7 +60,7 @@ class StateFileTest extends TestCase
      */
     private function getJobScopedEncryptor(
         string $branchType = 'default',
-        array $features = []
+        array $features = [],
     ): JobScopedEncryptor {
         $stackId = parse_url(self::getRequiredEnv('STORAGE_API_URL'), PHP_URL_HOST);
         self::assertNotEmpty($stackId);
@@ -93,7 +93,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
@@ -102,7 +102,7 @@ class StateFileTest extends TestCase
         $obj->lastUpdate = 'today';
         self::assertEquals(
             $obj,
-            json_decode((string) file_get_contents($fileName), false)
+            json_decode((string) file_get_contents($fileName), false),
         );
     }
 
@@ -119,7 +119,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
     }
 
@@ -134,14 +134,14 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->createStateFile();
         $fileName = $this->dataDir . DIRECTORY_SEPARATOR . 'in' . DIRECTORY_SEPARATOR . 'state.json';
         self::assertTrue(file_exists($fileName));
         self::assertEquals(
             new stdClass(),
-            json_decode((string) file_get_contents($fileName), false)
+            json_decode((string) file_get_contents($fileName), false),
         );
     }
 
@@ -165,8 +165,8 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ]]
-                )
+                    ]],
+                ),
             );
 
         $state = ['key' => 'fooBar'];
@@ -182,7 +182,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger
+            $testLogger,
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -209,7 +209,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger
+            $testLogger,
         );
         $stateFile->stashState(['key' => 'fooBar', 'foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -238,7 +238,7 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('#foo', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertStringStartsWith($expectedPrefix, $data[StateFile::NAMESPACE_COMPONENT]['#foo']);
                     return true;
-                })
+                }),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -252,7 +252,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState(['key' => 'fooBar', '#foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -301,7 +301,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState(['key' => 'fooBar', '#foo' => 'bar']);
     }
@@ -322,7 +322,7 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
-                })
+                }),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -336,7 +336,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -360,8 +360,8 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ]]
-                )
+                    ]],
+                ),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -375,7 +375,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState([]);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -399,8 +399,8 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ]]
-                )
+                    ]],
+                ),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -414,7 +414,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState(new stdClass());
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -440,8 +440,8 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ]]
-                )
+                    ]],
+                ),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -455,7 +455,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -475,7 +475,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         self::assertEquals($data, $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -495,7 +495,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         self::assertEquals(new stdClass(), $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -512,7 +512,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         self::assertEquals([], $stateFile->loadStateFromFile());
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
@@ -534,7 +534,7 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
-                })
+                }),
             )
             ->willThrowException(new ClientException('Test', 404));
 
@@ -551,7 +551,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter(),
             new NullLogger(),
-            'row-id'
+            'row-id',
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(UserException::class);
@@ -575,7 +575,7 @@ class StateFileTest extends TestCase
                     self::assertArrayHasKey('key', $data[StateFile::NAMESPACE_COMPONENT]);
                     self::assertEquals('fooBar', $data[StateFile::NAMESPACE_COMPONENT]['key']);
                     return true;
-                })
+                }),
             )
             ->willThrowException(new ClientException('Test', 888));
 
@@ -592,7 +592,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter(),
             new NullLogger(),
-            'row-id'
+            'row-id',
         );
         $stateFile->stashState(['key' => 'fooBar']);
         $this->expectException(ClientException::class);
@@ -628,7 +628,7 @@ class StateFileTest extends TestCase
                         ],
                     ], $data);
                     return true;
-                })
+                }),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -642,7 +642,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger()
+            new NullLogger(),
         );
         $stateFile->stashState([]);
         $inputTablesState = new InputTableStateList([
@@ -682,7 +682,7 @@ class StateFileTest extends TestCase
                         ],
                     ], $data);
                     return true;
-                })
+                }),
             );
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
@@ -697,7 +697,7 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter(),
             new NullLogger(),
-            'row-id'
+            'row-id',
         );
         $stateFile->stashState([]);
         $inputTablesState = new InputTableStateList([
@@ -730,8 +730,8 @@ class StateFileTest extends TestCase
                                 StateFile::NAMESPACE_FILES => [],
                             ],
                         ],
-                    ]]
-                )
+                    ]],
+                ),
             );
 
         $wrapper = $this->getMockBuilder(ClientWrapper::class)
@@ -754,7 +754,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger
+            $testLogger,
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));

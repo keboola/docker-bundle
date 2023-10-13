@@ -39,7 +39,7 @@ class MlflowProjectResolverTest extends TestCase
         array $componentFeatures,
         array $projectFeatures,
         array $stackFeatures,
-        bool $returnsProject
+        bool $returnsProject,
     ): void {
         $storageApiClient = $this->createMock(StorageApiClient::class);
         $storageApiClient->method('indexAction')->willReturn([
@@ -141,7 +141,7 @@ class MlflowProjectResolverTest extends TestCase
 
         $sandboxesApiClient = $this->createMock(SandboxesApiClient::class);
         $sandboxesApiClient->method('getProject')->willThrowException(
-            new ClientException('Project not found', 404)
+            new ClientException('Project not found', 404),
         );
 
         $component = new Component([
@@ -167,7 +167,7 @@ class MlflowProjectResolverTest extends TestCase
 
         self::assertNull($project);
         self::assertTrue($this->logsHandler->hasWarning(
-            'Failed to fetch MLflow project details. Access to MLflow artifacts will not be enabled!'
+            'Failed to fetch MLflow project details. Access to MLflow artifacts will not be enabled!',
         ));
     }
 }

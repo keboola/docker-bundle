@@ -13,22 +13,22 @@ class OutputFilterTest extends TestCase
     {
         $filter = new OutputFilter(10**6);
         $filter->collectValues(
-            [['a' => 'b'], ['c' => ['#d' => 'e'], 'f' => ['g' => '#h', '#i' => 'foo']], '#j' => 'bar']
+            [['a' => 'b'], ['c' => ['#d' => 'e'], 'f' => ['g' => '#h', '#i' => 'foo']], '#j' => 'bar'],
         );
         self::assertEquals('abcdfghijk', $filter->filter('abcdfghijk'));
         self::assertEquals('abcdFooBarghijk', $filter->filter('abcdFooBarghijk'));
         self::assertEquals('[hidden]', $filter->filter('foo'));
         self::assertEquals(
             'abcd[hidden][hidden]ghijk',
-            $filter->filter('abcdefooghijk')
+            $filter->filter('abcdefooghijk'),
         );
         self::assertEquals(
             'abcd[hidden]gh[hidden][hidden][hidden]k',
-            $filter->filter('abcdfooghbarbarfook')
+            $filter->filter('abcdfooghbarbarfook'),
         );
         self::assertEquals(
             "a\n\rbcd[hidden]ghijk",
-            $filter->filter("a\n\rbcdfooghijk")
+            $filter->filter("a\n\rbcdfooghijk"),
         );
     }
 
@@ -39,15 +39,15 @@ class OutputFilterTest extends TestCase
         $filter->collectValues([['#encrypted' => $secret]]);
         self::assertEquals(
             'this is [hidden] which is secret',
-            $filter->filter('this is ' . $secret . ' which is secret')
+            $filter->filter('this is ' . $secret . ' which is secret'),
         );
         self::assertEquals(
             'this is [hidden] which is secret',
-            $filter->filter('this is ' . base64_encode($secret) . ' which is secret')
+            $filter->filter('this is ' . base64_encode($secret) . ' which is secret'),
         );
         self::assertEquals(
             'this is [hidden] which is secret',
-            $filter->filter('this is ' . json_encode($secret) . ' which is secret')
+            $filter->filter('this is ' . json_encode($secret) . ' which is secret'),
         );
     }
 
@@ -71,7 +71,7 @@ class OutputFilterTest extends TestCase
         $filter->collectValues([['#encrypted' => 'secret']]);
         self::assertEquals(
             'this is [hidd [trimmed]',
-            $filter->filter('this is secret which is hidden')
+            $filter->filter('this is secret which is hidden'),
         );
     }
 }

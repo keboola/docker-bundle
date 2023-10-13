@@ -28,7 +28,7 @@ class OutputTest extends TestCase
                 0 => ['id' => 'apples', 'digests' => ['foo', 'baz']],
                 1 => ['id' => 'oranges', 'digests' => ['bar']],
             ],
-            $output->getImages()
+            $output->getImages(),
         );
         self::assertEquals('123', $output->getConfigVersion());
         self::assertSame($stateFileMock, $output->getStateFile());

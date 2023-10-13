@@ -135,7 +135,7 @@ class ContainerErrorHandlingTest extends BaseContainerTest
             [],
             $script,
             true,
-            ['runner.dummy.component.memoryLimitMBs' => ['value' => 10]]
+            ['runner.dummy.component.memoryLimitMBs' => ['value' => 10]],
         );
         $this->expectException(OutOfMemoryException::class);
         $this->expectExceptionMessage('Component out of memory (exceeded 10M)');
