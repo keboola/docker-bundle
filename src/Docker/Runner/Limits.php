@@ -133,7 +133,7 @@ class Limits
                 return $this->instanceLimits['cpu_count'];
             }
             throw new ApplicationException(
-                'cpu_count is set incorrectly in parameters.yml: ' . $errors[0]->getMessage(),
+                'cpu_count is set incorrectly in parameters.yml: ' . $errors[0]?->getMessage(),
             );
         }
         throw new ApplicationException('cpu_count is not set in parameters.yml');
@@ -170,7 +170,7 @@ class Limits
                 return $this->projectLimits['runner.cpuParallelism']['value'];
             }
             throw new ApplicationException(
-                'runner.cpuParallelism limit is set incorrectly: ' . $errors[0]->getMessage(),
+                'runner.cpuParallelism limit is set incorrectly: ' . $errors[0]?->getMessage(),
             );
         }
         return self::DEFAULT_CPU_LIMIT;
@@ -203,7 +203,7 @@ class Limits
                 return $this->projectLimits[$limitName]['value'] . 'M';
             }
             throw new ApplicationException(
-                sprintf("'%s' limit is set incorrectly: %s", $limitName, $errors[0]->getMessage()),
+                sprintf("'%s' limit is set incorrectly: %s", $limitName, $errors[0]?->getMessage()),
             );
         }
         return null;

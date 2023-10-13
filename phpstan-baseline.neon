@@ -516,11 +516,6 @@ parameters:
 			path: src/Docker/Runner/ImageCreator.php
 
 		-
-			message: "#^Cannot call method getMessage\\(\\) on mixed\\.$#"
-			count: 3
-			path: src/Docker/Runner/Limits.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Limits\\:\\:getCpuLimit\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/Limits.php
