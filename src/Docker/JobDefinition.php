@@ -10,37 +10,24 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class JobDefinition
 {
-    private ?string $configId;
-    private ?string $rowId;
-    private ?string $configVersion;
-    private Component $component;
     private array $configuration;
-    private array $state;
-    private bool $isDisabled;
-    /** @var ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT */
-    private string $branchType;
 
     /**
      * @param ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT $branchType
      */
     public function __construct(
         array $configuration,
-        Component $component,
-        ?string $configId = null,
-        ?string $configVersion = null,
-        array $state = [],
-        ?string $rowId = null,
-        bool $isDisabled = false,
-        string $branchType = ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+        private readonly Component $component,
+        private readonly ?string $configId = null,
+        private readonly ?string $configVersion = null,
+        private readonly array $state = [],
+        private readonly ?string $rowId = null,
+        private readonly bool $isDisabled = false,
+        /** @var ObjectEncryptor::BRANCH_TYPE_DEV|ObjectEncryptor::BRANCH_TYPE_DEFAULT */
+        private readonly string $branchType = ObjectEncryptor::BRANCH_TYPE_DEFAULT,
+        private readonly ?array $inputVariableValues = null,
     ) {
         $this->configuration = $this->normalizeConfiguration($configuration);
-        $this->component = $component;
-        $this->configId = $configId;
-        $this->configVersion = $configVersion;
-        $this->rowId = $rowId;
-        $this->isDisabled = $isDisabled;
-        $this->state = $state;
-        $this->branchType = $branchType;
     }
 
     public function getComponentId(): string
@@ -103,5 +90,10 @@ class JobDefinition
         $configuration['parameters'] = empty($configuration['parameters']) ? [] : $configuration['parameters'];
 
         return $configuration;
+    }
+
+    public function getInputVariableValues(): ?array
+    {
+        return $this->inputVariableValues;
     }
 }

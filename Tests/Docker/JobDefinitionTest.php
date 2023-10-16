@@ -47,6 +47,7 @@ class JobDefinitionTest extends TestCase
         self::assertNull($jobDefinition->getRowId());
         self::assertSame([], $jobDefinition->getState());
         self::assertFalse($jobDefinition->isDisabled());
+        self::assertNull($jobDefinition->getInputVariableValues());
     }
     public function testGetters(): void
     {
@@ -73,6 +74,10 @@ class JobDefinitionTest extends TestCase
             '789',
             true,
             ObjectEncryptor::BRANCH_TYPE_DEV,
+            [
+                'vault.foo' => 'vault bar',
+                'foo' => 'bar',
+            ],
         );
 
         self::assertSame('dev', $jobDefinition->getBranchType());
@@ -101,5 +106,12 @@ class JobDefinitionTest extends TestCase
             $jobDefinition->getState(),
         );
         self::assertTrue($jobDefinition->isDisabled());
+        self::assertSame(
+            [
+                'vault.foo' => 'vault bar',
+                'foo' => 'bar',
+            ],
+            $jobDefinition->getInputVariableValues(),
+        );
     }
 }
