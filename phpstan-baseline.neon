@@ -1736,11 +1736,6 @@ parameters:
 			path: Tests/RunnerPart2/LimitsTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\OutputTest\\:\\:testAccessors\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/OutputTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\Runner2Test\\:\\:testPermissionsFailedWithoutContainerRootUserFeature\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/RunnerPart2/Runner2Test.php
