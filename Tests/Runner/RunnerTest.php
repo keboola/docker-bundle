@@ -3815,7 +3815,7 @@ class RunnerTest extends BaseRunnerTest
         $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz'])
+            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
         );
 
         $componentData = [
@@ -3900,7 +3900,7 @@ class RunnerTest extends BaseRunnerTest
 
         // check that the input file is not tagged as processed because the job failed
         $inputFileList = $this->client->listFiles((new ListFilesOptions())->setQuery(
-            'tags:"docker-runner-test" AND tags:"processed"'
+            'tags:"docker-runner-test" AND tags:"processed"',
         ));
         self::assertCount(0, $inputFileList);
     }
