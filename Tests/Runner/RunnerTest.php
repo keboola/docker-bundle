@@ -3812,7 +3812,7 @@ class RunnerTest extends BaseRunnerTest
         $this->clearBuckets();
 
         // create the file for the input file processing test (it shouldn't mark the file as processed if job fails
-        $dataDir = ROOT_PATH . DIRECTORY_SEPARATOR . 'Tests' . DIRECTORY_SEPARATOR . 'data' . DIRECTORY_SEPARATOR;
+        $dataDir = $dataDir = __DIR__ .'/../data/';
         $this->getClient()->uploadFile(
             $dataDir . 'texty.csv.gz',
             (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
