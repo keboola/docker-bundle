@@ -1242,7 +1242,7 @@ parameters:
 
 		-
 			message: "#^Cannot access offset 'authorization' on mixed\\.$#"
-			count: 3
+			count: 2
 			path: Tests/Runner/ConfigFileTest.php
 
 		-
