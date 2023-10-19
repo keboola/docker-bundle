@@ -117,8 +117,12 @@ SAMPLE;
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter(10000), [], $imageConfig);
-        $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+        $config = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true,
+        );
 
+        self::assertIsArray($config);
         self::assertEquals('id', $config['parameters']['primary_key_column']);
         self::assertEquals('text', $config['parameters']['data_column']);
         self::assertEquals('4', $config['parameters']['string_length']);
@@ -126,6 +130,7 @@ SAMPLE;
         self::assertArrayNotHasKey('foo', $config['parameters']);
         self::assertArrayNotHasKey('baz', $config['parameters']);
 
+//        self::assertArrayHasKey('authorization', $config);
         if ($expectedAuthContext) {
             self::assertArrayHasKey('context', $config['authorization']);
             self::assertSame($expectedAuthContext, $config['authorization']['context']);
@@ -141,8 +146,12 @@ SAMPLE;
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
         $config->createConfigFile($configData, new OutputFilter(10000), [], $imageConfig);
-        $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+        $config = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true,
+        );
 
+        self::assertIsArray($config);
         self::assertArrayHasKey('storage', $config);
         self::assertArrayHasKey('authorization', $config);
         self::assertArrayHasKey('parameters', $config);
@@ -184,8 +193,12 @@ SAMPLE;
             ['host' => 'foo', 'user' => 'bar'],
             $imageConfig,
         );
-        $config = json_decode(file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'), true);
+        $config = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true,
+        );
 
+        self::assertIsArray($config);
         self::assertArrayHasKey('storage', $config);
         self::assertArrayHasKey('authorization', $config);
         self::assertArrayHasKey('parameters', $config);

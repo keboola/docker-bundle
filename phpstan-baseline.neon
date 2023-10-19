@@ -1241,46 +1241,7 @@ parameters:
 			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
 
 		-
-			message: "#^Cannot access offset 'authorization' on mixed\\.$#"
-			count: 2
-			path: Tests/Runner/ConfigFileTest.php
 
-		-
-			message: "#^Cannot access offset 'data_column' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Cannot access offset 'parameters' on mixed\\.$#"
-			count: 5
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Cannot access offset 'primary_key_column' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Cannot access offset 'string_length' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
-			count: 3
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 3
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayNotHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 3
-			path: Tests/Runner/ConfigFileTest.php
-
-		-
 			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"
 			count: 8
 			path: Tests/Runner/DataLoaderMetadataTest.php
