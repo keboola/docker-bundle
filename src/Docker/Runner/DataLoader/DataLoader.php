@@ -284,7 +284,7 @@ class DataLoader implements DataLoaderInterface
                 $createTypedTables,
                 $isFailedJob,
             );
-            if (isset($this->storageConfig['input']['files'])) {
+            if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
                 // tag input files
                 $fileWriter->tagFiles($this->storageConfig['input']['files']);
             }
