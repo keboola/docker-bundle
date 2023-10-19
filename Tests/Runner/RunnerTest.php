@@ -22,7 +22,6 @@ use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\DevBranches;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ConfigurationRow;
@@ -2705,6 +2704,61 @@ class RunnerTest extends BaseRunnerTest
             ]]],
             $usageFile->getUsageData(),
         );
+    }
+
+    public function testExecutorStoreVariables(): void
+    {
+        $this->clearConfigurations();
+        $component = new Components($this->getClient());
+        $configuration = new Configuration();
+        $configuration->setComponentId('keboola.docker-demo-sync');
+        $configuration->setName('Test configuration');
+        $configuration->setConfigurationId('runner-configuration');
+        $component->addConfiguration($configuration);
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $configData = [
+            'parameters' => [
+                'script' => [
+                    'print("Hello world.")',
+                ],
+            ],
+        ];
+        $variableValues = [
+            'foo' => 'bar',
+        ];
+        $jobDefinition = new JobDefinition(
+            configuration: $configData,
+            component: new Component($componentData),
+            configId: 'runner-configuration',
+            inputVariableValues: $variableValues,
+        );
+        $runner = $this->getRunner();
+
+        /** @var Output[] $outputs */
+        $outputs = [];
+        $runner->run(
+            [$jobDefinition],
+            'run',
+            'run',
+            '987654',
+            new NullUsageFile(),
+            [],
+            $outputs,
+            null,
+        );
+
+        self::assertCount(1, $outputs);
+        $output = reset($outputs);
+        self::assertSame($variableValues, $output->getInputVariableValues());
     }
 
     public function testExecutorStoreRowsUsage(): void

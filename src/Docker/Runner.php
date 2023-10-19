@@ -199,6 +199,10 @@ class Runner
         $component = $jobDefinition->getComponent();
         $this->loggersService->setComponentId($component->getId());
 
+        if ($jobDefinition->getInputVariableValues()) {
+            $currentOutput->setInputVariableValues($jobDefinition->getInputVariableValues());
+        }
+
         $temp = new Temp();
         $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $usageFile->setDataDir($workingDirectory->getDataDir());
