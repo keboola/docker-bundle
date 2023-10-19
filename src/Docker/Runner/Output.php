@@ -23,6 +23,7 @@ class Output
     private ?OutputTableResult $outputTableResult = null;
     private array $artifactsDownloaded = [];
     private array $artifactsUploaded = [];
+    private array $inputVariableValues = [];
 
     public function setImages(array $images): void
     {
@@ -132,5 +133,15 @@ class Output
     public function getOutputTableResult(): ?OutputTableResult
     {
         return $this->outputTableResult;
+    }
+
+    public function setInputVariableValues(array $variableValues): void
+    {
+        $this->inputVariableValues = $variableValues;
+    }
+
+    public function getInputVariableValues(): array
+    {
+        return $this->inputVariableValues;
     }
 }
