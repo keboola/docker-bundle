@@ -44,7 +44,6 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private const TYPED_TABLES_FEATURE = 'tables-definition';
     private const NATIVE_TYPES_FEATURE = 'native-types';
 
     private ClientWrapper $clientWrapper;
@@ -245,8 +244,7 @@ class DataLoader implements DataLoaderInterface
         }
 
         // Check whether we are creating typed tables
-        $createTypedTables = in_array(self::TYPED_TABLES_FEATURE, $this->projectFeatures, true)
-            && in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
+        $createTypedTables = in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
 
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
@@ -385,7 +383,9 @@ class DataLoader implements DataLoaderInterface
         $uploadOptions->setIsPermanent(false);
         $uploadOptions->setIsPublic(false);
         $uploadOptions->setNotify(false);
-        $this->clientWrapper->getBasicClient()->uploadFile($zipFileName, $uploadOptions);
+
+        $this->clientWrapper->getTableAndFileStorageClient()->uploadFile($zipFileName, $uploadOptions);
+
         $fs = new Filesystem();
         $fs->remove($zipFileName);
     }
