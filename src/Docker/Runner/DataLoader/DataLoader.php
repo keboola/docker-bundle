@@ -385,7 +385,9 @@ class DataLoader implements DataLoaderInterface
         $uploadOptions->setIsPermanent(false);
         $uploadOptions->setIsPublic(false);
         $uploadOptions->setNotify(false);
-        $this->clientWrapper->getBasicClient()->uploadFile($zipFileName, $uploadOptions);
+
+        $this->clientWrapper->getTableAndFileStorageClient()->uploadFile($zipFileName, $uploadOptions);
+
         $fs = new Filesystem();
         $fs->remove($zipFileName);
     }
