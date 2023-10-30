@@ -41,7 +41,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $this->cleanup();
     }
 
-    public function testExecutorDefaultBucket()
+    public function testExecutorDefaultBucket(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -50,7 +50,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced']),
+            (string) json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
@@ -64,7 +64,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
-    public function testExecutorDefaultBucketOverride()
+    public function testExecutorDefaultBucketOverride(): void
     {
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
@@ -83,7 +83,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced']),
+            (string) json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader(['output' => ['default_bucket' => 'in.c-test-override']]);
         $tableQueue = $dataLoader->storeOutput();
@@ -96,7 +96,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNull($dataLoader->getWorkspaceBackendSize());
     }
 
-    public function testNoConfigDefaultBucketException()
+    public function testNoConfigDefaultBucketException(): void
     {
         self::expectException(UserException::class);
         self::expectExceptionMessage('Configuration ID not set');
@@ -109,7 +109,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         );
     }
 
-    public function testExecutorInvalidOutputMapping()
+    public function testExecutorInvalidOutputMapping(): void
     {
         $config = [
             'input' => [
@@ -150,13 +150,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
     }
 
-    /**
-     * @dataProvider invalidStagingProvider
-     * @param string $input
-     * @param string $output
-     * @param string $error
-     */
-    public function testWorkspaceInvalid($input, $output, $error)
+    /** @dataProvider invalidStagingProvider */
+    public function testWorkspaceInvalid(string $input, string $output, string $error): void
     {
         $component = new Component([
             'id' => 'docker-demo',
@@ -230,6 +225,11 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'workspace-abs',
                 'workspace-synapse',
                 'Component staging setting mismatch - input: "workspace-abs", output: "workspace-synapse".',
+            ],
+            'bigquery-snowflake' => [
+                'workspace-bigquery',
+                'workspace-snowflake',
+                'Component staging setting mismatch - input: "workspace-bigquery", output: "workspace-snowflake".',
             ],
         ];
     }
@@ -325,7 +325,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         yield 'readonly off' => [false];
     }
 
-    public function testWorkspaceRedshiftNoPreserve()
+    public function testWorkspaceRedshiftNoPreserve(): void
     {
         try {
             $this->clientWrapper->getBasicClient()->dropBucket(
@@ -500,7 +500,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
     }
 
-    public function testBranchMappingEnabled()
+    public function testBranchMappingEnabled(): void
     {
         $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
         $fs = new Filesystem();
@@ -560,7 +560,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertInstanceOf(InputFileStateList::class, $storageState->getInputFileStateList());
     }
 
-    public function testTypedTableCreate()
+    public function testTypedTableCreate(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -636,7 +636,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertDataType($tableDetails['columnMetadata']['timestamp'], Snowflake::TYPE_TIMESTAMP_LTZ);
     }
 
-    private static function assertDataType($metadata, $expectedType): void
+    private static function assertDataType(array $metadata, string $expectedType): void
     {
         foreach ($metadata as $metadatum) {
             if ($metadatum['key'] === Common::KBC_METADATA_KEY_TYPE) {

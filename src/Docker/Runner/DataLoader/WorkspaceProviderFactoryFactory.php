@@ -8,11 +8,18 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
+use Keboola\StagingProvider\Staging\Workspace\BigQueryWorkspaceStaging;
 use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
+use Keboola\StagingProvider\WorkspaceProviderFactory\AbstractCachedWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
+use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\ABSWorkspaceCredentials;
+use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\BigQueryWorkspaceCredentials;
+use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\CredentialsInterface;
+use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\DatabaseWorkspaceCredentials;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingDatabaseWorkspaceProviderFactory;
 use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
+use Keboola\StagingProvider\WorkspaceProviderFactory\WorkspaceProviderFactoryInterface;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
@@ -20,40 +27,54 @@ use Psr\Log\LoggerInterface;
 
 class WorkspaceProviderFactoryFactory
 {
-    /** @var Components */
-    private $componentsApiClient;
-
-    /** @var Workspaces */
-    private $workspacesApiClient;
-
-    /** @var LoggerInterface */
-    private $logger;
-
     public function __construct(
-        Components $componentsApiClient,
-        Workspaces $workspacesApiClient,
-        LoggerInterface $logger,
+        private readonly Components $componentsApiClient,
+        private readonly Workspaces $workspacesApiClient,
+        private readonly LoggerInterface $logger,
     ) {
-        $this->componentsApiClient = $componentsApiClient;
-        $this->workspacesApiClient = $workspacesApiClient;
-        $this->logger = $logger;
     }
 
     public function getWorkspaceProviderFactory(
-        $stagingStorage,
+        string $stagingStorage,
         Component $component,
-        $configId,
+        ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
-    ) {
+    ): WorkspaceProviderFactoryInterface {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         if ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentAbsWorkspace($component, $configId);
+            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
+                $component,
+                $configId,
+                AbsWorkspaceStaging::getType(),
+                ABSWorkspaceCredentials::class,
+                ExistingFilesystemWorkspaceProviderFactory::class,
+            );
         } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_REDSHIFT)) {
             // Redshift workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentRedshiftWorkspace($component, $configId);
+            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
+                $component,
+                $configId,
+                RedshiftWorkspaceStaging::getType(),
+                DatabaseWorkspaceCredentials::class,
+                ExistingDatabaseWorkspaceProviderFactory::class,
+            );
+        /*
+         * Persistent BigQuery workspaces are possible, but do not work well on connection side (shared buckets,
+         * read-only role). If fixed, uncomment this + add changes to DataLoader class and it will start working.
+         *
+        } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_BIGQUERY)) {
+            // BigQuery workspaces are persistent, but only if configId is present
+            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
+                $component,
+                $configId,
+                BigQueryWorkspaceStaging::getType(),
+                BigQueryWorkspaceCredentials::class,
+                ExistingDatabaseWorkspaceProviderFactory::class,
+            );
+        */
         } else {
             $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
                 $this->componentsApiClient,
@@ -71,10 +92,17 @@ class WorkspaceProviderFactoryFactory
         return $workspaceProviderFactory;
     }
 
-    private function getWorkspaceFactoryForPersistentRedshiftWorkspace(
+    /**
+     * @param class-string<CredentialsInterface> $credentialsClass
+     * @param class-string<AbstractCachedWorkspaceProviderFactory> $workspaceFactoryClass
+     */
+    private function getWorkspaceFactoryForPersistentWorkspace(
         Component $component,
-        $configId,
-    ): ExistingDatabaseWorkspaceProviderFactory {
+        string $configId,
+        string $backendType,
+        string $credentialsClass,
+        string $workspaceFactoryClass,
+    ): AbstractCachedWorkspaceProviderFactory {
         $listOptions = (new ListConfigurationWorkspacesOptions())
             ->setComponentId($component->getId())
             ->setConfigurationId($configId);
@@ -84,15 +112,17 @@ class WorkspaceProviderFactoryFactory
             $workspace = $this->componentsApiClient->createConfigurationWorkspace(
                 $component->getId(),
                 $configId,
-                ['backend' => RedshiftWorkspaceStaging::getType()],
+                ['backend' => $backendType],
                 true,
             );
             $workspaceId = (int) $workspace['id'];
-            $password = $workspace['connection']['password'];
+            $credentials = $credentialsClass::fromPasswordResetArray($workspace['connection']);
             $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
         } elseif (count($workspaces) === 1) {
             $workspaceId = (int) $workspaces[0]['id'];
-            $password = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['password'];
+            $credentials = $credentialsClass::fromPasswordResetArray(
+                $this->workspacesApiClient->resetWorkspacePassword($workspaceId),
+            );
             $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
         } else {
             $ids = array_column($workspaces, 'id');
@@ -106,55 +136,18 @@ class WorkspaceProviderFactoryFactory
                 $component->getId(),
                 $workspaceId,
             ));
-            $password = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['password'];
-        }
-        return new ExistingDatabaseWorkspaceProviderFactory(
-            $this->workspacesApiClient,
-            (string) $workspaceId,
-            $password,
-        );
-    }
-
-    private function getWorkspaceFactoryForPersistentAbsWorkspace(Component $component, $configId)
-    {
-        // ABS workspaces are persistent, but only if configId is present
-        $listOptions = (new ListConfigurationWorkspacesOptions())
-            ->setComponentId($component->getId())
-            ->setConfigurationId($configId);
-        $workspaces = $this->componentsApiClient->listConfigurationWorkspaces($listOptions);
-
-        if (count($workspaces) === 0) {
-            $workspace = $this->componentsApiClient->createConfigurationWorkspace(
-                $component->getId(),
-                $configId,
-                ['backend' => AbsWorkspaceStaging::getType()],
-                true,
+            $credentials = $credentialsClass::fromPasswordResetArray(
+                $this->workspacesApiClient->resetWorkspacePassword($workspaceId),
             );
-            $workspaceId = (int) $workspace['id'];
-            $connectionString = $workspace['connection']['connectionString'];
-            $this->logger->info(sprintf('Created a new persistent workspace "%s".', $workspaceId));
-        } elseif (count($workspaces) === 1) {
-            $workspaceId = (int) $workspaces[0]['id'];
-            $connectionString = $this->workspacesApiClient->resetWorkspacePassword($workspaceId)['connectionString'];
-            $this->logger->info(sprintf('Reusing persistent workspace "%s".', $workspaceId));
-        } else {
-            throw new ApplicationException(sprintf(
-                'Multiple workspaces (total %s) found (IDs: %s, %s) for configuration "%s" of component "%s".',
-                count($workspaces),
-                $workspaces[0]['id'],
-                $workspaces[1]['id'],
-                $configId,
-                $component->getId(),
-            ));
         }
-        return new ExistingFilesystemWorkspaceProviderFactory(
+        return new $workspaceFactoryClass(
             $this->workspacesApiClient,
             (string) $workspaceId,
-            $connectionString,
+            $credentials,
         );
     }
 
-    private function resolveWorkspaceBackendConfiguration(array $backendConfig)
+    private function resolveWorkspaceBackendConfiguration(array $backendConfig): WorkspaceBackendConfig
     {
         $backendType = $backendConfig['type'] ?? null;
         return new WorkspaceBackendConfig($backendType);

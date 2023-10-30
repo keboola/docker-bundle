@@ -160,8 +160,8 @@ class DataLoader implements DataLoaderInterface
         $readerOptions = new ReaderOptions(
             !$this->component->allowBranchMapping(),
             /* preserve is true only for ABS Workspaces which are persistent (shared across runs) (preserve = true).
-                Redshift workspaces are reusable, but still cleaned up before each run (preserve = false). Other
-                workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
+                Redshift workspaces are reusable, but still cleaned up before each run (preserve = false).
+                Other workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
             */
             $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS,
         );
@@ -427,7 +427,8 @@ class DataLoader implements DataLoaderInterface
     private function validateStagingSetting(): void
     {
         $workspaceTypes = [AbstractStrategyFactory::WORKSPACE_ABS, AbstractStrategyFactory::WORKSPACE_REDSHIFT,
-            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE, AbstractStrategyFactory::WORKSPACE_SYNAPSE];
+            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE, AbstractStrategyFactory::WORKSPACE_SYNAPSE,
+            AbstractStrategyFactory::WORKSPACE_BIGQUERY];
         if (in_array($this->getStagingStorageInput(), $workspaceTypes)
             && in_array($this->getStagingStorageOutput(), $workspaceTypes)
             && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
@@ -455,7 +456,8 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config
+                // don't clean ABS workspaces or Redshift workspaces
+                // which are reusable if created for a config
                 if ($this->configId && $this->isReusableWorkspace()) {
                     continue;
                 }

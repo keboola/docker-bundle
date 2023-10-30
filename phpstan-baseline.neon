@@ -476,41 +476,6 @@ parameters:
 			path: src/Docker/Runner/DataLoader/NullDataLoader.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceFactoryForPersistentAbsWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceFactoryForPersistentAbsWorkspace\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceFactoryForPersistentRedshiftWorkspace\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceProviderFactory\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceProviderFactory\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:getWorkspaceProviderFactory\\(\\) has parameter \\$stagingStorage with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\WorkspaceProviderFactoryFactory\\:\\:resolveWorkspaceBackendConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/WorkspaceProviderFactoryFactory.php
-
-		-
 			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ImageCreator\\:\\:\\$temp is never read, only written\\.$#"
 			count: 1
 			path: src/Docker/Runner/ImageCreator.php
@@ -1241,110 +1206,9 @@ parameters:
 			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
 
 		-
-
 			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"
 			count: 8
 			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:createBranch\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:createBranch\\(\\) has parameter \\$branchName with no type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testDefaultSystemConfigRowMetadata\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testDefaultSystemMetadata\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testDefaultSystemMetadataBranch\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testExecutorConfigMetadata\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testExecutorManifestMetadata\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderMetadataTest\\:\\:testExecutorManifestMetadataCombined\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$content of method Symfony\\\\Component\\\\Filesystem\\\\Filesystem\\:\\:dumpFile\\(\\) expects resource\\|string, string\\|false given\\.$#"
-			count: 3
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:assertDataType\\(\\) has parameter \\$expectedType with no type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:assertDataType\\(\\) has parameter \\$metadata with no type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testBranchMappingEnabled\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testExecutorDefaultBucket\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testExecutorDefaultBucketOverride\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testExecutorInvalidOutputMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testNoConfigDefaultBucketException\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testTypedTableCreate\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testWorkspaceInvalid\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\DataLoaderTest\\:\\:testWorkspaceRedshiftNoPreserve\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Runner/DataLoaderTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$content of method Symfony\\\\Component\\\\Filesystem\\\\Filesystem\\:\\:dumpFile\\(\\) expects resource\\|string, string\\|false given\\.$#"
-			count: 2
-			path: Tests/Runner/DataLoaderTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ImageCreatorTest\\:\\:testCreateImageDockerHub\\(\\) has no return type specified\\.$#"
@@ -1810,26 +1674,6 @@ parameters:
 			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/ABS/RunnerAbsTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\BigQuery\\\\RunnerBigQueryTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/BigQuery/RunnerBigQueryTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\BigQuery\\\\RunnerBigQueryTest\\:\\:clearConfigs\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/BigQuery/RunnerBigQueryTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\BigQuery\\\\RunnerBigQueryTest\\:\\:createBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/BigQuery/RunnerBigQueryTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\BigQuery\\\\RunnerBigQueryTest\\:\\:testWorkspaceBigQueryMapping\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/BigQuery/RunnerBigQueryTest.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\Exasol\\\\RunnerExasolTest\\:\\:clearBuckets\\(\\) has no return type specified\\.$#"
