@@ -132,8 +132,8 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId(self::COMPONENT_ID);
         $options->setConfigurationId($configId);
-        // workspace is not deleted after the job
-        self::assertCount(1, $components->listConfigurationWorkspaces($options));
+        // workspace is deleted after the job
+        self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-bigquery-runner-test.new-table'));
     }
 
