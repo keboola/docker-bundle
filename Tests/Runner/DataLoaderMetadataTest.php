@@ -81,7 +81,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function createBranch(Client $client, string $branchName): string
+    public function createBranch(Client $client, string $branchName): int
     {
         $branches = new DevBranches($client);
         foreach ($branches->listBranches() as $branch) {
