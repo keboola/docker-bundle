@@ -35,7 +35,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         return $result;
     }
 
-    public function testDefaultSystemMetadata()
+    public function testDefaultSystemMetadata(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -44,7 +44,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced']),
+            (string) json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
@@ -81,7 +81,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function createBranch(Client $client, $branchName)
+    public function createBranch(Client $client, string $branchName): int
     {
         $branches = new DevBranches($client);
         foreach ($branches->listBranches() as $branch) {
@@ -92,7 +92,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         return $branches->createBranch($branchName)['id'];
     }
 
-    public function testDefaultSystemMetadataBranch()
+    public function testDefaultSystemMetadataBranch(): void
     {
         $clientWrapper = new ClientWrapper(
             new ClientOptions(
@@ -113,7 +113,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced']),
+            (string) json_encode(['destination' => 'sliced']),
         );
 
         $branchId = $this->createBranch($clientWrapper->getBasicClient(), 'test-branch');
@@ -160,7 +160,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function testDefaultSystemConfigRowMetadata()
+    public function testDefaultSystemConfigRowMetadata(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -169,7 +169,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest',
-            json_encode(['destination' => 'sliced']),
+            (string) json_encode(['destination' => 'sliced']),
         );
         $dataLoader = $this->getDataLoader([], 'testRow');
         $tableQueue = $dataLoader->storeOutput();
@@ -210,7 +210,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedTableMetadata, $this->getMetadataValues($tableMetadata));
     }
 
-    public function testExecutorConfigMetadata()
+    public function testExecutorConfigMetadata(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -295,7 +295,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 
-    public function testExecutorManifestMetadata()
+    public function testExecutorManifestMetadata(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(
@@ -366,7 +366,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         self::assertEquals($expectedColumnMetadata, $this->getMetadataValues($idColMetadata));
     }
 
-    public function testExecutorManifestMetadataCombined()
+    public function testExecutorManifestMetadataCombined(): void
     {
         $fs = new Filesystem();
         $fs->dumpFile(

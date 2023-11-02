@@ -22,7 +22,7 @@
         "keboola/output-mapping": "^22.0",
         "keboola/php-utils": "^5.0",
         "keboola/sandboxes-api-php-client": "^6.7",
-        "keboola/staging-provider": "^6.0.4",
+        "keboola/staging-provider": "^7.0",
         "keboola/storage-api-client": "^14.6",
         "keboola/storage-api-php-client-branch-wrapper": "^5.0",
         "monolog/monolog": "^2.5",

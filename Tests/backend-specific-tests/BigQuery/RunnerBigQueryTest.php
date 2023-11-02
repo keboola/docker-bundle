@@ -20,7 +20,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
 {
     private const COMPONENT_ID = 'keboola.runner-workspace-bigquery-test';
 
-    private function clearBuckets()
+    private function clearBuckets(): void
     {
         foreach (['in.c-bigquery-runner-test', 'out.c-bigquery-runner-test'] as $bucket) {
             try {
@@ -33,7 +33,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         }
     }
 
-    private function clearConfigs()
+    private function clearConfigs(): void
     {
         $componentsApi = new Components($this->client);
         $configurations = $componentsApi->listComponentConfigurations(
@@ -53,7 +53,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         }
     }
 
-    private function createBuckets()
+    private function createBuckets(): void
     {
         $this->clearBuckets();
         // Create buckets
@@ -61,7 +61,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         $this->getClient()->createBucket('bigquery-runner-test', Client::STAGE_OUT, 'Docker TestSuite', 'bigquery');
     }
 
-    public function testWorkspaceBigQueryMapping()
+    public function testWorkspaceBigQueryMapping(): void
     {
         $this->clearBuckets();
         $this->createBuckets();
@@ -132,6 +132,7 @@ class RunnerBigQueryTest extends BaseTableBackendTest
         $options = new ListConfigurationWorkspacesOptions();
         $options->setComponentId(self::COMPONENT_ID);
         $options->setConfigurationId($configId);
+        // workspace is deleted after the job
         self::assertCount(0, $components->listConfigurationWorkspaces($options));
         self::assertTrue($this->client->tableExists('out.c-bigquery-runner-test.new-table'));
     }
