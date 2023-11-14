@@ -216,7 +216,7 @@ SAMPLE;
     }
 
     /**
-     * @dataProvider imageParametersData
+     * @dataProvider imageParametersMisuseData
      */
     public function testImageParametersMisuse(
         array $imageParameters,
@@ -241,7 +241,7 @@ SAMPLE;
         );
     }
 
-    public function imageParametersData()
+    public function imageParametersMisuseData(): iterable
     {
         yield 'same key' => [
             'imageParameters' => [
@@ -279,6 +279,70 @@ SAMPLE;
                 ],
             ],
             'exceptionPath' => 'parameters.credentials.#other-secret',
+        ];
+    }
+
+    /**
+     * @dataProvider imageParametersNoMisuseData
+     */
+    public function testImageParametersNoMisuse(
+        array $imageParameters,
+        array $configData,
+    ): void {
+        $temp = new Temp();
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+
+        $config->createConfigFile(
+            $configData,
+            new OutputFilter(10000),
+            ['host' => 'foo', 'user' => 'bar'],
+            $imageParameters,
+        );
+
+        $config = json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true,
+        );
+
+        self::assertIsArray($config);
+    }
+
+    public function imageParametersNoMisuseData(): iterable
+    {
+        yield 'not a secret in image parameters' => [
+            'imageParameters' => [
+                'secret' => 'foobar5678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    '#secret' => 'foobar5678',
+                ],
+            ],
+            'exceptionPath' => 'parameters.#secret',
+        ];
+
+        yield 'not a secret in config' => [
+            'imageParameters' => [
+                '#secret' => 'foobar5678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    'secret' => 'foobar5678',
+                ],
+            ],
+            'exceptionPath' => 'parameters.#secret',
+        ];
+
+        yield 'different secret value' => [
+            'imageParameters' => [
+                '#secret' => '12345678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    '#secret' => 'foobar5678',
+                ],
+            ],
+            'exceptionPath' => 'parameters.#secret',
         ];
     }
 }
