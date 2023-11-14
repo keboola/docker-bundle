@@ -93,8 +93,7 @@ class ConfigFile
         array $imageParameters,
         #[SensitiveParameter]
         array $configData,
-    ): void
-    {
+    ): void {
         $secretValues = [];
         foreach ($imageParameters as $key => $value) {
             if (!str_starts_with($key, '#')) {
