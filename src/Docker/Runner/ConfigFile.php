@@ -57,6 +57,8 @@ class ConfigFile
             unset($configData['runtime']);
             unset($configData['processors']);
 
+            $this->checkImageParametersMisuse($imageParameters, $configData);
+
             $configData['image_parameters'] = $imageParameters;
             if (!empty($configData['authorization'])) {
                 $configData['authorization'] = $this->authorization->getAuthorization($configData['authorization']);
@@ -82,6 +84,48 @@ class ConfigFile
             $adapter->writeToFile($fileName);
         } catch (InvalidConfigurationException $e) {
             throw new UserException('Error in configuration: ' . $e->getMessage(), $e);
+        }
+    }
+
+    private function checkImageParametersMisuse(array $imageParameters, array $configData): void
+    {
+        $secretValues = [];
+        foreach ($imageParameters as $key => $value) {
+            if (!str_starts_with($key, '#')) {
+                continue;
+            }
+
+            $secretValues[] = (string) $value;
+        }
+
+        if (count($secretValues) === 0) {
+            return;
+        }
+
+        unset($configData['image_parameters']);
+        $this->checkSecretsValueMisuse($configData, $secretValues);
+    }
+
+    private function checkSecretsValueMisuse(array $data, array $secretValues, array $path = []): void
+    {
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $this->checkSecretsValueMisuse($value, $secretValues, [...$path, $key]);
+                continue;
+            }
+
+            if (!str_starts_with($key, '#')) {
+                continue;
+            }
+
+            $value = (string) $value;
+            if (in_array($value, $secretValues, true)) {
+                throw new UserException(sprintf(
+                    'Component secrets cannot be used in configurations (used in "%s"). ' .
+                    'Please contact support if you need further explanation.',
+                    implode('.', [...$path, $key])
+                ));
+            }
         }
     }
 }

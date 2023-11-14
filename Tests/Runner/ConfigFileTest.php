@@ -214,4 +214,71 @@ SAMPLE;
             self::assertArrayNotHasKey('context', $config['authorization']);
         }
     }
+
+    /**
+     * @dataProvider imageParametersData
+     */
+    public function testImageParametersMisuse(
+        array $imageParameters,
+        array $configData,
+        string $exceptionPath,
+    ): void {
+        $temp = new Temp();
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Component secrets cannot be used in configurations (used in "%s"). ' .
+            'Please contact support if you need further explanation.',
+            $exceptionPath
+        ));
+
+        $config->createConfigFile(
+            $configData,
+            new OutputFilter(10000),
+            ['host' => 'foo', 'user' => 'bar'],
+            $imageParameters,
+        );
+    }
+
+    public function imageParametersData()
+    {
+        yield 'same key' => [
+            'imageParameters' => [
+                '#secret' => 'foobar5678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    '#secret' => 'foobar5678',
+                ],
+            ],
+            'exceptionPath' => 'parameters.#secret',
+        ];
+
+        yield 'different key' => [
+            'imageParameters' => [
+                '#secret' => 'foobar5678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    '#secret' => 'foobar5678',
+                ],
+            ],
+            'exceptionPath' => 'parameters.#secret',
+        ];
+
+        yield 'different depth' => [
+            'imageParameters' => [
+                '#secret' => 'foobar5678',
+            ],
+            'configData' => [
+                'parameters' => [
+                    'credentials' => [
+                        '#other-secret' => 'foobar5678',
+                    ],
+                ],
+            ],
+            'exceptionPath' => 'parameters.credentials.#other-secret',
+        ];
+    }
 }
