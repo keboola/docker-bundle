@@ -95,13 +95,14 @@ class ConfigFile
         array $configData,
     ): void {
         $secretValues = [];
-        foreach ($imageParameters as $key => $value) {
-            if (!str_starts_with((string) $key, '#')) {
-                continue;
-            }
-
-            $secretValues[] = (string) $value;
-        }
+        array_walk_recursive(
+            $imageParameters,
+            function ($value, $key) use (&$secretValues) {
+                if (str_starts_with((string) $key, '#')) {
+                    $secretValues[] = (string) $value;
+                }
+            },
+        );
 
         if (count($secretValues) === 0) {
             return;

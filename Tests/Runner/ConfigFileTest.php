@@ -267,7 +267,25 @@ SAMPLE;
             'exceptionPath' => 'parameters.#secret',
         ];
 
-        yield 'different depth' => [
+        yield 'different depth in image_parameters' => [
+            'imageParameters' => [
+                'nested' => [
+                    'deeply' => [
+                        '#secret' => 'foobar5678',
+                    ],
+                ],
+            ],
+            'configData' => [
+                'parameters' => [
+                    'credentials' => [
+                        '#other-secret' => 'foobar5678',
+                    ],
+                ],
+            ],
+            'exceptionPath' => 'parameters.credentials.#other-secret',
+        ];
+
+        yield 'different depth in config' => [
             'imageParameters' => [
                 '#secret' => 'foobar5678',
             ],
