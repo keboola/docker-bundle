@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Configuration\Container\Adapter;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Exception\UserException;
+use SensitiveParameter;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class ConfigFile
@@ -87,7 +88,12 @@ class ConfigFile
         }
     }
 
-    private function checkImageParametersMisuse(array $imageParameters, array $configData): void
+    private function checkImageParametersMisuse(
+        #[SensitiveParameter]
+        array $imageParameters,
+        #[SensitiveParameter]
+        array $configData,
+    ): void
     {
         $secretValues = [];
         foreach ($imageParameters as $key => $value) {
@@ -102,12 +108,16 @@ class ConfigFile
             return;
         }
 
-        unset($configData['image_parameters']);
         $this->checkSecretsValueMisuse($configData, $secretValues);
     }
 
-    private function checkSecretsValueMisuse(array $data, array $secretValues, array $path = []): void
-    {
+    private function checkSecretsValueMisuse(
+        #[SensitiveParameter]
+        array $data,
+        #[SensitiveParameter]
+        array $secretValues,
+        array $path = [],
+    ): void {
         foreach ($data as $key => $value) {
             if (is_array($value)) {
                 $this->checkSecretsValueMisuse($value, $secretValues, [...$path, $key]);
@@ -123,7 +133,7 @@ class ConfigFile
                 throw new UserException(sprintf(
                     'Component secrets cannot be used in configurations (used in "%s"). ' .
                     'Please contact support if you need further explanation.',
-                    implode('.', [...$path, $key])
+                    implode('.', [...$path, $key]),
                 ));
             }
         }

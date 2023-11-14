@@ -230,7 +230,7 @@ SAMPLE;
         $this->expectExceptionMessage(sprintf(
             'Component secrets cannot be used in configurations (used in "%s"). ' .
             'Please contact support if you need further explanation.',
-            $exceptionPath
+            $exceptionPath,
         ));
 
         $config->createConfigFile(
