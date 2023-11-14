@@ -96,7 +96,7 @@ class ConfigFile
     ): void {
         $secretValues = [];
         foreach ($imageParameters as $key => $value) {
-            if (!str_starts_with($key, '#')) {
+            if (!str_starts_with((string) $key, '#')) {
                 continue;
             }
 
@@ -123,7 +123,7 @@ class ConfigFile
                 continue;
             }
 
-            if (!str_starts_with($key, '#')) {
+            if (!str_starts_with((string) $key, '#')) {
                 continue;
             }
 
