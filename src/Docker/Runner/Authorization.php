@@ -12,36 +12,30 @@ use Keboola\OAuthV2Api\Exception\ClientException;
 
 class Authorization
 {
-    private Credentials $oauthClientV3;
+    private Credentials $oauthClient;
     private JobScopedEncryptor $encryptor;
     private string $componentId;
 
     public function __construct(
-        Credentials $clientV3,
+        Credentials $client,
         JobScopedEncryptor $encryptor,
         string $componentId,
     ) {
         $this->componentId = $componentId;
         $this->encryptor = $encryptor;
-        $this->oauthClientV3 = $clientV3;
+        $this->oauthClient = $client;
     }
 
-    public function getAuthorization($configData)
+    public function getAuthorization(array $configData): array
     {
         $data = [];
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
         } else {
-            if (isset($configData['oauth_api']['version']) && ($configData['oauth_api']['version'] === 3)) {
-                $client = $this->oauthClientV3;
-            } else {
-                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-                throw new UserException('OAuth Broker v2 has been deprecated on September 30, 2019. https://status.keboola.com/end-of-life-old-oauth-broker');
-            }
             if (isset($configData['oauth_api']['id'])) {
                 // read authorization from API
                 try {
-                    $credentials = $client->getDetail(
+                    $credentials = $this->oauthClient->getDetail(
                         $this->componentId,
                         $configData['oauth_api']['id'],
                     );
