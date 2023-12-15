@@ -366,10 +366,6 @@ class AuthorizationTest extends BaseRunnerTest
             'shared_code_row_ids' => [],
         ];
 
-        var_dump($sampleData);
-
-        var_dump($data);
-
         self::assertEquals($sampleData, $data);
     }
 }

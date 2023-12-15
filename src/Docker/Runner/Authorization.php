@@ -50,6 +50,7 @@ class Authorization
                 }
             }
         }
+
         return $data;
     }
 }
