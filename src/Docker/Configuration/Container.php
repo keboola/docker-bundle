@@ -101,6 +101,7 @@ class Container extends Configuration
                 ->arrayNode('oauth_api')
                     ->children()
                         ->scalarNode('id')->end()
+                        ->scalarNode('version')->end()
                         ->variableNode('credentials')->end()
                     ->end()
                 ->end()
