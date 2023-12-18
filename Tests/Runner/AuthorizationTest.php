@@ -127,7 +127,6 @@ class AuthorizationTest extends BaseRunnerTest
                         'appKey' => '123456',
                         '#appSecret' => '654321',
                     ],
-                    'version' => 2,
                 ],
             ],
             'image_parameters' => [
