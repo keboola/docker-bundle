@@ -9,18 +9,18 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 
 class Environment
 {
-    readonly private ?string $configId;
-    readonly private array $tokenInfo;
-    readonly private ?string $runId;
-    readonly private string $url;
-    readonly private Component $component;
-    readonly private string $stackId;
-    readonly private ?string $configRowId;
-    readonly private string $token;
-    readonly private ?string $branchId;
-    readonly private ?string $absConnectionString;
-    readonly private ?MlflowTracking $mlflowTracking;
-    readonly private string $mode;
+    private readonly ?string $configId;
+    private readonly array $tokenInfo;
+    private readonly ?string $runId;
+    private readonly string $url;
+    private readonly Component $component;
+    private readonly string $stackId;
+    private readonly ?string $configRowId;
+    private readonly string $token;
+    private readonly ?string $branchId;
+    private readonly ?string $absConnectionString;
+    private readonly ?MlflowTracking $mlflowTracking;
+    private readonly string $mode;
 
     public function __construct(
         ?string $configId,

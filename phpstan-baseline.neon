@@ -331,16 +331,6 @@ parameters:
 			path: src/Docker/Runner.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Authorization\\:\\:getAuthorization\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/Authorization.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Authorization\\:\\:getAuthorization\\(\\) has parameter \\$configData with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/Authorization.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ConfigFile\\:\\:__construct\\(\\) has parameter \\$action with no type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/ConfigFile.php
