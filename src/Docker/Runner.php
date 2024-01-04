@@ -194,7 +194,7 @@ class Runner
             'Using configuration id: ' . $jobDefinition->getConfigId() .
             ' version:' . $jobDefinition->getConfigVersion()
             . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
-            . ', tmp folder: ' . $workingDirectory->getDataDir()
+            . ', tmp folder: ' . $workingDirectory->getDataDir(),
         );
 
         $currentOutput = new Output();
