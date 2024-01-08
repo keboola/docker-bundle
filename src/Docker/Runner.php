@@ -188,11 +188,15 @@ class Runner
         bool $storeState,
         ?string $orchestrationId,
     ) {
+        $temp = new Temp();
+        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $this->loggersService->getLog()->notice(
             'Using configuration id: ' . $jobDefinition->getConfigId() .
             ' version:' . $jobDefinition->getConfigVersion()
-            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState()),
+            . ', row id: ' . $jobDefinition->getRowId() . ', state: ' . json_encode($jobDefinition->getState())
+            . ', tmp folder: ' . $workingDirectory->getDataDir(),
         );
+
         $currentOutput = new Output();
         $outputs[] = $currentOutput;
         $currentOutput->setConfigVersion($jobDefinition->getConfigVersion());
@@ -203,8 +207,6 @@ class Runner
             $currentOutput->setInputVariableValues($jobDefinition->getInputVariableValues());
         }
 
-        $temp = new Temp();
-        $workingDirectory = new WorkingDirectory($temp->getTmpFolder(), $this->loggersService->getLog());
         $usageFile->setDataDir($workingDirectory->getDataDir());
 
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
