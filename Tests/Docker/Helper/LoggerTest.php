@@ -14,9 +14,16 @@ class LoggerTest extends TestCase
         $text = 'Lorem ipsum dolor sit amet, consectetur adipisici elit.';
         $longText = str_repeat($text, 100); // 5500 chars
 
+        // default settings
         $truncatedText = Logger::truncateMessage($longText);
 
-        $this->assertSame(4005, mb_strlen($truncatedText));
+        $this->assertSame(3999, mb_strlen($truncatedText));
         $this->assertStringContainsString(' ... ', $truncatedText);
+
+        // custom settings
+        $this->assertSame(
+            'Lorem ipsum dolor sit amet, ... consectetur adipisici elit.',
+            Logger::truncateMessage($longText, 60),
+        );
     }
 }
