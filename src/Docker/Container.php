@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Docker\Container\Process;
+use Keboola\DockerBundle\Docker\Helper\Logger as LoggerHelper;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -299,9 +300,7 @@ class Container
         }
 
         // make the exception message reasonably short
-        if (mb_strlen($message) > 4000) {
-            $message = mb_substr($message, 0, 2000) . ' ... ' . mb_substr($message, -2000);
-        }
+        $message = LoggerHelper::truncateMessage($message);
 
         // put the whole message to exception data, but make sure not use too much memory
         $data = [
