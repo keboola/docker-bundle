@@ -112,6 +112,7 @@ class Container extends Configuration
                         ->scalarNode('warehouse')->end()
                         ->scalarNode('database')->end()
                         ->scalarNode('schema')->end()
+                        ->scalarNode('region')->end()
                         ->scalarNode('user')->end()
                         ->scalarNode('password')->end()
                         ->scalarNode('container')->end()
