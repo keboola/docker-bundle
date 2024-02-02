@@ -129,7 +129,7 @@ class DataLoaderBigQueryTest extends BaseDataLoaderTest
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['schema', 'credentials'], array_keys($credentials));
+        self::assertEquals(['schema', 'region', 'credentials'], array_keys($credentials));
         self::assertNotEmpty($credentials['credentials']);
 
         $workspaces = $componentsApi->listConfigurationWorkspaces(
