@@ -297,6 +297,7 @@ class Runner
             $this->runComponent(
                 $jobId,
                 $jobDefinition->getConfigId(),
+                $jobDefinition->getConfigVersion(),
                 $jobDefinition->getRowId(),
                 $component,
                 $usageFile,
@@ -467,6 +468,7 @@ class Runner
     private function runComponent(
         string $jobId,
         ?string $configId,
+        ?string $configVersion,
         ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
@@ -494,6 +496,7 @@ class Runner
             $this->runImages(
                 $jobId,
                 $configId,
+                $configVersion,
                 $rowId,
                 $component,
                 $usageFile,
@@ -566,6 +569,7 @@ class Runner
     private function runImages(
         string $jobId,
         ?string $configId,
+        ?string $configVersion,
         ?string $rowId,
         Component $component,
         UsageFileInterface $usageFile,
@@ -635,6 +639,7 @@ class Runner
             }
             $environment = new Environment(
                 $configId,
+                $configVersion,
                 $rowId,
                 $image->getSourceComponent(),
                 $image->getConfigData()['parameters'],

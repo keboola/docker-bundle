@@ -49,6 +49,7 @@ class EnvironmentTest extends TestCase
         $mlflowTracking = new MlflowTracking('mlflow-uri', 'mlflow-token');
         $environment = new Environment(
             'config-test-id',
+            'config-version-id',
             'config-row-id',
             $component,
             [],
@@ -64,8 +65,10 @@ class EnvironmentTest extends TestCase
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGVERSION', $envs);
         self::assertArrayHasKey('KBC_CONFIGROWID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
+        self::assertEquals('config-version-id', $envs['KBC_CONFIGVERSION']);
         self::assertEquals('config-row-id', $envs['KBC_CONFIGROWID']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
         self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
@@ -104,6 +107,7 @@ class EnvironmentTest extends TestCase
         ]);
         $environment = new Environment(
             'config-test-id',
+            'config-version-id',
             '',
             $component,
             [],
@@ -119,8 +123,10 @@ class EnvironmentTest extends TestCase
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGVERSION', $envs);
         self::assertArrayNotHasKey('KBC_CONFIGROWID', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
+        self::assertEquals('config-version-id', $envs['KBC_CONFIGVERSION']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
         self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
@@ -155,6 +161,7 @@ class EnvironmentTest extends TestCase
         ]);
         $environment = new Environment(
             'config-test-id',
+            'config-version-id',
             null,
             $component,
             [],
@@ -170,7 +177,9 @@ class EnvironmentTest extends TestCase
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGVERSION', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
+        self::assertEquals('config-version-id', $envs['KBC_CONFIGVERSION']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
         self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
@@ -210,6 +219,7 @@ class EnvironmentTest extends TestCase
         $mlflowTracking = new MlflowTracking('mlflow-uri', 'mlflow-token');
         $environment = new Environment(
             'config-test-id',
+            'config-version-id',
             null,
             $component,
             $parameters,
@@ -225,7 +235,9 @@ class EnvironmentTest extends TestCase
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGVERSION', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
+        self::assertEquals('config-version-id', $envs['KBC_CONFIGVERSION']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
         self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
@@ -266,6 +278,7 @@ class EnvironmentTest extends TestCase
         ];
         $environment = new Environment(
             'config-test-id',
+            'config-version-id',
             null,
             $component,
             $parameters,
@@ -281,7 +294,9 @@ class EnvironmentTest extends TestCase
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
         self::assertArrayHasKey('KBC_CONFIGID', $envs);
+        self::assertArrayHasKey('KBC_CONFIGVERSION', $envs);
         self::assertEquals('config-test-id', $envs['KBC_CONFIGID']);
+        self::assertEquals('config-version-id', $envs['KBC_CONFIGVERSION']);
         self::assertArrayHasKey('KBC_STACKID', $envs);
         self::assertEquals(parse_url((string) getenv('STORAGE_API_URL'), PHP_URL_HOST), $envs['KBC_STACKID']);
         self::assertArrayHasKey('KBC_COMPONENTID', $envs);
