@@ -629,8 +629,9 @@ class RunnerTest extends BaseRunnerTest
                'script' => [
                    'import os',
                    'import sys',
-                   'print(os.environ.get("KBC_TOKEN"))',
-                   'print(os.environ.get("KBC_CONFIGID"))',
+                   'print("KBC_TOKEN: " + (os.environ.get("KBC_TOKEN") or ""))',
+                   'print("KBC_CONFIGID: " + (os.environ.get("KBC_CONFIGID") or ""))',
+                   'print("KBC_CONFIGVERSION: " + (os.environ.get("KBC_CONFIGVERSION") or ""))',
                    'with open("/data/config.json", "r") as file:',
                    '    print(file.read(), file=sys.stderr)',
                ],
@@ -688,7 +689,8 @@ class RunnerTest extends BaseRunnerTest
 
         // verify that the token is not passed by default
         self::assertStringNotContainsString(getenv('STORAGE_API_TOKEN'), $contents);
-        self::assertStringContainsString($configId, $contents);
+        self::assertStringContainsString('KBC_CONFIGID: ' . $configId, $contents);
+        self::assertStringContainsString('KBC_CONFIGVERSION: v123', $contents);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
         self::assertEquals(

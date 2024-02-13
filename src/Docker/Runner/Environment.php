@@ -10,6 +10,7 @@ use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 class Environment
 {
     private readonly ?string $configId;
+    private readonly ?string $configVersion;
     private readonly array $tokenInfo;
     private readonly ?string $runId;
     private readonly string $url;
@@ -24,6 +25,7 @@ class Environment
 
     public function __construct(
         ?string $configId,
+        ?string $configVersion,
         ?string $configRowId,
         Component $component,
         array $config,
@@ -37,6 +39,7 @@ class Environment
         string $mode,
     ) {
         $this->configId = $configId ?: sha1(serialize($config));
+        $this->configVersion = $configVersion;
         $this->component = $component;
         $this->tokenInfo = $tokenInfo;
         $this->runId = $runId;
@@ -58,6 +61,7 @@ class Environment
             'KBC_PROJECTID' => $this->tokenInfo['owner']['id'],
             'KBC_DATADIR' => '/data/',
             'KBC_CONFIGID' => $this->configId,
+            'KBC_CONFIGVERSION' => (string) $this->configVersion,
             'KBC_COMPONENTID' => $this->component->getId(),
             'KBC_STACKID' => $this->stackId,
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],

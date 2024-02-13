@@ -363,4 +363,29 @@ SAMPLE;
             'exceptionPath' => 'parameters.#secret',
         ];
     }
+
+    public function testAppProxyAuthorizationIsNotPassedToConfig(): void
+    {
+        $temp = new Temp();
+        $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
+        $config->createConfigFile(
+            [
+                'authorization' => [
+                    'app_proxy' => [
+                        'foo' => 'bar',
+                    ],
+                ],
+            ],
+            new OutputFilter(10000),
+            [],
+            ['fooBar' => 'baz'],
+        );
+        $data = (array) json_decode(
+            (string) file_get_contents($temp->getTmpFolder() . DIRECTORY_SEPARATOR . 'config.json'),
+            true,
+        );
+
+        self::assertArrayHasKey('authorization', $data);
+        self::assertArrayNotHasKey('app_proxy', $data['authorization']);
+    }
 }
