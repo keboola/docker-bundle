@@ -51,6 +51,7 @@ class Runner
     private int $maxLogPort;
     private array $instanceLimits;
     private OutputFilterInterface $outputFilter;
+    private ?DataLoaderInterface $currentlyUsedDataLoader = null;
 
     public function __construct(
         ObjectEncryptor $encryptor,
@@ -177,6 +178,13 @@ class Runner
         return $storeState;
     }
 
+    public function cleanUp(): void
+    {
+        /* This method is expected to be called from termination handler, which means that runs with the main thread
+            paused and expecting it not to be resumed. */
+        $this->currentlyUsedDataLoader?->cleanWorkspace();
+    }
+
     private function runRow(
         JobDefinition $jobDefinition,
         string $action,
@@ -294,6 +302,7 @@ class Runner
         }
 
         try {
+            $this->currentlyUsedDataLoader = $dataLoader;
             $this->runComponent(
                 $jobId,
                 $jobDefinition->getConfigId(),
@@ -320,6 +329,8 @@ class Runner
         } catch (Throwable $e) {
             $dataLoader->cleanWorkspace();
             throw $e;
+        } finally {
+            $this->currentlyUsedDataLoader = null;
         }
     }
 
@@ -383,6 +394,7 @@ class Runner
                 'Running component ' . $jobDefinition->getComponentId() .
                 ' (row ' . $counter . ' of ' . count($jobDefinitions) . ')',
             );
+
             $this->runRow(
                 $jobDefinition,
                 $action,

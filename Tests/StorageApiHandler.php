@@ -11,10 +11,6 @@ use Monolog\Handler\AbstractHandler;
 use Monolog\Logger;
 use function Keboola\Utils\sanitizeUtf8;
 
-/**
- * Class StorageApiHandler
- * @package Keboola\DockerBundle\Monolog\Handler
- */
 class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInterface
 {
     private array $verbosity;
@@ -54,9 +50,6 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
         return $this->verbosity;
     }
 
-    /**
-     * @param array $record
-     */
     public function handle(array $record): bool
     {
         if (($this->verbosity[$record['level']] === self::VERBOSITY_NONE) || empty($record['message'])) {
@@ -64,7 +57,9 @@ class StorageApiHandler extends AbstractHandler implements StorageApiHandlerInte
         }
 
         $event = new Event();
+        // @phpstan-ignore-next-line
         if (!empty($record['component'])) {
+            // @phpstan-ignore-next-line
             $event->setComponent($record['component']);
         } else {
             $event->setComponent($this->appName);

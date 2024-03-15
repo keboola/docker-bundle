@@ -18,32 +18,23 @@ interface DataLoaderInterface
     public function __construct(
         ClientWrapper $clientWrapper,
         LoggerInterface $logger,
-        $dataDirectory,
+        string $dataDirectory,
         JobDefinition $jobDefinition,
         OutputFilterInterface $outputFilter,
     );
 
-    /**
-     * @return StorageState
-     */
     public function loadInputData(
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
-    );
+    ): StorageState;
 
-    /**
-     * @return LoadTableQueue|null
-     */
-    public function storeOutput($isFailedJob = false);
+    public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue;
 
-    public function storeDataArchive($fileName, array $tags);
+    public function storeDataArchive(string $fileName, array $tags): void;
 
-    /**
-     * @return array
-     */
-    public function getWorkspaceCredentials();
+    public function getWorkspaceCredentials(): array;
 
-    public function cleanWorkspace();
+    public function cleanWorkspace(): void;
 
     public function getWorkspaceBackendSize(): ?string;
 }

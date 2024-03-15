@@ -14,7 +14,6 @@ use Keboola\InputMapping\Exception\InvalidInputException;
 use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\AbstractStagingDefinition;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
-use Keboola\InputMapping\Staging\InputMappingStagingDefinition;
 use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
@@ -197,7 +196,7 @@ class DataLoader implements DataLoaderInterface
         return new StorageState($inputTableResult, $resultInputFilesStateList);
     }
 
-    public function storeOutput($isFailedJob = false): ?LoadTableQueue
+    public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue
     {
         $this->logger->debug('Storing results.');
         $outputTablesConfig = [];
@@ -345,10 +344,8 @@ class DataLoader implements DataLoaderInterface
 
     /**
      * Archive data directory and save it to Storage
-     * @param $fileName
-     * @param array $tags
      */
-    public function storeDataArchive($fileName, array $tags)
+    public function storeDataArchive(string $fileName, array $tags): void
     {
         $zip = new ZipArchive();
         $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . $fileName . '.zip';

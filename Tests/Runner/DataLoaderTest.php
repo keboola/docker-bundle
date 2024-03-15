@@ -647,6 +647,218 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::fail('Metadata key ' . Common::KBC_METADATA_KEY_TYPE . ' not found');
     }
 
+    public function testWorkspaceCleanupSuccess(): void
+    {
+        $componentId = 'keboola.runner-workspace-test';
+        $component = new Component([
+            'id' => $componentId,
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
+                    'tag' => '1.6.2',
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ]);
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+        $configuration = new Configuration();
+        $configuration->setName('testWorkspaceCleanup');
+        $configuration->setComponentId($componentId);
+        $configuration->setConfiguration([]);
+        $componentsApi = new Components($this->clientWrapper->getBasicClient());
+        $configId = $componentsApi->addConfiguration($configuration)['id'];
+        $workspaceData = $componentsApi->createConfigurationWorkspace(
+            $componentId,
+            $configId,
+            ['backend' => 'snowflake'],
+        );
+        $workspaces = new Workspaces($this->clientWrapper->getBasicClient());
+        $passwordResetData = $workspaces->resetWorkspacePassword($workspaceData['id']);
+
+        $matcher = self::exactly(2);
+        $clientMock->expects($matcher)
+            ->method('apiPostJson')
+            ->with(self::callback(function (string $url, array $data = []) use ($matcher, $configId, $workspaceData) {
+                switch ($matcher->getInvocationCount()) {
+                    case 1:
+                        self::assertSame(
+                            sprintf(
+                                'components/keboola.runner-workspace-test/configs/%s/workspaces?async=1',
+                                $configId,
+                            ),
+                            $url,
+                        );
+                        self::assertSame([], $data);
+                        break;
+                    case 2:
+                        self::assertSame(
+                            sprintf('workspaces/%s/password', $workspaceData['id']),
+                            $url,
+                        );
+                        self::assertSame(
+                            [],
+                            $data,
+                        );
+                        break;
+                    default:
+                        self::fail('Unexpected call');
+                }
+                return true;
+            }))
+            ->willReturnCallback(function () use ($matcher, $workspaceData, $passwordResetData) {
+                return match ($matcher->getInvocationCount()) {
+                    1 => $workspaceData,
+                    2 => $passwordResetData,
+                    default => self::fail('Unexpected call')
+                };
+            });
+        $clientMock->expects(self::once())
+            ->method('apiDelete')
+            ->with(sprintf('workspaces/%s?async=1', $workspaceData['id']))
+            ->willReturnCallback(function () use ($workspaceData) {
+                $this->clientWrapper->getBasicClient()->apiDelete(sprintf(
+                    'workspaces/%s?async=1',
+                    $workspaceData['id'],
+                ));
+            });
+
+        $clientWrapperMock = $this->createMock(ClientWrapper::class);
+        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+
+        $logger = new TestLogger();
+        $dataLoader = new DataLoader(
+            $clientWrapperMock,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition([], $component, $configId),
+            new OutputFilter(10000),
+        );
+        $dataLoader->cleanWorkspace();
+        $listOptions = new ListConfigurationWorkspacesOptions();
+        $listOptions->setComponentId($componentId)->setConfigurationId($configId);
+        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
+        self::assertCount(0, $workspaces);
+        $componentsApi->deleteConfiguration($componentId, $configId);
+    }
+
+    public function testWorkspaceCleanupSuccessWhenWorkspaceWasAlreadyInitialized(): void
+    {
+        $componentId = 'keboola.runner-workspace-test';
+        $component = new Component([
+            'id' => $componentId,
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
+                    'tag' => '1.6.2',
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ]);
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+        $configuration = new Configuration();
+        $configuration->setName('testWorkspaceCleanup');
+        $configuration->setComponentId($componentId);
+        $configuration->setConfiguration([]);
+        $componentsApi = new Components($this->clientWrapper->getBasicClient());
+        $configId = $componentsApi->addConfiguration($configuration)['id'];
+        $workspaceData = $componentsApi->createConfigurationWorkspace(
+            $componentId,
+            $configId,
+            ['backend' => 'snowflake'],
+        );
+        $workspaces = new Workspaces($this->clientWrapper->getBasicClient());
+        $passwordResetData = $workspaces->resetWorkspacePassword($workspaceData['id']);
+
+        $matcher = self::exactly(2);
+        $clientMock->expects($matcher)
+            ->method('apiPostJson')
+            ->with(self::callback(function (string $url, array $data = []) use ($matcher, $configId, $workspaceData) {
+                switch ($matcher->getInvocationCount()) {
+                    case 1:
+                        self::assertSame(
+                            sprintf(
+                                'components/keboola.runner-workspace-test/configs/%s/workspaces?async=1',
+                                $configId,
+                            ),
+                            $url,
+                        );
+                        self::assertSame([], $data);
+                        break;
+                    case 2:
+                        self::assertSame(
+                            sprintf('workspaces/%s/password', $workspaceData['id']),
+                            $url,
+                        );
+                        self::assertSame(
+                            [],
+                            $data,
+                        );
+                        break;
+                    default:
+                        self::fail('Unexpected call');
+                }
+                return true;
+            }))
+            ->willReturnCallback(function () use ($matcher, $workspaceData, $passwordResetData) {
+                return match ($matcher->getInvocationCount()) {
+                    1 => $workspaceData,
+                    2 => $passwordResetData,
+                    default => self::fail('Unexpected call')
+                };
+            });
+        $clientMock->expects(self::once())
+            ->method('apiDelete')
+            ->with(sprintf('workspaces/%s?async=1', $workspaceData['id']))
+            ->willReturnCallback(function () use ($workspaceData) {
+                $this->clientWrapper->getBasicClient()->apiDelete(sprintf(
+                    'workspaces/%s?async=1',
+                    $workspaceData['id'],
+                ));
+            });
+
+        $clientWrapperMock = $this->createMock(ClientWrapper::class);
+        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+
+        $logger = new TestLogger();
+        $dataLoader = new DataLoader(
+            $clientWrapperMock,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition([], $component, $configId),
+            new OutputFilter(10000),
+        );
+        $workspace = $dataLoader->getWorkspaceCredentials();
+
+        self::assertArrayHasKey('host', $workspace);
+        self::assertArrayHasKey('warehouse', $workspace);
+        self::assertArrayHasKey('database', $workspace);
+        self::assertArrayHasKey('schema', $workspace);
+        self::assertArrayHasKey('user', $workspace);
+        self::assertArrayHasKey('password', $workspace);
+        self::assertArrayHasKey('account', $workspace);
+
+        $dataLoader->cleanWorkspace();
+        $listOptions = new ListConfigurationWorkspacesOptions();
+        $listOptions->setComponentId($componentId)->setConfigurationId($configId);
+        $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
+        self::assertCount(0, $workspaces);
+        $componentsApi->deleteConfiguration($componentId, $configId);
+    }
+
     public function testWorkspaceCleanupFailure(): void
     {
         $component = new Component([
