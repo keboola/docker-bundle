@@ -48,11 +48,6 @@ class NullDataLoader implements DataLoaderInterface
         return [];
     }
 
-    public function getWorkspaceId(): ?string
-    {
-        return null;
-    }
-
     public function cleanWorkspace(): void
     {
     }

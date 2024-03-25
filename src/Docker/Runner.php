@@ -180,8 +180,8 @@ class Runner
 
     public function cleanUp(): void
     {
-        /* This method is expected to be called from termination handler, which means that runs with the main thread
-            paused and expecting it not to be resumed. */
+        /* This method is expected to be called from pcntl signal termination handler, which means that runs with
+            the main thread paused and expecting it not to be resumed. */
         $this->currentlyUsedDataLoader?->cleanWorkspace();
     }
 
