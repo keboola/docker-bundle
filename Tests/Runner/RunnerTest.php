@@ -2163,8 +2163,8 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
+        $outputs = [];
         try {
-            $outputs = [];
             $runner->run(
                 $this->prepareJobDefinitions($componentData, 'runner-configuration', $configurationData, []),
                 'run',
@@ -2182,6 +2182,7 @@ class RunnerTest extends BaseRunnerTest
                 ' failed: (2) Class 2 error',
                 $e->getMessage(),
             );
+            // @phpstan-ignore-next-line
             self::assertCount(1, $outputs);
             /** @var Output $output */
             $output = array_shift($outputs);

@@ -361,21 +361,6 @@ parameters:
 			path: src/Docker/Runner/DataLoader/DataLoader.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoader\\:\\:storeDataArchive\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoader\\:\\:storeDataArchive\\(\\) has parameter \\$fileName with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoader\\:\\:storeOutput\\(\\) has parameter \\$isFailedJob with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
 			message: "#^Parameter \\#1 \\$format of method Keboola\\\\OutputMapping\\\\Writer\\\\AbstractWriter\\:\\:setFormat\\(\\) expects 'json'\\|'yaml', string given\\.$#"
 			count: 1
 			path: src/Docker/Runner/DataLoader/DataLoader.php
@@ -389,31 +374,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$text of method Keboola\\\\DockerBundle\\\\Docker\\\\OutputFilter\\\\OutputFilterInterface\\:\\:filter\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoaderInterface\\:\\:__construct\\(\\) has parameter \\$dataDirectory with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoaderInterface.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoaderInterface\\:\\:cleanWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoaderInterface.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoaderInterface\\:\\:storeDataArchive\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoaderInterface.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoaderInterface\\:\\:storeDataArchive\\(\\) has parameter \\$fileName with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoaderInterface.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\DataLoaderInterface\\:\\:storeOutput\\(\\) has parameter \\$isFailedJob with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoaderInterface.php
 
 		-
 			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$clientWrapper\\.$#"
@@ -442,26 +402,6 @@ parameters:
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:__construct\\(\\) has parameter \\$dataDirectory with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:cleanWorkspace\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:storeDataArchive\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:storeDataArchive\\(\\) has parameter \\$fileName with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:storeOutput\\(\\) has parameter \\$isFailedJob with no type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/DataLoader/NullDataLoader.php
 

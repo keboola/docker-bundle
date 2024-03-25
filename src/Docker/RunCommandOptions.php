@@ -16,10 +16,6 @@ class RunCommandOptions
      */
     private $environmentVariables;
 
-    /**
-     * @param array $labels
-     * @param array $environmentVariables
-     */
     public function __construct(array $labels, array $environmentVariables)
     {
         $this->labels = $labels;
@@ -42,9 +38,6 @@ class RunCommandOptions
         return $this->environmentVariables;
     }
 
-    /**
-     * @param array $environmentVariables
-     */
     public function setEnvironmentVariables(array $environmentVariables)
     {
         $this->environmentVariables = $environmentVariables;
