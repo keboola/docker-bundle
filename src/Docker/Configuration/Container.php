@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
+use Keboola\DockerBundle\Docker\Configuration\Authorization\AuthorizationDefinition;
 use Keboola\InputMapping\Configuration\File as InputFile;
 use Keboola\InputMapping\Configuration\Table as InputTable;
 use Keboola\OutputMapping\Configuration\File as OutputFile;
@@ -95,35 +96,7 @@ class Container extends Configuration
         OutputTableFile::configureNode($outputTableFile);
 
         // authorization
-        $root->children()
-            ->arrayNode('authorization')
-            ->children()
-                ->arrayNode('oauth_api')
-                    ->children()
-                        ->scalarNode('id')->end()
-                        ->scalarNode('version')->end()
-                        ->variableNode('credentials')->end()
-                    ->end()
-                ->end()
-                ->arrayNode('workspace')
-                    ->children()
-                        ->scalarNode('host')->end()
-                        ->scalarNode('account')->end()
-                        ->scalarNode('warehouse')->end()
-                        ->scalarNode('database')->end()
-                        ->scalarNode('schema')->end()
-                        ->scalarNode('region')->end()
-                        ->scalarNode('user')->end()
-                        ->scalarNode('password')->end()
-                        ->scalarNode('container')->end()
-                        ->scalarNode('connectionString')->end()
-                        ->scalarNode('account')->end()
-                        ->variableNode('credentials')->end()
-                    ->end()
-                ->end()
-                ->scalarNode('context')->end()
-            ->end()
-        ->end();
+        $root->children()->append((new AuthorizationDefinition())->getConfigTreeBuilder()->getRootNode());
 
         // action
         $root->children()->scalarNode('action')->end();
