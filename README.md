@@ -1,9 +1,7 @@
 # Docker Runner
 
-[![Build Status](https://dev.azure.com/keboola-dev/docker-runner/_apis/build/status/keboola.docker-bundle?branchName=master)](https://dev.azure.com/keboola-dev/docker-runner/_build/latest?definitionId=1&branchName=master)
+# Master branch is DEPRECATED! 
 
-Keboola Connection Component for running Docker images - see [documentation](https://developers.keboola.com/extend/docker-runner/).
+But it still needs to exist because of https://github.com/keboola/docker-runner-router.
+Use `main` branch for production development.
 
-## License
-
-MIT licensed, see [LICENSE](./LICENSE) file.
