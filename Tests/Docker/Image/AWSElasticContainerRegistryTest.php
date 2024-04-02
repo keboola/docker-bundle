@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Tests\Docker\Image;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
+use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\DockerBundle\Tests\Docker\ImageTest;
@@ -104,7 +105,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI'));
     }
 
-    public function testGetAwsAccountId()
+    public function testGetAwsAccountId(): void
     {
         $imageConfig = new Component([
             'data' => [
@@ -122,7 +123,27 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         self::assertEquals(getenv('AWS_ECR_REGISTRY_ACCOUNT_ID'), $image->getAwsAccountId());
     }
 
-    public function testLogger()
+    public function testGetAwsAccountIdInvalid(): void
+    {
+        $imageConfig = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => 'invalid',
+                    'repository' => [
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
+                    ],
+                ],
+            ],
+        ]);
+        /** @var AWSElasticContainerRegistry $image */
+        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $this->expectExceptionMessage('Invalid image ID format: "invalid".');
+        $this->expectException(ApplicationException::class);
+        $image->getAwsAccountId();
+    }
+
+    public function testLogger(): void
     {
         $imageConfig = new Component([
             'data' => [
