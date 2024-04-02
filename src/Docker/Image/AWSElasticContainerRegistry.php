@@ -18,7 +18,7 @@ use Throwable;
 
 class AWSElasticContainerRegistry extends Image
 {
-    protected string $awsRegion = 'us-east-1';
+    private string $awsRegion = 'us-east-1';
     private const CONNECT_TIMEOUT = 10;
     private const CONNECT_RETRIES = 0;
     private const TRANSFER_TIMEOUT = 120;
