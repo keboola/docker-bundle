@@ -48,7 +48,7 @@ stages:
           - script: |
               ip -4 addr show
               chmod a+rwx /tmp/
-              docker compose run host-tests ./vendor/bin/phpunit --testsuite container-tests
+              docker-compose run host-tests ./vendor/bin/phpunit --testsuite container-tests
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
@@ -87,9 +87,9 @@ stages:
           name: 'Default'
         steps:
           - script: |
-              docker compose build --pull
+              docker-compose build --pull
               chmod a+rwx /tmp/
-              docker compose run tests ./vendor/bin/phpunit --testsuite runner-tests-2
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests-2
             env:
               AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
               DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
