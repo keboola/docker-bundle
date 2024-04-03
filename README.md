@@ -9,7 +9,7 @@ Library for components for running Docker images:
 See [documentation](https://developers.keboola.com/extend/docker-runner/).
 
 ## Running tests locally
-Use `test-cf-stack.json` to create resources, set environment variables (see `.env.template`) and run `docker-compose up`.
+Use `test-cf-stack.json` to create resources, set environment variables (see `.env.template`) and run `docker compose up`.
 Dockerfile and docker-compose.yml are used only for development purposes.
 Keboola Connection Component for running Docker images - see [documentation](https://developers.keboola.com/extend/docker-runner/).
 
