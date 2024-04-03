@@ -18,7 +18,7 @@ use Throwable;
 
 class AWSElasticContainerRegistry extends Image
 {
-    protected $awsRegion = 'us-east-1';
+    private string $awsRegion = 'us-east-1';
     private const CONNECT_TIMEOUT = 10;
     private const CONNECT_RETRIES = 0;
     private const TRANSFER_TIMEOUT = 120;
@@ -31,23 +31,25 @@ class AWSElasticContainerRegistry extends Image
         }
     }
 
-    /**
-     * @return string
-     */
-    public function getAwsRegion()
+    public function getAwsRegion(): string
     {
         return $this->awsRegion;
     }
 
-    public function getAwsAccountId()
+    public function getAwsAccountId(): string
     {
+        if (!str_contains($this->getImageId(), '.')) {
+            throw new ApplicationException(
+                sprintf(
+                    'Invalid image ID format: "%s".',
+                    $this->getImageId(),
+                ),
+            );
+        }
         return substr($this->getImageId(), 0, strpos($this->getImageId(), '.'));
     }
 
-    /**
-     * @return string
-     */
-    public function getLoginParams()
+    public function getLoginParams(): string
     {
         $stsClient = new StsClient([
             'region' => $this->getAwsRegion(),
@@ -113,7 +115,7 @@ class AWSElasticContainerRegistry extends Image
     /**
      * Run docker login and docker pull in container, login/logout race conditions
      */
-    protected function pullImage()
+    protected function pullImage(): void
     {
         $proxy = $this->getRetryProxy();
 

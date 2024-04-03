@@ -1,6 +1,6 @@
 # Runner Library
 
-[![Build Status](https://dev.azure.com/keboola-dev/docker-runner/_apis/build/status/keboola.docker-bundle?branchName=master)](https://dev.azure.com/keboola-dev/docker-runner/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://dev.azure.com/keboola-dev/job-runner/_apis/build/status%2Fkeboola.job-runner?branchName=main)](https://dev.azure.com/keboola-dev/job-runner/_build/latest?definitionId=5&branchName=main)
 
 Library for components for running Docker images:
 - [Runner Sync API](https://github.com/keboola/runner-sync-api)

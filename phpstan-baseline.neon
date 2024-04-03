@@ -226,16 +226,6 @@ parameters:
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Image\\\\AWSElasticContainerRegistry\\:\\:getAwsAccountId\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Image/AWSElasticContainerRegistry.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Image\\\\AWSElasticContainerRegistry\\:\\:pullImage\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: src/Docker/Image/AWSElasticContainerRegistry.php
-
-		-
 			message: "#^Parameter \\#1 \\$arg of function escapeshellarg expects string, mixed given\\.$#"
 			count: 1
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
@@ -247,11 +237,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#3 \\$length of function substr expects int\\|null, int\\<0, max\\>\\|false given\\.$#"
-			count: 1
-			path: src/Docker/Image/AWSElasticContainerRegistry.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Image\\\\AWSElasticContainerRegistry\\:\\:\\$awsRegion has no type specified\\.$#"
 			count: 1
 			path: src/Docker/Image/AWSElasticContainerRegistry.php
 
@@ -1076,17 +1061,7 @@ parameters:
 			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\AWSElasticContainerRegistryTest\\:\\:testGetAwsAccountId\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\AWSElasticContainerRegistryTest\\:\\:testInvalidCredentials\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Image\\\\AWSElasticContainerRegistryTest\\:\\:testLogger\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Image/AWSElasticContainerRegistryTest.php
 
