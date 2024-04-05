@@ -47,6 +47,17 @@ class AppProxyDefinition implements ConfigurationInterface
                                 ->end()
                             ->end()
                         ->end()
+                        ->validate()
+                            ->always(function (array $v) {
+                                // arrayNode in config automatically defaults to empty array but allowed_roles must not
+                                // be an empty array, so we do manual cleanup
+                                if (count($v['allowed_roles']) === 0) {
+                                    unset($v['allowed_roles']);
+                                }
+
+                                return $v;
+                            })
+                        ->end()
                     ->end()
                 ->end()
                 ->arrayNode('auth_rules')
@@ -78,7 +89,18 @@ class AppProxyDefinition implements ConfigurationInterface
                             ->end()
                         ->end()
                         ->validate()
-                            ->ifTrue(fn($v) => $v['auth_required'] === (count($v['auth']) === 0))
+                            ->always(function (array $v) {
+                                // arrayNode in config automatically defaults to empty array but auth must not
+                                // be an empty array, so we do manual cleanup
+                                if (count($v['auth']) === 0) {
+                                    unset($v['auth']);
+                                }
+
+                                return $v;
+                            })
+                        ->end()
+                        ->validate()
+                            ->ifTrue(fn($v) => $v['auth_required'] === !isset($v['auth']))
                             ->thenInvalid('"auth" value must be configured (only) when "auth_required" is true')
                         ->end()
                     ->end()
@@ -88,7 +110,7 @@ class AppProxyDefinition implements ConfigurationInterface
                 ->always(function ($v) {
                     $definedProviders = array_map(fn($provider) => $provider['id'], $v['auth_providers']);
                     foreach ($v['auth_rules'] as $ruleId => $rule) {
-                        $invalidRuleProviders = array_diff($rule['auth'], $definedProviders);
+                        $invalidRuleProviders = array_diff($rule['auth'] ?? [], $definedProviders);
 
                         if (count($invalidRuleProviders) > 0) {
                             throw new InvalidArgumentException(sprintf(
@@ -96,12 +118,6 @@ class AppProxyDefinition implements ConfigurationInterface
                                 $ruleId,
                                 implode(', ', $invalidRuleProviders),
                             ));
-                        }
-
-                        // arrayNode in config automatically defaults to empty array but auth_rule[].auth must not be
-                        // empty array, so we do manual cleanup
-                        if (!$rule['auth_required']) {
-                            unset($v['auth_rules'][$ruleId]['auth']);
                         }
                     }
 
