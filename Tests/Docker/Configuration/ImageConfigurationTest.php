@@ -226,7 +226,8 @@ class ImageConfigurationTest extends TestCase
     {
         $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
         $this->expectExceptionMessage(
-            'Invalid configuration for path "component.dataTypeSupport": Invalid dataTypeSupport "whatever".',
+            'The value "whatever" is not allowed for path "component.dataTypeSupport". ' .
+            'Permissible values: "authoritative", "hints", "none"',
         );
         $config = [
             'definition' => [
@@ -243,8 +244,8 @@ class ImageConfigurationTest extends TestCase
     {
         $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
         $this->expectExceptionMessage(
-            'Invalid configuration for path "component.allowedProcessorPosition": ' .
-            'Invalid allowedProcessorPosition "whatever".',
+            'The value "whatever" is not allowed for path "component.allowedProcessorPosition". ' .
+            'Permissible values: "any", "before", "after"',
         );
         $config = [
             'definition' => [
