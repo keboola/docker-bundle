@@ -102,14 +102,6 @@ class Component extends Configuration
                     ->end()
                 ->end()
             ->end()
-            ->enumNode('dataTypeSupport')
-                ->values(['authoritative', 'hints', 'none'])
-                ->defaultValue('none')
-            ->end()
-            ->enumNode('allowedProcessorPosition')
-                ->values(['any', 'before', 'after'])
-                ->defaultValue('any')
-            ->end()
         ->end();
 
         return $treeBuilder;

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker;
 
-use InvalidArgumentException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class ComponentTest extends TestCase
 {
@@ -26,6 +24,12 @@ class ComponentTest extends TestCase
                 'forward_token' => true,
                 'forward_token_details' => true,
                 'default_bucket' => true,
+            ],
+            'dataTypesConfiguration' => [
+                'dateTypesSupport' => 'none',
+            ],
+            'processorConfiguration' => [
+                'allowedProcessorPosition' => 'any',
             ],
         ];
 
