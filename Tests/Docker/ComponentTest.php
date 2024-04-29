@@ -26,7 +26,7 @@ class ComponentTest extends TestCase
                 'default_bucket' => true,
             ],
             'dataTypesConfiguration' => [
-                'dateTypesSupport' => 'none',
+                'dataTypesSupport' => 'none',
             ],
             'processorConfiguration' => [
                 'allowedProcessorPosition' => 'any',

@@ -26,9 +26,7 @@ class ImageConfigurationTest extends TestCase
                 'type' => 'gelf',
                 'verbosity' => [200 => 'verbose'],
                 'no_application_errors' => true,
-            ],
-            'dataTypeSupport' => 'hints',
-            'allowedProcessorPosition' => 'before',
+            ]
         ];
         $expectedConfiguration = [
             'definition' => [
@@ -58,8 +56,6 @@ class ImageConfigurationTest extends TestCase
                 'input' => 'local',
                 'output' => 'local',
             ],
-            'dataTypeSupport' => 'hints',
-            'allowedProcessorPosition' => 'before',
         ];
         $processedConfiguration = (new Configuration\Component())->parse(['config' => $config]);
         self::assertEquals($expectedConfiguration, $processedConfiguration);
