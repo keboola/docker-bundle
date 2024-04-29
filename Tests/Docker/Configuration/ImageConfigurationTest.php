@@ -26,7 +26,7 @@ class ImageConfigurationTest extends TestCase
                 'type' => 'gelf',
                 'verbosity' => [200 => 'verbose'],
                 'no_application_errors' => true,
-            ]
+            ],
         ];
         $expectedConfiguration = [
             'definition' => [
