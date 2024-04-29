@@ -110,8 +110,6 @@ class ImageConfigurationTest extends TestCase
                 'gelf_server_type' => 'tcp',
                 'no_application_errors' => false,
             ],
-            'dataTypeSupport' => 'none',
-            'allowedProcessorPosition' => 'any',
         ];
         self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
@@ -218,42 +216,6 @@ class ImageConfigurationTest extends TestCase
             'staging_storage' => [
                 'output' => 'whatever',
             ],
-        ];
-        (new Configuration\Component())->parse(['config' => $config]);
-    }
-
-    public function testWrongDataTypeSupport(): void
-    {
-        $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
-        $this->expectExceptionMessage(
-            'The value "whatever" is not allowed for path "component.dataTypeSupport". ' .
-            'Permissible values: "authoritative", "hints", "none"',
-        );
-        $config = [
-            'definition' => [
-                'type' => 'dockerhub',
-                'uri' => 'keboola/docker-demo',
-            ],
-            'memory' => '64m',
-            'dataTypeSupport' => 'whatever',
-        ];
-        (new Configuration\Component())->parse(['config' => $config]);
-    }
-
-    public function testWrongAllowedProcessorPosition(): void
-    {
-        $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
-        $this->expectExceptionMessage(
-            'The value "whatever" is not allowed for path "component.allowedProcessorPosition". ' .
-            'Permissible values: "any", "before", "after"',
-        );
-        $config = [
-            'definition' => [
-                'type' => 'dockerhub',
-                'uri' => 'keboola/docker-demo',
-            ],
-            'memory' => '64m',
-            'allowedProcessorPosition' => 'whatever',
         ];
         (new Configuration\Component())->parse(['config' => $config]);
     }
