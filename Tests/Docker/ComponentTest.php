@@ -26,10 +26,10 @@ class ComponentTest extends TestCase
                 'default_bucket' => true,
             ],
             'dataTypesConfiguration' => [
-                'dataTypesSupport' => 'none',
+                'dataTypesSupport' => 'hints',
             ],
             'processorConfiguration' => [
-                'allowedProcessorPosition' => 'any',
+                'allowedProcessorPosition' => 'before',
             ],
         ];
 
@@ -55,8 +55,8 @@ class ComponentTest extends TestCase
         self::assertEquals(true, $component->forwardTokenDetails());
         self::assertEquals(true, $component->hasDefaultBucket());
         self::assertSame('master', $component->getImageTag());
-        self::assertSame(['dataTypesSupport' => 'none'], $component->getDataTypesConfiguration());
-        self::assertSame(['allowedProcessorPosition' => 'any'], $component->getProcessorConfiguration());
+        self::assertSame('hints', $component->getDataTypesSupport());
+        self::assertSame('before', $component->getAllowedProcessorPosition());
     }
 
     public function testConfigurationDefaults()
@@ -92,8 +92,8 @@ class ComponentTest extends TestCase
         self::assertEquals(false, $component->forwardToken());
         self::assertEquals(false, $component->forwardTokenDetails());
         self::assertEquals(false, $component->hasDefaultBucket());
-        self::assertSame([], $component->getDataTypesConfiguration());
-        self::assertSame([], $component->getProcessorConfiguration());
+        self::assertSame('none', $component->getDataTypesSupport());
+        self::assertSame('any', $component->getAllowedProcessorPosition());
     }
 
     public function testInvalidComponentNoDefinition()

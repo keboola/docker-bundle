@@ -204,13 +204,13 @@ class Component
         return (bool) $this->data['logging']['no_application_errors'];
     }
 
-    public function getDataTypesConfiguration(): array
+    public function getDataTypesSupport(): string
     {
-        return $this->dataTypesConfiguration;
+        return $this->dataTypesConfiguration['dataTypesSupport'] ?? 'none';
     }
 
-    public function getProcessorConfiguration(): array
+    public function getAllowedProcessorPosition(): string
     {
-        return $this->processorConfiguration;
+        return $this->processorConfiguration['allowedProcessorPosition'] ?? 'any';
     }
 }
