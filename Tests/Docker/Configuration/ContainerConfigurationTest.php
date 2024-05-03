@@ -719,4 +719,132 @@ class ContainerConfigurationTest extends TestCase
         ]);
         self::assertTrue(true);
     }
+
+    public function testConfigurationWithDataTypes(): void
+    {
+        // default value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertEquals('null', $config['storage']['output']['data_types']);
+
+        // custom value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'data_types' => 'authoriative',
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertEquals('authoriative', $config['storage']['output']['data_types']);
+    }
+
+    public function testConfigurationWithInvalidDataTypesValue(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage(
+            'The value "invalid" is not allowed for path "container.storage.output.data_types". ' .
+            'Permissible values: "authoriative", "no-types", "null"',
+        );
+        (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'data_types' => 'invalid',
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationWithTableModification(): void
+    {
+        // default value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertEquals('non-destructive', $config['storage']['output']['table_modifications']);
+
+        // custom value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'table_modifications' => 'all',
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertEquals('all', $config['storage']['output']['table_modifications']);
+    }
+
+    public function testConfigurationWithInvalidTableModificationValue(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage(
+            'The value "invalid" is not allowed for path "container.storage.output.table_modifications". ' .
+            'Permissible values: "none", "non-destructive", "all"',
+        );
+        (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'table_modifications' => 'invalid',
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public function testConfigurationWithTreatValuesAsNull(): void
+    {
+        // default value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertArrayNotHasKey('treat_values_as_null', $config['storage']['output']);
+
+        // custom value
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'treat_values_as_null' => [
+                            'first',
+                            'second',
+                        ],
+                        'tables' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertEquals([
+            'first',
+            'second',
+        ], $config['storage']['output']['treat_values_as_null']);
+    }
 }
