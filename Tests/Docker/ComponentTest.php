@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker;
 
-use InvalidArgumentException;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class ComponentTest extends TestCase
 {
@@ -26,6 +24,12 @@ class ComponentTest extends TestCase
                 'forward_token' => true,
                 'forward_token_details' => true,
                 'default_bucket' => true,
+            ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'hints',
+            ],
+            'processorConfiguration' => [
+                'allowedProcessorPosition' => 'before',
             ],
         ];
 
@@ -51,6 +55,8 @@ class ComponentTest extends TestCase
         self::assertEquals(true, $component->forwardTokenDetails());
         self::assertEquals(true, $component->hasDefaultBucket());
         self::assertSame('master', $component->getImageTag());
+        self::assertSame('hints', $component->getDataTypesSupport());
+        self::assertSame('before', $component->getAllowedProcessorPosition());
     }
 
     public function testConfigurationDefaults()
@@ -86,6 +92,8 @@ class ComponentTest extends TestCase
         self::assertEquals(false, $component->forwardToken());
         self::assertEquals(false, $component->forwardTokenDetails());
         self::assertEquals(false, $component->hasDefaultBucket());
+        self::assertSame('none', $component->getDataTypesSupport());
+        self::assertSame('any', $component->getAllowedProcessorPosition());
     }
 
     public function testInvalidComponentNoDefinition()

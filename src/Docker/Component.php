@@ -15,6 +15,8 @@ class Component
     private array $data;
     private string $networkType;
     private array $features;
+    private array $dataTypesConfiguration;
+    private array $processorConfiguration;
 
     /**
      * Component constructor.
@@ -24,11 +26,11 @@ class Component
     {
         $this->id = empty($componentData['id']) ? '' : $componentData['id'];
         $data = empty($componentData['data']) ? [] : $componentData['data'];
-        if (isset($componentData['features'])) {
-            $this->features = $componentData['features'];
-        } else {
-            $this->features = [];
-        }
+
+        $this->features = $componentData['features'] ?? [];
+        $this->dataTypesConfiguration = $componentData['dataTypesConfiguration'] ?? [];
+        $this->processorConfiguration = $componentData['processorConfiguration'] ?? [];
+
         try {
             $this->data = (new Configuration\Component())->parse(['config' => $data]);
         } catch (InvalidConfigurationException $e) {
@@ -200,5 +202,15 @@ class Component
     public function isApplicationErrorDisabled(): bool
     {
         return (bool) $this->data['logging']['no_application_errors'];
+    }
+
+    public function getDataTypesSupport(): string
+    {
+        return $this->dataTypesConfiguration['dataTypesSupport'] ?? 'none';
+    }
+
+    public function getAllowedProcessorPosition(): string
+    {
+        return $this->processorConfiguration['allowedProcessorPosition'] ?? 'any';
     }
 }
