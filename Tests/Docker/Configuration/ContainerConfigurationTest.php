@@ -732,7 +732,7 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
-        self::assertEquals('null', $config['storage']['output']['data_types']);
+        self::assertArrayNotHasKey('data_types', $config['storage']['output']);
 
         // custom value
         $config = (new Configuration\Container())->parse([
@@ -779,7 +779,7 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
-        self::assertEquals('non-destructive', $config['storage']['output']['table_modifications']);
+        self::assertArrayNotHasKey('table_modifications', $config['storage']['output']);
 
         // custom value
         $config = (new Configuration\Container())->parse([
