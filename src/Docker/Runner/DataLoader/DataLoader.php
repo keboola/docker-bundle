@@ -272,6 +272,7 @@ class DataLoader implements DataLoaderInterface
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
                 $isFailedJob,
+                $this->storageConfig['output']['data_types'] ?? $this->component->getDataTypesSupport(),
             );
             if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
                 // tag input files
