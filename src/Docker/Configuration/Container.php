@@ -77,7 +77,7 @@ class Container extends Configuration
         $outputTable = $output
             ->children()
                 ->scalarNode('default_bucket')->end()
-                ->enumNode('data_types')
+                ->enumNode('data_type_support')
                     ->values(['authoritative', 'no-types', 'null'])
                 ->end()
                 ->enumNode('table_modifications')

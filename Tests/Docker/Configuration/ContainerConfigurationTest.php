@@ -732,34 +732,34 @@ class ContainerConfigurationTest extends TestCase
                 ],
             ],
         ]);
-        self::assertArrayNotHasKey('data_types', $config['storage']['output']);
+        self::assertArrayNotHasKey('data_type_support', $config['storage']['output']);
 
         // custom value
         $config = (new Configuration\Container())->parse([
             'config' => [
                 'storage' => [
                     'output' => [
-                        'data_types' => 'authoritative',
+                        'data_type_support' => 'authoritative',
                         'tables' => [],
                     ],
                 ],
             ],
         ]);
-        self::assertEquals('authoritative', $config['storage']['output']['data_types']);
+        self::assertEquals('authoritative', $config['storage']['output']['data_type_support']);
     }
 
     public function testConfigurationWithInvalidDataTypesValue(): void
     {
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage(
-            'The value "invalid" is not allowed for path "container.storage.output.data_types". ' .
+            'The value "invalid" is not allowed for path "container.storage.output.data_type_support". ' .
             'Permissible values: "authoritative", "no-types", "null"',
         );
         (new Configuration\Container())->parse([
             'config' => [
                 'storage' => [
                     'output' => [
-                        'data_types' => 'invalid',
+                        'data_type_support' => 'invalid',
                         'tables' => [],
                     ],
                 ],
