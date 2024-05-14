@@ -78,7 +78,7 @@ class Container extends Configuration
             ->children()
                 ->scalarNode('default_bucket')->end()
                 ->enumNode('data_types')
-                    ->values(['authoriative', 'no-types', 'null'])
+                    ->values(['authoritative', 'no-types', 'null'])
                 ->end()
                 ->enumNode('table_modifications')
                     ->values(['none', 'non-destructive', 'all'])
