@@ -753,7 +753,7 @@ class ContainerConfigurationTest extends TestCase
         $this->expectException(InvalidConfigurationException::class);
         $this->expectExceptionMessage(
             'The value "invalid" is not allowed for path "container.storage.output.data_type_support". ' .
-            'Permissible values: "authoritative", "no-types", "null"',
+            'Permissible values: "authoritative", "hints", "none"',
         );
         (new Configuration\Container())->parse([
             'config' => [
