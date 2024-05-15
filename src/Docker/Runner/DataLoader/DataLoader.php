@@ -43,8 +43,6 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private const NATIVE_TYPES_FEATURE = 'native-types';
-
     private ClientWrapper $clientWrapper;
     private LoggerInterface $logger;
     private string $dataDirectory;
@@ -57,7 +55,6 @@ class DataLoader implements DataLoaderInterface
     private OutputFilterInterface $outputFilter;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
-    private array $projectFeatures;
 
     /**
      * DataLoader constructor.
@@ -104,7 +101,6 @@ class DataLoader implements DataLoaderInterface
         );
 
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
-        $this->projectFeatures = $tokenInfo['owner']['features'];
 
         /* dataDirectory is "something/data" - this https://github.com/keboola/docker-bundle/blob/f9d4cf0d0225097ba4e5a1952812c405e333ce72/src/Docker/Runner/WorkingDirectory.php#L90
             we need the base dir here */
@@ -242,9 +238,6 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug('Default bucket ' . $uploadTablesOptions['bucket']);
         }
 
-        // Check whether we are creating typed tables
-        $createTypedTables = in_array(self::NATIVE_TYPES_FEATURE, $this->projectFeatures, true);
-
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
@@ -278,7 +271,6 @@ class DataLoader implements DataLoaderInterface
                 $uploadTablesOptions,
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
-                $createTypedTables,
                 $isFailedJob,
             );
             if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
