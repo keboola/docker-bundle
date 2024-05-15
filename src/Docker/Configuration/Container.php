@@ -77,6 +77,13 @@ class Container extends Configuration
         $outputTable = $output
             ->children()
                 ->scalarNode('default_bucket')->end()
+                ->enumNode('data_type_support')
+                    ->values(['authoritative', 'hints', 'none'])
+                ->end()
+                ->enumNode('table_modifications')
+                    ->values(['none', 'non-destructive', 'all'])
+                ->end()
+                ->variableNode('treat_values_as_null')->end()
                 ->arrayNode('tables')
                     ->prototype('array')
         ;
