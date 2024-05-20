@@ -272,7 +272,7 @@ class DataLoader implements DataLoaderInterface
                 $tableSystemMetadata,
                 $this->getStagingStorageOutput(),
                 $isFailedJob,
-                $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport(),
+                $this->getDataTypeSupport(),
             );
             if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
                 // tag input files
@@ -461,6 +461,11 @@ class DataLoader implements DataLoaderInterface
                 }
             }
         }
+    }
+
+    public function getDataTypeSupport(): string
+    {
+        return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport();
     }
 
     private function isReusableWorkspace(): bool

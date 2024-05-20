@@ -907,4 +907,96 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));
         $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
+
+    /**
+     * @dataProvider dataTypeSupportProvider
+     */
+    public function testDataTypeSupport(?string $componentType, ?string $configType, string $expectedType): void
+    {
+        $componentId = 'keboola.runner-workspace-test';
+        $componentConfig = [
+            'id' => $componentId,
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
+                    'tag' => '1.6.2',
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ];
+        if ($componentType) {
+            $componentConfig['dataTypesConfiguration']['dataTypesSupport'] = $componentType;
+        }
+
+        $component = new Component($componentConfig);
+
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+
+        $clientWrapperMock = $this->createMock(ClientWrapper::class);
+        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+
+        $configuration = new Configuration();
+        $configuration->setName('testWorkspaceCleanup');
+        $configuration->setComponentId($componentId);
+        $configuration->setConfiguration([]);
+
+        $componentsApi = new Components($this->clientWrapper->getBasicClient());
+        $configId = $componentsApi->addConfiguration($configuration)['id'];
+
+        $logger = new TestLogger();
+
+        $jobConfig = [];
+        if ($configType) {
+            $jobConfig = [
+                'storage' => [
+                    'output' => [
+                        'data_type_support' => $configType,
+                    ],
+                ],
+            ];
+        }
+        $dataLoader = new DataLoader(
+            $clientWrapperMock,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition($jobConfig, $component, $configId),
+            new OutputFilter(10000),
+        );
+
+        self::assertEquals($expectedType, $dataLoader->getDataTypeSupport());
+    }
+
+    public function dataTypeSupportProvider(): Generator
+    {
+        yield 'default-values' => [
+            null,
+            null,
+            'none',
+        ];
+
+        yield 'component-override' => [
+            'hints',
+            null,
+            'hints',
+        ];
+
+        yield 'config-override' => [
+            null,
+            'authoritative',
+            'authoritative',
+        ];
+
+        yield 'component-config-override' => [
+            'hints',
+            'authoritative',
+            'authoritative',
+        ];
+    }
 }
