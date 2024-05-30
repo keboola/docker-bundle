@@ -62,6 +62,8 @@ class Runner
         int $minLogPort = 12202,
         int $maxLogPort = 13202,
     ) {
+        $loggersService->getLog()->info('Initializing runner');
+
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
         $this->encryptor = $encryptor;
@@ -71,13 +73,21 @@ class Runner
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
 
+        $loggersService->getLog()->info('Resolving Sandboxes API URL');
+        $sandboxesApiUrl = $storageApiClient->getServiceUrl('sandboxes');
+
+        $loggersService->getLog()->info('Creating Sandboxes API client');
         $sandboxesApiClient = new SandboxesApiClient(
-            $storageApiClient->getServiceUrl('sandboxes'),
+            $sandboxesApiUrl,
             $storageApiToken,
         );
 
+        $loggersService->getLog()->info('Resolving Oauth URL');
+        $oauthUrl = $this->getOauthUrlV3();
+
+        $loggersService->getLog()->info('Creating Oauth Credentials client');
         $this->oauthClient3 = new Credentials($storageApiToken, [
-            'url' => $this->getOauthUrlV3(),
+            'url' => $oauthUrl,
         ]);
         $this->mlflowProjectResolver = new MlflowProjectResolver(
             $storageApiClient,
