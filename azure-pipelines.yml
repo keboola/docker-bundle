@@ -176,23 +176,23 @@ stages:
               RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
               RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
-#      - job: exasolTests
-#        displayName: 'Exasol Tests'
-#        condition: eq(variables.RUN_EXASOL_TESTS, '1')
-#        steps:
-#          - script: |
-#              docker compose run -e STORAGE_API_URL=$STORAGE_API_URL_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests
-#            env:
-#              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
-#              DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
-#              QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
-#              QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
-#              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN_EXASOL)
-#              STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
-#              STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
-#              STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
-#              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
-#              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
+      - job: exasolTests
+        displayName: 'Exasol Tests'
+        condition: eq(variables.RUN_EXASOL_TESTS, '1')
+        steps:
+          - script: |
+              docker compose run -e STORAGE_API_URL=$STORAGE_API_URL_EXASOL tests ./vendor/bin/phpunit --testsuite exasol-tests
+            env:
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
+              DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN_EXASOL)
+              STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
+              STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
+              STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
       - job: redshiftTests
         displayName: 'Redshift Tests'
