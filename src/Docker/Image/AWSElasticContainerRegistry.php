@@ -12,6 +12,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\DockerBundle\Exception\UserException;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -133,6 +134,8 @@ class AWSElasticContainerRegistry extends Image
         } catch (Throwable $e) {
             if (str_contains($process->getOutput(), '403 Forbidden')) {
                 throw new LoginFailedException($process->getOutput());
+            } elseif (str_contains($process->getErrorOutput(), 'Requested image not found')) {
+                throw new UserException(sprintf('Image "%s" not found in the registry.', $this->getFullImageId()));
             }
             throw new ApplicationException(
                 sprintf(

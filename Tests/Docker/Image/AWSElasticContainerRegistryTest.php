@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
+use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\DockerBundle\Tests\Docker\ImageTest;
 use Monolog\Handler\TestHandler;
@@ -66,6 +67,29 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             self::assertStringContainsString('Error executing "GetAuthorizationToken"', $e->getMessage());
             self::assertTrue($logger->hasNoticeThatContains('Retrying AWS GetCredentials'));
         }
+    }
+
+    public function testImageNotFound(): void
+    {
+        $imageConfig = new Component([
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                    'tag' => 'not-existing',
+                    'repository' => [
+                        'region' => getenv('AWS_ECR_REGISTRY_REGION'),
+                    ],
+                ],
+            ],
+        ]);
+        $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
+        $image->setRetryLimits(100, 100, 1);
+        $this->expectException(UserException::class);
+        $this->expectExceptionMessage(
+            sprintf('Image "%s:not-existing" not found in the registry.', getenv('AWS_ECR_REGISTRY_URI')),
+        );
+        $image->prepare([]);
     }
 
     public function testDownloadedImage()
