@@ -135,7 +135,13 @@ class AWSElasticContainerRegistry extends Image
             if (str_contains($process->getOutput(), '403 Forbidden')) {
                 throw new LoginFailedException($process->getOutput());
             } elseif (str_contains($process->getErrorOutput(), 'Requested image not found')) {
-                throw new UserException(sprintf('Image "%s" not found in the registry.', $this->getFullImageId()));
+                throw new UserException(
+                    sprintf(
+                        'Image "%s:%s" not found in the registry.',
+                        $this->getSourceComponent()->getId(),
+                        $this->getTag(),
+                    ),
+                );
             }
             throw new ApplicationException(
                 sprintf(

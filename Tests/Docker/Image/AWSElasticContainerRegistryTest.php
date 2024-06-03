@@ -72,6 +72,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
     public function testImageNotFound(): void
     {
         $imageConfig = new Component([
+            'id' => 'test',
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -87,7 +88,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $image->setRetryLimits(100, 100, 1);
         $this->expectException(UserException::class);
         $this->expectExceptionMessage(
-            sprintf('Image "%s:not-existing" not found in the registry.', getenv('AWS_ECR_REGISTRY_URI')),
+            'Image "test:not-existing" not found in the registry.',
         );
         $image->prepare([]);
     }
