@@ -22,6 +22,7 @@ class Environment
     private readonly ?string $absConnectionString;
     private readonly ?MlflowTracking $mlflowTracking;
     private readonly string $mode;
+    private readonly string $dataTypeSupport;
 
     public function __construct(
         ?string $configId,
@@ -37,6 +38,7 @@ class Environment
         ?string $absConnectionString,
         ?MlflowTracking $mlflowTracking,
         string $mode,
+        string $dataTypeSupport,
     ) {
         $this->configId = $configId ?: sha1(serialize($config));
         $this->configVersion = $configVersion;
@@ -51,6 +53,7 @@ class Environment
         $this->absConnectionString = $absConnectionString;
         $this->mlflowTracking = $mlflowTracking;
         $this->mode = $mode;
+        $this->dataTypeSupport = $dataTypeSupport;
     }
 
     public function getEnvironmentVariables(OutputFilterInterface $outputFilter): array
@@ -67,6 +70,7 @@ class Environment
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
             'KBC_PROJECT_FEATURE_GATES' => implode(',', $this->tokenInfo['owner']['features']),
             'KBC_COMPONENT_RUN_MODE' => $this->mode,
+            'KBC_DATA_TYPE_SUPPORT' => $this->dataTypeSupport,
         ];
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
