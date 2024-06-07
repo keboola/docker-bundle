@@ -61,6 +61,7 @@ class EnvironmentTest extends TestCase
             'connection-string',
             $mlflowTracking,
             'debug',
+            'authoritative',
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -86,6 +87,7 @@ class EnvironmentTest extends TestCase
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
         self::assertSame('feature1,feature2,feature3', $envs['KBC_PROJECT_FEATURE_GATES']);
         self::assertSame('debug', $envs['KBC_COMPONENT_RUN_MODE']);
+        self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 
     public function testExecutorForwardToken(): void
@@ -119,6 +121,7 @@ class EnvironmentTest extends TestCase
             null,
             null,
             'run',
+            'hint',
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -144,6 +147,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
+        self::assertSame('hint', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 
     public function testExecutorForwardTokenAndDetails(): void
@@ -173,6 +177,7 @@ class EnvironmentTest extends TestCase
             null,
             null,
             'run',
+            'authoritative',
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -196,6 +201,7 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
+        self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 
     public function testExecutorForwardDetails(): void
@@ -231,6 +237,7 @@ class EnvironmentTest extends TestCase
             'connection-string',
             $mlflowTracking,
             'run',
+            'authoritative',
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -253,6 +260,7 @@ class EnvironmentTest extends TestCase
         self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
+        self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 
     public function testExecutorForwardDetailsSaml(): void
@@ -290,6 +298,7 @@ class EnvironmentTest extends TestCase
             null,
             null,
             'run',
+            'authoritative',
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -313,5 +322,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
+        self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 }

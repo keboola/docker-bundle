@@ -675,6 +675,7 @@ class Runner
                 $absConnectionString,
                 $mlflowTracking,
                 $mode,
+                $component->getDataTypesSupport(),
             );
             $imageDigests[] = [
                 'id' => $image->getPrintableImageId(),
