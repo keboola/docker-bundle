@@ -101,7 +101,7 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in ' .
-            'the Developer Portal. Detail: The child config "definition" under "component" must be configured.',
+            'the Developer Portal. Detail: The child config "definition" under "component.data" must be configured.',
         );
         new Component([]);
     }
@@ -111,7 +111,7 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
-            'Developer Portal. Detail: The child config "definition" under "component" must be configured',
+            'Developer Portal. Detail: The child config "definition" under "component.data" must be configured',
         );
         new Component([
             'data' => [
@@ -124,7 +124,8 @@ class ComponentTest extends TestCase
         self::expectException(ApplicationException::class);
         self::expectExceptionMessage(
             'Component definition is invalid. Verify the deployment setup and the repository settings in the ' .
-            'Developer Portal. Detail: The path "component.definition.uri" cannot contain an empty value, but got "".',
+            'Developer Portal. Detail: The path "component.data.definition.uri" ' .
+            'cannot contain an empty value, but got "".',
         );
         new Component([
             'data' => [
