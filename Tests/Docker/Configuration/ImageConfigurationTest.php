@@ -29,6 +29,13 @@ class ImageConfigurationTest extends TestCase
                     'no_application_errors' => true,
                 ],
             ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'authoritative',
+            ],
+            'processorConfiguration' => [
+                'allowedProcessorPosition' => 'before',
+            ],
+            'extraKey' => 'extraValue',
         ];
         $expectedConfiguration = [
             'data' => [
@@ -60,6 +67,13 @@ class ImageConfigurationTest extends TestCase
                     'output' => 'local',
                 ],
             ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'authoritative',
+            ],
+            'processorConfiguration' => [
+                'allowedProcessorPosition' => 'before',
+            ],
+            'extraKey' => 'extraValue',
         ];
         $processedConfiguration = (new Configuration\Component())->parse(['config' => $config]);
         self::assertEquals($expectedConfiguration, $processedConfiguration);
@@ -232,6 +246,50 @@ class ImageConfigurationTest extends TestCase
                 'staging_storage' => [
                     'output' => 'whatever',
                 ],
+            ],
+        ];
+        (new Configuration\Component())->parse(['config' => $config]);
+    }
+
+    public function testWrongDataTypesSupportValue(): void
+    {
+        $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
+        $this->expectExceptionMessage(
+            'The value "whatever" is not allowed for path "component.dataTypesConfiguration.dataTypesSupport". ' .
+            'Permissible values: "authoritative", "hints", "none"',
+        );
+        $config = [
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                ],
+                'memory' => '64m',
+            ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'whatever',
+            ],
+        ];
+        (new Configuration\Component())->parse(['config' => $config]);
+    }
+
+    public function testWrongAllowedProcessorPositionValue(): void
+    {
+        $this->expectException('\Symfony\Component\Config\Definition\Exception\InvalidConfigurationException');
+        $this->expectExceptionMessage(
+            'The value "whatever" is not allowed for path "component.processorConfiguration.allowedProcessorPosition".'.
+            ' Permissible values: "any", "before", "after"',
+        );
+        $config = [
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                ],
+                'memory' => '64m',
+            ],
+            'processorConfiguration' => [
+                'allowedProcessorPosition' => 'whatever',
             ],
         ];
         (new Configuration\Component())->parse(['config' => $config]);
