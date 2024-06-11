@@ -15,10 +15,12 @@ class Component extends Configuration
     {
         $treeBuilder = new TreeBuilder('component');
         $root = $treeBuilder->getRootNode();
-        $definition = $root->children()->arrayNode('definition')->isRequired();
+        $data = $root->ignoreExtraKeys(false)->children()->arrayNode('data')->isRequired();
+
+        $definition = $data->children()->arrayNode('definition')->isRequired();
         Image::configureNode($definition);
 
-        $root->children()
+        $data->children()
             ->scalarNode('memory')->defaultValue('256m')->end()
             ->scalarNode('configuration_format')
                 ->defaultValue('json')
@@ -103,7 +105,6 @@ class Component extends Configuration
                 ->end()
             ->end()
         ->end();
-
         return $treeBuilder;
     }
 }

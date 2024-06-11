@@ -25,22 +25,25 @@ class Component
     public function __construct(array $componentData)
     {
         $this->id = empty($componentData['id']) ? '' : $componentData['id'];
-        $data = empty($componentData['data']) ? [] : $componentData['data'];
-
-        $this->features = $componentData['features'] ?? [];
-        $this->dataTypesConfiguration = $componentData['dataTypesConfiguration'] ?? [];
-        $this->processorConfiguration = $componentData['processorConfiguration'] ?? [];
+        $componentData['data'] = empty($componentData['data']) ? [] : $componentData['data'];
 
         try {
-            $this->data = (new Configuration\Component())->parse(['config' => $data]);
+            $validateComponentData = (new Configuration\Component())->parse(['config' => $componentData]);
         } catch (InvalidConfigurationException $e) {
             throw new ApplicationException(
                 'Component definition is invalid. Verify the deployment setup and the repository settings ' .
                 'in the Developer Portal. Detail: ' . $e->getMessage(),
                 $e,
-                $data,
+                $componentData['data'],
             );
         }
+        $this->data = $validateComponentData['data'];
+
+        $this->dataTypesConfiguration = $validateComponentData['dataTypesConfiguration'] ?? [];
+        $this->processorConfiguration = $validateComponentData['processorConfiguration'] ?? [];
+
+        $this->features = $validateComponentData['features'] ?? [];
+
         $this->networkType = $this->data['network'];
     }
 
