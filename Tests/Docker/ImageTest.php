@@ -41,15 +41,15 @@ class ImageTest extends BaseImageTest
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'uri' => 'keboola/docker-bundle-ci',
                 ],
             ],
         ]);
 
         $image = ImageFactory::getImage(new NullLogger(), $configuration, true);
         self::assertEquals(QuayIO::class, get_class($image));
-        self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
-        self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
+        self::assertEquals('quay.io/keboola/docker-bundle-ci:latest', $image->getFullImageId());
+        self::assertEquals('keboola/docker-bundle-ci:latest', $image->getPrintableImageId());
     }
 
     public function testImageDigestNotPulled()

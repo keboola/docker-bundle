@@ -15,30 +15,30 @@ class QuayIORepositoryTest extends BaseImageTest
     public function testDownloadedImage()
     {
         Process::fromShellCommandline(
-            'sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-demo-app)',
+            'sudo docker rmi -f $(sudo docker images -aq quay.io/keboola/docker-bundle-ci)',
         )->run();
 
-        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-bundle-ci | wc -l');
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'uri' => 'keboola/docker-bundle-ci',
                 ],
             ],
         ]);
         $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
         $image->prepare([]);
 
-        self::assertEquals('quay.io/keboola/docker-demo-app:latest', $image->getFullImageId());
-        self::assertEquals('keboola/docker-demo-app:latest', $image->getPrintableImageId());
+        self::assertEquals('quay.io/keboola/docker-bundle-ci:latest', $image->getFullImageId());
+        self::assertEquals('keboola/docker-bundle-ci:latest', $image->getPrintableImageId());
 
-        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-demo-app | wc -l');
+        $process = Process::fromShellCommandline('sudo docker images | grep quay.io/keboola/docker-bundle-ci | wc -l');
         $process->run();
         self::assertEquals(1, trim($process->getOutput()));
 
-        Process::fromShellCommandline('sudo docker rmi quay.io/keboola/docker-demo-app')->run();
+        Process::fromShellCommandline('sudo docker rmi quay.io/keboola/docker-bundle-ci')->run();
     }
 }
