@@ -6,7 +6,7 @@ namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
 use Keboola\Csv\CsvFile;
-use Keboola\Datatype\Definition\Common;
+use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
 use Keboola\DockerBundle\Docker\Component;
@@ -20,7 +20,6 @@ use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
 use Keboola\StorageApi\BranchAwareClient;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Metadata;
@@ -627,24 +626,148 @@ class DataLoaderTest extends BaseDataLoaderTest
         $tableDetails = $clientWrapper->getBasicClient()->getTable('in.c-docker-demo-testConfig.fixed-type-test');
         self::assertTrue($tableDetails['isTyped']);
 
-        self::assertDataType($tableDetails['columnMetadata']['int'], Snowflake::TYPE_NUMBER);
-        self::assertDataType($tableDetails['columnMetadata']['string'], Snowflake::TYPE_VARCHAR);
-        self::assertDataType($tableDetails['columnMetadata']['decimal'], Snowflake::TYPE_NUMBER);
-        self::assertDataType($tableDetails['columnMetadata']['float'], Snowflake::TYPE_FLOAT);
-        self::assertDataType($tableDetails['columnMetadata']['bool'], Snowflake::TYPE_BOOLEAN);
-        self::assertDataType($tableDetails['columnMetadata']['date'], Snowflake::TYPE_DATE);
-        self::assertDataType($tableDetails['columnMetadata']['timestamp'], Snowflake::TYPE_TIMESTAMP_LTZ);
+        $tableDefinitionColumns = $tableDetails['definition']['columns'];
+        self::assertDataType($tableDefinitionColumns, 'int', Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDefinitionColumns, 'string', Snowflake::TYPE_VARCHAR);
+        self::assertDataType($tableDefinitionColumns, 'decimal', Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDefinitionColumns, 'float', Snowflake::TYPE_FLOAT);
+        self::assertDataType($tableDefinitionColumns, 'bool', Snowflake::TYPE_BOOLEAN);
+        self::assertDataType($tableDefinitionColumns, 'date', Snowflake::TYPE_DATE);
+        self::assertDataType($tableDefinitionColumns, 'timestamp', Snowflake::TYPE_TIMESTAMP_LTZ);
     }
 
-    private static function assertDataType(array $metadata, string $expectedType): void
+    public function testTypedTableCreateWithSchemaConfig(): void
     {
-        foreach ($metadata as $metadatum) {
-            if ($metadatum['key'] === Common::KBC_METADATA_KEY_TYPE) {
-                self::assertSame($expectedType, $metadatum['value']);
-                return;
-            }
-        }
-        self::fail('Metadata key ' . Common::KBC_METADATA_KEY_TYPE . ' not found');
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
+                            'schema' => [
+                                [
+                                    'name' => 'int',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::NUMERIC,
+                                        ],
+                                    ],
+                                    'primary_key' => true,
+                                    'nullable' => false,
+                                ],
+                                [
+                                    'name' => 'string',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '17',
+                                        ],
+                                    ],
+                                    'nullable' => false,
+                                ],
+                                [
+                                    'name' => 'decimal',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::NUMERIC,
+                                            'length' => '10,2',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'float',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::FLOAT,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'bool',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::BOOLEAN,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'date',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::DATE,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'timestamp',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::TIMESTAMP,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable('in.c-docker-demo-testConfig.fixed-type-test');
+        self::assertTrue($tableDetails['isTyped']);
+
+        $tableDefinitionColumns = $tableDetails['definition']['columns'];
+
+        self::assertEquals(['int'], $tableDetails['definition']['primaryKeysNames']);
+        self::assertDataType($tableDefinitionColumns, 'int', Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDefinitionColumns, 'string', Snowflake::TYPE_VARCHAR);
+        self::assertDataType($tableDefinitionColumns, 'decimal', Snowflake::TYPE_NUMBER);
+        self::assertDataType($tableDefinitionColumns, 'float', Snowflake::TYPE_FLOAT);
+        self::assertDataType($tableDefinitionColumns, 'bool', Snowflake::TYPE_BOOLEAN);
+        self::assertDataType($tableDefinitionColumns, 'date', Snowflake::TYPE_DATE);
+        self::assertDataType($tableDefinitionColumns, 'timestamp', Snowflake::TYPE_TIMESTAMP_LTZ);
+    }
+
+    private static function assertDataType(array $columns, string $columnName, string $expectedType): void
+    {
+        $columnDefinition = current(array_filter($columns, fn(array $column) => $column['name'] === $columnName));
+        self::assertSame($expectedType, $columnDefinition['definition']['type']);
     }
 
     public function testWorkspaceCleanupSuccess(): void
