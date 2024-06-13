@@ -84,7 +84,7 @@ class ImageCreatorTest extends TestCase
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
-                    'uri' => 'keboola/docker-demo-app',
+                    'uri' => 'keboola/docker-bundle-ci',
                 ],
             ],
         ]);
@@ -100,7 +100,7 @@ class ImageCreatorTest extends TestCase
         $images = $imageCreator->prepareImages();
         self::assertCount(1, $images);
         self::assertTrue($images[0]->isMain());
-        self::assertEquals('quay.io/keboola/docker-demo-app:latest', $images[0]->getFullImageId());
+        self::assertEquals('quay.io/keboola/docker-bundle-ci:latest', $images[0]->getFullImageId());
     }
 
     public function testCreateImageProcessors()
