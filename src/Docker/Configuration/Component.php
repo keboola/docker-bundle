@@ -15,7 +15,8 @@ class Component extends Configuration
     {
         $treeBuilder = new TreeBuilder('component');
         $root = $treeBuilder->getRootNode();
-        $root->ignoreExtraKeys(false)->children()
+        $root->ignoreExtraKeys()->children()
+            ->arrayNode('features')->scalarPrototype()->end()->end()
             ->arrayNode('dataTypesConfiguration')
                 ->children()
                     ->enumNode('dataTypesSupport')

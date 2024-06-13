@@ -73,7 +73,7 @@ class ImageConfigurationTest extends TestCase
             'processorConfiguration' => [
                 'allowedProcessorPosition' => 'before',
             ],
-            'extraKey' => 'extraValue',
+            'features' => [],
         ];
         $processedConfiguration = (new Configuration\Component())->parse(['config' => $config]);
         self::assertEquals($expectedConfiguration, $processedConfiguration);
@@ -128,6 +128,7 @@ class ImageConfigurationTest extends TestCase
                     'no_application_errors' => false,
                 ],
             ],
+            'features' => [],
         ];
         self::assertEquals($expectedConfiguration, $processedConfiguration);
     }
