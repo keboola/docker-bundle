@@ -28,6 +28,7 @@ use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
@@ -1034,8 +1035,12 @@ class DataLoaderTest extends BaseDataLoaderTest
     /**
      * @dataProvider dataTypeSupportProvider
      */
-    public function testDataTypeSupport(?string $componentType, ?string $configType, string $expectedType): void
-    {
+    public function testDataTypeSupport(
+        bool $hasFeature,
+        ?string $componentType,
+        ?string $configType,
+        string $expectedType,
+    ): void {
         $componentId = 'keboola.runner-workspace-test';
         $componentConfig = [
             'id' => $componentId,
@@ -1061,9 +1066,13 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
 
+        $getTokenMock = $this->createMock(StorageApiToken::class);
+        $getTokenMock->method('hasFeature')->with('new-native-types')->willReturn($hasFeature);
+
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getToken')->willReturn($getTokenMock);
 
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');
@@ -1098,28 +1107,54 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function dataTypeSupportProvider(): Generator
     {
+
         yield 'default-values' => [
+            true,
             null,
             null,
             'none',
         ];
 
         yield 'component-override' => [
+            true,
             'hints',
             null,
             'hints',
         ];
 
         yield 'config-override' => [
+            true,
             null,
             'authoritative',
             'authoritative',
         ];
 
         yield 'component-config-override' => [
+            true,
             'hints',
             'authoritative',
             'authoritative',
+        ];
+
+        yield 'component-override-without-feature' => [
+            false,
+            'hints',
+            null,
+            'none',
+        ];
+
+        yield 'config-override-without-feature' => [
+            false,
+            null,
+            'authoritative',
+            'none',
+        ];
+
+        yield 'component-config-override-without-feature' => [
+            false,
+            'hints',
+            'authoritative',
+            'none',
         ];
     }
 }
