@@ -465,6 +465,9 @@ class DataLoader implements DataLoaderInterface
 
     public function getDataTypeSupport(): string
     {
+        if (!$this->clientWrapper->getToken()->hasFeature('new-native-types')) {
+            return 'none';
+        }
         return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport();
     }
 

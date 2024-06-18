@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
+use Generator;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Environment;
@@ -25,7 +26,7 @@ class EnvironmentTest extends TestCase
                 'name' => 'some project',
                 'fileStorageProvider' => 'aws',
                 'features' => [
-                    'feature1', 'feature2', 'feature3',
+                    'feature1', 'feature2', 'feature3', 'new-native-types',
                 ],
             ],
             'token' => '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
@@ -85,7 +86,7 @@ class EnvironmentTest extends TestCase
         self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
         self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
         self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
-        self::assertSame('feature1,feature2,feature3', $envs['KBC_PROJECT_FEATURE_GATES']);
+        self::assertSame('feature1,feature2,feature3,new-native-types', $envs['KBC_PROJECT_FEATURE_GATES']);
         self::assertSame('debug', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
@@ -323,5 +324,47 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
+    }
+
+    public function testDataTypeSupportWithoutFeature(): void
+    {
+        $this->tokenInfo['owner']['features'] = [
+            'feature1', 'feature2', 'feature3',
+        ];
+
+        $component = new Component([
+            'id' => 'keboola.test-component',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'dummy',
+                ],
+                'forward_token' => false,
+                'forward_token_details' => true,
+            ],
+        ]);
+        $parameters = [
+            'myVariable' => 'fooBar',
+            'KBC_CONFIGID' => 'barFoo',
+        ];
+        $environment = new Environment(
+            'config-test-id',
+            'config-version-id',
+            null,
+            $component,
+            $parameters,
+            $this->tokenInfo,
+            '123',
+            (string) getenv('STORAGE_API_URL'),
+            '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
+            '',
+            null,
+            null,
+            'run',
+            'authoritative', // <<< from component but project doesn't support New Native Types
+        );
+        $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
+
+        self::assertSame('none', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 }
