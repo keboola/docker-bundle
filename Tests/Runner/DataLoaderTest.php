@@ -637,8 +637,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertDataType($tableDefinitionColumns, 'timestamp', Snowflake::TYPE_TIMESTAMP_LTZ);
     }
 
-    public function testTypedTableCreateWithSchemaConfig(): void
+    public function testTypedTableCreateWithAuthoritativeSchemaConfig(): void
     {
+        $tableId = 'in.c-docker-demo-testConfig.authoritative-types-test';
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
@@ -657,6 +658,9 @@ class DataLoaderTest extends BaseDataLoaderTest
                     'output' => 'local',
                 ],
             ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'authoritative',
+            ],
         ]);
         $config = [
             'storage' => [
@@ -664,7 +668,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                     'tables' => [
                         [
                             'source' => 'typed-data.csv',
-                            'destination' => 'in.c-docker-demo-testConfig.fixed-type-test',
+                            'destination' => $tableId,
                             'schema' => [
                                 [
                                     'name' => 'int',
@@ -763,6 +767,290 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertDataType($tableDefinitionColumns, 'bool', Snowflake::TYPE_BOOLEAN);
         self::assertDataType($tableDefinitionColumns, 'date', Snowflake::TYPE_DATE);
         self::assertDataType($tableDefinitionColumns, 'timestamp', Snowflake::TYPE_TIMESTAMP_LTZ);
+    }
+
+    public function testTypedTableCreateWithHintsSchemaConfig(): void
+    {
+        $tableId = 'in.c-hints-types.hints-types-test';
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            '1,text,123.45',
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+            'dataTypesConfiguration' => [
+                'dataTypesSupport' => 'hints',
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => $tableId,
+                            'schema' => [
+                                [
+                                    'name' => 'int',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::NUMERIC,
+                                        ],
+                                    ],
+                                    'primary_key' => true,
+                                ],
+                                [
+                                    'name' => 'string',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '17',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'decimal',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::NUMERIC,
+                                            'length' => '10,2',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+        $clientWrapper->getBasicClient()->dropTable($tableId);
+
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
+        self::assertTrue($tableDetails['isTyped']);
+
+        $tableDefinitionColumns = $tableDetails['definition']['columns'];
+
+        self::assertDataType($tableDefinitionColumns, 'int', Snowflake::TYPE_VARCHAR);
+        self::assertDataType($tableDefinitionColumns, 'string', Snowflake::TYPE_VARCHAR);
+        self::assertDataType($tableDefinitionColumns, 'decimal', Snowflake::TYPE_VARCHAR);
+
+        $columnMetadata = $tableDetails['columnMetadata'];
+        self::assertArrayHasKey('int', $columnMetadata);
+
+        $intColumnMetadata = array_values(array_filter(
+            $tableDetails['columnMetadata']['int'],
+            fn(array $metadata) =>
+                in_array(
+                    $metadata['key'],
+                    ['KBC.datatype.basetype', 'KBC.datatype.length', 'KBC.datatype.nullable'],
+                    true,
+                ) && $metadata['provider'] === 'docker-demo',
+        ));
+
+        self::assertCount(2, $intColumnMetadata);
+        self::assertEquals([
+            ['key' => 'KBC.datatype.basetype', 'value' => 'NUMERIC', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.nullable', 'value' => '1', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $intColumnMetadata));
+
+        $stringColumnMetadata = array_values(array_filter(
+            $tableDetails['columnMetadata']['string'],
+            fn(array $metadata) =>
+                in_array(
+                    $metadata['key'],
+                    ['KBC.datatype.basetype', 'KBC.datatype.length', 'KBC.datatype.nullable'],
+                    true,
+                ) && $metadata['provider'] === 'docker-demo',
+        ));
+
+        self::assertCount(3, $stringColumnMetadata);
+        self::assertEquals([
+            ['key' => 'KBC.datatype.basetype', 'value' => 'STRING', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.length', 'value' => '17', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.nullable', 'value' => '1', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $stringColumnMetadata));
+
+        $decimalColumnMetadata = array_values(array_filter(
+            $tableDetails['columnMetadata']['decimal'],
+            fn(array $metadata) =>
+                in_array(
+                    $metadata['key'],
+                    ['KBC.datatype.basetype', 'KBC.datatype.length', 'KBC.datatype.nullable'],
+                    true,
+                ) && $metadata['provider'] === 'docker-demo',
+        ));
+
+        self::assertCount(3, $decimalColumnMetadata);
+        self::assertEquals([
+            ['key' => 'KBC.datatype.basetype', 'value' => 'NUMERIC', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.length', 'value' => '10,2', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.nullable', 'value' => '1', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $decimalColumnMetadata));
+    }
+
+    public function testTypedTableCreateWithSchemaConfigMetadata(): void
+    {
+        $tableId = 'in.c-docker-demo-testConfigMetadata.fixed-type-test';
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            '1,text',
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => $tableId,
+                            'description' => 'table description',
+                            'table_metadata' => [
+                                'key1' => 'value1',
+                                'key2' => 'value2',
+                            ],
+                            'schema' => [
+                                [
+                                    'name' => 'int',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::NUMERIC,
+                                        ],
+                                    ],
+                                    'primary_key' => true,
+                                    'nullable' => false,
+                                    'metadata' => [
+                                        'key1' => 'value1',
+                                        'key2' => 'value2',
+
+                                    ],
+                                ],
+                                [
+                                    'name' => 'string',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '17',
+                                        ],
+                                    ],
+                                    'description' => 'column description',
+                                    'nullable' => false,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
+        self::assertTrue($tableDetails['isTyped']);
+
+        $tableMetadata = array_values(array_filter(
+            $tableDetails['metadata'],
+            fn(array $metadata) => in_array($metadata['key'], ['key1', 'key2', 'KBC.description'], true),
+        ));
+        self::assertCount(3, $tableMetadata);
+        self::assertEquals([
+            ['key' => 'key1', 'value' => 'value1', 'provider' => 'docker-demo'],
+            ['key' => 'key2', 'value' => 'value2', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.description', 'value' => 'table description', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $tableMetadata));
+
+        $intColumnMetadata = array_values(array_filter(
+            $tableDetails['columnMetadata']['int'],
+            fn(array $metadata) => in_array($metadata['key'], ['key1', 'key2'], true),
+        ));
+        self::assertCount(2, $intColumnMetadata);
+        self::assertEquals([
+            ['key' => 'key1', 'value' => 'value1', 'provider' => 'docker-demo'],
+            ['key' => 'key2', 'value' => 'value2', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $intColumnMetadata));
+
+        $stringColumnMetadata = array_values(array_filter(
+            $tableDetails['columnMetadata']['string'],
+            fn(array $metadata) => in_array($metadata['key'], ['KBC.description'], true),
+        ));
+        self::assertCount(1, $stringColumnMetadata);
+        self::assertEquals([
+            ['key' => 'KBC.description', 'value' => 'column description', 'provider' => 'docker-demo'],
+        ], array_map(function ($v) {
+            unset($v['id'], $v['timestamp']);
+            return $v;
+        }, $stringColumnMetadata));
     }
 
     private static function assertDataType(array $columns, string $columnName, string $expectedType): void
