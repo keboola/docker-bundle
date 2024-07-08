@@ -367,4 +367,29 @@ class AuthorizationTest extends BaseRunnerTest
 
         self::assertEquals($sampleData, $data);
     }
+
+    public function testAuthProxyConfig(): void
+    {
+        $configData = [
+            'app_proxy' => [
+                'auth_providers' => [
+                    'type' => 'foo',
+                ],
+            ],
+            'fake' => 'bar',
+        ];
+
+        $oauthCredentialsClient = $this->createMock(Credentials::class);
+        $oauthCredentialsClient->expects(self::never())->method('getDetail');
+
+        $jobScopedEncryptor = $this->createMock(JobScopedEncryptor::class);
+        $jobScopedEncryptor->expects(self::never())->method('decrypt');
+
+        $auth = new Authorization($oauthCredentialsClient, $jobScopedEncryptor, 'keboola.docker-demo');
+
+        self::assertSame(
+            ['app_proxy' => $configData['app_proxy']],
+            $auth->getAuthorization($configData),
+        );
+    }
 }

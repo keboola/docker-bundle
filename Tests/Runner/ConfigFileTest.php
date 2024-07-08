@@ -364,7 +364,7 @@ SAMPLE;
         ];
     }
 
-    public function testAppProxyAuthorizationIsNotPassedToConfig(): void
+    public function testAppProxyAuthorizationIsPassedToConfig(): void
     {
         $temp = new Temp();
         $config = new ConfigFile($temp->getTmpFolder(), $this->getAuthorization(), 'run', 'json');
@@ -372,7 +372,14 @@ SAMPLE;
             [
                 'authorization' => [
                     'app_proxy' => [
-                        'foo' => 'bar',
+                        'auth_rules' => [
+                            [
+                                'path' => '/',
+                                'type' => 'foo',
+                                'auth_required' => false,
+                            ],
+                        ],
+                        'auth_providers' => [],
                     ],
                 ],
             ],
@@ -386,6 +393,16 @@ SAMPLE;
         );
 
         self::assertArrayHasKey('authorization', $data);
-        self::assertArrayNotHasKey('app_proxy', $data['authorization']);
+        self::assertArrayHasKey('app_proxy', $data['authorization']);
+        self::assertSame([
+            'auth_rules' => [
+                [
+                    'path' => '/',
+                    'type' => 'foo',
+                    'auth_required' => false,
+                ],
+            ],
+            'auth_providers' => [],
+        ], $data['authorization']['app_proxy']);
     }
 }
