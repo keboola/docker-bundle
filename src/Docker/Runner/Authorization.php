@@ -29,6 +29,12 @@ class Authorization
     public function getAuthorization(array $configData): array
     {
         $data = [];
+
+        $appProxyAuth = $configData['app_proxy'] ?? null;
+        if ($appProxyAuth !== null) {
+            $data['app_proxy'] = $appProxyAuth;
+        }
+
         if (isset($configData['oauth_api']['credentials'])) {
             $data['oauth_api']['credentials'] = $configData['oauth_api']['credentials'];
         } else {
