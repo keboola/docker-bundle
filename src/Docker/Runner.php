@@ -34,7 +34,6 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
-use Psr\Log\LoggerInterface;
 use Throwable;
 
 class Runner
@@ -62,10 +61,7 @@ class Runner
         array $instanceLimits,
         int $minLogPort = 12202,
         int $maxLogPort = 13202,
-        ?LoggerInterface $debugLogger = null,
     ) {
-        $debugLogger?->info('Initializing runner');
-
         /* the above port range is rather arbitrary, it intentionally excludes the default port (12201)
         to avoid mis-configured clients. */
         $this->encryptor = $encryptor;
@@ -75,21 +71,13 @@ class Runner
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
 
-        $debugLogger?->info('Resolving Sandboxes API URL');
-        $sandboxesApiUrl = $storageApiClient->getServiceUrl('sandboxes');
-
-        $debugLogger?->info('Creating Sandboxes API client');
         $sandboxesApiClient = new SandboxesApiClient(
-            $sandboxesApiUrl,
+            $storageApiClient->getServiceUrl('sandboxes'),
             $storageApiToken,
         );
 
-        $debugLogger?->info('Resolving Oauth URL');
-        $oauthUrl = $this->getOauthUrlV3();
-
-        $debugLogger?->info('Creating Oauth Credentials client');
         $this->oauthClient3 = new Credentials($storageApiToken, [
-            'url' => $oauthUrl,
+            'url' => $this->getOauthUrlV3(),
         ]);
         $this->mlflowProjectResolver = new MlflowProjectResolver(
             $storageApiClient,
