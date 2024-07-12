@@ -21,6 +21,8 @@ use Keboola\StorageApi\ClientException;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
@@ -518,7 +520,7 @@ class StateFileTest extends TestCase
         self::assertFalse(file_exists($this->dataDir . '/out/state.json'));
     }
 
-    public function testPersistStateThrowsAnExceptionOn404(): void
+    public function testPersistStateLogsWarningOn404(): void
     {
         $sapiStub = $this->getMockBuilder(Client::class)
             ->disableOriginalConstructor()
@@ -541,6 +543,9 @@ class StateFileTest extends TestCase
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
 
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $stateFile = new StateFile(
             $this->dataDir,
             $clientWrapper,
@@ -550,13 +555,13 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            new NullLogger(),
+            $logger,
             'row-id',
         );
         $stateFile->stashState(['key' => 'fooBar']);
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Failed to store state: Test');
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
+
+        self::assertTrue($logsHandler->hasWarningThatContains('Failed to store state: Test'));
     }
 
     public function testPersisStatePassOtherExceptions(): void
