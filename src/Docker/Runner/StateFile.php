@@ -147,10 +147,13 @@ class StateFile
                 $this->saveConfigurationState($configuration, $client);
             }
         } catch (ClientException $e) {
-            if ($e->getCode() === 404) {
-                throw new UserException('Failed to store state: ' . $e->getMessage(), $e);
+            if ($e->getCode() !== 404) {
+                throw $e;
             }
-            throw $e;
+
+            // we do not want to fail the job if config is not found
+            // sandboxes/apps do delete their config as a last step of delete job
+            $this->logger->warning('Failed to store state: ' . $e->getMessage());
         }
     }
 
