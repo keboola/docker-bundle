@@ -19,6 +19,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\OutputMapping\Writer\Table\MappingDestination;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -1051,6 +1052,326 @@ class DataLoaderTest extends BaseDataLoaderTest
             unset($v['id'], $v['timestamp']);
             return $v;
         }, $stringColumnMetadata));
+    }
+
+    public function testTypedTableModifyTableStructure(): void
+    {
+        $tableId = 'in.c-testTypedTableModifyTableStructure.typed-test';
+        $tableInfo = new MappingDestination($tableId);
+
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+
+        if ($clientWrapper->getBasicClient()->bucketExists($tableInfo->getBucketId())) {
+            $clientWrapper->getBasicClient()->dropBucket(
+                $tableInfo->getBucketId(),
+                [
+                    'force' => true,
+                ],
+            );
+        }
+
+        // prepare storage in project
+        $clientWrapper->getBasicClient()->createBucket(
+            $tableInfo->getBucketName(),
+            $tableInfo->getBucketStage(),
+        );
+        $clientWrapper->getBasicClient()->createTableDefinition(
+            $tableInfo->getBucketId(),
+            [
+                'name' => $tableInfo->getTableName(),
+                'primaryKeysNames' => ['Id'],
+                'columns' => [
+                    [
+                        'name' => 'Id',
+                        'definition' => [
+                            'type' => BaseType::STRING,
+                            'nullable' => false,
+                        ],
+                    ],
+                    [
+                        'name' => 'Name',
+                        'definition' => [
+                            'type' => BaseType::STRING,
+                            'length' => '255',
+                            'nullable' => false,
+                        ],
+                    ],
+                    [
+                        'name' => 'foo',
+                        'definition' => [
+                            'type' => BaseType::STRING,
+                            'length' => '255',
+                            'nullable' => false,
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            '1,text,text2,text3',
+        );
+
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => $tableId,
+                            'description' => 'table description',
+                            'table_metadata' => [
+                                'key1' => 'value1',
+                                'key2' => 'value2',
+                            ],
+                            'schema' => [
+                                [
+                                    'name' => 'Id',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                        ],
+                                    ],
+                                    'primary_key' => false,
+                                    'nullable' => false,
+                                ],
+                                [
+                                    'name' => 'Name',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '255',
+                                        ],
+                                    ],
+                                    'primary_key' => true,
+                                    'nullable' => false,
+                                ],
+                                [
+                                    'name' => 'foo',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '500',
+                                        ],
+                                    ],
+                                    'primary_key' => true,
+                                    'nullable' => false,
+                                ],
+                                [
+                                    'name' => 'New Column',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                            'length' => '255',
+                                        ],
+                                    ],
+                                    'nullable' => false,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
+        self::assertTrue($tableDetails['isTyped']);
+
+        // PKs is changed
+        self::assertEquals(['Name', 'foo'], $tableDetails['definition']['primaryKeysNames']);
+
+        // length is changed
+        self::assertEquals('500', $tableDetails['definition']['columns'][0]['definition']['length']);
+
+        // nullable is changed
+        self::assertFalse($tableDetails['definition']['columns'][1]['definition']['nullable']);
+
+        // new column is added and Webalized
+        self::assertEquals('New_Column', $tableDetails['definition']['columns'][3]['name']);
+    }
+
+    public function testTypedTableLoadWithDatabaseColumnAliases(): void
+    {
+        $tableId = 'in.c-testTypedTableLoadWithDatabaseColumnAliases.typed-test';
+        $tableInfo = new MappingDestination($tableId);
+
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+
+        if ($clientWrapper->getBasicClient()->bucketExists($tableInfo->getBucketId())) {
+            $clientWrapper->getBasicClient()->dropBucket(
+                $tableInfo->getBucketId(),
+                [
+                    'force' => true,
+                ],
+            );
+        }
+
+        // prepare storage in project
+        $clientWrapper->getBasicClient()->createBucket(
+            $tableInfo->getBucketName(),
+            $tableInfo->getBucketStage(),
+        );
+        $clientWrapper->getBasicClient()->createTableDefinition(
+            $tableInfo->getBucketId(),
+            [
+                'name' => $tableInfo->getTableName(),
+                'primaryKeysNames' => [],
+                'columns' => [
+                    [
+                        'name' => 'varchar',
+                        'definition' => [
+                            'type' => Snowflake::TYPE_VARCHAR,
+                        ],
+                    ],
+                    [
+                        'name' => 'number',
+                        'definition' => [
+                            'type' => Snowflake::TYPE_NUMBER,
+                        ],
+                    ],
+                    [
+                        'name' => 'float',
+                        'definition' => [
+                            'type' => Snowflake::TYPE_FLOAT,
+                        ],
+                    ],
+                ],
+            ],
+        );
+
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
+            '1,1,1.0',
+        );
+
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'typed-data.csv',
+                            'destination' => $tableId,
+                            'description' => 'table description',
+                            'table_metadata' => [
+                                'key1' => 'value1',
+                                'key2' => 'value2',
+                            ],
+                            'schema' => [
+                                [
+                                    'name' => 'varchar',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::STRING,
+                                        ],
+                                        'snowflake' => [
+                                            'type' => Snowflake::TYPE_NVARCHAR2,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'number',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::INTEGER,
+                                        ],
+                                        'snowflake' => [
+                                            'type' => Snowflake::TYPE_INTEGER,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'name' => 'float',
+                                    'data_type' => [
+                                        'base' => [
+                                            'type' => BaseType::FLOAT,
+                                        ],
+                                        'snowflake' => [
+                                            'type' => Snowflake::TYPE_DOUBLE,
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
+            ),
+        );
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        $tableDetails = $clientWrapper->getBasicClient()->getTable($tableId);
+        self::assertTrue($tableDetails['isTyped']);
     }
 
     private static function assertDataType(array $columns, string $columnName, string $expectedType): void
