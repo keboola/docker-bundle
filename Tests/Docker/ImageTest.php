@@ -114,6 +114,7 @@ class ImageTest extends BaseImageTest
         $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
         $image->prepare([]);
         preg_match('#@sha256:(.*)$#', $image->getImageDigests()[0], $matches);
+        self::assertNotEmpty($matches);
         $imageConfig = new Component([
             'data' => [
                 'definition' => [
