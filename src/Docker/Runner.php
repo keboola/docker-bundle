@@ -505,6 +505,9 @@ class Runner
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
         try {
+            $output->setInputTableResult($storageState->getInputTableResult());
+            $output->setInputFileStateList($storageState->getInputFileStateList());
+
             $this->runImages(
                 $jobId,
                 $configId,
@@ -526,8 +529,7 @@ class Runner
                 $orchestrationId,
                 $jobScopedEncryptor,
             );
-            $output->setInputTableResult($storageState->getInputTableResult());
-            $output->setInputFileStateList($storageState->getInputFileStateList());
+
             $output->setDataLoader($dataLoader);
 
             if ($mode === self::MODE_DEBUG) {
