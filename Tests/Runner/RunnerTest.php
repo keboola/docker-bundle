@@ -18,6 +18,8 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
+use Keboola\InputMapping\Table\Result\Column;
+use Keboola\InputMapping\Table\Result\TableInfo;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -2357,6 +2359,112 @@ class RunnerTest extends BaseRunnerTest
             [],
             $outputs,
             null,
+        );
+    }
+
+    public function testExecutorFillsInputFilesStateAndInputTableResultOnUserError(): void
+    {
+        $fileTag = 'texty.csv.gz';
+
+        $this->clearFiles();
+
+        $this->uploadTextTestFile($fileTag);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $config = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                        ],
+                    ],
+                    'files' => [
+                        [
+                            'tags' => [$fileTag],
+                        ],
+                    ],
+                ],
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null,
+            );
+            $this->fail('Run action should fail with UserException');
+        } catch (UserException $e) {
+            self::assertSame('Table sources not found: "sliced.csv"', $e->getMessage());
+        }
+
+        // @phpstan-ignore-next-line
+        self::assertCount(1, $outputs);
+        self::assertInstanceOf(Output::class, $outputs[0]);
+
+        // input tables validation
+        $inputTables = $outputs[0]->getInputTableResult()?->getTables();
+        self::assertNotNull($inputTables);
+
+        /** @var TableInfo[] $inputTables */
+        $inputTables = iterator_to_array($inputTables);
+        self::assertCount(1, $inputTables);
+
+        self::assertSame('in.c-runner-test.test', $inputTables[0]->getId());
+
+        /** @var Column[] $columns */
+        $columns = iterator_to_array($inputTables[0]->getColumns());
+        self::assertCount(2, $columns);
+
+        self::assertSame('id', $columns[0]->getName());
+        self::assertSame('text', $columns[1]->getName());
+
+        // input files validation
+        $inputFiles = $outputs[0]->getInputFileStateList()?->jsonSerialize();
+        self::assertNotNull($inputFiles);
+        unset($inputFiles[0]['lastImportId']);
+
+        self::assertEquals(
+            [
+                [
+                    'tags' => [
+                        [
+                            'name' => 'texty.csv.gz',
+                        ],
+                    ],
+                ],
+            ],
+            $inputFiles,
         );
     }
 
