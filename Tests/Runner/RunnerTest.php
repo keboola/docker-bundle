@@ -39,6 +39,8 @@ class RunnerTest extends BaseRunnerTest
 {
     use ReflectionPropertyAccessTestCase;
 
+    private const RUNNER_TEST_FILES_TAG = 'docker-runner-test';
+
     private function clearBuckets(): void
     {
         $buckets = ['in.c-runner-test', 'out.c-runner-test', 'in.c-keboola-docker-demo-sync-runner-configuration'];
@@ -77,7 +79,7 @@ class RunnerTest extends BaseRunnerTest
     {
         // remove uploaded files
         $options = new ListFilesOptions();
-        $options->setTags(['docker-runner-test']);
+        $options->setTags([self::RUNNER_TEST_FILES_TAG]);
         sleep(1);
         $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
@@ -146,6 +148,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testRunnerProcessors(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearBuckets();
         $this->clearFiles();
         $components = [
@@ -227,19 +231,14 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
-        sleep(1);
+        $this->uploadTextTestFile($fileTag);
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                         ],
                     ],
                 ],
@@ -491,6 +490,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testRunnerProcessorsSyncAction(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearBuckets();
         $this->clearFiles();
         $components = [
@@ -533,19 +534,14 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
-        sleep(1);
+        $this->uploadTextTestFile($fileTag);
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                         ],
                     ],
                 ],
@@ -2912,11 +2908,11 @@ class RunnerTest extends BaseRunnerTest
         file_put_contents($temp->getTmpFolder() . '/upload', 'test');
         $fileId1 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1']),
+            (new FileUploadOptions())->setTags([self::RUNNER_TEST_FILES_TAG, 'file1']),
         );
         $fileId2 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2']),
+            (new FileUploadOptions())->setTags([self::RUNNER_TEST_FILES_TAG, 'file2']),
         );
         sleep(2);
 
@@ -2954,7 +2950,7 @@ class RunnerTest extends BaseRunnerTest
                         ],
                         'files' => [
                             [
-                                'tags' => ['docker-runner-test'],
+                                'tags' => [self::RUNNER_TEST_FILES_TAG],
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
                             ],
                         ],
@@ -2994,7 +2990,7 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'tags' => [
                                     [
-                                        'name' => 'docker-runner-test',
+                                        'name' => self::RUNNER_TEST_FILES_TAG,
                                     ],
                                 ],
                                 'lastImportId' => $fileId1,
@@ -3384,13 +3380,11 @@ class RunnerTest extends BaseRunnerTest
 
     public function testStorageFilesOutputProcessed(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearFiles();
-        // create the file for the input file processing test
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
+        $this->uploadTextTestFile($fileTag);
+
         $componentData = [
             'id' => 'keboola.runner-staging-test',
             'data' => [
@@ -3425,7 +3419,7 @@ class RunnerTest extends BaseRunnerTest
                         'input' => [
                             'files' => [
                                 [
-                                    'tags' => ['texty.csv.gz'],
+                                    'tags' => [$fileTag],
                                     'processed_tags' => ['processed'],
                                 ],
                             ],
@@ -3434,7 +3428,7 @@ class RunnerTest extends BaseRunnerTest
                             'files' => [
                                 [
                                     'source' => 'my-file.dat',
-                                    'tags' => ['docker-runner-test'],
+                                    'tags' => [self::RUNNER_TEST_FILES_TAG],
                                 ],
                             ],
                         ],
@@ -3511,7 +3505,7 @@ class RunnerTest extends BaseRunnerTest
                             'files' => [],
                             'tables' => [],
                             'table_files' => [
-                                'tags' => ['foo', 'docker-runner-test'],
+                                'tags' => ['foo', self::RUNNER_TEST_FILES_TAG],
                                 'is_permanent' => false,
                             ],
                         ],
@@ -3549,7 +3543,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
         self::assertTrue(in_array('foo', $fileList[0]['tags']));
-        self::assertTrue(in_array('docker-runner-test', $fileList[0]['tags']));
+        self::assertTrue(in_array(self::RUNNER_TEST_FILES_TAG, $fileList[0]['tags']));
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 
@@ -3865,15 +3859,12 @@ class RunnerTest extends BaseRunnerTest
 
     public function testOutputTablesOnJobFailureRecoverableOutputMappingError(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearFiles();
         $this->clearBuckets();
 
-        // create the file for the input file processing test (it shouldn't mark the file as processed if job fails
-        $dataDir = $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
+        $this->uploadTextTestFile($fileTag);
 
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -3890,7 +3881,7 @@ class RunnerTest extends BaseRunnerTest
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                             'processed_tags' => ['processed'],
                         ],
                     ],
@@ -4024,5 +4015,20 @@ class RunnerTest extends BaseRunnerTest
         }
         // but the write-always table should exist
         self::assertFalse($this->client->tableExists('out.c-runner-test.write-always'));
+    }
+
+    private function uploadTextTestFile(string $tag): void
+    {
+        $dataDir = __DIR__ .'/../data/';
+        $this->getClient()->uploadFile(
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(
+                [
+                    self::RUNNER_TEST_FILES_TAG,
+                    $tag,
+                ],
+            ),
+        );
+        sleep(1);
     }
 }
