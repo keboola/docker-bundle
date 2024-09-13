@@ -73,6 +73,7 @@ class DataLoader implements DataLoaderInterface
             $this->defaultBucketName = $this->getDefaultBucket();
         }
         $this->validateStagingSetting();
+        $externallyManagedWorkspaceCredentials = $this->getExternallyManagedWorkspaceCredentials($this->runtimeConfig);
 
         $this->inputStrategyFactory = new InputStrategyFactory(
             $this->clientWrapper,
@@ -105,6 +106,7 @@ class DataLoader implements DataLoaderInterface
             $this->configId,
             $this->runtimeConfig['backend'] ?? [],
             $this->storageConfig['input']['read_only_storage_access'] ?? null,
+            $externallyManagedWorkspaceCredentials,
         );
         $localProviderFactory = new LocalStagingProvider($dataDirectory);
         $inputProviderInitializer = new InputProviderInitializer(
@@ -473,5 +475,14 @@ class DataLoader implements DataLoaderInterface
             $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_ABS ||
             $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT ||
             $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT;
+    }
+
+    private function getExternallyManagedWorkspaceCredentials(
+        array $runtimeConfig,
+    ): ?ExternallyManagedWorkspaceCredentials {
+        if (isset($runtimeConfig['backend']['workspace_credentials'])) {
+            return ExternallyManagedWorkspaceCredentials::fromArray($runtimeConfig['backend']['workspace_credentials']);
+        }
+        return null;
     }
 }

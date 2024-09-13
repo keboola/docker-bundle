@@ -182,15 +182,28 @@ class ContainerConfigurationTest extends TestCase
                     'backend' => [
                         'type' => 'foo',
                         'context' => 'wml',
+                        'workspace_credentials' => [
+                            'id' => '1234',
+                            'type' => 'snowflake',
+                            '#password' => 'test',
+                        ],
                     ],
                 ],
             ],
         ]);
 
-        self::assertSame([
-            'type' => 'foo',
-            'context' => 'wml',
-        ], $config['runtime']['backend']);
+        self::assertSame(
+            [
+                'type' => 'foo',
+                'context' => 'wml',
+                'workspace_credentials' => [
+                    'id' => '1234',
+                    'type' => 'snowflake',
+                    '#password' => 'test',
+                ],
+            ],
+            $config['runtime']['backend'],
+        );
     }
 
     public function testRuntimeBackendConfigurationHasDefaultEmptyValue(): void
@@ -225,6 +238,30 @@ class ContainerConfigurationTest extends TestCase
             ],
             $config['runtime']['backend'],
         );
+    }
+
+    public function testRuntimeConfigurationInvalidWorkspaceCredentials(): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+        $this->expectExceptionMessage('The value "unsupported" is not allowed for path "container.runtime.backend.workspace_credentials.type". Permissible values: "snowflake"');
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'safe' => true,
+                    'image_tag' => '12.7.0',
+                    'backend' => [
+                        'type' => 'foo',
+                        'context' => 'wml',
+                        'workspace_credentials' => [
+                            'id' => '1234',
+                            'type' => 'unsupported',
+                            '#password' => 'test',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
     }
 
     public function testConfigurationWithTableFiles(): void
