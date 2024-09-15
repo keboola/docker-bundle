@@ -505,9 +505,6 @@ class Runner
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
 
         try {
-            $output->setInputTableResult($storageState->getInputTableResult());
-            $output->setInputFileStateList($storageState->getInputFileStateList());
-
             $this->runImages(
                 $jobId,
                 $configId,
@@ -557,6 +554,9 @@ class Runner
                 }
             }
             throw $exception;
+        } finally {
+            $output->setInputTableResult($storageState->getInputTableResult());
+            $output->setInputFileStateList($storageState->getInputFileStateList());
         }
     }
 
