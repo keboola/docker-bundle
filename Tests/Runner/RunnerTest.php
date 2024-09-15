@@ -2141,6 +2141,12 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorApplicationError(): void
     {
+        $fileTag = 'texty.csv.gz';
+
+        $this->clearFiles();
+
+        $this->uploadTextTestFile($fileTag);
+
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
@@ -2152,6 +2158,28 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $configurationData = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                        ],
+                    ],
+                    'files' => [
+                        [
+                            'tags' => [$fileTag],
+                        ],
+                    ],
+                ],
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
             'parameters' => [
                 'script' => [
                     'import sys',
@@ -2180,12 +2208,14 @@ class RunnerTest extends BaseRunnerTest
                 ' failed: (2) Class 2 error',
                 $e->getMessage(),
             );
+            self::assertOutputsContainInputTableResult($outputs);
+            self::assertOutputsContainInputFileStateList($outputs, $fileTag);
+
             // @phpstan-ignore-next-line
             self::assertCount(1, $outputs);
             /** @var Output $output */
             $output = array_shift($outputs);
             self::assertEquals('v123', $output->getConfigVersion());
-            self::assertNull($output->getInputFileStateList());
             self::assertCount(1, $output->getImages());
             self::assertArrayHasKey('id', $output->getImages()[0]);
             self::assertArrayHasKey('digests', $output->getImages()[0]);
@@ -2428,44 +2458,8 @@ class RunnerTest extends BaseRunnerTest
             self::assertSame('Table sources not found: "sliced.csv"', $e->getMessage());
         }
 
-        // @phpstan-ignore-next-line
-        self::assertCount(1, $outputs);
-        self::assertInstanceOf(Output::class, $outputs[0]);
-
-        // input tables validation
-        $inputTables = $outputs[0]->getInputTableResult()?->getTables();
-        self::assertNotNull($inputTables);
-
-        /** @var TableInfo[] $inputTables */
-        $inputTables = iterator_to_array($inputTables);
-        self::assertCount(1, $inputTables);
-
-        self::assertSame('in.c-runner-test.test', $inputTables[0]->getId());
-
-        /** @var Column[] $columns */
-        $columns = iterator_to_array($inputTables[0]->getColumns());
-        self::assertCount(2, $columns);
-
-        self::assertSame('id', $columns[0]->getName());
-        self::assertSame('text', $columns[1]->getName());
-
-        // input files validation
-        $inputFiles = $outputs[0]->getInputFileStateList()?->jsonSerialize();
-        self::assertNotNull($inputFiles);
-        unset($inputFiles[0]['lastImportId']);
-
-        self::assertEquals(
-            [
-                [
-                    'tags' => [
-                        [
-                            'name' => 'texty.csv.gz',
-                        ],
-                    ],
-                ],
-            ],
-            $inputFiles,
-        );
+        self::assertOutputsContainInputTableResult($outputs);
+        self::assertOutputsContainInputFileStateList($outputs, $fileTag);
     }
 
     public function testExecutorInvalidInputMapping2(): void
@@ -4138,5 +4132,54 @@ class RunnerTest extends BaseRunnerTest
             ),
         );
         sleep(1);
+    }
+
+    /**
+     * @param Output[] $outputs
+     */
+    private static function assertOutputsContainInputTableResult(array $outputs): void
+    {
+        self::assertCount(1, $outputs);
+
+        $inputTables = $outputs[0]->getInputTableResult()?->getTables();
+        self::assertNotNull($inputTables);
+
+        /** @var TableInfo[] $inputTables */
+        $inputTables = iterator_to_array($inputTables);
+        self::assertCount(1, $inputTables);
+
+        self::assertSame('in.c-runner-test.test', $inputTables[0]->getId());
+
+        /** @var Column[] $columns */
+        $columns = iterator_to_array($inputTables[0]->getColumns());
+        self::assertCount(2, $columns);
+
+        self::assertSame('id', $columns[0]->getName());
+        self::assertSame('text', $columns[1]->getName());
+    }
+
+    /**
+     * @param Output[] $outputs
+     */
+    private static function assertOutputsContainInputFileStateList(array $outputs, string $expectedFileTag): void
+    {
+        self::assertCount(1, $outputs);
+
+        $inputFiles = $outputs[0]->getInputFileStateList()?->jsonSerialize();
+        self::assertNotNull($inputFiles);
+        unset($inputFiles[0]['lastImportId']);
+
+        self::assertEquals(
+            [
+                [
+                    'tags' => [
+                        [
+                            'name' => $expectedFileTag,
+                        ],
+                    ],
+                ],
+            ],
+            $inputFiles,
+        );
     }
 }
