@@ -18,6 +18,8 @@ use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
+use Keboola\InputMapping\Table\Result\Column;
+use Keboola\InputMapping\Table\Result\TableInfo;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -38,6 +40,8 @@ use ReflectionMethod;
 class RunnerTest extends BaseRunnerTest
 {
     use ReflectionPropertyAccessTestCase;
+
+    private const RUNNER_TEST_FILES_TAG = 'docker-runner-test';
 
     private function clearBuckets(): void
     {
@@ -77,7 +81,7 @@ class RunnerTest extends BaseRunnerTest
     {
         // remove uploaded files
         $options = new ListFilesOptions();
-        $options->setTags(['docker-runner-test']);
+        $options->setTags([self::RUNNER_TEST_FILES_TAG]);
         sleep(1);
         $files = $this->getClient()->listFiles($options);
         foreach ($files as $file) {
@@ -146,6 +150,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testRunnerProcessors(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearBuckets();
         $this->clearFiles();
         $components = [
@@ -227,19 +233,14 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
-        sleep(1);
+        $this->uploadTextTestFile($fileTag);
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                         ],
                     ],
                 ],
@@ -491,6 +492,8 @@ class RunnerTest extends BaseRunnerTest
 
     public function testRunnerProcessorsSyncAction(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearBuckets();
         $this->clearFiles();
         $components = [
@@ -533,19 +536,14 @@ class RunnerTest extends BaseRunnerTest
                 }
             });
 
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
-        sleep(1);
+        $this->uploadTextTestFile($fileTag);
 
         $configurationData = [
             'storage' => [
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                         ],
                     ],
                 ],
@@ -2143,6 +2141,12 @@ class RunnerTest extends BaseRunnerTest
 
     public function testExecutorApplicationError(): void
     {
+        $fileTag = 'texty.csv.gz';
+
+        $this->clearFiles();
+
+        $this->uploadTextTestFile($fileTag);
+
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
             'data' => [
@@ -2154,6 +2158,28 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $configurationData = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                        ],
+                    ],
+                    'files' => [
+                        [
+                            'tags' => [$fileTag],
+                        ],
+                    ],
+                ],
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
             'parameters' => [
                 'script' => [
                     'import sys',
@@ -2182,12 +2208,14 @@ class RunnerTest extends BaseRunnerTest
                 ' failed: (2) Class 2 error',
                 $e->getMessage(),
             );
+            self::assertOutputsContainInputTableResult($outputs);
+            self::assertOutputsContainInputFileStateList($outputs, $fileTag);
+
             // @phpstan-ignore-next-line
             self::assertCount(1, $outputs);
             /** @var Output $output */
             $output = array_shift($outputs);
             self::assertEquals('v123', $output->getConfigVersion());
-            self::assertNull($output->getInputFileStateList());
             self::assertCount(1, $output->getImages());
             self::assertArrayHasKey('id', $output->getImages()[0]);
             self::assertArrayHasKey('digests', $output->getImages()[0]);
@@ -2362,6 +2390,76 @@ class RunnerTest extends BaseRunnerTest
             $outputs,
             null,
         );
+    }
+
+    public function testExecutorFillsInputFilesStateAndInputTableResultOnUserError(): void
+    {
+        $fileTag = 'texty.csv.gz';
+
+        $this->clearFiles();
+
+        $this->uploadTextTestFile($fileTag);
+
+        $componentData = [
+            'id' => 'keboola.docker-demo-sync',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.python-transformation',
+                ],
+            ],
+        ];
+        $config = [
+            'storage' => [
+                'input' => [
+                    'tables' => [
+                        [
+                            'source' => 'in.c-runner-test.test',
+                        ],
+                    ],
+                    'files' => [
+                        [
+                            'tags' => [$fileTag],
+                        ],
+                    ],
+                ],
+                'output' => [
+                    'tables' => [
+                        [
+                            'source' => 'sliced.csv',
+                            'destination' => 'in.c-runner-test.out',
+                        ],
+                    ],
+                ],
+            ],
+            'parameters' => [
+                'script' => [
+                    'import os',
+                ],
+            ],
+        ];
+        $runner = $this->getRunner();
+
+        $outputs = [];
+        try {
+            $runner->run(
+                $this->prepareJobDefinitions($componentData, 'runner-configuration', $config, []),
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null,
+            );
+            $this->fail('Run action should fail with UserException');
+        } catch (UserException $e) {
+            self::assertSame('Table sources not found: "sliced.csv"', $e->getMessage());
+        }
+
+        self::assertOutputsContainInputTableResult($outputs);
+        self::assertOutputsContainInputFileStateList($outputs, $fileTag);
     }
 
     public function testExecutorInvalidInputMapping2(): void
@@ -2912,11 +3010,11 @@ class RunnerTest extends BaseRunnerTest
         file_put_contents($temp->getTmpFolder() . '/upload', 'test');
         $fileId1 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file1']),
+            (new FileUploadOptions())->setTags([self::RUNNER_TEST_FILES_TAG, 'file1']),
         );
         $fileId2 = $this->getClient()->uploadFile(
             $temp->getTmpFolder() . '/upload',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'file2']),
+            (new FileUploadOptions())->setTags([self::RUNNER_TEST_FILES_TAG, 'file2']),
         );
         sleep(2);
 
@@ -2954,7 +3052,7 @@ class RunnerTest extends BaseRunnerTest
                         ],
                         'files' => [
                             [
-                                'tags' => ['docker-runner-test'],
+                                'tags' => [self::RUNNER_TEST_FILES_TAG],
                                 'changed_since' => InputTableOptions::ADAPTIVE_INPUT_MAPPING_VALUE,
                             ],
                         ],
@@ -2994,7 +3092,7 @@ class RunnerTest extends BaseRunnerTest
                             [
                                 'tags' => [
                                     [
-                                        'name' => 'docker-runner-test',
+                                        'name' => self::RUNNER_TEST_FILES_TAG,
                                     ],
                                 ],
                                 'lastImportId' => $fileId1,
@@ -3384,13 +3482,11 @@ class RunnerTest extends BaseRunnerTest
 
     public function testStorageFilesOutputProcessed(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearFiles();
-        // create the file for the input file processing test
-        $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
+        $this->uploadTextTestFile($fileTag);
+
         $componentData = [
             'id' => 'keboola.runner-staging-test',
             'data' => [
@@ -3425,7 +3521,7 @@ class RunnerTest extends BaseRunnerTest
                         'input' => [
                             'files' => [
                                 [
-                                    'tags' => ['texty.csv.gz'],
+                                    'tags' => [$fileTag],
                                     'processed_tags' => ['processed'],
                                 ],
                             ],
@@ -3434,7 +3530,7 @@ class RunnerTest extends BaseRunnerTest
                             'files' => [
                                 [
                                     'source' => 'my-file.dat',
-                                    'tags' => ['docker-runner-test'],
+                                    'tags' => [self::RUNNER_TEST_FILES_TAG],
                                 ],
                             ],
                         ],
@@ -3511,7 +3607,7 @@ class RunnerTest extends BaseRunnerTest
                             'files' => [],
                             'tables' => [],
                             'table_files' => [
-                                'tags' => ['foo', 'docker-runner-test'],
+                                'tags' => ['foo', self::RUNNER_TEST_FILES_TAG],
                                 'is_permanent' => false,
                             ],
                         ],
@@ -3549,7 +3645,7 @@ class RunnerTest extends BaseRunnerTest
         self::assertCount(1, $fileList);
         self::assertEquals('my_table.csv', $fileList[0]['name']);
         self::assertTrue(in_array('foo', $fileList[0]['tags']));
-        self::assertTrue(in_array('docker-runner-test', $fileList[0]['tags']));
+        self::assertTrue(in_array(self::RUNNER_TEST_FILES_TAG, $fileList[0]['tags']));
         self::assertNotNull($fileList[0]['maxAgeDays']);
     }
 
@@ -3865,15 +3961,12 @@ class RunnerTest extends BaseRunnerTest
 
     public function testOutputTablesOnJobFailureRecoverableOutputMappingError(): void
     {
+        $fileTag = 'texty.csv.gz';
+
         $this->clearFiles();
         $this->clearBuckets();
 
-        // create the file for the input file processing test (it shouldn't mark the file as processed if job fails
-        $dataDir = $dataDir = __DIR__ .'/../data/';
-        $this->getClient()->uploadFile(
-            $dataDir . 'texty.csv.gz',
-            (new FileUploadOptions())->setTags(['docker-runner-test', 'texty.csv.gz']),
-        );
+        $this->uploadTextTestFile($fileTag);
 
         $componentData = [
             'id' => 'keboola.docker-demo-sync',
@@ -3890,7 +3983,7 @@ class RunnerTest extends BaseRunnerTest
                 'input' => [
                     'files' => [
                         [
-                            'tags' => ['texty.csv.gz'],
+                            'tags' => [$fileTag],
                             'processed_tags' => ['processed'],
                         ],
                     ],
@@ -4024,5 +4117,69 @@ class RunnerTest extends BaseRunnerTest
         }
         // but the write-always table should exist
         self::assertFalse($this->client->tableExists('out.c-runner-test.write-always'));
+    }
+
+    private function uploadTextTestFile(string $tag): void
+    {
+        $dataDir = __DIR__ .'/../data/';
+        $this->getClient()->uploadFile(
+            $dataDir . 'texty.csv.gz',
+            (new FileUploadOptions())->setTags(
+                [
+                    self::RUNNER_TEST_FILES_TAG,
+                    $tag,
+                ],
+            ),
+        );
+        sleep(1);
+    }
+
+    /**
+     * @param Output[] $outputs
+     */
+    private static function assertOutputsContainInputTableResult(array $outputs): void
+    {
+        self::assertCount(1, $outputs);
+
+        $inputTables = $outputs[0]->getInputTableResult()?->getTables();
+        self::assertNotNull($inputTables);
+
+        /** @var TableInfo[] $inputTables */
+        $inputTables = iterator_to_array($inputTables);
+        self::assertCount(1, $inputTables);
+
+        self::assertSame('in.c-runner-test.test', $inputTables[0]->getId());
+
+        /** @var Column[] $columns */
+        $columns = iterator_to_array($inputTables[0]->getColumns());
+        self::assertCount(2, $columns);
+
+        self::assertSame('id', $columns[0]->getName());
+        self::assertSame('text', $columns[1]->getName());
+    }
+
+    /**
+     * @param Output[] $outputs
+     */
+    private static function assertOutputsContainInputFileStateList(array $outputs, string $expectedFileTag): void
+    {
+        self::assertCount(1, $outputs);
+
+        $inputFiles = $outputs[0]->getInputFileStateList()?->jsonSerialize();
+        self::assertNotNull($inputFiles);
+        unset($inputFiles[0]['lastImportId']);
+
+        self::assertEquals(
+            [
+                [
+                    'tags' => [
+                        [
+                            'name' => $expectedFileTag,
+                        ],
+                    ],
+                ],
+            ],
+            $inputFiles,
+        );
     }
 }
