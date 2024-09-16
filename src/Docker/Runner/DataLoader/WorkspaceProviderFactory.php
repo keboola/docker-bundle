@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\InputMapping\Staging\ProviderInterface;
+use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
 use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\Provider\Credentials\ABSWorkspaceCredentials;
 use Keboola\StagingProvider\Provider\Credentials\CredentialsInterface;
@@ -33,7 +34,7 @@ class WorkspaceProviderFactory
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
-    ): ProviderInterface {
+    ): AbstractWorkspaceProvider {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         if ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
@@ -89,7 +90,7 @@ class WorkspaceProviderFactory
         string $configId,
         string $workspaceBackend,
         string $credentialsClass,
-    ): ProviderInterface {
+    ): ExistingWorkspaceStagingProvider {
         $listOptions = (new ListConfigurationWorkspacesOptions())
             ->setComponentId($component->getId())
             ->setConfigurationId($configId);

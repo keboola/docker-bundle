@@ -30,6 +30,7 @@ use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
+use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
 use Keboola\StagingProvider\Provider\NewWorkspaceStagingProvider;
 use Keboola\StorageApi\ClientException;
@@ -282,7 +283,8 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof AbstractWorkspaceProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
+                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
                     continue;
                 }
 
@@ -300,7 +302,8 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof AbstractWorkspaceProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
+                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
                     continue;
                 }
 
