@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
-use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
 use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\Provider\Credentials\ABSWorkspaceCredentials;
@@ -34,9 +33,8 @@ class WorkspaceProviderFactory
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
-    ): AbstractWorkspaceProvider {
         ?ExternallyManagedWorkspaceCredentials $externallyManagedWorkspaceCredentials,
-    ): ProviderInterface {
+    ): AbstractWorkspaceProvider {
         if ($externallyManagedWorkspaceCredentials) {
             // Externally managed workspaces are persistent
             $workspaceStaging = new ExistingWorkspaceStagingProvider(

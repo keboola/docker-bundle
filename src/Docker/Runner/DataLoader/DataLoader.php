@@ -29,7 +29,6 @@ use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
-use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
 use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
 use Keboola\StagingProvider\Provider\NewWorkspaceStagingProvider;
