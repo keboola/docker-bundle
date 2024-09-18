@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Exception;
 
-class ExternalWorkspaceException extends UserException
+class ExternalWorkspaceException extends ApplicationException
 {
 }

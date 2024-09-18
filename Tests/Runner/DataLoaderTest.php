@@ -1578,13 +1578,13 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+
         $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
         $workspaceData = $workspaceApi->createWorkspace(['backend' => 'snowflake']);
-        $workspaces = new Workspaces($this->clientWrapper->getBasicClient());
-        $workspaceGetData = $workspaces->getWorkspace($workspaceData['id']);
+        $workspaceGetData = $workspaceApi->getWorkspace($workspaceData['id']);
 
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
         $clientMock->expects(self::once())
             ->method('apiGet')
             ->with(sprintf('workspaces/%s', $workspaceData['id']))
@@ -1636,7 +1636,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         // password is not returned by getWorkspace, otherwise it should be the same
         unset($workspaceData['connection']['password']);
-        $workspacesData2 = $workspaces->getWorkspace($workspaceData['id']);
+        $workspacesData2 = $workspaceApi->getWorkspace($workspaceData['id']);
         self::assertSame($workspaceData, $workspacesData2);
     }
 
