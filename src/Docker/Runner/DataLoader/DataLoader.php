@@ -29,7 +29,10 @@ use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
-use Keboola\StagingProvider\Provider\WorkspaceStagingProvider;
+use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
+use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
+use Keboola\StagingProvider\Provider\LocalStagingProvider;
+use Keboola\StagingProvider\Provider\NewWorkspaceStagingProvider;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -43,43 +46,26 @@ use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private ClientWrapper $clientWrapper;
-    private LoggerInterface $logger;
-    private string $dataDirectory;
     private array $storageConfig;
     private array $runtimeConfig;
     private string $defaultBucketName;
     private Component $component;
     private ?string $configId;
     private ?string $configRowId;
-    private OutputFilterInterface $outputFilter;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
 
-    /**
-     * DataLoader constructor.
-     *
-     * @param ClientWrapper $clientWrapper
-     * @param LoggerInterface $logger
-     * @param string $dataDirectory
-     * @param JobDefinition $jobDefinition
-     * @param OutputFilterInterface $outputFilter
-     */
     public function __construct(
-        ClientWrapper $clientWrapper,
-        LoggerInterface $logger,
-        $dataDirectory,
+        private readonly ClientWrapper $clientWrapper,
+        private readonly LoggerInterface $logger,
+        private readonly string $dataDirectory,
         JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter,
+        private readonly OutputFilterInterface $outputFilter,
     ) {
-        $this->clientWrapper = $clientWrapper;
-        $this->logger = $logger;
-        $this->dataDirectory = $dataDirectory;
         $configuration = $jobDefinition->getConfiguration();
         $this->storageConfig = $configuration['storage'] ?? [];
         $this->runtimeConfig = $configuration['runtime'] ?? [];
         $this->component = $jobDefinition->getComponent();
-        $this->outputFilter = $outputFilter;
         $this->configId = $jobDefinition->getConfigId();
         $this->configRowId = $jobDefinition->getRowId();
         $this->defaultBucketName = (string) ($this->storageConfig['output']['default_bucket'] ?? '');
@@ -106,24 +92,25 @@ class DataLoader implements DataLoaderInterface
             we need the base dir here */
         $dataDirectory = dirname($this->dataDirectory);
 
-        $workspaceProviderFactoryFactory = new WorkspaceProviderFactoryFactory(
+        $workspaceProviderFactory = new WorkspaceProviderFactory(
             new Components($this->clientWrapper->getBranchClient()),
             new Workspaces($this->clientWrapper->getBranchClient()),
             $this->logger,
         );
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
-        $workspaceProviderFactory = $workspaceProviderFactoryFactory->getWorkspaceProviderFactory(
+        $workspaceProviderFactory = $workspaceProviderFactory->getWorkspaceStaging(
             $this->getStagingStorageInput(),
             $this->component,
             $this->configId,
             $this->runtimeConfig['backend'] ?? [],
             $this->storageConfig['input']['read_only_storage_access'] ?? null,
         );
+        $localProviderFactory = new LocalStagingProvider($dataDirectory);
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
             $workspaceProviderFactory,
-            $dataDirectory,
+            $localProviderFactory,
         );
         $inputProviderInitializer->initializeProviders(
             $this->getStagingStorageInput(),
@@ -133,7 +120,7 @@ class DataLoader implements DataLoaderInterface
         $outputProviderInitializer = new OutputProviderInitializer(
             $this->outputStrategyFactory,
             $workspaceProviderFactory,
-            $dataDirectory,
+            $localProviderFactory,
         );
         $outputProviderInitializer->initializeProviders(
             $this->getStagingStorageOutput(),
@@ -296,7 +283,8 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
+                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
                     continue;
                 }
 
@@ -314,7 +302,8 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
+                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
                     continue;
                 }
 
@@ -440,14 +429,21 @@ class DataLoader implements DataLoaderInterface
         );
         foreach ($maps as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof WorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceStagingProvider) {
                     continue;
                 }
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                // don't clean ABS workspaces or Redshift workspaces
-                // which are reusable if created for a config
+                /* don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config.
+
+                    The whole condition and the isReusableWorkspace method can probably be completely removed,
+                    because now it is distinguished between NewWorkspaceStagingProvider (cleanup) and
+                    ExistingWorkspaceStagingProvider (no cleanup).
+
+                    However, since ABS and Redshift workspaces are not used in real life and badly tested, I don't
+                    want to remove it now.
+                 */
                 if ($this->configId && $this->isReusableWorkspace()) {
                     continue;
                 }

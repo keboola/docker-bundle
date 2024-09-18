@@ -8,7 +8,7 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactoryFactory;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
@@ -91,7 +91,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
+        self::assertEquals(['container', 'connectionString'], array_keys($credentials));
         self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
         self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
@@ -147,7 +147,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
+        self::assertEquals(['container', 'connectionString'], array_keys($credentials));
         self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
@@ -224,7 +224,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
 
         $credentials = $dataLoader->getWorkspaceCredentials();
-        self::assertEquals(['connectionString', 'container'], array_keys($credentials));
+        self::assertEquals(['container', 'connectionString'], array_keys($credentials));
         self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
         $workspaces = $componentsApi->listConfigurationWorkspaces(
             (new ListConfigurationWorkspacesOptions())
@@ -302,12 +302,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBranchClient')->willReturn($client);
         $logger = new TestLogger();
         try {
-            $workspaceFactory = new WorkspaceProviderFactoryFactory(
+            $workspaceFactory = new WorkspaceProviderFactory(
                 new Components($clientWrapper->getBranchClient()),
                 new Workspaces($clientWrapper->getBranchClient()),
                 $logger,
             );
-            $workspaceFactory->getWorkspaceProviderFactory(
+            $workspaceFactory->getWorkspaceStaging(
                 'workspace-abs',
                 $component,
                 $configurationId,

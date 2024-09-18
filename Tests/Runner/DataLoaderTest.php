@@ -1406,60 +1406,11 @@ class DataLoaderTest extends BaseDataLoaderTest
         $configuration->setConfiguration([]);
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
-        $workspaceData = $componentsApi->createConfigurationWorkspace(
-            $componentId,
-            $configId,
-            ['backend' => 'snowflake'],
-        );
-        $workspaces = new Workspaces($this->clientWrapper->getBasicClient());
-        $passwordResetData = $workspaces->resetWorkspacePassword($workspaceData['id']);
 
-        $matcher = self::exactly(2);
-        $clientMock->expects($matcher)
-            ->method('apiPostJson')
-            ->with(self::callback(function (string $url, array $data = []) use ($matcher, $configId, $workspaceData) {
-                switch ($matcher->getInvocationCount()) {
-                    case 1:
-                        self::assertSame(
-                            sprintf(
-                                'components/keboola.runner-workspace-test/configs/%s/workspaces?async=1',
-                                $configId,
-                            ),
-                            $url,
-                        );
-                        self::assertSame([], $data);
-                        break;
-                    case 2:
-                        self::assertSame(
-                            sprintf('workspaces/%s/password', $workspaceData['id']),
-                            $url,
-                        );
-                        self::assertSame(
-                            [],
-                            $data,
-                        );
-                        break;
-                    default:
-                        self::fail('Unexpected call');
-                }
-                return true;
-            }))
-            ->willReturnCallback(function () use ($matcher, $workspaceData, $passwordResetData) {
-                return match ($matcher->getInvocationCount()) {
-                    1 => $workspaceData,
-                    2 => $passwordResetData,
-                    default => self::fail('Unexpected call')
-                };
-            });
-        $clientMock->expects(self::once())
-            ->method('apiDelete')
-            ->with(sprintf('workspaces/%s?async=1', $workspaceData['id']))
-            ->willReturnCallback(function () use ($workspaceData) {
-                $this->clientWrapper->getBasicClient()->apiDelete(sprintf(
-                    'workspaces/%s?async=1',
-                    $workspaceData['id'],
-                ));
-            });
+        $clientMock->expects(self::never())
+            ->method('apiPostJson');
+        $clientMock->expects(self::never())
+            ->method('apiDelete');
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
@@ -1473,7 +1424,9 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition([], $component, $configId),
             new OutputFilter(10000),
         );
+        // immediately calling cleanWorkspace without using it means it was not initialized
         $dataLoader->cleanWorkspace();
+
         $listOptions = new ListConfigurationWorkspacesOptions();
         $listOptions->setComponentId($componentId)->setConfigurationId($configId);
         $workspaces = $componentsApi->listConfigurationWorkspaces($listOptions);
@@ -1481,7 +1434,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi->deleteConfiguration($componentId, $configId);
     }
 
-    public function testWorkspaceCleanupSuccessWhenWorkspaceWasAlreadyInitialized(): void
+    public function testWorkspaceCleanupWhenInitialized(): void
     {
         $componentId = 'keboola.runner-workspace-test';
         $component = new Component([
@@ -1507,59 +1460,15 @@ class DataLoaderTest extends BaseDataLoaderTest
         $configuration->setConfiguration([]);
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
-        $workspaceData = $componentsApi->createConfigurationWorkspace(
-            $componentId,
-            $configId,
-            ['backend' => 'snowflake'],
-        );
-        $workspaces = new Workspaces($this->clientWrapper->getBasicClient());
-        $passwordResetData = $workspaces->resetWorkspacePassword($workspaceData['id']);
 
-        $matcher = self::exactly(2);
-        $clientMock->expects($matcher)
-            ->method('apiPostJson')
-            ->with(self::callback(function (string $url, array $data = []) use ($matcher, $configId, $workspaceData) {
-                switch ($matcher->getInvocationCount()) {
-                    case 1:
-                        self::assertSame(
-                            sprintf(
-                                'components/keboola.runner-workspace-test/configs/%s/workspaces?async=1',
-                                $configId,
-                            ),
-                            $url,
-                        );
-                        self::assertSame([], $data);
-                        break;
-                    case 2:
-                        self::assertSame(
-                            sprintf('workspaces/%s/password', $workspaceData['id']),
-                            $url,
-                        );
-                        self::assertSame(
-                            [],
-                            $data,
-                        );
-                        break;
-                    default:
-                        self::fail('Unexpected call');
-                }
-                return true;
-            }))
-            ->willReturnCallback(function () use ($matcher, $workspaceData, $passwordResetData) {
-                return match ($matcher->getInvocationCount()) {
-                    1 => $workspaceData,
-                    2 => $passwordResetData,
-                    default => self::fail('Unexpected call')
-                };
+        $clientMock->method('apiPostJson')
+            ->willReturnCallback(function (...$args) {
+                return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
             });
         $clientMock->expects(self::once())
             ->method('apiDelete')
-            ->with(sprintf('workspaces/%s?async=1', $workspaceData['id']))
-            ->willReturnCallback(function () use ($workspaceData) {
-                $this->clientWrapper->getBasicClient()->apiDelete(sprintf(
-                    'workspaces/%s?async=1',
-                    $workspaceData['id'],
-                ));
+            ->willReturnCallback(function (...$args) {
+                return $this->clientWrapper->getBasicClient()->apiDelete(...$args);
             });
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
@@ -1574,6 +1483,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition([], $component, $configId),
             new OutputFilter(10000),
         );
+
+        // this causes the workspaces to initialize
         $workspace = $dataLoader->getWorkspaceCredentials();
 
         self::assertArrayHasKey('host', $workspace);
@@ -1611,11 +1522,15 @@ class DataLoaderTest extends BaseDataLoaderTest
         ]);
         $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
-
-        // exception is not thrown outside
-        $clientMock->expects(self::once())->method('apiPostJson')->willThrowException(
-            new ClientException('boo'),
-        );
+        $clientMock->method('apiPostJson')
+            ->willReturnCallback(function (...$args) {
+                return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
+            });
+        $clientMock->expects(self::once())
+            ->method('apiDelete')
+            ->willThrowException(
+                new ClientException('boo'),
+            );
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
@@ -1636,6 +1551,10 @@ class DataLoaderTest extends BaseDataLoaderTest
             new JobDefinition([], $component, $configId),
             new OutputFilter(10000),
         );
+        $credentials = $dataLoader->getWorkspaceCredentials();
+        self::assertArrayHasKey('host', $credentials);
+        self::assertArrayHasKey('password', $credentials);
+
         $dataLoader->cleanWorkspace();
         self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));
         $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);

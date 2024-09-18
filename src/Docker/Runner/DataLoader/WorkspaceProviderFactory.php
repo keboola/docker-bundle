@@ -6,23 +6,20 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
-use Keboola\StagingProvider\Staging\Workspace\AbsWorkspaceStaging;
-use Keboola\StagingProvider\Staging\Workspace\RedshiftWorkspaceStaging;
-use Keboola\StagingProvider\WorkspaceProviderFactory\AbstractCachedWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ComponentWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\Configuration\WorkspaceBackendConfig;
-use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\ABSWorkspaceCredentials;
-use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\CredentialsInterface;
-use Keboola\StagingProvider\WorkspaceProviderFactory\Credentials\DatabaseWorkspaceCredentials;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingDatabaseWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\ExistingFilesystemWorkspaceProviderFactory;
-use Keboola\StagingProvider\WorkspaceProviderFactory\WorkspaceProviderFactoryInterface;
+use Keboola\InputMapping\Staging\ProviderInterface;
+use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
+use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
+use Keboola\StagingProvider\Provider\Credentials\ABSWorkspaceCredentials;
+use Keboola\StagingProvider\Provider\Credentials\CredentialsInterface;
+use Keboola\StagingProvider\Provider\Credentials\DatabaseWorkspaceCredentials;
+use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
+use Keboola\StagingProvider\Provider\NewWorkspaceStagingProvider;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Psr\Log\LoggerInterface;
 
-class WorkspaceProviderFactoryFactory
+class WorkspaceProviderFactory
 {
     public function __construct(
         private readonly Components $componentsApiClient,
@@ -31,75 +28,69 @@ class WorkspaceProviderFactoryFactory
     ) {
     }
 
-    public function getWorkspaceProviderFactory(
+    public function getWorkspaceStaging(
         string $stagingStorage,
         Component $component,
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
-    ): WorkspaceProviderFactoryInterface {
+    ): AbstractWorkspaceProvider {
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         if ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
+            $workspaceStaging = $this->getPersistentWorkspace(
                 $component,
                 $configId,
-                AbsWorkspaceStaging::getType(),
+                'abs',
                 ABSWorkspaceCredentials::class,
-                ExistingFilesystemWorkspaceProviderFactory::class,
             );
         } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_REDSHIFT)) {
             // Redshift workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
+            $workspaceStaging = $this->getPersistentWorkspace(
                 $component,
                 $configId,
-                RedshiftWorkspaceStaging::getType(),
+                'redshift',
                 DatabaseWorkspaceCredentials::class,
-                ExistingDatabaseWorkspaceProviderFactory::class,
             );
-        /*
-         * Persistent BigQuery workspaces are possible, but do not work well on connection side (shared buckets,
-         * read-only role). If fixed, uncomment this + add changes to DataLoader class and it will start working.
-         *
-        } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_BIGQUERY)) {
-            // BigQuery workspaces are persistent, but only if configId is present
-            $workspaceProviderFactory = $this->getWorkspaceFactoryForPersistentWorkspace(
-                $component,
-                $configId,
-                BigQueryWorkspaceStaging::getType(),
-                BigQueryWorkspaceCredentials::class,
-                ExistingDatabaseWorkspaceProviderFactory::class,
-            );
-        */
+            /*
+             * Persistent BigQuery workspaces are possible, but do not work well on connection side (shared buckets,
+             * read-only role). If fixed, uncomment this + add changes to DataLoader class and it will start working.
+             *
+            } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_BIGQUERY)) {
+                // BigQuery workspaces are persistent, but only if configId is present
+                $workspaceProviderFactory = $this->getPersistentWorkspace(
+                    $component,
+                    $configId,
+                    'bigquery,
+                    BigQueryWorkspaceCredentials::class,
+                );
+            */
         } else {
-            $workspaceProviderFactory = new ComponentWorkspaceProviderFactory(
-                $this->componentsApiClient,
+            $workspaceStaging = new NewWorkspaceStagingProvider(
                 $this->workspacesApiClient,
+                $this->componentsApiClient,
+                $this->getWorkspaceBackendConfig($backendConfig, $stagingStorage, $useReadonlyRole),
                 $component->getId(),
                 $configId,
-                $this->resolveWorkspaceBackendConfiguration($backendConfig),
-                $useReadonlyRole,
             );
             $this->logger->notice(sprintf(
                 'Created a new %s workspace.',
                 $useReadonlyRole ? 'readonly ephemeral' : 'ephemeral',
             ));
         }
-        return $workspaceProviderFactory;
+        return $workspaceStaging;
     }
 
     /**
      * @param class-string<CredentialsInterface> $credentialsClass
-     * @param class-string<AbstractCachedWorkspaceProviderFactory> $workspaceFactoryClass
      */
-    private function getWorkspaceFactoryForPersistentWorkspace(
+    private function getPersistentWorkspace(
         Component $component,
         string $configId,
-        string $backendType,
+        string $workspaceBackend,
         string $credentialsClass,
-        string $workspaceFactoryClass,
-    ): AbstractCachedWorkspaceProviderFactory {
+    ): ExistingWorkspaceStagingProvider {
         $listOptions = (new ListConfigurationWorkspacesOptions())
             ->setComponentId($component->getId())
             ->setConfigurationId($configId);
@@ -109,7 +100,7 @@ class WorkspaceProviderFactoryFactory
             $workspace = $this->componentsApiClient->createConfigurationWorkspace(
                 $component->getId(),
                 $configId,
-                ['backend' => $backendType],
+                ['backend' => $workspaceBackend],
                 true,
             );
             $workspaceId = (int) $workspace['id'];
@@ -137,16 +128,19 @@ class WorkspaceProviderFactoryFactory
                 $this->workspacesApiClient->resetWorkspacePassword($workspaceId),
             );
         }
-        return new $workspaceFactoryClass(
+
+        return new ExistingWorkspaceStagingProvider(
             $this->workspacesApiClient,
             (string) $workspaceId,
             $credentials,
         );
     }
 
-    private function resolveWorkspaceBackendConfiguration(array $backendConfig): WorkspaceBackendConfig
-    {
-        $backendType = $backendConfig['type'] ?? null;
-        return new WorkspaceBackendConfig($backendType);
+    private function getWorkspaceBackendConfig(
+        array $backendConfig,
+        string $stagingStorage,
+        ?bool $useReadonlyRole,
+    ): WorkspaceBackendConfig {
+        return new WorkspaceBackendConfig($stagingStorage, $backendConfig['type'] ?? null, $useReadonlyRole);
     }
 }
