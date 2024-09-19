@@ -1634,10 +1634,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         // clean workspace should not do anything (apiDelete is not called)
         $dataLoader->cleanWorkspace();
 
-        // password is not returned by getWorkspace, otherwise it should be the same
-        unset($workspaceData['connection']['password']);
-        $workspacesData2 = $workspaceApi->getWorkspace($workspaceData['id']);
-        self::assertSame($workspaceData, $workspacesData2);
+        $getWorkspaceResult = $workspaceApi->getWorkspace($workspaceData['id']);
+        self::assertSame($workspaceGetData, $getWorkspaceResult);
     }
 
     /**
