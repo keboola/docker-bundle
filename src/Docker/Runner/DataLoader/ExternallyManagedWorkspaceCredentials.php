@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Exception\ExternalWorkspaceException;
+use Keboola\StagingProvider\Provider\Credentials\CredentialsInterface;
 use Keboola\StagingProvider\Provider\Credentials\DatabaseWorkspaceCredentials;
 
 readonly class ExternallyManagedWorkspaceCredentials
@@ -33,7 +34,7 @@ readonly class ExternallyManagedWorkspaceCredentials
         );
     }
 
-    public function getDatabaseCredentials(): DatabaseWorkspaceCredentials
+    public function getDatabaseCredentials(): CredentialsInterface
     {
         // array in format of https://keboola.docs.apiary.io/#reference/workspaces/password-reset/password-reset
         return DatabaseWorkspaceCredentials::fromPasswordResetArray(['password' => $this->password]);
