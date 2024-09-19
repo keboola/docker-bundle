@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
-use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
 use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\Provider\Credentials\ABSWorkspaceCredentials;
@@ -34,10 +33,20 @@ class WorkspaceProviderFactory
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
+        ?ExternallyManagedWorkspaceCredentials $externallyManagedWorkspaceCredentials,
     ): AbstractWorkspaceProvider {
-        /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
-            just input staging here (because if it is workspace, it must be the same as output mapping). */
-        if ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
+        if ($externallyManagedWorkspaceCredentials) {
+            // Externally managed workspaces are persistent
+            $workspaceStaging = new ExistingWorkspaceStagingProvider(
+                $this->workspacesApiClient,
+                $externallyManagedWorkspaceCredentials->id,
+                $externallyManagedWorkspaceCredentials->getDatabaseCredentials(),
+            );
+            $this->logger->notice(sprintf(
+                'Using provided workspace "%s".',
+                $externallyManagedWorkspaceCredentials->id,
+            ));
+        } elseif ($configId && ($stagingStorage === AbstractStrategyFactory::WORKSPACE_ABS)) {
             // ABS workspaces are persistent, but only if configId is present
             $workspaceStaging = $this->getPersistentWorkspace(
                 $component,

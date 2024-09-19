@@ -313,6 +313,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 $configurationId,
                 [],
                 null,
+                null,
             );
         } catch (ApplicationException $e) {
             self::assertEquals(

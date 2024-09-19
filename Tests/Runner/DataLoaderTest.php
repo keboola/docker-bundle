@@ -1560,6 +1560,84 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
 
+    public function testExternallyManagedWorkspaceSuccess(): void
+    {
+        $componentId = 'keboola.runner-workspace-test';
+        $component = new Component([
+            'id' => $componentId,
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-workspace-test',
+                    'tag' => '1.6.2',
+                ],
+                'staging-storage' => [
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-snowflake',
+                ],
+            ],
+        ]);
+
+        $workspaceApi = new Workspaces($this->clientWrapper->getBasicClient());
+        $workspaceData = $workspaceApi->createWorkspace(['backend' => 'snowflake']);
+        $workspaceGetData = $workspaceApi->getWorkspace($workspaceData['id']);
+
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+        $clientMock->expects(self::once())
+            ->method('apiGet')
+            ->with(sprintf('workspaces/%s', $workspaceData['id']))
+            ->willReturn($workspaceGetData);
+        $clientMock->expects(self::never())
+            ->method('apiDelete');
+
+        $clientWrapperMock = $this->createMock(ClientWrapper::class);
+        $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+
+        $logger = new TestLogger();
+        $dataLoader = new DataLoader(
+            $clientWrapperMock,
+            $logger,
+            $this->workingDir->getDataDir(),
+            new JobDefinition(
+                [
+                    'runtime' => [
+                        'backend' => [
+                            'workspace_credentials' => [
+                                'id' => $workspaceData['id'],
+                                'type' => $workspaceData['connection']['backend'],
+                                '#password' => $workspaceData['connection']['password'],
+                            ],
+                        ],
+                    ],
+                ],
+                $component,
+            ),
+            new OutputFilter(10000),
+        );
+
+        $credentials = $dataLoader->getWorkspaceCredentials();
+        self::assertSame(
+            [
+                'host' => $workspaceData['connection']['host'],
+                'warehouse' => $workspaceData['connection']['warehouse'],
+                'database' => $workspaceData['connection']['database'],
+                'schema' => $workspaceData['connection']['schema'],
+                'user' => $workspaceData['connection']['user'],
+                'password' => $workspaceData['connection']['password'],
+                'account' => 'keboola',
+            ],
+            $credentials,
+        );
+        // clean workspace should not do anything (apiDelete is not called)
+        $dataLoader->cleanWorkspace();
+
+        $getWorkspaceResult = $workspaceApi->getWorkspace($workspaceData['id']);
+        self::assertSame($workspaceGetData, $getWorkspaceResult);
+    }
+
     /**
      * @dataProvider dataTypeSupportProvider
      */
