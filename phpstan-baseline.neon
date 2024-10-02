@@ -386,11 +386,6 @@ parameters:
 			path: src/Docker/Runner/DataLoader/NullDataLoader.php
 
 		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\ImageCreator\\:\\:\\$temp is never read, only written\\.$#"
-			count: 1
-			path: src/Docker/Runner/ImageCreator.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Limits\\:\\:getCpuLimit\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/Limits.php
