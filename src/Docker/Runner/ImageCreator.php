@@ -24,8 +24,8 @@ class ImageCreator
         private readonly Component $mainComponent,
         private readonly array $componentConfig,
     ) {
-        $this->before = $componentConfig['processors']['before'] ?: [];
-        $this->after = $componentConfig['processors']['after'] ?: [];
+        $this->before = $componentConfig['processors']['before'] ?? [];
+        $this->after = $componentConfig['processors']['after'] ?? [];
     }
 
     /**
@@ -64,7 +64,16 @@ class ImageCreator
         $componentId = $processorData['definition']['component'];
         $component = $this->getComponent((string) $componentId);
         $image = ImageFactory::getImage($this->logger, $component, false);
-        $image->prepare(['parameters' => $processorData['parameters'] ?: []]);
+
+        $componentConfig = [
+            'parameters' => $processorData['parameters'] ?? [],
+        ];
+
+        if (!empty($processorData['definition']['component'])) {
+            $componentConfig['definition']['component'] = $processorData['definition']['component'];
+        }
+
+        $image->prepare($componentConfig);
         return $image;
     }
 }
