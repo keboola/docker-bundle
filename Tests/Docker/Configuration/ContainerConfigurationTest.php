@@ -65,6 +65,7 @@ class ContainerConfigurationTest extends TestCase
                         [
                             'definition' => [
                                 'component' => 'a',
+                                'tag' => 'latest',
                             ],
                             'parameters' => [
                                 'key' => 'val',
@@ -75,6 +76,7 @@ class ContainerConfigurationTest extends TestCase
                         [
                             'definition' => [
                                 'component' => 'a',
+                                'tag' => '1.2.0',
                             ],
                             'parameters' => [
                                 'key' => 'val',
