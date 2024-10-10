@@ -69,8 +69,8 @@ class ImageCreator
             'parameters' => $processorData['parameters'] ?? [],
         ];
 
-        if (!empty($processorData['definition']['component'])) {
-            $componentConfig['definition']['component'] = $processorData['definition']['component'];
+        if (!empty($processorData['definition']['tag'])) {
+            $componentConfig['runtime']['tag'] = $processorData['definition']['tag'];
         }
 
         $image->prepare($componentConfig);
