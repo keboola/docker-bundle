@@ -16,7 +16,7 @@
         "keboola/artifacts": "^3.1",
         "keboola/common-exceptions": "^1.0",
         "keboola/gelf-server": "^4.0",
-        "keboola/input-mapping": "^19.0.1",
+        "keboola/input-mapping": "^18.8",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^24.17",
