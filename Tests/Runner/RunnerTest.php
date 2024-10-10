@@ -4144,10 +4144,14 @@ class RunnerTest extends BaseRunnerTest
         $inputTables = $outputs[0]->getInputTableResult()?->getTables();
         self::assertNotNull($inputTables);
 
+        /** @var TableInfo[] $inputTables */
+        $inputTables = iterator_to_array($inputTables);
         self::assertCount(1, $inputTables);
+
         self::assertSame('in.c-runner-test.test', $inputTables[0]->getId());
 
-        $columns = $inputTables[0]->getColumns();
+        /** @var Column[] $columns */
+        $columns = iterator_to_array($inputTables[0]->getColumns());
         self::assertCount(2, $columns);
 
         self::assertSame('id', $columns[0]->getName());
