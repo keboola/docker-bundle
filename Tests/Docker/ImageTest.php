@@ -9,6 +9,7 @@ use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 use Symfony\Component\Process\Process;
@@ -132,5 +133,75 @@ class ImageTest extends BaseImageTest
             'Digest "' . $matches[1] . '" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
+    }
+
+    public static function provideProcessTimeoutTestData(): iterable
+    {
+        yield 'use component timeout by default' => [
+            'componentTimeout' => 20,
+            'configTimeout' => null,
+            'isMain' => true,
+            'expectedTimeout' => 20,
+        ];
+
+        yield 'use custom timeout when specified' => [
+            'componentTimeout' => 20,
+            'configTimeout' => 10,
+            'isMain' => true,
+            'expectedTimeout' => 10,
+        ];
+
+        yield 'use custom timeout when specified (larger than component)' => [
+            'componentTimeout' => 20,
+            'configTimeout' => 40,
+            'isMain' => true,
+            'expectedTimeout' => 40,
+        ];
+
+        yield 'custom timeout is capped to 24 hours' => [
+            'componentTimeout' => 20,
+            'configTimeout' => 25 * 60 * 60,
+            'isMain' => true,
+            'expectedTimeout' => 24 * 60 * 60,
+        ];
+
+        yield 'cusotm timeout applies only for main component' => [
+            'componentTimeout' => 20,
+            'configTimeout' => 10,
+            'isMain' => false,
+            'expectedTimeout' => 20,
+        ];
+    }
+
+    /** @dataProvider provideProcessTimeoutTestData */
+    public function testGetProcessTimeout(
+        int $componentTimeout,
+        ?int $configTimeout,
+        bool $isMain,
+        int $expectedTimeout,
+    ): void {
+        $image = ImageFactory::getImage(
+            new Logger('test'),
+            new Component([
+                'data' => [
+                    'process_timeout' => $componentTimeout,
+                    'definition' => [
+                        'type' => 'aws-ecr',
+                        'uri' => getenv('AWS_ECR_REGISTRY_URI'),
+                        'digest' => self::TEST_HASH_DIGEST,
+                        'tag' => 'test-hash',
+                    ],
+                ],
+            ]),
+            $isMain,
+        );
+        $image->prepare([
+            'runtime' => [
+                'process_timeout' => $configTimeout,
+            ],
+        ]);
+
+        $timeout = $image->getProcessTimeout();
+        self::assertSame($expectedTimeout, $timeout);
     }
 }

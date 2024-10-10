@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
+use Keboola\DockerBundle\Docker\Component;
+use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;
@@ -275,5 +277,138 @@ class Runner2Test extends BaseRunnerTest
         // check the component ran but no connection string was passed
         self::assertContains('Environment "KBC_PROJECTID" has value "1234".', $containerOutput);
         self::assertNotContains('Environment "AZURE_STORAGE_CONNECTION_STRING"', $containerOutput);
+    }
+
+    public function testTimeoutFromComponent(): void
+    {
+        $configData = [
+            'parameters' => [
+                'operation' => 'sleep',
+                'timeout' => 90,
+            ],
+        ];
+
+        $componentData = [
+            'id' => 'keboola.runner-config-test',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
+                    'tag' => '1.2.1',
+                ],
+                'process_timeout' => 10,
+            ],
+        ];
+
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-1',
+        );
+        $runner = $this->getRunner();
+        $outputs = [];
+
+        $startTime = time();
+
+        try {
+            $runner->run(
+                [$jobDefinition],
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null,
+            );
+            self::fail('Expected exception');
+        } catch (Throwable $e) {
+            self::assertInstanceOf(UserException::class, $e);
+            self::assertSame(
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                'Running developer-portal-v2/keboola.runner-config-test:1.2.1 container exceeded the timeout of 10 seconds.',
+                $e->getMessage(),
+            );
+
+            $endTime = time();
+            $executionTime = $endTime - $startTime;
+            self::assertGreaterThanOrEqual(10, $executionTime);
+            self::assertLessThan(60, $executionTime);
+        }
+    }
+
+    public function testTimeoutFromConfig(): void
+    {
+        $configData = [
+            'parameters' => [
+                'operation' => 'sleep',
+                'timeout' => 90,
+            ],
+            'runtime' => [
+                'process_timeout' => 20, // should override component timeout
+            ],
+        ];
+
+        $componentData = [
+            'id' => 'keboola.runner-config-test',
+            'type' => 'other',
+            'name' => 'Docker State test',
+            'description' => 'Testing Docker',
+            'data' => [
+                'definition' => [
+                    'type' => 'aws-ecr',
+                    // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                    'uri' => '147946154733.dkr.ecr.us-east-1.amazonaws.com/developer-portal-v2/keboola.runner-config-test',
+                    'tag' => '1.2.1',
+                ],
+                'process_timeout' => 10,
+            ],
+        ];
+
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new Component($componentData),
+            'runner-configuration',
+            null,
+            [],
+            'row-1',
+        );
+        $runner = $this->getRunner();
+        $outputs = [];
+
+        $startTime = time();
+
+        try {
+            $runner->run(
+                [$jobDefinition],
+                'run',
+                'run',
+                '1234567',
+                new NullUsageFile(),
+                [],
+                $outputs,
+                null,
+            );
+            self::fail('Expected exception');
+        } catch (Throwable $e) {
+            self::assertInstanceOf(UserException::class, $e);
+            self::assertSame(
+                // phpcs:ignore Generic.Files.LineLength.MaxExceeded
+                'Running developer-portal-v2/keboola.runner-config-test:1.2.1 container exceeded the timeout of 20 seconds.',
+                $e->getMessage(),
+            );
+
+            $endTime = time();
+            $executionTime = $endTime - $startTime;
+            self::assertGreaterThanOrEqual(20, $executionTime);
+            self::assertLessThan(60, $executionTime);
+        }
     }
 }

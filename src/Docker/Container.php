@@ -314,11 +314,13 @@ class Container
 
         // killed container or docker socket not available (instance termination)
         if (in_array($process->getExitCode(), [137, 125])) {
+            $timeout = $this->image->getProcessTimeout();
+
             // this catches the timeout from `sudo timeout`
-            if ($duration >= $this->getImage()->getSourceComponent()->getProcessTimeout()) {
+            if ($duration >= $timeout) {
                 throw new UserException(
                     "Running {$this->getImage()->getPrintableImageId()} container exceeded the timeout of " .
-                    $this->getImage()->getSourceComponent()->getProcessTimeout() . ' seconds.',
+                    $timeout . ' seconds.',
                     null,
                     $data,
                 );
@@ -363,11 +365,7 @@ class Container
         }
     }
 
-    /**
-     * @param string $containerId
-     * @return string
-     */
-    public function getRunCommand($containerId)
+    public function getRunCommand(string $containerId): string
     {
         setlocale(LC_CTYPE, 'en_US.UTF-8');
         $envs = '';
@@ -377,7 +375,7 @@ class Container
                 str_replace('"', '\"', (string) $value). '"';
         }
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        $command = "sudo timeout --signal=SIGKILL {$this->getImage()->getSourceComponent()->getProcessTimeout()} docker run";
+        $command = "sudo timeout --signal=SIGKILL {$this->image->getProcessTimeout()} docker run";
 
         $labels = '';
         foreach ($this->runCommandOptions->getLabels() as $label) {
