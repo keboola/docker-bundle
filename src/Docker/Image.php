@@ -15,6 +15,8 @@ use Throwable;
 
 abstract class Image
 {
+    private const MAX_CONFIG_TIMEOUT = 24 * 60 * 60; // 24 hours
+
     /**
      * @var string
      */
@@ -153,6 +155,21 @@ abstract class Image
     public function getPrintableImageId()
     {
         return $this->stripRegistryName($this->getFullImageId());
+    }
+
+    /**
+     * @return positive-int
+     */
+    public function getProcessTimeout(): int
+    {
+        $componentTimeout = $this->getSourceComponent()->getProcessTimeout();
+        $customTimeout = $this->configData['runtime']['process_timeout'] ?? 0;
+
+        if (!$this->isMain() || $customTimeout <= 0) {
+            return $componentTimeout;
+        }
+
+        return min($customTimeout, self::MAX_CONFIG_TIMEOUT);
     }
 
     private function stripRegistryName($string)

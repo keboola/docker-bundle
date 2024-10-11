@@ -7,6 +7,8 @@ namespace Keboola\DockerBundle\Tests\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Symfony\Component\Config\Definition\Exception\InvalidTypeException;
+use Throwable;
 
 class ContainerConfigurationTest extends TestCase
 {
@@ -204,6 +206,8 @@ class ContainerConfigurationTest extends TestCase
             ],
             $config['runtime']['backend'],
         );
+        self::assertArrayHasKey('process_timeout', $config['runtime']);
+        self::assertNull($config['runtime']['process_timeout']);
     }
 
     public function testRuntimeBackendConfigurationHasDefaultEmptyValue(): void
@@ -215,6 +219,9 @@ class ContainerConfigurationTest extends TestCase
         ]);
 
         self::assertSame([], $config['runtime']['backend']);
+
+        self::assertArrayHasKey('process_timeout', $config['runtime']);
+        self::assertNull($config['runtime']['process_timeout']);
     }
 
     public function testRuntimeBackendConfigurationIgnoreExtraKeys(): void
@@ -259,6 +266,68 @@ class ContainerConfigurationTest extends TestCase
                             '#password' => 'test',
                         ],
                     ],
+                ],
+            ],
+        ]);
+    }
+
+    public static function provideValidProcessTimeout(): iterable
+    {
+        yield 'value' => [
+            'timeout' => 300,
+        ];
+
+        yield 'null' => [
+            'timeout' => null,
+        ];
+    }
+
+    /** @dataProvider provideValidProcessTimeout */
+    public function testRuntimeProcessTimeoutSet(?int $timeout): void
+    {
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'process_timeout' => $timeout,
+                ],
+            ],
+        ]);
+
+        self::assertArrayHasKey('process_timeout', $config['runtime']);
+        self::assertSame($timeout, $config['runtime']['process_timeout']);
+    }
+
+    public static function provideInvalidProcessTimeout(): iterable
+    {
+        yield 'zero' => [
+            'timeout' => 0,
+            'expectedError' =>
+                'Invalid configuration for path "container.runtime.process_timeout": must be greater than 0',
+        ];
+
+        yield 'negative' => [
+            'timeout' => -10,
+            'expectedError' =>
+                'Invalid configuration for path "container.runtime.process_timeout": must be greater than 0',
+        ];
+
+        yield 'float' => [
+            'timeout' => 10.0,
+            'expectedError' =>
+                'Invalid configuration for path "container.runtime.process_timeout": must be "null" or "int"',
+        ];
+    }
+
+    /** @dataProvider provideInvalidProcessTimeout */
+    public function testRuntimeProcessTimeoutInvalid(mixed $timeout, string $expectedError): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expectedError);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'process_timeout' => $timeout,
                 ],
             ],
         ]);
