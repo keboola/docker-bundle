@@ -271,49 +271,58 @@ class ContainerConfigurationTest extends TestCase
         ]);
     }
 
-    public function testRuntimeProcessTimeoutSet(): void
+    public static function provideValidProcessTimeout(): iterable
+    {
+        yield 'value' => [
+            'timeout' => 300,
+        ];
+
+        yield 'null' => [
+            'timeout' => null,
+        ];
+    }
+
+    /** @dataProvider provideValidProcessTimeout */
+    public function testRuntimeProcessTimeoutSet(?int $timeout): void
     {
         $config = (new Configuration\Container())->parse([
             'config' => [
                 'runtime' => [
-                    'process_timeout' => 300,
+                    'process_timeout' => $timeout,
                 ],
             ],
         ]);
 
         self::assertArrayHasKey('process_timeout', $config['runtime']);
-        self::assertSame(300, $config['runtime']['process_timeout']);
+        self::assertSame($timeout, $config['runtime']['process_timeout']);
     }
 
     public static function provideInvalidProcessTimeout(): iterable
     {
         yield 'zero' => [
             'timeout' => 0,
-            'expectedError' => new InvalidConfigurationException(
+            'expectedError' =>
                 'Invalid configuration for path "container.runtime.process_timeout": must be greater than 0',
-            ),
         ];
 
         yield 'negative' => [
             'timeout' => -10,
-            'expectedError' => new InvalidConfigurationException(
+            'expectedError' =>
                 'Invalid configuration for path "container.runtime.process_timeout": must be greater than 0',
-            ),
         ];
 
         yield 'float' => [
             'timeout' => 10.0,
-            'expectedError' => new InvalidTypeException(
-                'Invalid type for path "container.runtime.process_timeout". Expected "int", but got "float".',
-            ),
+            'expectedError' =>
+                'Invalid configuration for path "container.runtime.process_timeout": must be "null" or "int"',
         ];
     }
 
     /** @dataProvider provideInvalidProcessTimeout */
-    public function testRuntimeProcessTimeoutInvalid(mixed $timeout, Throwable $expectedError): void
+    public function testRuntimeProcessTimeoutInvalid(mixed $timeout, string $expectedError): void
     {
-        $this->expectException($expectedError::class);
-        $this->expectExceptionMessage($expectedError->getMessage());
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expectedError);
 
         (new Configuration\Container())->parse([
             'config' => [
