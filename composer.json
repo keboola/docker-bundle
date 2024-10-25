@@ -19,7 +19,7 @@
         "keboola/input-mapping": "^18.8",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.2",
-        "keboola/output-mapping": "^24.17",
+        "keboola/output-mapping": "^24.26",
         "keboola/php-utils": "^5.0",
         "keboola/sandboxes-api-php-client": "^6.7",
         "keboola/staging-provider": "^8.0",
@@ -56,7 +56,7 @@
     "scripts": {
         "pre-autoload-dump": "Aws\\Script\\Composer\\Composer::removeUnusedServices",
         "tests": "phpunit",
-        "phpstan": "phpstan analyse --no-progress --configuration phpstan.neon --xdebug",
+        "phpstan": "phpstan analyse --no-progress --configuration phpstan.neon",
         "phpcs": "phpcs --extensions=php src Tests",
         "phpcbf": "phpcbf --extensions=php src Tests",
         "check": [
