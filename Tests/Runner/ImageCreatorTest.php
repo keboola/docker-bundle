@@ -144,9 +144,9 @@ class ImageCreatorTest extends TestCase
         $imageCreator = new ImageCreator(new NullLogger(), $this->client, $image, $config);
         $images = $imageCreator->prepareImages();
         self::assertCount(3, $images);
-        self::assertStringContainsString('keboola.processor-decompress', $images[0]->getFullImageId());
-        self::assertEquals('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
-        self::assertStringContainsString('keboola.processor-iconv', $images[2]->getFullImageId());
+        self::assertStringEndsWith('keboola.processor-decompress:latest', $images[0]->getFullImageId());
+        self::assertSame('keboola/docker-demo-app:1.1.6', $images[1]->getFullImageId());
+        self::assertStringEndsWith('keboola.processor-iconv:latest', $images[2]->getFullImageId());
         self::assertFalse($images[0]->isMain());
         self::assertTrue($images[1]->isMain());
         self::assertFalse($images[2]->isMain());
