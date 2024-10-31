@@ -1101,11 +1101,6 @@ parameters:
 			path: Tests/Docker/Runner/DataLoader/NullDataLoaderTest.php
 
 		-
-			message: "#^Cannot call method waitForAll\\(\\) on Keboola\\\\OutputMapping\\\\DeferredTasks\\\\LoadTableQueue\\|null\\.$#"
-			count: 8
-			path: Tests/Runner/DataLoaderMetadataTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\ImageCreatorTest\\:\\:testCreateImageDockerHub\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Runner/ImageCreatorTest.php
