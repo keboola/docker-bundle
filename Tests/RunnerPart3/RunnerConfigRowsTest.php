@@ -24,7 +24,7 @@ use Keboola\Temp\Temp;
 
 class RunnerConfigRowsTest extends BaseRunnerTest
 {
-    private function clearBuckets()
+    private function clearBuckets(): void
     {
         foreach (['in.c-runner-test', 'out.c-runner-test'] as $bucket) {
             try {
@@ -37,7 +37,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    private function clearConfigurations()
+    private function clearConfigurations(): void
     {
         $cmp = new Components($this->getClient());
         try {
@@ -49,7 +49,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         }
     }
 
-    private function clearFiles()
+    private function clearFiles(): void
     {
         // remove uploaded files
         $options = new ListFilesOptions();
@@ -116,7 +116,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         return $result;
     }
 
-    private function getComponent()
+    private function getComponent(): Component
     {
         return new Component([
             'id' => 'keboola.docker-demo-sync',
@@ -133,7 +133,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         ]);
     }
 
-    public function testRunMultipleRows()
+    public function testRunMultipleRows(): void
     {
         $config = [
             'storage' => [
@@ -179,7 +179,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
-    public function testRunMultipleRowsWithContainerRootUserFeature()
+    public function testRunMultipleRowsWithContainerRootUserFeature(): void
     {
         $componentData = new Component([
             'id' => 'keboola.docker-demo-sync',
@@ -243,7 +243,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
-    public function testRunMultipleRowsFiltered()
+    public function testRunMultipleRowsFiltered(): void
     {
         $jobDefinition1 = new JobDefinition([
             'storage' => [
@@ -300,7 +300,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
-    public function testRunUnknownRow()
+    public function testRunUnknownRow(): void
     {
         $jobDefinition1 = new JobDefinition([
             'storage' => [
@@ -332,7 +332,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
     }
 
-    public function testRunEmptyJobDefinitions()
+    public function testRunEmptyJobDefinitions(): void
     {
         $runner = $this->getRunner();
         $outputs = [];
@@ -349,7 +349,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue(true);
     }
 
-    public function testRunDisabled()
+    public function testRunDisabled(): void
     {
         $jobDefinition1 = new JobDefinition([
             'storage' => [
@@ -409,7 +409,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertFalse($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
-    public function testRunRowDisabled()
+    public function testRunRowDisabled(): void
     {
         $jobDefinition1 = new JobDefinition(
             [
@@ -480,7 +480,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertTrue($this->getClient()->tableExists('in.c-runner-test.mytable-2'));
     }
 
-    public function testRowMetadata()
+    public function testRowMetadata(): void
     {
         $jobDefinition1 = new JobDefinition([
             'storage' => [
@@ -555,7 +555,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals('row-2', $table2Metadata['system']['KBC.createdBy.configurationRow.id']);
     }
 
-    public function testExecutorStoreRowState()
+    public function testExecutorStoreRowState(): void
     {
         $this->clearConfigurations();
         $component = new Components($this->getClient());
@@ -606,7 +606,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_COMPONENT]);
     }
 
-    public function testExecutorStoreRowStateWithProcessor()
+    public function testExecutorStoreRowStateWithProcessor(): void
     {
         $component = new Components($this->getClient());
         $configuration = new Configuration();
@@ -699,7 +699,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertEquals(['baz' => 'bar'], $configuration['rows'][1]['state'][StateFile::NAMESPACE_COMPONENT]);
     }
 
-    public function testOutput()
+    public function testOutput(): void
     {
         $jobDefinition1 = new JobDefinition(
             [
@@ -763,7 +763,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         self::assertCount(1, $outputs[1]->getImages());
     }
 
-    public function testRunRowAdaptiveInputMapping()
+    public function testRunRowAdaptiveInputMapping(): void
     {
         $temp = new Temp();
         $csv = new CsvFile($temp->getTmpFolder() . '/upload.csv');
