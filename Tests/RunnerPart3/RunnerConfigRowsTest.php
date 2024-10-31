@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\DockerBundle\Tests\Runner;
+namespace Keboola\DockerBundle\Tests\RunnerPart3;
 
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
