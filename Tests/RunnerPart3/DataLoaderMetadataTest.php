@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Keboola\DockerBundle\Tests\Runner;
+namespace Keboola\DockerBundle\Tests\RunnerPart3;
 
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -48,6 +48,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
         $bucketMetadata = $this->metadata->listBucketMetadata('in.c-docker-demo-testConfig');
@@ -74,6 +75,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         // let's run the data loader again.
         // This time the tables should receive 'update' metadata
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata['system']['KBC.lastUpdatedBy.component.id'] = 'docker-demo';
@@ -132,6 +134,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
         $branchBucketId = sprintf('in.c-%s-docker-demo-testConfig', $branchId);
@@ -173,6 +176,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         );
         $dataLoader = $this->getDataLoader([], 'testRow');
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
         $bucketMetadata = $this->metadata->listBucketMetadata('in.c-docker-demo-testConfig');
@@ -201,6 +205,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         // let's run the data loader again.
         // This time the tables should receive 'update' metadata
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
@@ -269,6 +274,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         ];
         $dataLoader = $this->getDataLoader($config);
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-runner-test.out');
         $expectedTableMetadata = [
@@ -339,6 +345,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
         $fs->dumpFile($this->workingDir->getDataDir() . '/out/tables/sliced.csv.manifest', $manifest);
         $dataLoader = $this->getDataLoader([]);
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
@@ -421,6 +428,7 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
         $dataLoader = $this->getDataLoader($config);
         $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
         $tableMetadata = $this->metadata->listTableMetadata('in.c-docker-demo-testConfig.sliced');
         $expectedTableMetadata = [
