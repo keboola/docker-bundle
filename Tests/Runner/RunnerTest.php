@@ -267,6 +267,7 @@ class RunnerTest extends BaseRunnerTest
                     [
                         'definition' => [
                             'component' => 'keboola.processor-last-file',
+                            'tag' => '0.3.1', // run with custom tag
                         ],
                         'parameters' => ['tag' => 'texty.csv.gz'],
                     ],
@@ -319,40 +320,41 @@ class RunnerTest extends BaseRunnerTest
             $outputs,
             null,
         );
-        self::assertStringStartsWith(
-            'developer-portal-v2/keboola.processor-last-file:',
+
+        self::assertSame(
+            'developer-portal-v2/keboola.processor-last-file:0.3.1',
             $outputs[0]->getImages()[0]['id'],
         );
         self::assertStringStartsWith(
             'developer-portal-v2/keboola.processor-last-file@sha256:',
             $outputs[0]->getImages()[0]['digests'][0],
         );
-        self::assertStringStartsWith(
-            'developer-portal-v2/keboola.processor-decompress:',
+        self::assertSame(
+            'developer-portal-v2/keboola.processor-decompress:v4.1.0',
             $outputs[0]->getImages()[1]['id'],
         );
         self::assertStringStartsWith(
             'developer-portal-v2/keboola.processor-decompress@sha256:',
             $outputs[0]->getImages()[1]['digests'][0],
         );
-        self::assertStringStartsWith(
-            'developer-portal-v2/keboola.processor-move-files:',
+        self::assertSame(
+            'developer-portal-v2/keboola.processor-move-files:v2.2.1',
             $outputs[0]->getImages()[2]['id'],
         );
         self::assertStringStartsWith(
             'developer-portal-v2/keboola.processor-move-files@sha256:',
             $outputs[0]->getImages()[2]['digests'][0],
         );
-        self::assertStringStartsWith(
-            'developer-portal-v2/keboola.processor-iconv:',
+        self::assertSame(
+            'developer-portal-v2/keboola.processor-iconv:4.0.0',
             $outputs[0]->getImages()[3]['id'],
         );
         self::assertStringStartsWith(
             'developer-portal-v2/keboola.processor-iconv@sha256:',
             $outputs[0]->getImages()[3]['digests'][0],
         );
-        self::assertStringStartsWith(
-            'developer-portal-v2/keboola.r-transformation:',
+        self::assertSame(
+            'developer-portal-v2/keboola.r-transformation:1.2.8',
             $outputs[0]->getImages()[4]['id'],
         );
         self::assertStringStartsWith(
