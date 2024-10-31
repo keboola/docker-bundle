@@ -28,6 +28,9 @@
         <testsuite name="runner-tests-2">
             <directory>Tests/RunnerPart2</directory>
         </testsuite>
+        <testsuite name="runner-tests-3">
+            <directory>Tests/RunnerPart3</directory>
+        </testsuite>
         <testsuite name="container-tests">
             <directory>Tests/Docker/Container</directory>
             <file>Tests/Docker/Container/ProcessTest.php</file>
