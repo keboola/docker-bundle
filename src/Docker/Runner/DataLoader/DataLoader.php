@@ -226,6 +226,11 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug('Default bucket ' . $uploadTablesOptions['bucket']);
         }
 
+        $treatValuesAsNull = $this->storageConfig['output']['treat_values_as_null'] ?? null;
+        if ($treatValuesAsNull) {
+            $uploadTablesOptions['treat_values_as_null'] = $treatValuesAsNull;
+        }
+
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
             $fileWriter->setFormat($this->component->getConfigurationFormat());
