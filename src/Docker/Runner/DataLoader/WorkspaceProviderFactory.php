@@ -7,6 +7,7 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\StagingProvider\Provider\AbstractWorkspaceProvider;
+use Keboola\StagingProvider\Provider\Configuration\NetworkPolicy;
 use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\Provider\Credentials\ABSWorkspaceCredentials;
 use Keboola\StagingProvider\Provider\Credentials\CredentialsInterface;
@@ -150,6 +151,11 @@ class WorkspaceProviderFactory
         string $stagingStorage,
         ?bool $useReadonlyRole,
     ): WorkspaceBackendConfig {
-        return new WorkspaceBackendConfig($stagingStorage, $backendConfig['type'] ?? null, $useReadonlyRole);
+        return new WorkspaceBackendConfig(
+            $stagingStorage,
+            $backendConfig['type'] ?? null,
+            $useReadonlyRole,
+            NetworkPolicy::SYSTEM,
+        );
     }
 }
