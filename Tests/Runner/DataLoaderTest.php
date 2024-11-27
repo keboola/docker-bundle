@@ -1763,4 +1763,118 @@ class DataLoaderTest extends BaseDataLoaderTest
             'none',
         ];
     }
+
+    public function testTreatValuesAsNull(): void
+    {
+        $fs = new Filesystem();
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/data.csv',
+            '1,text,NAN',
+        );
+        $fs->dumpFile(
+            $this->workingDir->getDataDir() . '/out/tables/data.csv.manifest',
+            (string) json_encode([
+                'columns' => ['id', 'name', 'price'],
+            ]),
+        );
+        $component = new Component([
+            'id' => 'docker-demo',
+            'data' => [
+                'definition' => [
+                    'type' => 'dockerhub',
+                    'uri' => 'keboola/docker-demo',
+                    'tag' => 'master',
+                ],
+                'staging-storage' => [
+                    'input' => 'local',
+                    'output' => 'local',
+                ],
+            ],
+        ]);
+        $config = [
+            'storage' => [
+                'output' => [
+                    'treat_values_as_null' => ['NAN'],
+                    'tables' => [
+                        [
+                            'source' => 'data.csv',
+                            'destination' => 'in.c-docker-demo-testConfig.treated-values-test',
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $clientWrapper = new ClientWrapper(
+            new ClientOptions(
+                (string) getenv('STORAGE_API_URL'),
+                (string) getenv('STORAGE_API_TOKEN'),
+            ),
+        );
+
+        $this->clientWrapper->getBasicClient()->createBucket('docker-demo-testConfig', 'in');
+        $clientWrapper->getTableAndFileStorageClient()->createTableDefinition(
+            'in.c-docker-demo-testConfig',
+            [
+                'name' => 'treated-values-test',
+                'columns' => [
+                    [
+                        'name' => 'id',
+                        'basetype' => BaseType::INTEGER,
+                    ],
+                    [
+                        'name' => 'name',
+                        'basetype' => BaseType::STRING,
+                    ],
+                    [
+                        'name' => 'price',
+                        'basetype' => BaseType::NUMERIC,
+                    ],
+                ],
+            ],
+        );
+
+        $dataLoader = new DataLoader(
+            $clientWrapper,
+            new NullLogger(),
+            $this->workingDir->getDataDir(),
+            new JobDefinition($config, $component),
+            new OutputFilter(10000),
+        );
+        $tableQueue = $dataLoader->storeOutput();
+        self::assertNotNull($tableQueue);
+        $tableQueue->waitForAll();
+
+        /** @var array|string $data */
+        $data = $clientWrapper->getTableAndFileStorageClient()->getTableDataPreview(
+            'in.c-docker-demo-testConfig.treated-values-test',
+            [
+                'format' => 'json',
+            ],
+        );
+
+        self::assertIsArray($data);
+        self::assertArrayHasKey('rows', $data);
+        self::assertSame(
+            [
+                [
+                    [
+                        'columnName' => 'id',
+                        'value' => '1',
+                        'isTruncated' => false,
+                    ],
+                    [
+                        'columnName' => 'name',
+                        'value' => 'text',
+                        'isTruncated' => false,
+                    ],
+                    [
+                        'columnName' => 'price',
+                        'value' => null,
+                        'isTruncated' => false,
+                    ],
+                ],
+            ],
+            $data['rows'],
+        );
+    }
 }
