@@ -227,7 +227,7 @@ class DataLoader implements DataLoaderInterface
         }
 
         $treatValuesAsNull = $this->storageConfig['output']['treat_values_as_null'] ?? null;
-        if ($treatValuesAsNull) {
+        if ($treatValuesAsNull !== null) {
             $uploadTablesOptions['treat_values_as_null'] = $treatValuesAsNull;
         }
 
@@ -257,6 +257,7 @@ class DataLoader implements DataLoaderInterface
                 }
                 return null;
             }
+
             $tableWriter = new TableWriter($this->outputStrategyFactory);
             $tableWriter->setFormat($this->component->getConfigurationFormat());
             $tableQueue = $tableWriter->uploadTables(
