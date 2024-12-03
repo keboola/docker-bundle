@@ -929,7 +929,6 @@ class ContainerConfigurationTest extends TestCase
             'config' => [
                 'storage' => [
                     'output' => [
-                        'tables' => [],
                     ],
                 ],
             ],
@@ -945,14 +944,25 @@ class ContainerConfigurationTest extends TestCase
                             'first',
                             'second',
                         ],
-                        'tables' => [],
                     ],
                 ],
             ],
         ]);
-        self::assertEquals([
+        self::assertSame([
             'first',
             'second',
         ], $config['storage']['output']['treat_values_as_null']);
+
+        // empty array
+        $config = (new Configuration\Container())->parse([
+            'config' => [
+                'storage' => [
+                    'output' => [
+                        'treat_values_as_null' => [],
+                    ],
+                ],
+            ],
+        ]);
+        self::assertSame([], $config['storage']['output']['treat_values_as_null']);
     }
 }
