@@ -13,6 +13,22 @@ Use `test-cf-stack.json` to create resources, set environment variables (see `.e
 Dockerfile and docker-compose.yml are used only for development purposes.
 Keboola Connection Component for running Docker images - see [documentation](https://developers.keboola.com/extend/docker-runner/).
 
+If you want to run Workspace tests, please turn off the NetworkPolicy for the STORAGE_API_TOKEN with the following command:
+```
+curl -X POST --location "https://connection.keboola.com/manage/commands" \
+    -H "X-KBC-ManageApiToken: {MANAGE_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d '{
+          "command": "manage:tmp:migrate-network-policy",
+          "parameters": [
+            "{BACKEND_ID}",
+            "--orgIds={ORG_ID}",
+            "--remove",
+            "--force" // remove this param for dry-run
+          ]
+        }'
+```
+
 ## License
 
 MIT licensed, see [LICENSE](./LICENSE) file.
