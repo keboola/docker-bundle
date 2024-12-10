@@ -139,7 +139,7 @@ abstract class BaseRunnerTest extends TestCase
         $this->clientMock = $clientMock;
     }
 
-    protected function getRunner(): Runner
+    protected function getRunner(?string $token = null): Runner
     {
         if ($this->clientMock) {
             $storageClientStub = $this->clientMock;
@@ -151,7 +151,7 @@ abstract class BaseRunnerTest extends TestCase
         $basicClient = new Client(
             [
                 'url' => self::getOptionalEnv('STORAGE_API_URL'),
-                'token' => self::getOptionalEnv('STORAGE_API_TOKEN'),
+                'token' => $token ?? self::getOptionalEnv('STORAGE_API_TOKEN'),
             ],
         );
         $devBranches = new DevBranches($basicClient);
