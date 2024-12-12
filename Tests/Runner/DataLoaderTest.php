@@ -1503,8 +1503,29 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi->deleteConfiguration($componentId, $configId);
     }
 
-    public function testWorkspaceCleanupFailure(): void
+    public function workspaceCleanupFailureProvider(): Generator
     {
+        yield 'Bad request' => [
+            'deleteException' => new ClientException('Bad request', 400),
+            'shouldBeLogged' => true,
+        ];
+        yield 'Not found' => [
+            'deleteException' => new ClientException('Workspace not found', 404),
+            'shouldBeLogged' => false,
+        ];
+        yield 'Unauthorized' => [
+            'deleteException' => new ClientException('Unauthorized', 401),
+            'shouldBeLogged' => true,
+        ];
+    }
+
+    /**
+     * @dataProvider workspaceCleanupFailureProvider
+     */
+    public function testWorkspaceCleanupFailure(
+        ClientException $deleteException,
+        bool $shouldBeLogged,
+    ): void {
         $component = new Component([
             'id' => 'keboola.runner-workspace-test',
             'data' => [
@@ -1528,9 +1549,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             });
         $clientMock->expects(self::once())
             ->method('apiDelete')
-            ->willThrowException(
-                new ClientException('boo'),
-            );
+            ->willThrowException($deleteException)
+        ;
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
@@ -1556,7 +1576,18 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertArrayHasKey('password', $credentials);
 
         $dataLoader->cleanWorkspace();
-        self::assertTrue($logger->hasErrorThatContains('Failed to cleanup workspace: boo'));
+
+        if ($shouldBeLogged) {
+            self::assertArrayHasKey('error', $logger->recordsByLevel);
+            self::assertCount(1, $logger->recordsByLevel['error']);
+
+            self::assertTrue($logger->hasErrorThatContains(
+                'Failed to cleanup workspace: ' . $deleteException->getMessage(),
+            ));
+        } else {
+            self::assertArrayNotHasKey('error', $logger->recordsByLevel);
+        }
+
         $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
     }
 
