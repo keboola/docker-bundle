@@ -106,6 +106,28 @@ stages:
               RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
               RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
 
+      - job: runnerTestsPart3
+        displayName: 'Runner Tests Part 3'
+        pool:
+          name: 'Default'
+        steps:
+          - script: |
+              docker-compose build --pull
+              chmod a+rwx /tmp/
+              docker-compose run tests ./vendor/bin/phpunit --testsuite runner-tests-3
+            env:
+              AWS_ECR_SECRET_ACCESS_KEY: $(AWS_ECR_SECRET_ACCESS_KEY)
+              DOCKERHUB_PRIVATE_PASSWORD: $(DOCKERHUB_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_PASSWORD: $(QUAYIO_PRIVATE_PASSWORD)
+              QUAYIO_PRIVATE_USERNAME: $(QUAYIO_PRIVATE_USERNAME)
+              STORAGE_API_TOKEN: $(STORAGE_API_TOKEN_RUNNER_PART3)
+              STORAGE_API_TOKEN_ABS: $(STORAGE_API_TOKEN_ABS)
+              STORAGE_API_TOKEN_SYNAPSE: $(STORAGE_API_TOKEN_SYNAPSE)
+              STORAGE_API_TOKEN_MASTER: $(STORAGE_API_TOKEN_MASTER)
+              STORAGE_API_TOKEN_READ_ONLY: $(STORAGE_API_TOKEN_READ_ONLY)
+              RUNNER_MIN_LOG_PORT: $(RUNNER_MIN_LOG_PORT)
+              RUNNER_MAX_LOG_PORT: $(RUNNER_MAX_LOG_PORT)
+
       - job: s3Tests
         displayName: 'S3 Tests'
         steps:
