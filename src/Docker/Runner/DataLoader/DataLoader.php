@@ -459,6 +459,10 @@ class DataLoader implements DataLoaderInterface
                     $stagingProvider->cleanup();
                     $cleanedProviders[] = $stagingProvider;
                 } catch (ClientException $e) {
+                    if ($e->getCode() === 404) {
+                        // workspace is already deleted
+                        continue;
+                    }
                     // ignore errors if the cleanup fails because we a) can't fix it b) should not break the job
                     $this->logger->error('Failed to cleanup workspace: ' . $e->getMessage());
                 }
