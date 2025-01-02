@@ -41,6 +41,8 @@ stages:
 
       - job: containerTests
         displayName: 'Container Tests'
+        pool:
+          name: 'Default'
         steps:
           - script: |
               ip -4 addr show
@@ -80,6 +82,8 @@ stages:
 
       - job: runnerTestsPart2
         displayName: 'Runner Tests Part 2'
+        pool:
+          name: 'Default'
         steps:
           - script: |
               docker-compose build --pull
@@ -100,6 +104,8 @@ stages:
 
       - job: runnerTestsPart3
         displayName: 'Runner Tests Part 3'
+        pool:
+          name: 'Default'
         steps:
           - script: |
               docker-compose build --pull
