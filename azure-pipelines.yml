@@ -41,6 +41,8 @@ stages:
 
       - job: containerTests
         displayName: 'Container Tests'
+        pool:
+          name: 'Default'
         steps:
           - script: |
               ip -4 addr show
