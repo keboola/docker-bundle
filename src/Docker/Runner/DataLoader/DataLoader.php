@@ -23,10 +23,12 @@ use Keboola\InputMapping\Table\Options\ReaderOptions;
 use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\OutputMapping\OutputMappingSettings;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
+use Keboola\OutputMapping\SystemMetadata;
+use Keboola\OutputMapping\TableLoader;
 use Keboola\OutputMapping\Writer\AbstractWriter;
 use Keboola\OutputMapping\Writer\FileWriter;
-use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
@@ -233,7 +235,9 @@ class DataLoader implements DataLoaderInterface
 
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
-            $fileWriter->setFormat($this->component->getConfigurationFormat());
+            /** @var 'json'|'yaml' $format */
+            $format = $this->component->getConfigurationFormat();
+            $fileWriter->setFormat($format);
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
@@ -258,16 +262,26 @@ class DataLoader implements DataLoaderInterface
                 return null;
             }
 
-            $tableWriter = new TableWriter($this->outputStrategyFactory);
-            $tableWriter->setFormat($this->component->getConfigurationFormat());
-            $tableQueue = $tableWriter->uploadTables(
-                'data/out/tables/',
-                $uploadTablesOptions,
-                $tableSystemMetadata,
-                $this->getStagingStorageOutput(),
-                $isFailedJob,
-                $this->getDataTypeSupport(),
+            $tableLoader = new TableLoader(
+                logger: $this->outputStrategyFactory->getLogger(),
+                clientWrapper: $this->outputStrategyFactory->getClientWrapper(),
+                strategyFactory: $this->outputStrategyFactory,
             );
+
+            $mappingSettings = new OutputMappingSettings(
+                configuration: $uploadTablesOptions,
+                sourcePathPrefix: 'data/out/tables/',
+                storageApiToken: $this->outputStrategyFactory->getClientWrapper()->getToken(),
+                isFailedJob: $isFailedJob,
+                dataTypeSupport: $this->getDataTypeSupport(),
+            );
+
+            $tableQueue = $tableLoader->uploadTables(
+                outputStaging: $this->getStagingStorageOutput(),
+                configuration: $mappingSettings,
+                systemMetadata: new SystemMetadata($tableSystemMetadata),
+            );
+
             if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
                 // tag input files
                 $fileWriter->tagFiles($this->storageConfig['input']['files']);
