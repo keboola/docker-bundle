@@ -8,7 +8,6 @@ use Generator;
 use Keboola\DockerBundle\Docker\JobScopedEncryptor;
 use Keboola\DockerBundle\Docker\OutputFilter\NullFilter;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\TestEnvVarsTrait;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
@@ -869,6 +868,32 @@ class StateFileTest extends TestCase
             'json',
             'my-component',
             'config-id',
+            new NullFilter(),
+            $testLogger,
+            'row-id',
+        );
+        $stateFile->stashState($state);
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
+    }
+
+    public function testStateIsNotPersistedWhenConfigIdIsNotSet(): void
+    {
+        $sapiStub = $this->createPartialMock(Client::class, ['apiPutJson']);
+        $sapiStub->expects(self::never())->method('apiPutJson');
+
+        $state = ['key' => 'fooBar'];
+        $testLogger = new TestLogger();
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $clientWrapper,
+            $this->getJobScopedEncryptor(),
+            [StateFile::NAMESPACE_COMPONENT => $state],
+            'json',
+            'my-component',
+            null,
             new NullFilter(),
             $testLogger,
             'row-id',

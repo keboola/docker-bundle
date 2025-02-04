@@ -110,6 +110,11 @@ class StateFile
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
     ): void {
+        $configurationId = $this->configurationId;
+        if (!$configurationId) {
+            return;
+        }
+
         $this->outputFilter->collectValues((array) $this->currentState);
 
         if ($this->clientWrapper->isDevelopmentBranch()) {
@@ -120,7 +125,7 @@ class StateFile
 
         $configuration = new Configuration();
         $configuration->setComponentId($this->componentId);
-        $configuration->setConfigurationId($this->configurationId);
+        $configuration->setConfigurationId($configurationId);
         try {
             if ($this->currentState !== null) {
                 $encryptedStateData = $this->encryptor->encrypt($this->currentState);
@@ -142,14 +147,14 @@ class StateFile
             if ($this->configurationRowId) {
                 $storedState = $this->loadConfigurationRowState(
                     $this->componentId,
-                    $this->configurationId,
+                    $configurationId,
                     $this->configurationRowId,
                     $client,
                 );
             } else {
                 $storedState = $this->loadConfigurationState(
                     $this->componentId,
-                    $this->configurationId,
+                    $configurationId,
                     $client,
                 );
             }
