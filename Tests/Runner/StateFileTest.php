@@ -108,23 +108,6 @@ class StateFileTest extends TestCase
         );
     }
 
-    public function testInitializeStateFileFromStateWithoutNamespace(): void
-    {
-        $this->expectException(UserException::class);
-        $this->expectExceptionMessage('Unrecognized option "lastUpdate" under "state"');
-        new StateFile(
-            $this->dataDir,
-            $this->clientWrapper,
-            $this->getJobScopedEncryptor(),
-            ['lastUpdate' => 'today'],
-            'json',
-            'my-component',
-            'config-id',
-            new NullFilter(),
-            new NullLogger(),
-        );
-    }
-
     public function testCreateStateFileWithEmptyState(): void
     {
         $stateFile = new StateFile(
@@ -760,6 +743,135 @@ class StateFileTest extends TestCase
             'config-id',
             new NullFilter(),
             $testLogger,
+        );
+        $stateFile->stashState($state);
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
+    }
+
+    public function testPersistConfigStateDoesNotOverwriteOtherRootKeys(): void
+    {
+        $sapiStub = $this->createPartialMock(Client::class, ['apiGet', 'apiPutJson']);
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with('branch/default/components/my-component/configs/config-id')
+            ->willReturn([
+                'configuration' => [
+                    'id' => 'config-id',
+                ],
+                'state' => [
+                    'component' => [
+                        'foo' => 'bar',
+                    ],
+                    'storage' => [],
+                    'data_apps' => [
+                        'key' => 'value',
+                    ],
+                ],
+            ])
+        ;
+        $sapiStub->expects(self::once())
+            ->method('apiPutJson')
+            ->with(
+                self::equalTo('branch/default/components/my-component/configs/config-id/state'),
+                self::equalTo(
+                    ['state' => [
+                        // component & storage is replaced, data_apps is preserved
+                        'component' => [
+                            'key' => 'fooBar',
+                        ],
+                        'storage' => [
+                            'input' => [
+                                'tables' => [],
+                                'files' => [],
+                            ],
+                        ],
+                        'data_apps' => [
+                            'key' => 'value',
+                        ],
+                    ]],
+                ),
+            );
+
+        $state = ['key' => 'fooBar'];
+        $testLogger = new TestLogger();
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $clientWrapper,
+            $this->getJobScopedEncryptor(),
+            [StateFile::NAMESPACE_COMPONENT => $state],
+            'json',
+            'my-component',
+            'config-id',
+            new NullFilter(),
+            $testLogger,
+        );
+        $stateFile->stashState($state);
+        $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
+    }
+
+    public function testPersistConfigRowStateDoesNotOverwriteOtherRootKeys(): void
+    {
+        $sapiStub = $this->createPartialMock(Client::class, ['apiGet', 'apiPutJson']);
+        $sapiStub->expects(self::once())
+            ->method('apiGet')
+            ->with('branch/default/components/my-component/configs/config-id/rows/row-id')
+            ->willReturn([
+                'configuration' => [
+                    'id' => 'config-id',
+                ],
+                'state' => [
+                    'component' => [
+                        'foo' => 'bar',
+                    ],
+                    'storage' => [],
+                    'data_apps' => [
+                        'key' => 'value',
+                    ],
+                ],
+            ])
+        ;
+        $sapiStub->expects(self::once())
+            ->method('apiPutJson')
+            ->with(
+                self::equalTo('branch/default/components/my-component/configs/config-id/rows/row-id/state'),
+                self::equalTo(
+                    ['state' => [
+                        // component & storage is replaced, data_apps is preserved
+                        'component' => [
+                            'key' => 'fooBar',
+                        ],
+                        'storage' => [
+                            'input' => [
+                                'tables' => [],
+                                'files' => [],
+                            ],
+                        ],
+                        'data_apps' => [
+                            'key' => 'value',
+                        ],
+                    ]],
+                ),
+            );
+
+        $state = ['key' => 'fooBar'];
+        $testLogger = new TestLogger();
+        $clientWrapper = $this->createMock(ClientWrapper::class);
+        $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
+
+        $stateFile = new StateFile(
+            $this->dataDir,
+            $clientWrapper,
+            $this->getJobScopedEncryptor(),
+            [StateFile::NAMESPACE_COMPONENT => $state],
+            'json',
+            'my-component',
+            'config-id',
+            new NullFilter(),
+            $testLogger,
+            'row-id',
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));

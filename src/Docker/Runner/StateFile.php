@@ -127,7 +127,8 @@ class StateFile
             } else {
                 $encryptedStateData = [];
             }
-            $state = [
+
+            $jobState = [
                 self::NAMESPACE_COMPONENT => $encryptedStateData,
                 self::NAMESPACE_STORAGE => [
                     self::NAMESPACE_INPUT => [
@@ -136,7 +137,28 @@ class StateFile
                     ],
                 ],
             ];
-            $this->logger->notice('Storing state: ' . json_encode($state));
+            $this->logger->notice('Storing state: ' . json_encode($jobState));
+
+            if ($this->configurationRowId) {
+                $storedState = $this->loadConfigurationRowState(
+                    $this->componentId,
+                    $this->configurationId,
+                    $this->configurationRowId,
+                    $client,
+                );
+            } else {
+                $storedState = $this->loadConfigurationState(
+                    $this->componentId,
+                    $this->configurationId,
+                    $client,
+                );
+            }
+
+            $state = [
+                ...$storedState,
+                ...$jobState,
+            ];
+
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
@@ -173,6 +195,22 @@ class StateFile
         }
         $fs->remove($fileName);
         return $state;
+    }
+
+    private function loadConfigurationState(string $componentId, string $configId, Client $client): array
+    {
+        $componentsApi = new Components($client);
+        return $componentsApi->getConfiguration($componentId, $configId)['state'] ?? [];
+    }
+
+    private function loadConfigurationRowState(
+        string $componentId,
+        string $configId,
+        string $configRowId,
+        Client $client,
+    ): array {
+        $componentsApi = new Components($client);
+        return $componentsApi->getConfigurationRow($componentId, $configId, $configRowId)['state'] ?? [];
     }
 
     private function saveConfigurationState(Configuration $configuration, Client $client)
