@@ -23,10 +23,12 @@ use Keboola\InputMapping\Table\Options\ReaderOptions;
 use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
+use Keboola\OutputMapping\OutputMappingSettings;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
+use Keboola\OutputMapping\SystemMetadata;
+use Keboola\OutputMapping\TableLoader;
 use Keboola\OutputMapping\Writer\AbstractWriter;
 use Keboola\OutputMapping\Writer\FileWriter;
-use Keboola\OutputMapping\Writer\TableWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
@@ -207,18 +209,18 @@ class DataLoader implements DataLoaderInterface
         $uploadTablesOptions = ['mapping' => $outputTablesConfig];
 
         $commonSystemMetadata = [
-            AbstractWriter::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
-            AbstractWriter::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
+            SystemMetadata::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
+            SystemMetadata::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
         ];
         if ($this->configRowId) {
-            $commonSystemMetadata[AbstractWriter::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
+            $commonSystemMetadata[SystemMetadata::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
         }
         $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
         if ($this->clientWrapper->isDevelopmentBranch()) {
-            $tableSystemMetadata[AbstractWriter::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
+            $tableSystemMetadata[SystemMetadata::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
         }
 
-        $fileSystemMetadata[AbstractWriter::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBranchClient()->getRunId();
+        $fileSystemMetadata[SystemMetadata::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBranchClient()->getRunId();
 
         // Get default bucket
         if ($this->defaultBucketName) {
@@ -233,7 +235,6 @@ class DataLoader implements DataLoaderInterface
 
         try {
             $fileWriter = new FileWriter($this->outputStrategyFactory);
-            $fileWriter->setFormat($this->component->getConfigurationFormat());
             $fileWriter->uploadFiles(
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
@@ -258,16 +259,26 @@ class DataLoader implements DataLoaderInterface
                 return null;
             }
 
-            $tableWriter = new TableWriter($this->outputStrategyFactory);
-            $tableWriter->setFormat($this->component->getConfigurationFormat());
-            $tableQueue = $tableWriter->uploadTables(
-                'data/out/tables/',
-                $uploadTablesOptions,
-                $tableSystemMetadata,
-                $this->getStagingStorageOutput(),
-                $isFailedJob,
-                $this->getDataTypeSupport(),
+            $tableLoader = new TableLoader(
+                logger: $this->outputStrategyFactory->getLogger(),
+                clientWrapper: $this->outputStrategyFactory->getClientWrapper(),
+                strategyFactory: $this->outputStrategyFactory,
             );
+
+            $mappingSettings = new OutputMappingSettings(
+                configuration: $uploadTablesOptions,
+                sourcePathPrefix: 'data/out/tables/',
+                storageApiToken: $this->outputStrategyFactory->getClientWrapper()->getToken(),
+                isFailedJob: $isFailedJob,
+                dataTypeSupport: $this->getDataTypeSupport(),
+            );
+
+            $tableQueue = $tableLoader->uploadTables(
+                outputStaging: $this->getStagingStorageOutput(),
+                configuration: $mappingSettings,
+                systemMetadata: new SystemMetadata($tableSystemMetadata),
+            );
+
             if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
                 // tag input files
                 $fileWriter->tagFiles($this->storageConfig['input']['files']);
