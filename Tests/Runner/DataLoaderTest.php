@@ -675,7 +675,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                                     'name' => 'int',
                                     'data_type' => [
                                         'base' => [
-                                            'type' => BaseType::NUMERIC,
+                                            'type' => BaseType::INTEGER,
                                         ],
                                     ],
                                     'primary_key' => true,
@@ -755,7 +755,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertNotNull($tableQueue);
         $tableQueue->waitForAll();
 
-        $tableDetails = $clientWrapper->getBasicClient()->getTable('in.c-docker-demo-testConfig.fixed-type-test');
+        $tableDetails = $clientWrapper->getBasicClient()->getTable(
+            'in.c-docker-demo-testConfig.authoritative-types-test',
+        );
         self::assertTrue($tableDetails['isTyped']);
 
         $tableDefinitionColumns = $tableDetails['definition']['columns'];
@@ -807,7 +809,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                                     'name' => 'int',
                                     'data_type' => [
                                         'base' => [
-                                            'type' => BaseType::NUMERIC,
+                                            'type' => BaseType::INTEGER,
                                         ],
                                     ],
                                     'primary_key' => true,
@@ -842,7 +844,13 @@ class DataLoaderTest extends BaseDataLoaderTest
                 (string) getenv('STORAGE_API_TOKEN_FEATURE_NEW_NATIVE_TYPES'),
             ),
         );
-        $clientWrapper->getBasicClient()->dropTable($tableId);
+        try {
+            $clientWrapper->getBasicClient()->dropTable($tableId);
+        } catch (ClientException $e) {
+            if ($e->getCode() !== 404) {
+                throw $e;
+            }
+        }
 
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -879,7 +887,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
         self::assertCount(2, $intColumnMetadata);
         self::assertEquals([
-            ['key' => 'KBC.datatype.basetype', 'value' => 'NUMERIC', 'provider' => 'docker-demo'],
+            ['key' => 'KBC.datatype.basetype', 'value' => 'INTEGER', 'provider' => 'docker-demo'],
             ['key' => 'KBC.datatype.nullable', 'value' => '1', 'provider' => 'docker-demo'],
         ], array_map(function ($v) {
             unset($v['id'], $v['timestamp']);
@@ -966,7 +974,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                                     'name' => 'int',
                                     'data_type' => [
                                         'base' => [
-                                            'type' => BaseType::NUMERIC,
+                                            'type' => BaseType::INTEGER,
                                         ],
                                     ],
                                     'primary_key' => true,
