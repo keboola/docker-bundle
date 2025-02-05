@@ -31,6 +31,7 @@ class StateFile
     public const NAMESPACE_INPUT = 'input';
     public const NAMESPACE_TABLES = 'tables';
     public const NAMESPACE_FILES = 'files';
+    public const NAMESPACE_DATA_APP = 'data_app';
 
     private string $dataDirectory;
     private ClientWrapper $clientWrapper;
@@ -110,6 +111,11 @@ class StateFile
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
     ): void {
+        $configurationId = $this->configurationId;
+        if (!$configurationId) {
+            return;
+        }
+
         $this->outputFilter->collectValues((array) $this->currentState);
 
         if ($this->clientWrapper->isDevelopmentBranch()) {
@@ -120,14 +126,15 @@ class StateFile
 
         $configuration = new Configuration();
         $configuration->setComponentId($this->componentId);
-        $configuration->setConfigurationId($this->configurationId);
+        $configuration->setConfigurationId($configurationId);
         try {
             if ($this->currentState !== null) {
                 $encryptedStateData = $this->encryptor->encrypt($this->currentState);
             } else {
                 $encryptedStateData = [];
             }
-            $state = [
+
+            $jobState = [
                 self::NAMESPACE_COMPONENT => $encryptedStateData,
                 self::NAMESPACE_STORAGE => [
                     self::NAMESPACE_INPUT => [
@@ -136,7 +143,28 @@ class StateFile
                     ],
                 ],
             ];
-            $this->logger->notice('Storing state: ' . json_encode($state));
+            $this->logger->notice('Storing state: ' . json_encode($jobState));
+
+            if ($this->configurationRowId) {
+                $storedState = $this->loadConfigurationRowState(
+                    $this->componentId,
+                    $configurationId,
+                    $this->configurationRowId,
+                    $client,
+                );
+            } else {
+                $storedState = $this->loadConfigurationState(
+                    $this->componentId,
+                    $configurationId,
+                    $client,
+                );
+            }
+
+            $state = [
+                ...$storedState,
+                ...$jobState,
+            ];
+
             if ($this->configurationRowId) {
                 $configurationRow = new ConfigurationRow($configuration);
                 $configurationRow->setRowId($this->configurationRowId);
@@ -173,6 +201,22 @@ class StateFile
         }
         $fs->remove($fileName);
         return $state;
+    }
+
+    private function loadConfigurationState(string $componentId, string $configId, Client $client): array
+    {
+        $componentsApi = new Components($client);
+        return $componentsApi->getConfiguration($componentId, $configId)['state'] ?? [];
+    }
+
+    private function loadConfigurationRowState(
+        string $componentId,
+        string $configId,
+        string $configRowId,
+        Client $client,
+    ): array {
+        $componentsApi = new Components($client);
+        return $componentsApi->getConfigurationRow($componentId, $configId, $configRowId)['state'] ?? [];
     }
 
     private function saveConfigurationState(Configuration $configuration, Client $client)

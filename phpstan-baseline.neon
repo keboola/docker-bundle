@@ -791,51 +791,6 @@ parameters:
 			path: Tests/Docker/Configuration/SharedCodeRowConfigurationTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testComponentState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testEmptyState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testInvalidRootKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesStateExtraKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputFilesStateMissingKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesState\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesStateExtraKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\StateTest\\:\\:testStorageInputTablesStateMissingKey\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/Configuration/StateTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Container\\\\ContainerErrorHandlingTest\\:\\:testEnvironmentPassing\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Container/ContainerErrorHandlingTest.php

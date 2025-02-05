@@ -11,7 +11,7 @@ use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 
 class StateTest extends TestCase
 {
-    public function testEmptyState()
+    public function testEmptyState(): void
     {
         $state = [];
         $expected = [
@@ -21,7 +21,7 @@ class StateTest extends TestCase
         self::assertEquals($expected, $processed);
     }
 
-    public function testComponentState()
+    public function testComponentState(): void
     {
         $state = [
             StateFile::NAMESPACE_COMPONENT => ['key' => 'foo'],
@@ -33,7 +33,7 @@ class StateTest extends TestCase
         self::assertEquals($expected, $processed);
     }
 
-    public function testStorageInputTablesState()
+    public function testStorageInputTablesState(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -65,7 +65,7 @@ class StateTest extends TestCase
         self::assertEquals($expected, $processed);
     }
 
-    public function testStorageInputTablesStateExtraKey()
+    public function testStorageInputTablesStateExtraKey(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -86,7 +86,7 @@ class StateTest extends TestCase
         (new Configuration\State())->parse(['state' => $state]);
     }
 
-    public function testStorageInputTablesStateMissingKey()
+    public function testStorageInputTablesStateMissingKey(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -107,7 +107,7 @@ class StateTest extends TestCase
         (new Configuration\State())->parse(['state' => $state]);
     }
 
-    public function testStorageInputFilesState()
+    public function testStorageInputFilesState(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -147,7 +147,7 @@ class StateTest extends TestCase
         self::assertEquals($expected, $processed);
     }
 
-    public function testStorageInputFilesStateExtraKey()
+    public function testStorageInputFilesStateExtraKey(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -172,7 +172,7 @@ class StateTest extends TestCase
         (new Configuration\State())->parse(['state' => $state]);
     }
 
-    public function testStorageInputFilesStateMissingKey()
+    public function testStorageInputFilesStateMissingKey(): void
     {
         $state = [
             StateFile::NAMESPACE_STORAGE => [
@@ -197,7 +197,25 @@ class StateTest extends TestCase
         (new Configuration\State())->parse(['state' => $state]);
     }
 
-    public function testInvalidRootKey()
+    public function testDataAppRootKey(): void
+    {
+        $state = [
+            StateFile::NAMESPACE_DATA_APP => [
+                'key' => 'foo',
+            ],
+        ];
+        $expected = [
+            StateFile::NAMESPACE_COMPONENT => [],
+            StateFile::NAMESPACE_DATA_APP => [
+                'key' => 'foo',
+            ],
+        ];
+
+        $processed = (new Configuration\State())->parse(['state' => $state]);
+        self::assertEquals($expected, $processed);
+    }
+
+    public function testInvalidRootKey(): void
     {
         $state = [
             'invalidKey' => 'invalidValue',

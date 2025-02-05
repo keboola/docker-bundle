@@ -47,6 +47,9 @@ class State extends Configuration
                     ->end()
                 ->end()
             ->end()
+            ->arrayNode(StateFile::NAMESPACE_DATA_APP)
+                ->ignoreExtraKeys(false)
+            ->end()
         ->end();
         return $treeBuilder;
     }
