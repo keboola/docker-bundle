@@ -21,7 +21,6 @@
         "keboola/object-encryptor": "^2.2",
         "keboola/output-mapping": "^24.40",
         "keboola/php-utils": "^5.0",
-        "keboola/sandboxes-api-php-client": "^6.7",
         "keboola/staging-provider": "^9.0",
         "keboola/storage-api-client": "^v15.0",
         "keboola/storage-api-php-client-branch-wrapper": "^6.0",

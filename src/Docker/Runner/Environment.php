@@ -20,7 +20,6 @@ class Environment
     private readonly string $token;
     private readonly ?string $branchId;
     private readonly ?string $absConnectionString;
-    private readonly ?MlflowTracking $mlflowTracking;
     private readonly string $mode;
     private readonly string $dataTypeSupport;
 
@@ -36,7 +35,6 @@ class Environment
         string $token,
         ?string $branchId,
         ?string $absConnectionString,
-        ?MlflowTracking $mlflowTracking,
         string $mode,
         string $dataTypeSupport,
     ) {
@@ -51,7 +49,6 @@ class Environment
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
         $this->absConnectionString = $absConnectionString;
-        $this->mlflowTracking = $mlflowTracking;
         $this->mode = $mode;
         $this->dataTypeSupport = $dataTypeSupport;
     }
@@ -94,10 +91,6 @@ class Environment
 
         if ($this->absConnectionString !== null) {
             $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->absConnectionString;
-        }
-
-        if ($this->mlflowTracking !== null) {
-            $envs = array_merge($envs, $this->mlflowTracking->exportAsEnv($outputFilter));
         }
 
         return $envs;
