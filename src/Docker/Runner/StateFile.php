@@ -31,6 +31,7 @@ class StateFile
     public const NAMESPACE_INPUT = 'input';
     public const NAMESPACE_TABLES = 'tables';
     public const NAMESPACE_FILES = 'files';
+    public const NAMESPACE_DATA_APP = 'data_app';
 
     private string $dataDirectory;
     private ClientWrapper $clientWrapper;

@@ -197,18 +197,32 @@ class StateTest extends TestCase
         (new Configuration\State())->parse(['state' => $state]);
     }
 
-    public function testExtraRootKey(): void
+    public function testDataAppRootKey(): void
     {
         $state = [
-            'invalidKey' => 'invalidValue',
-            'component' => [
+            StateFile::NAMESPACE_DATA_APP => [
+                'key' => 'foo',
+            ],
+        ];
+        $expected = [
+            StateFile::NAMESPACE_COMPONENT => [],
+            StateFile::NAMESPACE_DATA_APP => [
                 'key' => 'foo',
             ],
         ];
 
-        (new Configuration\State())->parse(['state' => $state]);
-
         $processed = (new Configuration\State())->parse(['state' => $state]);
-        self::assertEquals($state, $processed);
+        self::assertEquals($expected, $processed);
+    }
+
+    public function testInvalidRootKey(): void
+    {
+        $state = [
+            'invalidKey' => 'invalidValue',
+        ];
+
+        self::expectException(InvalidConfigurationException::class);
+        self::expectExceptionMessage('Unrecognized option "invalidKey" under "state"');
+        (new Configuration\State())->parse(['state' => $state]);
     }
 }
