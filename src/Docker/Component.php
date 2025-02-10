@@ -127,11 +127,6 @@ class Component
         return in_array('allow-use-file-storage-only', $this->features);
     }
 
-    public function allowMlflowArtifactsAccess(): bool
-    {
-        return in_array('mlflow-artifacts-access', $this->features, true);
-    }
-
     public function getLoggerType(): string
     {
         if (!empty($this->data['logging'])) {

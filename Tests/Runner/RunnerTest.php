@@ -120,9 +120,8 @@ class RunnerTest extends BaseRunnerTest
             ->willReturn([]);
         $clientMock
             ->method('getServiceUrl')
-            ->withConsecutive(['sandboxes'], ['oauth'], ['oauth'])
+            ->withConsecutive(['oauth'], ['oauth'])
             ->willReturnOnConsecutiveCalls(
-                'https://sandboxes.someurl',
                 'https://someurl',
                 'https://someurl',
             );

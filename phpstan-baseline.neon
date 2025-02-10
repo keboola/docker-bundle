@@ -876,11 +876,6 @@ parameters:
 			path: Tests/RunnerPart2/Runner2Test.php
 
 		-
-			message: "#^Parameter \\#1 \\$object of static method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\Runner2Test\\:\\:setPrivatePropertyValue\\(\\) expects object, mixed given\\.$#"
-			count: 1
-			path: Tests/RunnerPart2/Runner2Test.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\RunnerPart2\\\\WorkingDirectoryTest\\:\\:testWorkingDirectoryMove\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/RunnerPart2/WorkingDirectoryTest.php
@@ -1447,11 +1442,6 @@ parameters:
 
 		-
 			message: "#^Parameter \\#1 \\$currentState of method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\StateFile\\:\\:stashState\\(\\) expects array\\|stdClass, array\\|object given\\.$#"
-			count: 1
-			path: src/Docker/Runner.php
-
-		-
-			message: "#^Parameter \\#1 \\$url of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\MlflowTracking constructor expects string, string\\|null given\\.$#"
 			count: 1
 			path: src/Docker/Runner.php
 

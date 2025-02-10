@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
-use Generator;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Environment;
-use Keboola\DockerBundle\Docker\Runner\MlflowTracking;
 use PHPUnit\Framework\TestCase;
 
 class EnvironmentTest extends TestCase
@@ -47,7 +45,6 @@ class EnvironmentTest extends TestCase
             ],
         ]);
 
-        $mlflowTracking = new MlflowTracking('mlflow-uri', 'mlflow-token');
         $environment = new Environment(
             'config-test-id',
             'config-version-id',
@@ -60,7 +57,6 @@ class EnvironmentTest extends TestCase
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
             'connection-string',
-            $mlflowTracking,
             'debug',
             'authoritative',
         );
@@ -84,8 +80,6 @@ class EnvironmentTest extends TestCase
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
-        self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
-        self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
         self::assertSame('feature1,feature2,feature3,new-native-types', $envs['KBC_PROJECT_FEATURE_GATES']);
         self::assertSame('debug', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
@@ -120,7 +114,6 @@ class EnvironmentTest extends TestCase
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
-            null,
             'run',
             'hint',
         );
@@ -145,8 +138,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('hint', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
@@ -176,7 +167,6 @@ class EnvironmentTest extends TestCase
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
-            null,
             'run',
             'authoritative',
         );
@@ -199,8 +189,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
@@ -223,7 +211,6 @@ class EnvironmentTest extends TestCase
             'KBC_CONFIGID' => 'barFoo',
         ];
 
-        $mlflowTracking = new MlflowTracking('mlflow-uri', 'mlflow-token');
         $environment = new Environment(
             'config-test-id',
             'config-version-id',
@@ -236,7 +223,6 @@ class EnvironmentTest extends TestCase
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             'connection-string',
-            $mlflowTracking,
             'run',
             'authoritative',
         );
@@ -258,8 +244,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_BRANCHID', $envs);
         self::assertArrayNotHasKey('KBC_REALUSER', $envs);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
-        self::assertSame('mlflow-uri', $envs['MLFLOW_TRACKING_URI']);
-        self::assertSame('mlflow-token', $envs['MLFLOW_TRACKING_TOKEN']);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
@@ -297,7 +281,6 @@ class EnvironmentTest extends TestCase
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
             null,
-            null,
             'run',
             'authoritative',
         );
@@ -320,8 +303,6 @@ class EnvironmentTest extends TestCase
         self::assertEquals('boo', $envs['KBC_REALUSER']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_URI', $envs);
-        self::assertArrayNotHasKey('MLFLOW_TRACKING_TOKEN', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
@@ -358,7 +339,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             null,
             'run',
             'authoritative', // <<< from component but project doesn't support New Native Types

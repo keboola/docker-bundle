@@ -16,7 +16,6 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
 use Keboola\DockerBundle\Docker\Runner\Environment;
 use Keboola\DockerBundle\Docker\Runner\ImageCreator;
 use Keboola\DockerBundle\Docker\Runner\Limits;
-use Keboola\DockerBundle\Docker\Runner\MlflowTracking;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\UsageFileInterface;
@@ -29,7 +28,6 @@ use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\Sandboxes\Api\Client as SandboxesApiClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -44,7 +42,6 @@ class Runner
     private ObjectEncryptor $encryptor;
     private ClientWrapper $clientWrapper;
     private Credentials $oauthClient3;
-    private MlflowProjectResolver $mlflowProjectResolver;
     private LoggersService $loggersService;
     private string $commandToGetHostIp;
     private int $minLogPort;
@@ -71,19 +68,9 @@ class Runner
         $storageApiClient = $clientWrapper->getBasicClient();
         $storageApiToken = $storageApiClient->getTokenString();
 
-        $sandboxesApiClient = new SandboxesApiClient(
-            $storageApiClient->getServiceUrl('sandboxes'),
-            $storageApiToken,
-        );
-
         $this->oauthClient3 = new Credentials($storageApiToken, [
             'url' => $this->getOauthUrlV3(),
         ]);
-        $this->mlflowProjectResolver = new MlflowProjectResolver(
-            $storageApiClient,
-            $sandboxesApiClient,
-            $loggersService->getLog(),
-        );
         $this->loggersService = $loggersService;
         $this->instanceLimits = $instanceLimits;
         $this->commandToGetHostIp = $this->getCommandToGetHostIp();
@@ -616,17 +603,7 @@ class Runner
         $imageDigests = [];
         $newState = [];
         $absConnectionString = null;
-        $mlflowTracking = null;
         $output->setOutput('');
-
-        $mlflowProject = $this->mlflowProjectResolver->getMlflowProjectIfAvailable($component, $tokenInfo);
-        if ($mlflowProject !== null) {
-            $absConnectionString = $mlflowProject->getMlflowAbsConnectionString();
-            $mlflowTracking = new MlflowTracking(
-                $mlflowProject->getMlflowUri(),
-                $this->clientWrapper->getBranchClient()->getTokenString(),
-            );
-        }
 
         foreach ($images as $priority => $image) {
             if ($image->isMain()) {
@@ -663,7 +640,6 @@ class Runner
                 $this->clientWrapper->getBranchClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
                 $absConnectionString,
-                $mlflowTracking,
                 $mode,
                 $component->getDataTypesSupport(),
             );
