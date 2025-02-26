@@ -67,8 +67,12 @@ class Environment
             'KBC_STAGING_FILE_PROVIDER' => $this->tokenInfo['owner']['fileStorageProvider'],
             'KBC_PROJECT_FEATURE_GATES' => implode(',', $this->tokenInfo['owner']['features']),
             'KBC_COMPONENT_RUN_MODE' => $this->mode,
-            'KBC_DATA_TYPE_SUPPORT' => $this->getDataTypeSupport(),
         ];
+
+        if ($this->hasNativeTypesFeature()) {
+            $envs['KBC_DATA_TYPE_SUPPORT'] = $this->dataTypeSupport;
+        }
+
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
         }
@@ -96,12 +100,8 @@ class Environment
         return $envs;
     }
 
-    private function getDataTypeSupport(): string
+    private function hasNativeTypesFeature(): bool
     {
-        if (!in_array('new-native-types', $this->tokenInfo['owner']['features'])) {
-            return 'none';
-        }
-
-        return $this->dataTypeSupport;
+        return in_array('new-native-types', $this->tokenInfo['owner']['features']);
     }
 }
