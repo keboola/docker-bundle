@@ -9,45 +9,18 @@ use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
-use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
-use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
 use Keboola\StorageApi\BranchAwareClient;
-use Keboola\StorageApi\Client;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Keboola\Temp\Temp;
-use Psr\Log\NullLogger;
 use Psr\Log\Test\TestLogger;
 
 class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 {
-    use BackendAssertsTrait;
-
-    private Client $client;
-
-    public function setUp(): void
-    {
-        parent::setUp();
-
-        $this->client = new Client([
-            'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-            'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
-        ]);
-
-        self::assertDefaultTableBackend('synapse', $this->client);
-
-        $this->metadata = new Metadata($this->client);
-        $this->temp = new Temp();
-        $this->workingDir = new WorkingDirectory($this->temp->getTmpFolder(), new NullLogger());
-        $this->workingDir->createWorkingDir();
-    }
-
     public function testAbsWorkspaceNoConfig()
     {
         $component = new Component([
@@ -64,12 +37,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(BranchAwareClient::class)
+        $client = $this->getMockBuilder(BranchAwareClient::class)
             ->setConstructorArgs([
                 'default',
                 [
-                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                    'url' => $this->clientWrapper->getClientOptionsReadOnly()->getUrl(),
+                    'token' => $this->clientWrapper->getClientOptionsReadOnly()->getToken(),
                 ],
             ])
             ->setMethods(['apiDelete'])
@@ -114,12 +87,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(BranchAwareClient::class)
+        $client = $this->getMockBuilder(BranchAwareClient::class)
             ->setConstructorArgs([
                 'default',
                 [
-                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                    'url' => $this->clientWrapper->getClientOptionsReadOnly()->getUrl(),
+                    'token' => $this->clientWrapper->getClientOptionsReadOnly()->getToken(),
                 ],
             ])
             ->setMethods(['apiDelete'])
@@ -129,7 +102,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
         $configuration->setComponentId('keboola.runner-config-test');
-        $componentsApi = new Components($this->client);
+        $componentsApi = new Components($this->clientWrapper->getBranchClient());
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
@@ -164,7 +137,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         );
         self::assertCount(1, $workspaces);
         // cleanup after the test
-        $workspacesApi = new Workspaces($this->client);
+        $workspacesApi = new Workspaces($this->clientWrapper->getBranchClient());
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains('Created a new persistent workspace'));
     }
@@ -185,12 +158,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(BranchAwareClient::class)
+        $client = $this->getMockBuilder(BranchAwareClient::class)
             ->setConstructorArgs([
                 'default',
                 [
-                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                    'url' => $this->clientWrapper->getClientOptionsReadOnly()->getUrl(),
+                    'token' => $this->clientWrapper->getClientOptionsReadOnly()->getToken(),
                 ],
             ])
             ->setMethods(['apiDelete'])
@@ -200,7 +173,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
         $configuration->setComponentId('keboola.runner-config-test');
-        $componentsApi = new Components($this->client);
+        $componentsApi = new Components($this->clientWrapper->getBranchClient());
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
         $workspace = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
@@ -243,7 +216,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         // and it must be the same workspace we created beforehand
         self::assertEquals($workspace['id'], $workspaces[0]['id']);
         // cleanup after the test
-        $workspacesApi = new Workspaces($this->client);
+        $workspacesApi = new Workspaces($this->clientWrapper->getBranchClient());
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
         self::assertTrue($logger->hasInfoThatContains(
             sprintf('Reusing persistent workspace "%s".', $workspace['id']),
@@ -266,12 +239,12 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $client = self::getMockBuilder(BranchAwareClient::class)
+        $client = $this->getMockBuilder(BranchAwareClient::class)
             ->setConstructorArgs([
                 'default',
                 [
-                    'url' => getenv('STORAGE_API_URL_SYNAPSE'),
-                    'token' => getenv('STORAGE_API_TOKEN_SYNAPSE'),
+                    'url' => $this->clientWrapper->getClientOptionsReadOnly()->getUrl(),
+                    'token' => $this->clientWrapper->getClientOptionsReadOnly()->getToken(),
                 ],
             ])
             ->setMethods(['apiDelete'])
@@ -282,7 +255,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $configuration->setConfiguration([]);
         $configuration->setName('test-dataloader');
         $configuration->setComponentId('keboola.runner-config-test');
-        $componentsApi = new Components($this->client);
+        $componentsApi = new Components($this->clientWrapper->getBranchClient());
         $configurationId = $componentsApi->addConfiguration($configuration)['id'];
         $workspace1 = $componentsApi->createConfigurationWorkspace(
             'keboola.runner-config-test',
@@ -326,7 +299,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
                 ),
                 $e->getMessage(),
             );
-            $workspacesApi = new Workspaces($this->client);
+            $workspacesApi = new Workspaces($this->clientWrapper->getBranchClient());
             $workspacesApi->deleteWorkspace($workspace1['id'], [], true);
             $workspacesApi->deleteWorkspace($workspace2['id'], [], true);
         }

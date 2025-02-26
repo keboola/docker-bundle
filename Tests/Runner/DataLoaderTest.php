@@ -311,7 +311,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $workspaces = $workspacesApi->listWorkspaces();
         $readonlyWorkspace = null;
         foreach ($workspaces as $workspace) {
-            if ($workspace['connection']['schema'] === $schemaName) {
+            if (isset($workspace['connection']['schema']) && $workspace['connection']['schema'] === $schemaName) {
                 $readonlyWorkspace = $workspace;
             }
         }

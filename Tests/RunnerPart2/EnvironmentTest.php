@@ -345,6 +345,6 @@ class EnvironmentTest extends TestCase
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
 
-        self::assertSame('none', $envs['KBC_DATA_TYPE_SUPPORT']);
+        self::assertArrayNotHasKey('KBC_DATA_TYPE_SUPPORT', $envs);
     }
 }
