@@ -19,8 +19,9 @@ use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 
 class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
 {
@@ -71,7 +72,10 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -88,7 +92,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
-        self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
+        self::assertTrue($logsHandler->hasNoticeThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
     }
@@ -130,7 +134,10 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -164,7 +171,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         // cleanup after the test
         $workspacesApi = new Workspaces($this->client);
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
-        self::assertTrue($logger->hasInfoThatContains('Created a new persistent workspace'));
+        self::assertTrue($logsHandler->hasInfoThatContains('Created a new persistent workspace'));
     }
 
     public function testRedshiftWorkspaceConfigOneWorkspace()
@@ -210,7 +217,10 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -246,7 +256,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         // cleanup after the test
         $workspacesApi = new Workspaces($this->client);
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
-        self::assertTrue($logger->hasInfoThatContains(
+        self::assertTrue($logsHandler->hasInfoThatContains(
             sprintf('Reusing persistent workspace "%s".', $workspace['id']),
         ));
     }
@@ -301,7 +311,9 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
 
         $dataLoader = new DataLoader(
             $clientWrapper,
@@ -312,7 +324,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         );
         $dataLoader->storeOutput();
 
-        $this->assertTrue($logger->hasWarning(
+        $this->assertTrue($logsHandler->hasWarning(
             sprintf(
                 'Multiple workspaces (total 2) found (IDs: %s) for configuration "%s" of component "%s", using "%s".',
                 implode(',', [$workspace1['id'], $workspace2['id']]),

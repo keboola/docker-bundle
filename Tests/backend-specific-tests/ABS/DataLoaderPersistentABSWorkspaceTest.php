@@ -17,7 +17,8 @@ use Keboola\StorageApi\Options\Components\Configuration;
 use Keboola\StorageApi\Options\Components\ListConfigurationWorkspacesOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
-use Psr\Log\Test\TestLogger;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 
 class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
 {
@@ -52,7 +53,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -66,7 +70,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(['container', 'connectionString'], array_keys($credentials));
         self::assertStringStartsWith('BlobEndpoint=https://', $credentials['connectionString']);
-        self::assertTrue($logger->hasNoticeThatContains('Created a new ephemeral workspace.'));
+        self::assertTrue($logsHandler->hasNoticeThatContains('Created a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
     }
@@ -108,7 +112,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -139,7 +146,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         // cleanup after the test
         $workspacesApi = new Workspaces($this->clientWrapper->getBranchClient());
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
-        self::assertTrue($logger->hasInfoThatContains('Created a new persistent workspace'));
+        self::assertTrue($logsHandler->hasInfoThatContains('Created a new persistent workspace'));
     }
 
     public function testAbsWorkspaceConfigOneWorkspace()
@@ -185,7 +192,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getTableAndFileStorageClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapper,
             $logger,
@@ -218,7 +228,7 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         // cleanup after the test
         $workspacesApi = new Workspaces($this->clientWrapper->getBranchClient());
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
-        self::assertTrue($logger->hasInfoThatContains(
+        self::assertTrue($logsHandler->hasInfoThatContains(
             sprintf('Reusing persistent workspace "%s".', $workspace['id']),
         ));
     }
@@ -273,7 +283,10 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($client);
         $clientWrapper->method('getBranchClient')->willReturn($client);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         try {
             $workspaceFactory = new WorkspaceProviderFactory(
                 new Components($clientWrapper->getBranchClient()),

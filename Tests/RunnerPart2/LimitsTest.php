@@ -14,7 +14,6 @@ use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 
 class LimitsTest extends TestCase
 {
@@ -248,7 +247,9 @@ class LimitsTest extends TestCase
         $image = $this->createMock(AWSElasticContainerRegistry::class);
         $image->method('getSourceComponent')->willReturn($component);
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $limits = new Limits(
             $logger,
             ['cpu_count' => 2], // ignored
@@ -262,10 +263,10 @@ class LimitsTest extends TestCase
         self::assertEquals($expectedMemoryLimit, $limits->getMemoryLimit($image));
         self::assertEquals($expectedMemoryLimit, $limits->getMemorySwapLimit($image));
         self::assertEquals($expectedCpuLimit, $limits->getCpuLimit());
-        self::assertTrue($logger->hasNoticeThatContains(
+        self::assertTrue($logsHandler->hasNoticeThatContains(
             sprintf("Memory limits - component: '1g' project: '%s'", $expectedMemoryLimit),
         ));
-        self::assertTrue($logger->hasNoticeThatContains(sprintf('CPU limit: %s', $expectedCpuLimit)));
+        self::assertTrue($logsHandler->hasNoticeThatContains(sprintf('CPU limit: %s', $expectedCpuLimit)));
     }
 
     public function dynamicBackendProvider(): Generator
