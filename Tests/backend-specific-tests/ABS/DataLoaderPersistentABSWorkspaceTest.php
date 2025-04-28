@@ -11,6 +11,8 @@ use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
+use Keboola\KeyGenerator\PemKeyCertificateGenerator;
+use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -288,9 +290,13 @@ class DataLoaderPersistentABSWorkspaceTest extends BaseDataLoaderTest
         $logger = new Logger('test', [$logsHandler]);
 
         try {
+            $componentsApiClient = new Components($clientWrapper->getBranchClient());
+            $workspacesApiClient = new Workspaces($clientWrapper->getBranchClient());
+
             $workspaceFactory = new WorkspaceProviderFactory(
-                new Components($clientWrapper->getBranchClient()),
-                new Workspaces($clientWrapper->getBranchClient()),
+                $componentsApiClient,
+                $workspacesApiClient,
+                new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
                 $logger,
             );
             $workspaceFactory->getWorkspaceStaging(

@@ -212,6 +212,110 @@ class ContainerConfigurationTest extends TestCase
         self::assertNull($config['runtime']['process_timeout']);
     }
 
+    public static function provideValidWorkspaceCredentials(): iterable
+    {
+        yield 'snowflake password' => [
+            'data' => [
+                'type' => 'snowflake',
+                'id' => '1234',
+                '#password' => 'test',
+            ],
+        ];
+
+        yield 'snowflake privateKey' => [
+            'data' => [
+                'type' => 'snowflake',
+                'id' => '1234',
+                '#privateKey' => 'test',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideValidWorkspaceCredentials
+     * @doesNotPerformAssertions
+     */
+    public function testValidWorkspaceConfiguration(array $data): void
+    {
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'backend' => [
+                        'workspace_credentials' => $data,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
+    public static function provideInvalidWorkspaceCredentials(): iterable
+    {
+        yield 'missing id' => [
+            'data' => [
+                'type' => 'snowflake',
+                '#password' => 'test',
+            ],
+            'expectedError' => 'The child config "id" under "container.runtime.backend.workspace_credentials" ' .
+                'must be configured.',
+        ];
+
+        yield 'missing type' => [
+            'data' => [
+                'id' => '1234',
+                '#password' => 'test',
+            ],
+            'expectedError' => 'The child config "type" under "container.runtime.backend.workspace_credentials" ' .
+                'must be configured.',
+        ];
+
+        yield 'invalid type' => [
+            'data' => [
+                'id' => '1234',
+                'type' => 'foo',
+                '#password' => 'test',
+            ],
+            'expectedError' => 'The value "foo" is not allowed for path ' .
+                '"container.runtime.backend.workspace_credentials.type". Permissible values: "snowflake"',
+        ];
+
+        yield 'no #password or #privateKey' => [
+            'data' => [
+                'id' => '1234',
+                'type' => 'snowflake',
+            ],
+            'expectedError' => 'Invalid configuration for path "container.runtime.backend.workspace_credentials": ' .
+                'Exactly one of "password" or "privateKey" must be configured.',
+        ];
+
+        yield 'both #password and #privateKey' => [
+            'data' => [
+                'id' => '1234',
+                'type' => 'snowflake',
+                '#password' => 'test',
+                '#privateKey' => 'test',
+            ],
+            'expectedError' => 'Invalid configuration for path "container.runtime.backend.workspace_credentials": ' .
+                'Exactly one of "password" or "privateKey" must be configured.',
+        ];
+    }
+
+    /** @dataProvider provideInvalidWorkspaceCredentials */
+    public function testInvalidWorkspaceConfiguration(array $data, string $expectedError): void
+    {
+        $this->expectException(InvalidConfigurationException::class);
+        $this->expectExceptionMessage($expectedError);
+
+        (new Configuration\Container())->parse([
+            'config' => [
+                'runtime' => [
+                    'backend' => [
+                        'workspace_credentials' => $data,
+                    ],
+                ],
+            ],
+        ]);
+    }
+
     public function testRuntimeBackendConfigurationHasDefaultEmptyValue(): void
     {
         $config = (new Configuration\Container())->parse([

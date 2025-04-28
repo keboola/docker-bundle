@@ -6,6 +6,7 @@ namespace Keboola\DockerBundle\Docker\Configuration;
 
 use Keboola\DockerBundle\Docker\Configuration;
 use Keboola\DockerBundle\Docker\Configuration\Authorization\AuthorizationDefinition;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
 use Keboola\InputMapping\Configuration\File as InputFile;
 use Keboola\InputMapping\Configuration\Table as InputTable;
 use Keboola\OutputMapping\Configuration\File as OutputFile;
@@ -49,11 +50,23 @@ class Container extends Configuration
                                 ->arrayNode('workspace_credentials')
                                     ->ignoreExtraKeys(false)
                                     ->children()
-                                        ->scalarNode('id')->isRequired()->end()
-                                        ->enumNode('type')->isRequired()
-                                            ->values(['snowflake'])
+                                        ->scalarNode('id')
+                                            ->isRequired()
+                                            ->cannotBeEmpty()
+                                        ->end()
+                                        ->enumNode('type')
+                                            ->isRequired()
+                                            ->values(ExternallyManagedWorkspaceCredentials::VALID_TYPES)
                                         ->end()
                                         ->scalarNode('#password')->end()
+                                        ->scalarNode('#privateKey')->end()
+                                    ->end()
+                                    ->validate()
+                                        ->ifTrue(fn(array $v) => count(array_filter([
+                                            $v['#password'] ?? null,
+                                            $v['#privateKey'] ?? null,
+                                        ])) !== 1)
+                                        ->thenInvalid('Exactly one of "password" or "privateKey" must be configured.')
                                     ->end()
                                 ->end()
                             ->end()
