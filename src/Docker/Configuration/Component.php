@@ -11,7 +11,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Component extends Configuration
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('component');
         $root = $treeBuilder->getRootNode();

@@ -12,7 +12,7 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 
 class Image extends Configuration
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('image');
         $root = $treeBuilder->getRootNode();
