@@ -9,9 +9,9 @@ use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
+use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 use Symfony\Component\Process\Process;
 
 class ImageTest extends BaseImageTest
@@ -67,10 +67,13 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $image = ImageFactory::getImage($logger, $imageConfig, true);
         $image->prepare([]);
-        self::assertTrue($logger->hasNoticeThatContains(
+        self::assertTrue($logsHandler->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
@@ -91,10 +94,13 @@ class ImageTest extends BaseImageTest
         ]);
         $image = ImageFactory::getImage(new NullLogger(), $imageConfig, true);
         $image->prepare([]);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $image = ImageFactory::getImage($logger, $imageConfig, true);
         $image->prepare([]);
-        self::assertFalse($logger->hasNoticeThatContains(
+        self::assertFalse($logsHandler->hasNoticeThatContains(
             'Digest "a89486bee7cadd59a966500cd837e0cea70a7989de52636652ae9fccfc958c9a" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));
@@ -126,10 +132,13 @@ class ImageTest extends BaseImageTest
                 ],
             ],
         ]);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $image = ImageFactory::getImage($logger, $imageConfig, true);
         $image->prepare([]);
-        self::assertTrue($logger->hasNoticeThatContains(
+        self::assertTrue($logsHandler->hasNoticeThatContains(
             'Digest "' . $matches[1] . '" for image ' .
             '"' . getenv('AWS_ECR_REGISTRY_URI') .':test-hash" not found.',
         ));

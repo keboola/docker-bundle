@@ -156,6 +156,7 @@ class WorkspaceProviderFactory
             $backendConfig['type'] ?? null,
             $useReadonlyRole,
             NetworkPolicy::SYSTEM,
+            null,
         );
     }
 }

@@ -25,7 +25,6 @@ use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 use stdClass;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -154,7 +153,10 @@ class StateFileTest extends TestCase
             );
 
         $state = ['key' => 'fooBar'];
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
         $stateFile = new StateFile(
@@ -166,7 +168,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger,
+            $logger,
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -180,7 +182,10 @@ class StateFileTest extends TestCase
             ->getMock();
         $sapiStub->expects(self::once())
             ->method('apiPutJson');
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
 
@@ -193,12 +198,12 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger,
+            $logger,
         );
         $stateFile->stashState(['key' => 'fooBar', 'foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        self::assertTrue($testLogger->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
+        self::assertTrue($logsHandler->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
     }
 
     /**
@@ -730,7 +735,10 @@ class StateFileTest extends TestCase
         $wrapper->expects(self::once())->method('getBranchClient')->willReturn($branchSapiStub);
 
         $state = ['key' => 'fooBar'];
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         /** @var ClientWrapper $wrapper */
         $stateFile = new StateFile(
             $this->dataDir,
@@ -741,7 +749,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger,
+            $logger,
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -792,7 +800,10 @@ class StateFileTest extends TestCase
             );
 
         $state = ['key' => 'fooBar'];
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
 
@@ -805,7 +816,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger,
+            $logger,
         );
         $stateFile->stashState($state);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
@@ -856,7 +867,10 @@ class StateFileTest extends TestCase
             );
 
         $state = ['key' => 'fooBar'];
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
 
@@ -869,7 +883,7 @@ class StateFileTest extends TestCase
             'my-component',
             'config-id',
             new NullFilter(),
-            $testLogger,
+            $logger,
             'row-id',
         );
         $stateFile->stashState($state);
@@ -882,7 +896,10 @@ class StateFileTest extends TestCase
         $sapiStub->expects(self::never())->method('apiPutJson');
 
         $state = ['key' => 'fooBar'];
-        $testLogger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $clientWrapper = $this->createMock(ClientWrapper::class);
         $clientWrapper->method('getBasicClient')->willReturn($sapiStub);
 
@@ -895,7 +912,7 @@ class StateFileTest extends TestCase
             'my-component',
             null,
             new NullFilter(),
-            $testLogger,
+            $logger,
             'row-id',
         );
         $stateFile->stashState($state);

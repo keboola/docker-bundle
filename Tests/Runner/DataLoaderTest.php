@@ -30,8 +30,9 @@ use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\StorageApiBranch\StorageApiToken;
+use Monolog\Handler\TestHandler;
+use Monolog\Logger;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DataLoaderTest extends BaseDataLoaderTest
@@ -1424,7 +1425,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapperMock,
             $logger,
@@ -1483,7 +1486,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapperMock,
             $logger,
@@ -1571,7 +1576,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapperMock,
             $logger,
@@ -1586,14 +1593,11 @@ class DataLoaderTest extends BaseDataLoaderTest
         $dataLoader->cleanWorkspace();
 
         if ($shouldBeLogged) {
-            self::assertArrayHasKey('error', $logger->recordsByLevel);
-            self::assertCount(1, $logger->recordsByLevel['error']);
-
-            self::assertTrue($logger->hasErrorThatContains(
+            self::assertTrue($logsHandler->hasErrorThatContains(
                 'Failed to cleanup workspace: ' . $deleteException->getMessage(),
             ));
         } else {
-            self::assertArrayNotHasKey('error', $logger->recordsByLevel);
+            self::assertFalse($logsHandler->hasErrorRecords());
         }
 
         $componentsApi->deleteConfiguration('keboola.runner-workspace-test', $configId);
@@ -1635,7 +1639,9 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $dataLoader = new DataLoader(
             $clientWrapperMock,
             $logger,
@@ -1727,7 +1733,8 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
 
-        $logger = new TestLogger();
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
 
         $jobConfig = [];
         if ($configType) {

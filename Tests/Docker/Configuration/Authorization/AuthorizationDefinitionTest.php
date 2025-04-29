@@ -43,6 +43,20 @@ class AuthorizationDefinitionTest extends TestCase
             ],
         ];
 
+        yield 'configured workspace with privateKey' => [
+            'config' => [
+                'workspace' => [
+                    'host' => 'host-value',
+                    'account' => 'account-value',
+                    'warehouse' => 'warehouse-value',
+                    'database' => 'database-value',
+                    'schema' => 'schema-value',
+                    'region' => 'region-value',
+                    'privateKey' => 'private-key-value',
+                ],
+            ],
+        ];
+
         yield 'configured context' => [
             'config' => [
                 'context' => 'wlm',

@@ -31,6 +31,7 @@ class AuthorizationDefinition implements ConfigurationInterface
                         ->scalarNode('region')->end()
                         ->scalarNode('user')->end()
                         ->scalarNode('password')->end()
+                        ->scalarNode('privateKey')->end()
                         ->scalarNode('container')->end()
                         ->scalarNode('connectionString')->end()
                         ->variableNode('credentials')->end()

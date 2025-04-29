@@ -15,7 +15,6 @@ use Keboola\DockerBundle\Tests\Docker\ImageTest;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
-use Psr\Log\Test\TestLogger;
 use Symfony\Component\Process\Process;
 
 class AWSElasticContainerRegistryTest extends BaseImageTest
@@ -57,7 +56,10 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
                 ],
             ],
         ]);
-        $logger = new TestLogger();
+
+        $logsHandler = new TestHandler();
+        $logger = new Logger('test', [$logsHandler]);
+
         $image = ImageFactory::getImage($logger, $imageConfig, true);
         $image->setRetryLimits(100, 100, 1);
         try {
@@ -65,7 +67,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
             self::fail('Must raise an exception');
         } catch (LoginFailedException $e) {
             self::assertStringContainsString('Error executing "GetAuthorizationToken"', $e->getMessage());
-            self::assertTrue($logger->hasNoticeThatContains('Retrying AWS GetCredentials'));
+            self::assertTrue($logsHandler->hasNoticeThatContains('Retrying AWS GetCredentials'));
         }
     }
 
