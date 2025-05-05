@@ -41,10 +41,10 @@ readonly class ExternallyManagedWorkspaceCredentials
     public static function fromArray(array $credentials): self
     {
         return new self(
-            $credentials['id'],
+            (string) $credentials['id'],
             $credentials['type'],
-            $credentials['#password'] ?? null,
-            $credentials['#privateKey'] ?? null,
+            isset($credentials['#password']) ? ((string) $credentials['#password']) : null,
+            isset($credentials['#privateKey']) ? ((string) $credentials['#privateKey']) : null,
         );
     }
 

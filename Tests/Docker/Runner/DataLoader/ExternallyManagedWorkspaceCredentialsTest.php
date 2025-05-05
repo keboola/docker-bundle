@@ -27,6 +27,20 @@ class ExternallyManagedWorkspaceCredentialsTest extends TestCase
             ),
         ];
 
+        yield 'snowflake with password (int data)' => [
+            'data' => [
+                'id' => 123,
+                'type' => 'snowflake',
+                '#password' => 456,
+            ],
+            'expectedResult' => new ExternallyManagedWorkspaceCredentials(
+                id: '123',
+                type: 'snowflake',
+                password: '456',
+                privateKey: null,
+            ),
+        ];
+
         yield 'snowflake with privateKey' => [
             'data' => [
                 'id' => '123',
@@ -38,6 +52,20 @@ class ExternallyManagedWorkspaceCredentialsTest extends TestCase
                 type: 'snowflake',
                 password: null,
                 privateKey: 'privateKey-value',
+            ),
+        ];
+
+        yield 'snowflake with privateKey (int data)' => [
+            'data' => [
+                'id' => 123,
+                'type' => 'snowflake',
+                '#privateKey' => 789,
+            ],
+            'expectedResult' => new ExternallyManagedWorkspaceCredentials(
+                id: '123',
+                type: 'snowflake',
+                password: null,
+                privateKey: '789',
             ),
         ];
     }
