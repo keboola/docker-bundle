@@ -262,7 +262,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertEquals(
-            ['host', 'warehouse', 'database', 'schema', 'user', 'password', 'account'],
+            ['host', 'warehouse', 'database', 'schema', 'user', 'password', 'privateKey', 'account'],
             array_keys($credentials),
         );
         self::assertNotEmpty($credentials['user']);
@@ -1672,6 +1672,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'schema' => $workspaceData['connection']['schema'],
                 'user' => $workspaceData['connection']['user'],
                 'password' => $workspaceData['connection']['password'],
+                'privateKey' => null,
                 'account' => 'keboola',
             ],
             $credentials,
