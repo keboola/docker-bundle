@@ -21,19 +21,20 @@ use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\InputMapping\Table\Options\ReaderOptions;
 use Keboola\InputMapping\Table\Result as InputTableResult;
+use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
 use Keboola\OutputMapping\OutputMappingSettings;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\OutputMapping\SystemMetadata;
 use Keboola\OutputMapping\TableLoader;
-use Keboola\OutputMapping\Writer\AbstractWriter;
 use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
-use Keboola\StagingProvider\Provider\ExistingWorkspaceStagingProvider;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
-use Keboola\StagingProvider\Provider\NewWorkspaceStagingProvider;
+use Keboola\StagingProvider\Provider\NewWorkspaceProvider;
+use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
+use Keboola\StagingProvider\Provider\WorkspaceProviderInterface;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\FileUploadOptions;
@@ -94,14 +95,18 @@ class DataLoader implements DataLoaderInterface
             we need the base dir here */
         $dataDirectory = dirname($this->dataDirectory);
 
+        $componentsApiClient = new Components($this->clientWrapper->getBranchClient());
+        $workspacesApiClient = new Workspaces($this->clientWrapper->getBranchClient());
+
         $workspaceProviderFactory = new WorkspaceProviderFactory(
-            new Components($this->clientWrapper->getBranchClient()),
-            new Workspaces($this->clientWrapper->getBranchClient()),
+            $componentsApiClient,
+            $workspacesApiClient,
+            new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator()),
             $this->logger,
         );
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
-        $workspaceProviderFactory = $workspaceProviderFactory->getWorkspaceStaging(
+        $workspaceProvider = $workspaceProviderFactory->getWorkspaceStaging(
             $this->getStagingStorageInput(),
             $this->component,
             $this->configId,
@@ -110,9 +115,10 @@ class DataLoader implements DataLoaderInterface
             $externallyManagedWorkspaceCredentials,
         );
         $localProviderFactory = new LocalStagingProvider($dataDirectory);
+
         $inputProviderInitializer = new InputProviderInitializer(
             $this->inputStrategyFactory,
-            $workspaceProviderFactory,
+            $workspaceProvider,
             $localProviderFactory,
         );
         $inputProviderInitializer->initializeProviders(
@@ -122,7 +128,7 @@ class DataLoader implements DataLoaderInterface
 
         $outputProviderInitializer = new OutputProviderInitializer(
             $this->outputStrategyFactory,
-            $workspaceProviderFactory,
+            $workspaceProvider,
             $localProviderFactory,
         );
         $outputProviderInitializer->initializeProviders(
@@ -301,8 +307,7 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
-                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof WorkspaceProviderInterface) {
                     continue;
                 }
 
@@ -320,8 +325,7 @@ class DataLoader implements DataLoaderInterface
         // the workspace providers are shared between input and output, so it's "ok"
         foreach ($this->inputStrategyFactory->getStrategyMap() as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof NewWorkspaceStagingProvider &&
-                    !$stagingProvider instanceof ExistingWorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof WorkspaceProviderInterface) {
                     continue;
                 }
 
@@ -447,7 +451,7 @@ class DataLoader implements DataLoaderInterface
         );
         foreach ($maps as $stagingDefinition) {
             foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof NewWorkspaceStagingProvider) {
+                if (!$stagingProvider instanceof NewWorkspaceProvider) {
                     continue;
                 }
                 if (in_array($stagingProvider, $cleanedProviders, true)) {

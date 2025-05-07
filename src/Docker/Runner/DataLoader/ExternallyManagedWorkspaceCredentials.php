@@ -4,39 +4,55 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
-use Keboola\DockerBundle\Exception\ExternalWorkspaceException;
-use Keboola\StagingProvider\Provider\Credentials\CredentialsInterface;
-use Keboola\StagingProvider\Provider\Credentials\DatabaseWorkspaceCredentials;
+use InvalidArgumentException;
+use Keboola\StagingProvider\Provider\Configuration\WorkspaceCredentials;
 
 readonly class ExternallyManagedWorkspaceCredentials
 {
-    private function __construct(
-        public string $id,
-        public string $type,
-        public string $password,
-    ) {
-    }
+    public const TYPE_SNOWFLAKE = 'snowflake';
 
-    public static function fromArray(array $credentials): self
-    {
-        if (!isset($credentials['id']) || !isset($credentials['type']) || !isset($credentials['#password'])) {
-            throw new ExternalWorkspaceException(
-                'Missing required fields (id, type, #password) in workspace_credentials',
+    public const VALID_TYPES = [
+        self::TYPE_SNOWFLAKE,
+    ];
+
+    public function __construct(
+        /** @var non-empty-string */
+        public string $id,
+        /** @var value-of<self::VALID_TYPES> */
+        public string $type,
+        public ?string $password,
+        public ?string $privateKey,
+    ) {
+        if (count(array_filter([$this->password, $this->privateKey])) !== 1) {
+            throw new InvalidArgumentException(
+                'Exactly one of "privateKey" and "password" must be configured workspace_credentials',
             );
         }
-        if ($credentials['type'] !== 'snowflake') {
-            throw new ExternalWorkspaceException(sprintf('Unsupported workspace type "%s"', $credentials['type']));
-        }
+    }
+
+    /**
+     * @param array{
+     *   id: non-empty-string,
+     *   type: value-of<self::VALID_TYPES>,
+     *   "#password"?: string|null,
+     *   "#privateKey"?: string|null,
+     * } $credentials
+     */
+    public static function fromArray(array $credentials): self
+    {
         return new self(
             (string) $credentials['id'],
             $credentials['type'],
-            (string) $credentials['#password'],
+            isset($credentials['#password']) ? ((string) $credentials['#password']) : null,
+            isset($credentials['#privateKey']) ? ((string) $credentials['#privateKey']) : null,
         );
     }
 
-    public function getDatabaseCredentials(): CredentialsInterface
+    public function getWorkspaceCredentials(): WorkspaceCredentials
     {
-        // array in format of https://keboola.docs.apiary.io/#reference/workspaces/password-reset/password-reset
-        return DatabaseWorkspaceCredentials::fromPasswordResetArray(['password' => $this->password]);
+        return new WorkspaceCredentials([
+            'password' => $this->password,
+            'privateKey' => $this->privateKey,
+        ]);
     }
 }

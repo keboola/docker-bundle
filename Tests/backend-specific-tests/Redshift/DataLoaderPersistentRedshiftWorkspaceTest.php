@@ -92,7 +92,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
             array_keys($credentials),
         );
         self::assertStringEndsWith('redshift.amazonaws.com', $credentials['host']);
-        self::assertTrue($logsHandler->hasNoticeThatContains('Created a new ephemeral workspace.'));
+        self::assertTrue($logsHandler->hasNoticeThatContains('Creating a new ephemeral workspace.'));
         $dataLoader->cleanWorkspace();
         // checked in mock that the workspace is deleted
     }
@@ -171,7 +171,7 @@ class DataLoaderPersistentRedshiftWorkspaceTest extends BaseDataLoaderTest
         // cleanup after the test
         $workspacesApi = new Workspaces($this->client);
         $workspacesApi->deleteWorkspace($workspaces[0]['id'], [], true);
-        self::assertTrue($logsHandler->hasInfoThatContains('Created a new persistent workspace'));
+        self::assertTrue($logsHandler->hasInfoThatContains('Creating a new persistent workspace'));
     }
 
     public function testRedshiftWorkspaceConfigOneWorkspace()
