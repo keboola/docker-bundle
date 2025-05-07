@@ -266,7 +266,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             array_keys($credentials),
         );
         self::assertNotEmpty($credentials['user']);
-        self::assertNotNull($dataLoader->getWorkspaceBackendSize());
+        self::assertNotNull($dataLoader->getWorkspaceCredentials());
     }
 
     /**
