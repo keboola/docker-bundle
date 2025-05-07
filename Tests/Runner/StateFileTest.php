@@ -21,6 +21,7 @@ use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\StorageApiBranch\Factory\ClientOptions;
 use Keboola\Temp\Temp;
 use Monolog\Handler\TestHandler;
+use Monolog\Level;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LogLevel;
@@ -203,7 +204,7 @@ class StateFileTest extends TestCase
         $stateFile->stashState(['key' => 'fooBar', 'foo' => 'bar']);
         $stateFile->persistState(new InputTableStateList([]), new InputFileStateList([]));
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
-        self::assertTrue($logsHandler->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', LogLevel::NOTICE));
+        self::assertTrue($logsHandler->hasRecord('Storing state: {"component":{"key":"fooBar","foo":"bar"},"storage":{"input":{"tables":[],"files":[]}}}', Level::Notice));
     }
 
     /**

@@ -13,8 +13,9 @@ use Keboola\DockerBundle\Tests\BaseContainerTest;
 use Keboola\DockerBundle\Tests\StorageApiHandler;
 use Keboola\StorageApi\Event;
 use Monolog\Handler\TestHandler;
+use Monolog\Level;
+use Monolog\Logger;
 use Monolog\Logger as MonologLogger;
-use Symfony\Bridge\Monolog\Logger;
 
 class LoggerTest extends BaseContainerTest
 {
@@ -208,7 +209,7 @@ class LoggerTest extends BaseContainerTest
                     (array_keys($record['context']) === ['version', 'short_message', 'timestamp', 'level', 'source']) &&
                     ($record['context']['short_message'] === 'A sample info message (pygelf)');
             },
-            MonologLogger::NOTICE,
+            Level::Notice,
         ));
     }
 

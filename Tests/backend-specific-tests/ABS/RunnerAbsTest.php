@@ -107,7 +107,7 @@ class RunnerAbsTest extends BaseRunnerTest
 
         $records = $this->getContainerHandler()->getRecords();
         self::assertCount(1, $records);
-        $message = $records[0]['message'];
+        $message = $records[0]->message;
         $manifestData = json_decode($message, true);
         self::assertEquals('in.c-runner-test.mytable', $manifestData['id']);
         self::assertEquals('mytable', $manifestData['name']);

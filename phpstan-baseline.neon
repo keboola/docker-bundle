@@ -616,66 +616,6 @@ parameters:
 			path: Tests/Runner/RunnerConfigRowsTest.php
 
 		-
-			message: "#^Cannot access offset '\\#one' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset '\\#three' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'authorization' on mixed\\.$#"
-			count: 2
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'credentials' on mixed\\.$#"
-			count: 2
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'four' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'id' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'image_parameters' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'name' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'oauth_api' on mixed\\.$#"
-			count: 2
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'parameters' on mixed\\.$#"
-			count: 4
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'script' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Cannot access offset 'two' on mixed\\.$#"
-			count: 1
-			path: Tests/Runner/RunnerTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Runner\\\\RunnerTest\\:\\:getMetadataValues\\(\\) has parameter \\$metadata with no type specified\\.$#"
 			count: 1
 			path: Tests/Runner/RunnerTest.php
@@ -688,11 +628,6 @@ parameters:
 		-
 			message: "#^Parameter \\#1 \\$needle of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertStringNotContainsString\\(\\) expects string, string\\|false given\\.$#"
 			count: 2
-			path: Tests/Runner/RunnerTest.php
-
-		-
-			message: "#^Parameter \\#2 \\$array of static method PHPUnit\\\\Framework\\\\Assert\\:\\:assertArrayHasKey\\(\\) expects array\\|ArrayAccess, mixed given\\.$#"
-			count: 1
 			path: Tests/Runner/RunnerTest.php
 
 		-
@@ -1636,41 +1571,6 @@ parameters:
 			path: src/Exception/ApplicationException.php
 
 		-
-			message: "#^Cannot call method setTimezone\\(\\) on DateTime\\|false\\.$#"
-			count: 1
-			path: src/Monolog/ContainerLogger.php
-
-		-
-			message: "#^Parameter \\#1 \\$level of static method Monolog\\\\Logger\\:\\:getLevelName\\(\\) expects 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600, int given\\.$#"
-			count: 1
-			path: src/Monolog/ContainerLogger.php
-
-		-
-			message: "#^Parameter \\#1 \\$record of method Monolog\\\\Handler\\\\HandlerInterface\\:\\:isHandling\\(\\) expects array\\{level\\: 100\\|200\\|250\\|300\\|400\\|500\\|550\\|600\\}, array\\{level\\: int\\} given\\.$#"
-			count: 1
-			path: src/Monolog/ContainerLogger.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Monolog\\\\Handler\\\\StorageApiHandlerInterface\\:\\:setVerbosity\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Monolog/Handler/StorageApiHandlerInterface.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Monolog\\\\Processor\\\\DockerContainerProcessor\\:\\:__construct\\(\\) has parameter \\$componentName with no type specified\\.$#"
-			count: 1
-			path: src/Monolog/Processor/DockerContainerProcessor.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Monolog\\\\Processor\\\\DockerContainerProcessor\\:\\:\\$componentName has no type specified\\.$#"
-			count: 1
-			path: src/Monolog/Processor/DockerContainerProcessor.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Monolog\\\\Processor\\\\DockerProcessor\\:\\:__construct\\(\\) has parameter \\$componentName with no type specified\\.$#"
-			count: 1
-			path: src/Monolog/Processor/DockerProcessor.php
-
-		-
-			message: "#^Property Keboola\\\\DockerBundle\\\\Monolog\\\\Processor\\\\DockerProcessor\\:\\:\\$componentName has no type specified\\.$#"
-			count: 1
-			path: src/Monolog/Processor/DockerProcessor.php

@@ -25,7 +25,7 @@
         "keboola/staging-provider": "^10.0.1",
         "keboola/storage-api-client": "^18.1",
         "keboola/storage-api-php-client-branch-wrapper": "^6.0",
-        "monolog/monolog": "^2.5",
+        "monolog/monolog": "^3.9",
         "mustache/mustache": "^2.13",
         "symfony/http-foundation": "^6.4|^7.0",
         "symfony/monolog-bridge": "^6.4|^7.0",

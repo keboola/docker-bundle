@@ -34,6 +34,7 @@ use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\StorageApiBranch\Branch;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Keboola\Temp\Temp;
+use Monolog\Level;
 use Monolog\Logger;
 use ReflectionMethod;
 
@@ -484,8 +485,8 @@ class RunnerTest extends BaseRunnerTest
         );
 
         $records = $this->getContainerHandler()->getRecords();
-        self::assertStringContainsString('"foo": "bar"', $records[0]['message']);
-        self::assertStringContainsString('"bar": "Kochba"', $records[1]['message']);
+        self::assertStringContainsString('"foo": "bar"', $records[0]->message);
+        self::assertStringContainsString('"bar": "Kochba"', $records[1]->message);
 
         $this->clearBuckets();
         $this->clearFiles();
@@ -679,10 +680,10 @@ class RunnerTest extends BaseRunnerTest
         $contents = '';
         $config = [];
         foreach ($records as $record) {
-            if ($record['level'] === Logger::ERROR) {
-                $config = json_decode($record['message'], true);
+            if ($record->level === Level::Error) {
+                $config = json_decode($record->message, true);
             } else {
-                $contents .= $record['message'];
+                $contents .= $record->message;
             }
         }
 
@@ -690,6 +691,9 @@ class RunnerTest extends BaseRunnerTest
         self::assertStringNotContainsString(getenv('STORAGE_API_TOKEN'), $contents);
         self::assertStringContainsString('KBC_CONFIGID: ' . $configId, $contents);
         self::assertStringContainsString('KBC_CONFIGVERSION: v123', $contents);
+
+        self::assertIsArray($config);
+        self::assertArrayHasKey('parameters', $config);
         unset($config['parameters']['script']);
         self::assertEquals(['foo' => 'bar'], $config['parameters']);
         self::assertEquals(
@@ -2713,6 +2717,8 @@ class RunnerTest extends BaseRunnerTest
             }
         }
         $config = json_decode($error, true);
+        self::assertIsArray($config);
+        self::assertArrayHasKey('parameters', $config);
         self::assertEquals('[hidden]', $config['parameters']['#one']);
         self::assertEquals('anotherBar', $config['parameters']['two']);
         self::assertEquals('[hidden]', $config['authorization']['oauth_api']['credentials']['#three']);
@@ -3468,8 +3474,9 @@ class RunnerTest extends BaseRunnerTest
 
         $records = $this->getContainerHandler()->getRecords();
         self::assertCount(1, $records);
-        $message = $records[0]['message'];
+        $message = $records[0]->message;
         $manifestData = json_decode($message, true);
+        self::assertIsArray($manifestData);
         self::assertEquals('in.c-runner-test.mytable', $manifestData['id']);
         self::assertEquals('mytable', $manifestData['name']);
         self::assertArrayHasKey('last_change_date', $manifestData);

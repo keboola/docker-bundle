@@ -65,7 +65,7 @@ class LimitsTest extends TestCase
             null,
         );
         self::assertEquals(1, $limits->getCpuLimit());
-        self::assertStringContainsString('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]['message']);
+        self::assertStringContainsString('CPU limits - instance: 1 project: 2', $handler->getRecords()[0]->message);
     }
 
     public function testCpuLimitsDefault()
@@ -175,7 +175,7 @@ class LimitsTest extends TestCase
         self::assertEquals('60000M', $limits->getMemoryLimit($this->getImageMock('keboola.r-transformation')));
         self::assertStringContainsString(
             "Memory limits - component: '256m' project: '60000M'",
-            $handler->getRecords()[0]['message'],
+            $handler->getRecords()[0]->message,
         );
         self::assertEquals('60000M', $limits->getMemorySwapLimit($this->getImageMock('keboola.r-transformation')));
     }
@@ -196,7 +196,7 @@ class LimitsTest extends TestCase
         self::assertEquals('256m', $limits->getMemoryLimit($this->getImageMock('keboola.python-transformation')));
         self::assertStringContainsString(
             "Memory limits - component: '256m' project: NULL",
-            $handler->getRecords()[0]['message'],
+            $handler->getRecords()[0]->message,
         );
         self::assertEquals('256m', $limits->getMemorySwapLimit($this->getImageMock('keboola.python-transformation')));
     }

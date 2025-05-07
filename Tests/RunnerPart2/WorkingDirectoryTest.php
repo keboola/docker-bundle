@@ -39,11 +39,11 @@ class WorkingDirectoryTest extends TestCase
         $workingDir->dropWorkingDir();
         self::assertCount(2, $handler->getRecords());
         self::assertStringContainsString(
-            $handler->getRecords()[0]['message'],
+            $handler->getRecords()[0]->message,
             'Normalizing working directory permissions',
         );
         self::assertStringContainsString(
-            $handler->getRecords()[1]['message'],
+            $handler->getRecords()[1]->message,
             'Normalizing working directory permissions',
         );
     }
