@@ -27,9 +27,9 @@
         "keboola/storage-api-php-client-branch-wrapper": "^6.0",
         "monolog/monolog": "^2.5",
         "mustache/mustache": "^2.13",
-        "symfony/http-foundation": "^5.4|^6.2",
-        "symfony/monolog-bridge": "^5.4|^6.2",
-        "symfony/validator": "^5.4|^6.2",
+        "symfony/http-foundation": "^6.4|^7.0",
+        "symfony/monolog-bridge": "^6.4|^7.0",
+        "symfony/validator": "^6.4|^7.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {
@@ -39,7 +39,7 @@
         "phpstan/phpstan-symfony": "^1.2",
         "phpunit/phpunit": "^9.5",
         "sempro/phpunit-pretty-print": "^1.4",
-        "symfony/dotenv": "^5.4|^6.2"
+        "symfony/dotenv": "^6.4|^7.0"
     },
     "minimum-stability": "stable",
     "autoload": {
