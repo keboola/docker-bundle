@@ -7,15 +7,19 @@ namespace Keboola\DockerBundle\Tests\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
-use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\KeyGenerator\PemKeyCertificatePair;
-use Keboola\StagingProvider\Provider\ExistingWorkspaceProvider;
-use Keboola\StagingProvider\Provider\InvalidWorkspaceProvider;
-use Keboola\StagingProvider\Provider\NewWorkspaceProvider;
-use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
+use Keboola\StagingProvider\Staging\StagingType;
+use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
+use Keboola\StagingProvider\Workspace\Configuration\WorkspaceCredentials;
+use Keboola\StagingProvider\Workspace\Credentials\CredentialsProvider;
+use Keboola\StagingProvider\Workspace\Credentials\ResetCredentialsProvider;
+use Keboola\StagingProvider\Workspace\ProviderConfig\ExistingWorkspaceConfig;
+use Keboola\StagingProvider\Workspace\ProviderConfig\NewWorkspaceConfig;
+use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\WorkspaceLoginType;
 use Keboola\StorageApi\Workspaces;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -31,56 +35,18 @@ class WorkspaceProviderFactoryTest extends TestCase
         $this->testLogger = new Logger('test', [$this->testLogHandler]);
     }
 
-    public function testInvalidWorkspaceType(): void
-    {
-        $componentsApiClient = $this->createMock(Components::class);
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
-        $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
-            $this->testLogger,
-        );
-
-        $component = $this->createMock(Component::class);
-
-        $result = $factory->getWorkspaceStaging(
-            'invalid-type',
-            $component,
-            'config-id',
-            [],
-            false,
-            null,
-        );
-
-        self::assertInstanceOf(InvalidWorkspaceProvider::class, $result);
-    }
-
     public function testExternallyManagedWorkspaceCredentials(): void
     {
-        $componentsApiClient = $this->createMock(Components::class);
+        $component = $this->createMock(Component::class);
+        $storageApiToken = $this->createMock(StorageApiToken::class);
 
-        // Mock the Workspaces API client to verify getWorkspace is called with the correct workspaceId
+        $componentsApiClient = $this->createMock(Components::class);
+        $componentsApiClient->expects(self::never())->method(self::anything());
+
         $workspacesApiClient = $this->createMock(Workspaces::class);
-        $workspacesApiClient->expects(self::once())
-            ->method('getWorkspace')
-            ->with(self::equalTo((int) 'workspace-id'))
-            ->willReturn([
-                'id' => 'workspace-id',
-                'connection' => [
-                    'backend' => 'snowflake',
-                    'host' => 'host',
-                    'database' => 'database',
-                    'schema' => 'schema',
-                    'warehouse' => 'warehouse',
-                    'user' => 'user',
-                ],
-            ]);
+        $workspacesApiClient->expects(self::never())->method(self::anything());
 
         $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
         $factory = new WorkspaceProviderFactory(
             $componentsApiClient,
             $workspacesApiClient,
@@ -88,10 +54,9 @@ class WorkspaceProviderFactoryTest extends TestCase
             $this->testLogger,
         );
 
-        $component = $this->createMock(Component::class);
-
-        $result = $factory->getWorkspaceStaging(
-            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+        $result = $factory->getWorkspaceProviderConfig(
+            $storageApiToken,
+            StagingType::WorkspaceSnowflake,
             $component,
             'config-id',
             [],
@@ -104,61 +69,46 @@ class WorkspaceProviderFactoryTest extends TestCase
             ),
         );
 
-        self::assertInstanceOf(ExistingWorkspaceProvider::class, $result);
+        self::assertEquals(
+            new ExistingWorkspaceConfig(
+                workspaceId: 'workspace-id',
+                credentials: new CredentialsProvider(new WorkspaceCredentials([
+                    'password' => 'password',
+                    'privateKey' => null,
+                ])),
+            ),
+            $result,
+        );
+
         self::assertTrue($this->testLogHandler->hasNoticeThatContains('Using provided workspace "workspace-id"'));
-
-        // Verify the workspace ID
-        self::assertSame('workspace-id', $result->getWorkspaceId());
-
-        // Get credentials and verify they match the expected values
-        $credentials = $result->getCredentials();
-        self::assertArrayHasKey('password', $credentials);
-        self::assertSame('password', $credentials['password']);
     }
 
     public static function workspaceLoginTypeProvider(): iterable
     {
         yield 'snowflake with key-pair auth' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+            'stagingType' => StagingType::WorkspaceSnowflake,
             'useKeyPairAuth' => true,
-            'expectedWorkspaceOptions' => [
-                'backend' => 'snowflake',
-                'networkPolicy' => 'system',
-                'readOnlyStorageAccess' => false,
-                'loginType' => WorkspaceLoginType::SNOWFLAKE_SERVICE_KEYPAIR,
-                'publicKey' => 'public-key',
-            ],
+            'expectedLoginType' => WorkspaceLoginType::SNOWFLAKE_SERVICE_KEYPAIR,
         ];
 
         yield 'snowflake without key-pair auth' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+            'stagingType' => StagingType::WorkspaceSnowflake,
             'useKeyPairAuth' => false,
-            'expectedWorkspaceOptions' => [
-                'backend' => 'snowflake',
-                'networkPolicy' => 'system',
-                'readOnlyStorageAccess' => false,
-            ],
+            'expectedLoginType' => null,
         ];
 
         yield 'other backend (bigquery)' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_BIGQUERY,
-            'useKeyPairAuth' => true, // Even if true, should not use key-pair auth for non-snowflake
-            'expectedWorkspaceOptions' => [
-                'backend' => 'bigquery',
-                'networkPolicy' => 'system',
-                'readOnlyStorageAccess' => false,
-            ],
+            'stagingType' => StagingType::WorkspaceBigquery,
+            'useKeyPairAuth' => true, // Even if true by a mistake, should not use key-pair auth for non-snowflake
+            'expectedLoginType' => null,
         ];
     }
 
-    /**
-     * @param non-empty-string $workspaceType
-     * @dataProvider workspaceLoginTypeProvider
-     */
+    /** @dataProvider workspaceLoginTypeProvider */
     public function testWorkspaceLoginType(
-        string $workspaceType,
+        StagingType $stagingType,
         bool $useKeyPairAuth,
-        array $expectedWorkspaceOptions,
+        ?WorkspaceLoginType $expectedWorkspaceLoginType,
     ): void {
         $componentsApiClient = $this->createMock(Components::class);
         $componentsApiClient
@@ -166,6 +116,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             ->willReturn([]);
 
         $workspacesApiClient = $this->createMock(Workspaces::class);
+        $workspacesApiClient->expects(self::never())->method(self::anything());
 
         $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
         $snowflakeKeyPairGenerator
@@ -186,35 +137,18 @@ class WorkspaceProviderFactoryTest extends TestCase
         $component->method('useSnowflakeKeyPairAuth')->willReturn($useKeyPairAuth);
         $component->method('getId')->willReturn('component-id');
 
-        // Set expectations on createWorkspace to validate the login type
-        // Map the workspace type to the correct backend type (without the "workspace-" prefix)
-        $backendType = str_replace('workspace-', '', $workspaceType);
+        $storageApiToken = $this->createMock(StorageApiToken::class);
+        $storageApiToken->method('getTokenInfo')->willReturn([
+            'owner' => [
+                // won't be both true in reality, it's faked for the test
+                'hasSnowflake' => true,
+                'hasRedshift' => true,
+            ],
+        ]);
 
-        // Expect createWorkspace to be called with the correct login type
-        $workspacesApiClient->expects(self::once())
-            ->method('createWorkspace')
-            ->with($expectedWorkspaceOptions)
-            ->willReturn([
-                'id' => 123,
-                'connection' => [
-                    'backend' => $backendType,
-                    // for snowflake
-                    'host' => 'host',
-                    'warehouse' => 'warehouse',
-                    'database' => 'database',
-                    'schema' => 'schema',
-                    'user' => 'user',
-                    'password' => 'password',
-                    // for bigquery
-                    'region' => 'eu-central1',
-                    'credentials' => [
-                        'key' => 'val',
-                    ],
-                ],
-            ]);
-
-        $result = $factory->getWorkspaceStaging(
-            $workspaceType,
+        $result = $factory->getWorkspaceProviderConfig(
+            $storageApiToken,
+            $stagingType,
             $component,
             null, // Don't provide a configId to avoid going through the persistent workspace path
             [],
@@ -222,11 +156,21 @@ class WorkspaceProviderFactoryTest extends TestCase
             null,
         );
 
-        self::assertInstanceOf(NewWorkspaceProvider::class, $result);
+        self::assertEquals(
+            new NewWorkspaceConfig(
+                storageApiToken: $storageApiToken,
+                stagingType: $stagingType,
+                componentId: $component->getId(),
+                configId: null,
+                size: null,
+                useReadonlyRole: false,
+                networkPolicy: NetworkPolicy::SYSTEM,
+                loginType: $expectedWorkspaceLoginType,
+                isReusable: false,
+            ),
+            $result,
+        );
         self::assertTrue($this->testLogHandler->hasNoticeThatContains('Creating a new ephemeral workspace'));
-
-        // Trigger the createWorkspace method by calling getCredentials
-        $result->getCredentials();
     }
 
     public function testReadonlyRoleParameter(): void
@@ -245,8 +189,15 @@ class WorkspaceProviderFactoryTest extends TestCase
         $component = $this->createMock(Component::class);
         $component->method('getId')->willReturn('component-id');
 
-        $result = $factory->getWorkspaceStaging(
-            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+        $storageApiToken = new StorageApiToken([
+            'owner' => [
+                'hasSnowflake' => true,
+            ],
+        ], '');
+
+        $result = $factory->getWorkspaceProviderConfig(
+            $storageApiToken,
+            StagingType::WorkspaceSnowflake,
             $component,
             null,
             [],
@@ -254,7 +205,19 @@ class WorkspaceProviderFactoryTest extends TestCase
             null,
         );
 
-        self::assertInstanceOf(NewWorkspaceProvider::class, $result);
+        self::assertEquals(
+            new NewWorkspaceConfig(
+                storageApiToken: $storageApiToken,
+                stagingType: StagingType::WorkspaceSnowflake,
+                componentId: $component->getId(),
+                configId: null,
+                size: null,
+                useReadonlyRole: true,
+                networkPolicy: NetworkPolicy::SYSTEM,
+                loginType: null,
+            ),
+            $result,
+        );
         self::assertTrue($this->testLogHandler->hasNoticeThatContains('Creating a new readonly ephemeral workspace'));
     }
 }

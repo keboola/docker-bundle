@@ -1247,8 +1247,6 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');
         $configuration->setComponentId($componentId);
@@ -1256,14 +1254,14 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
 
-        $clientMock->expects(self::never())
-            ->method('apiPostJson');
-        $clientMock->expects(self::never())
-            ->method('apiDelete');
+        $clientMock = $this->createMock(BranchAwareClient::class);
+        $clientMock->expects(self::never())->method('apiPostJson');
+        $clientMock->expects(self::never())->method('apiDelete');
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getToken')->willReturn($this->clientWrapper->getToken());
 
         $logsHandler = new TestHandler();
         $logger = new Logger('test', [$logsHandler]);
@@ -1303,8 +1301,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
+
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');
         $configuration->setComponentId($componentId);
@@ -1312,6 +1309,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $componentsApi = new Components($this->clientWrapper->getBasicClient());
         $configId = $componentsApi->addConfiguration($configuration)['id'];
 
+        $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('apiPostJson')
             ->willReturnCallback(function (...$args) {
                 return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
@@ -1325,6 +1323,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getToken')->willReturn($this->clientWrapper->getToken());
 
         $logsHandler = new TestHandler();
         $logger = new Logger('test', [$logsHandler]);
@@ -1395,7 +1394,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             ],
         ]);
         $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
         $clientMock->method('apiPostJson')
             ->willReturnCallback(function (...$args) {
                 return $this->clientWrapper->getBasicClient()->apiPostJson(...$args);
@@ -1408,6 +1406,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
+        $clientWrapperMock->method('getToken')->willReturn($this->clientWrapper->getToken());
 
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');
@@ -1556,15 +1555,25 @@ class DataLoaderTest extends BaseDataLoaderTest
         $component = new Component($componentConfig);
 
         $clientMock = $this->createMock(BranchAwareClient::class);
-        $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
 
-        $getTokenMock = $this->createMock(StorageApiToken::class);
-        $getTokenMock->method('hasFeature')->with('new-native-types')->willReturn($hasFeature);
+        $storageApiToken = $this->clientWrapper->getToken();
+        $storageApiTokenWithNewNativeTypesFeatureData = $storageApiToken->getTokenInfo();
+        if ($hasFeature) {
+            $storageApiTokenWithNewNativeTypesFeatureData['owner']['features'][] = 'new-native-types';
+        } else {
+            $storageApiTokenWithNewNativeTypesFeatureData['owner']['features'] = array_diff(
+                $storageApiTokenWithNewNativeTypesFeatureData['owner']['features'] ?? [],
+                ['new-native-types'],
+            );
+        }
 
         $clientWrapperMock = $this->createMock(ClientWrapper::class);
         $clientWrapperMock->method('getBasicClient')->willReturn($clientMock);
         $clientWrapperMock->method('getBranchClient')->willReturn($clientMock);
-        $clientWrapperMock->method('getToken')->willReturn($getTokenMock);
+        $clientWrapperMock->method('getToken')->willReturn(new StorageApiToken(
+            $storageApiTokenWithNewNativeTypesFeatureData,
+            $storageApiToken->getTokenValue(),
+        ));
 
         $configuration = new Configuration();
         $configuration->setName('testWorkspaceCleanup');

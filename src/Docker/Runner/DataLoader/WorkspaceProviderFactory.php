@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
-use Keboola\InputMapping\Staging\AbstractStrategyFactory;
-use Keboola\StagingProvider\Provider\Configuration\NetworkPolicy;
-use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
-use Keboola\StagingProvider\Provider\Credentials\ExistingCredentialsProvider;
-use Keboola\StagingProvider\Provider\ExistingWorkspaceProvider;
-use Keboola\StagingProvider\Provider\InvalidWorkspaceProvider;
-use Keboola\StagingProvider\Provider\NewWorkspaceProvider;
-use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
-use Keboola\StagingProvider\Provider\WorkspaceProviderInterface;
+use Keboola\StagingProvider\Staging\StagingType;
+use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
+use Keboola\StagingProvider\Workspace\Credentials\CredentialsProvider;
+use Keboola\StagingProvider\Workspace\Credentials\ResetCredentialsProvider;
+use Keboola\StagingProvider\Workspace\ProviderConfig\ExistingWorkspaceConfig;
+use Keboola\StagingProvider\Workspace\ProviderConfig\NewWorkspaceConfig;
+use Keboola\StagingProvider\Workspace\ProviderConfig\WorkspaceConfigInterface;
+use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\WorkspaceLoginType;
 use Keboola\StorageApi\Workspaces;
+use Keboola\StorageApiBranch\StorageApiToken;
 use Psr\Log\LoggerInterface;
 
 class WorkspaceProviderFactory
@@ -29,24 +29,20 @@ class WorkspaceProviderFactory
     ) {
     }
 
-    public function getWorkspaceStaging(
-        string $stagingStorage,
+    public function getWorkspaceProviderConfig(
+        StorageApiToken $storageApiToken,
+        StagingType $stagingType,
         Component $component,
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
         ?ExternallyManagedWorkspaceCredentials $externallyManagedWorkspaceCredentials,
-    ): WorkspaceProviderInterface {
-        if (!in_array($stagingStorage, AbstractStrategyFactory::WORKSPACE_TYPES, true)) {
-            return new InvalidWorkspaceProvider($stagingStorage);
-        }
-
+    ): WorkspaceConfigInterface {
         if ($externallyManagedWorkspaceCredentials) {
             // Externally managed workspaces are persistent
-            $workspaceStaging = new ExistingWorkspaceProvider(
-                $this->workspacesApiClient,
-                $externallyManagedWorkspaceCredentials->id,
-                new ExistingCredentialsProvider(
+            $workspaceConfig = new ExistingWorkspaceConfig(
+                workspaceId: $externallyManagedWorkspaceCredentials->id,
+                credentials: new CredentialsProvider(
                     $externallyManagedWorkspaceCredentials->getWorkspaceCredentials(),
                 ),
             );
@@ -54,34 +50,29 @@ class WorkspaceProviderFactory
                 'Using provided workspace "%s".',
                 $externallyManagedWorkspaceCredentials->id,
             ));
-            return $workspaceStaging;
+            return $workspaceConfig;
         }
 
         $workspaceLoginType = null;
-        if ($stagingStorage === AbstractStrategyFactory::WORKSPACE_SNOWFLAKE && $component->useSnowflakeKeyPairAuth()) {
+        if ($stagingType === StagingType::WorkspaceSnowflake && $component->useSnowflakeKeyPairAuth()) {
             $workspaceLoginType = WorkspaceLoginType::SNOWFLAKE_SERVICE_KEYPAIR;
         }
-
-        $workspaceBackendConfig = new WorkspaceBackendConfig(
-            $stagingStorage,
-            $backendConfig['type'] ?? null,
-            $useReadonlyRole,
-            NetworkPolicy::SYSTEM,
-            $workspaceLoginType,
-        );
 
         $this->logger->notice(sprintf(
             'Creating a new %s workspace.',
             $useReadonlyRole ? 'readonly ephemeral' : 'ephemeral',
         ));
 
-        return new NewWorkspaceProvider(
-            $this->workspacesApiClient,
-            $this->componentsApiClient,
-            $this->snowflakeKeypairGenerator,
-            $workspaceBackendConfig,
-            $component->getId(),
-            $configId,
+        return new NewWorkspaceConfig(
+            storageApiToken: $storageApiToken,
+            stagingType: $stagingType,
+            componentId: $component->getId(),
+            configId: $configId,
+            size: $backendConfig['type'] ?? null,
+            useReadonlyRole: $useReadonlyRole,
+            networkPolicy: NetworkPolicy::SYSTEM,
+            loginType: $workspaceLoginType,
+            isReusable: false,
         );
     }
 }

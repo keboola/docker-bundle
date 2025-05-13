@@ -6,7 +6,7 @@ namespace Keboola\DockerBundle\Tests\Docker\Runner\DataLoader;
 
 use InvalidArgumentException;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
-use Keboola\StagingProvider\Provider\Configuration\WorkspaceCredentials;
+use Keboola\StagingProvider\Workspace\Configuration\WorkspaceCredentials;
 use PHPUnit\Framework\TestCase;
 
 class ExternallyManagedWorkspaceCredentialsTest extends TestCase

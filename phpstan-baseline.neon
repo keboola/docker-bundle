@@ -1361,11 +1361,6 @@ parameters:
 			path: src/Docker/Runner/ConfigFile.php
 
 		-
-			message: "#^Generator expects value type Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface, Keboola\\\\InputMapping\\\\Staging\\\\ProviderInterface\\|null given\\.$#"
-			count: 4
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
 			message: "#^Parameter \\#1 \\$text of method Keboola\\\\DockerBundle\\\\Docker\\\\OutputFilter\\\\OutputFilterInterface\\:\\:filter\\(\\) expects string, string\\|false given\\.$#"
 			count: 1
 			path: src/Docker/Runner/DataLoader/DataLoader.php
