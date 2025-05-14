@@ -16,20 +16,20 @@
         "keboola/artifacts": "^3.1",
         "keboola/common-exceptions": "^1.0",
         "keboola/gelf-server": "^4.0",
-        "keboola/input-mapping": "^18.8",
+        "keboola/input-mapping": "^19.3",
         "keboola/oauth-v2-php-client": "^4.0",
         "keboola/object-encryptor": "^2.2",
-        "keboola/output-mapping": "^24.40",
+        "keboola/output-mapping": "^24.42",
         "keboola/php-temp": "^2.0",
         "keboola/php-utils": "^5.0",
-        "keboola/staging-provider": "^9.0",
-        "keboola/storage-api-client": "^v15.0",
+        "keboola/staging-provider": "^10.0.1",
+        "keboola/storage-api-client": "^18.1",
         "keboola/storage-api-php-client-branch-wrapper": "^6.0",
         "monolog/monolog": "^2.5",
         "mustache/mustache": "^2.13",
-        "symfony/http-foundation": "^5.4|^6.2",
-        "symfony/monolog-bridge": "^5.4|^6.2",
-        "symfony/validator": "^5.4|^6.2",
+        "symfony/http-foundation": "^6.4|^7.0",
+        "symfony/monolog-bridge": "^6.4|^7.0",
+        "symfony/validator": "^6.4|^7.0",
         "vkartaviy/retry": "^0.2"
     },
     "require-dev": {
@@ -39,7 +39,7 @@
         "phpstan/phpstan-symfony": "^1.2",
         "phpunit/phpunit": "^9.5",
         "sempro/phpunit-pretty-print": "^1.4",
-        "symfony/dotenv": "^5.4|^6.2"
+        "symfony/dotenv": "^6.4|^7.0"
     },
     "minimum-stability": "stable",
     "autoload": {
