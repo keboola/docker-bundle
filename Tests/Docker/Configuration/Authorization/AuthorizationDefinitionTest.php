@@ -31,8 +31,6 @@ class AuthorizationDefinitionTest extends TestCase
         yield 'configured workspace' => [
             'config' => [
                 'workspace' => [
-                    'container' => 'my-container',
-                    'connectionString' => 'aVeryLongString',
                     'account' => 'test',
                     'region' => 'mordor',
                     'credentials' => [

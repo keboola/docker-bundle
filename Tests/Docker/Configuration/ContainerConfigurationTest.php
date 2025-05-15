@@ -134,8 +134,6 @@ class ContainerConfigurationTest extends TestCase
                 ],
                 'authorization' => [
                     'workspace' => [
-                        'container' => 'my-container',
-                        'connectionString' => 'aVeryLongString',
                         'account' => 'test',
                         'region' => 'mordor',
                         'credentials' => [

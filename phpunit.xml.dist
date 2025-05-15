@@ -41,18 +41,6 @@
         <testsuite name="gcs-tests">
             <directory>Tests/backend-specific-tests/GCS</directory>
         </testsuite>
-        <testsuite name="synapse-tests">
-            <directory>Tests/backend-specific-tests/Synapse</directory>
-        </testsuite>
-        <testsuite name="exasol-tests">
-            <directory>Tests/backend-specific-tests/Exasol</directory>
-        </testsuite>
-        <testsuite name="redshift-tests">
-            <directory>Tests/backend-specific-tests/Redshift</directory>
-        </testsuite>
-        <testsuite name="teradata-tests">
-            <directory>Tests/backend-specific-tests/Teradata</directory>
-        </testsuite>
         <testsuite name="bigquery-tests">
             <directory>Tests/backend-specific-tests/BigQuery</directory>
         </testsuite>
