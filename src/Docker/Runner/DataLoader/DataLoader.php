@@ -150,11 +150,7 @@ class DataLoader implements DataLoaderInterface
         $resultInputFilesStateList = new InputFileStateList([]);
         $readerOptions = new ReaderOptions(
             !$this->component->allowBranchMapping(),
-            /* preserve is true only for ABS Workspaces which are persistent (shared across runs) (preserve = true).
-                Redshift workspaces are reusable, but still cleaned up before each run (preserve = false).
-                Other workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
-            */
-            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS,
+            preserveWorkspace: false,
         );
 
         try {
@@ -427,9 +423,10 @@ class DataLoader implements DataLoaderInterface
 
     private function validateStagingSetting(): void
     {
-        $workspaceTypes = [AbstractStrategyFactory::WORKSPACE_ABS, AbstractStrategyFactory::WORKSPACE_REDSHIFT,
-            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE, AbstractStrategyFactory::WORKSPACE_SYNAPSE,
-            AbstractStrategyFactory::WORKSPACE_BIGQUERY];
+        $workspaceTypes = [
+            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+            AbstractStrategyFactory::WORKSPACE_BIGQUERY,
+        ];
         if (in_array($this->getStagingStorageInput(), $workspaceTypes)
             && in_array($this->getStagingStorageOutput(), $workspaceTypes)
             && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
@@ -457,18 +454,6 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                /* don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config.
-
-                    The whole condition and the isReusableWorkspace method can probably be completely removed,
-                    because now it is distinguished between NewWorkspaceStagingProvider (cleanup) and
-                    ExistingWorkspaceStagingProvider (no cleanup).
-
-                    However, since ABS and Redshift workspaces are not used in real life and badly tested, I don't
-                    want to remove it now.
-                 */
-                if ($this->configId && $this->isReusableWorkspace()) {
-                    continue;
-                }
 
                 try {
                     $stagingProvider->cleanup();
@@ -491,14 +476,6 @@ class DataLoader implements DataLoaderInterface
             return 'none';
         }
         return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport();
-    }
-
-    private function isReusableWorkspace(): bool
-    {
-        return $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS ||
-            $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_ABS ||
-            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT ||
-            $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT;
     }
 
     private function getExternallyManagedWorkspaceCredentials(

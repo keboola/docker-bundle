@@ -140,11 +140,11 @@ class WorkspaceProviderFactoryTest extends TestCase
             ],
         ];
 
-        yield 'other backend (redshift)' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_REDSHIFT,
+        yield 'other backend (bigquery)' => [
+            'workspaceType' => AbstractStrategyFactory::WORKSPACE_BIGQUERY,
             'useKeyPairAuth' => true, // Even if true, should not use key-pair auth for non-snowflake
             'expectedWorkspaceOptions' => [
-                'backend' => 'redshift',
+                'backend' => 'bigquery',
                 'networkPolicy' => 'system',
                 'readOnlyStorageAccess' => false,
             ],
@@ -198,14 +198,18 @@ class WorkspaceProviderFactoryTest extends TestCase
                 'id' => 123,
                 'connection' => [
                     'backend' => $backendType,
+                    // for snowflake
                     'host' => 'host',
+                    'warehouse' => 'warehouse',
                     'database' => 'database',
                     'schema' => 'schema',
-                    'warehouse' => 'warehouse',
                     'user' => 'user',
                     'password' => 'password',
-                    'container' => 'container',
-                    'connectionString' => 'connectionString',
+                    // for bigquery
+                    'region' => 'eu-central1',
+                    'credentials' => [
+                        'key' => 'val',
+                    ],
                 ],
             ]);
 
@@ -223,152 +227,6 @@ class WorkspaceProviderFactoryTest extends TestCase
 
         // Trigger the createWorkspace method by calling getCredentials
         $result->getCredentials();
-    }
-
-    /**
-     * @param non-empty-string $workspaceType
-     * @dataProvider persistentWorkspaceReuseProvider
-     */
-    public function testPersistentWorkspaceCreation(string $workspaceType): void
-    {
-        $componentsApiClient = $this->createMock(Components::class);
-        $componentsApiClient->method('listConfigurationWorkspaces')
-            ->willReturn([]);
-
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
-        $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
-            $this->testLogger,
-        );
-
-        $component = $this->createMock(Component::class);
-        $component->method('getId')->willReturn('component-id');
-
-        $result = $factory->getWorkspaceStaging(
-            $workspaceType,
-            $component,
-            'config-id',
-            [],
-            false,
-            null,
-        );
-
-        self::assertInstanceOf(NewWorkspaceProvider::class, $result);
-        self::assertTrue($this->testLogHandler->hasInfoThatContains('Creating a new persistent workspace'));
-    }
-
-    public static function persistentWorkspaceReuseProvider(): iterable
-    {
-        yield 'ABS workspace reuse' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_ABS,
-        ];
-
-        yield 'Redshift workspace reuse' => [
-            'workspaceType' => AbstractStrategyFactory::WORKSPACE_REDSHIFT,
-        ];
-    }
-
-    /**
-     * @param non-empty-string $workspaceType
-     * @dataProvider persistentWorkspaceReuseProvider
-     */
-    public function testPersistentWorkspaceReuse(string $workspaceType): void
-    {
-        $componentsApiClient = $this->createMock(Components::class);
-        $componentsApiClient->method('listConfigurationWorkspaces')
-            ->willReturn([['id' => 123]]);
-
-        // Mock the Workspaces API client to verify getWorkspace is called with the correct workspaceId
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $workspacesApiClient->expects(self::once())
-            ->method('getWorkspace')
-            ->with(self::equalTo(123))
-            ->willReturn([
-                'id' => 123,
-                'connection' => [
-                    'backend' => str_replace('workspace-', '', $workspaceType),
-                    'host' => 'host',
-                    'database' => 'database',
-                    'schema' => 'schema',
-                    'warehouse' => 'warehouse',
-                    'user' => 'user',
-                    'password' => 'password',
-                    'container' => 'container',
-                    'connectionString' => 'connectionString',
-                ],
-            ]);
-
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
-        $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
-            $this->testLogger,
-        );
-
-        $component = $this->createMock(Component::class);
-        $component->method('getId')->willReturn('component-id');
-
-        $result = $factory->getWorkspaceStaging(
-            $workspaceType,
-            $component,
-            'config-id',
-            [],
-            false,
-            null,
-        );
-
-        self::assertInstanceOf(ExistingWorkspaceProvider::class, $result);
-        self::assertTrue($this->testLogHandler->hasInfoThatContains('Reusing persistent workspace "123"'));
-
-        // Verify the workspace ID
-        self::assertSame('123', $result->getWorkspaceId());
-
-        // Get credentials and verify they are retrieved correctly
-        $credentials = $result->getCredentials();
-        self::assertIsArray($credentials);
-    }
-
-    public function testMultipleWorkspacesFound(): void
-    {
-        $componentsApiClient = $this->createMock(Components::class);
-        $componentsApiClient->method('listConfigurationWorkspaces')
-            ->willReturn([
-                ['id' => 456],
-                ['id' => 123],
-                ['id' => 789],
-            ]);
-
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
-        $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
-            $this->testLogger,
-        );
-
-        $component = $this->createMock(Component::class);
-        $component->method('getId')->willReturn('component-id');
-
-        $result = $factory->getWorkspaceStaging(
-            AbstractStrategyFactory::WORKSPACE_ABS,
-            $component,
-            'config-id',
-            [],
-            false,
-            null,
-        );
-
-        self::assertInstanceOf(ExistingWorkspaceProvider::class, $result);
-        self::assertTrue($this->testLogHandler->hasWarningThatContains('Multiple workspaces (total 3) found'));
-        self::assertTrue($this->testLogHandler->hasWarningThatContains('using "123"'));
     }
 
     public function testReadonlyRoleParameter(): void
