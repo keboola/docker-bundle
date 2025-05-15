@@ -19,7 +19,6 @@ class Environment
     private readonly ?string $configRowId;
     private readonly string $token;
     private readonly ?string $branchId;
-    private readonly ?string $absConnectionString;
     private readonly string $mode;
     private readonly string $dataTypeSupport;
 
@@ -34,7 +33,6 @@ class Environment
         string $url,
         string $token,
         ?string $branchId,
-        ?string $absConnectionString,
         string $mode,
         string $dataTypeSupport,
     ) {
@@ -48,7 +46,6 @@ class Environment
         $this->token = $token;
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
-        $this->absConnectionString = $absConnectionString;
         $this->mode = $mode;
         $this->dataTypeSupport = $dataTypeSupport;
     }
@@ -91,10 +88,6 @@ class Environment
         }
         if ($this->branchId) {
             $envs['KBC_BRANCHID'] = (string) $this->branchId;
-        }
-
-        if ($this->absConnectionString !== null) {
-            $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->absConnectionString;
         }
 
         return $envs;
