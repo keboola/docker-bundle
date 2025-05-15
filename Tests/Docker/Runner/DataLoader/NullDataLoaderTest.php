@@ -28,8 +28,8 @@ class NullDataLoaderTest extends TestCase
                     'tag' => 'latest',
                 ],
                 'staging-storage' => [
-                    'input' => 'workspace-abs',
-                    'output' => 'workspace-abs',
+                    'input' => 'workspace-snowflake',
+                    'output' => 'workspace-bigquery',
                 ],
             ],
         ]);
