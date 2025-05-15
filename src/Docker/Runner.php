@@ -602,7 +602,6 @@ class Runner
         $counter = 0;
         $imageDigests = [];
         $newState = [];
-        $absConnectionString = null;
         $output->setOutput('');
 
         foreach ($images as $priority => $image) {
@@ -639,7 +638,6 @@ class Runner
                 $this->clientWrapper->getBranchClient()->getApiUrl(),
                 $this->clientWrapper->getBranchClient()->getTokenString(),
                 $this->clientWrapper->getBranchId(),
-                $absConnectionString,
                 $mode,
                 $component->getDataTypesSupport(),
             );

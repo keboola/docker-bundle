@@ -56,7 +56,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
-            'connection-string',
             'debug',
             'authoritative',
         );
@@ -79,7 +78,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
-        self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
         self::assertSame('feature1,feature2,feature3,new-native-types', $envs['KBC_PROJECT_FEATURE_GATES']);
         self::assertSame('debug', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
@@ -113,7 +111,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
             'hint',
         );
@@ -166,7 +163,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
             'authoritative',
         );
@@ -222,7 +218,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            'connection-string',
             'run',
             'authoritative',
         );
@@ -280,7 +275,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
             'authoritative',
         );
@@ -339,7 +333,6 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
             'authoritative', // <<< from component but project doesn't support New Native Types
         );
