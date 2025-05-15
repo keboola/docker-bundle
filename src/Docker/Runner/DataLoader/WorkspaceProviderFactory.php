@@ -8,23 +8,16 @@ use Keboola\DockerBundle\Docker\Component;
 use Keboola\StagingProvider\Staging\StagingType;
 use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
 use Keboola\StagingProvider\Workspace\Credentials\CredentialsProvider;
-use Keboola\StagingProvider\Workspace\Credentials\ResetCredentialsProvider;
 use Keboola\StagingProvider\Workspace\ProviderConfig\ExistingWorkspaceConfig;
 use Keboola\StagingProvider\Workspace\ProviderConfig\NewWorkspaceConfig;
 use Keboola\StagingProvider\Workspace\ProviderConfig\WorkspaceConfigInterface;
-use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
-use Keboola\StorageApi\Components;
 use Keboola\StorageApi\WorkspaceLoginType;
-use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\StorageApiToken;
 use Psr\Log\LoggerInterface;
 
 class WorkspaceProviderFactory
 {
     public function __construct(
-        private readonly Components $componentsApiClient,
-        private readonly Workspaces $workspacesApiClient,
-        private readonly SnowflakeKeypairGenerator $snowflakeKeypairGenerator,
         private readonly LoggerInterface $logger,
     ) {
     }

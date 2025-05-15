@@ -7,18 +7,14 @@ namespace Keboola\DockerBundle\Tests\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
-use Keboola\KeyGenerator\PemKeyCertificatePair;
 use Keboola\StagingProvider\Staging\StagingType;
 use Keboola\StagingProvider\Workspace\Configuration\NetworkPolicy;
 use Keboola\StagingProvider\Workspace\Configuration\WorkspaceCredentials;
 use Keboola\StagingProvider\Workspace\Credentials\CredentialsProvider;
-use Keboola\StagingProvider\Workspace\Credentials\ResetCredentialsProvider;
 use Keboola\StagingProvider\Workspace\ProviderConfig\ExistingWorkspaceConfig;
 use Keboola\StagingProvider\Workspace\ProviderConfig\NewWorkspaceConfig;
-use Keboola\StagingProvider\Workspace\SnowflakeKeypairGenerator;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\WorkspaceLoginType;
-use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\StorageApiToken;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
@@ -40,17 +36,7 @@ class WorkspaceProviderFactoryTest extends TestCase
         $component = $this->createMock(Component::class);
         $storageApiToken = $this->createMock(StorageApiToken::class);
 
-        $componentsApiClient = $this->createMock(Components::class);
-        $componentsApiClient->expects(self::never())->method(self::anything());
-
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $workspacesApiClient->expects(self::never())->method(self::anything());
-
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
         $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
             $this->testLogger,
         );
 
@@ -115,21 +101,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             ->method('listConfigurationWorkspaces')
             ->willReturn([]);
 
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $workspacesApiClient->expects(self::never())->method(self::anything());
-
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-        $snowflakeKeyPairGenerator
-            ->method('generateKeyPair')
-            ->willReturn(new PemKeyCertificatePair(
-                privateKey: 'private-key',
-                publicKey: 'public-key',
-            ));
-
         $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
             $this->testLogger,
         );
 
@@ -142,7 +114,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             'owner' => [
                 // won't be both true in reality, it's faked for the test
                 'hasSnowflake' => true,
-                'hasRedshift' => true,
+                'hasBigquery' => true,
             ],
         ]);
 
@@ -175,14 +147,7 @@ class WorkspaceProviderFactoryTest extends TestCase
 
     public function testReadonlyRoleParameter(): void
     {
-        $componentsApiClient = $this->createMock(Components::class);
-        $workspacesApiClient = $this->createMock(Workspaces::class);
-        $snowflakeKeyPairGenerator = $this->createMock(SnowflakeKeypairGenerator::class);
-
         $factory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeyPairGenerator,
             $this->testLogger,
         );
 

@@ -91,14 +91,11 @@ class DataLoader implements DataLoaderInterface
         $snowflakeKeypairGenerator = new SnowflakeKeypairGenerator(new PemKeyCertificateGenerator());
 
         $workspaceProviderFactory = new WorkspaceProviderFactory(
-            $componentsApiClient,
-            $workspacesApiClient,
-            $snowflakeKeypairGenerator,
             $this->logger,
         );
 
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
-           just input staging here (because if it is workspace, it must be the same as output mapping). */
+           just input staging here (because if it is a workspace, it must be the same as output mapping). */
         if ($inputStagingType->getStagingClass() === StagingClass::Workspace) {
             $storageApiToken = $this->clientWrapper->getToken();
 
