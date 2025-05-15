@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use InvalidArgumentException;
-use Keboola\StagingProvider\Provider\Configuration\WorkspaceCredentials;
+use Keboola\StagingProvider\Workspace\Configuration\WorkspaceCredentials;
 
 readonly class ExternallyManagedWorkspaceCredentials
 {
