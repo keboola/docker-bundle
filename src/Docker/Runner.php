@@ -233,13 +233,7 @@ class Runner
                 $this->outputFilter,
             );
         } else {
-            $dataLoader = new NullDataLoader(
-                $this->clientWrapper,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-                $jobDefinition,
-                $this->outputFilter,
-            );
+            $dataLoader = new NullDataLoader();
         }
 
         $stateFile = new StateFile(
@@ -517,10 +511,7 @@ class Runner
             $output->setDataLoader($dataLoader);
 
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive(
-                    'stage_output',
-                    [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId],
-                );
+                $dataLoader->storeDataArchive($jobId, $rowId, 'stage_output');
             } else {
                 $tableQueue = $dataLoader->storeOutput();
                 $output->setTableQueue($tableQueue);
@@ -686,14 +677,7 @@ class Runner
                 $limits,
             );
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive(
-                    'stage_' . $priority,
-                    [
-                        self::MODE_DEBUG, $image->getSourceComponent()->getId(),
-                        'RowId:' . $rowId,
-                        'JobId:' . $jobId, $image->getImageId(),
-                    ],
-                );
+                $dataLoader->storeDataArchive($jobId, $rowId, 'stage_' . $priority);
             }
             try {
                 $process = $container->run();

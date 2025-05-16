@@ -15,14 +15,6 @@ use Psr\Log\LoggerInterface;
 
 interface DataLoaderInterface
 {
-    public function __construct(
-        ClientWrapper $clientWrapper,
-        LoggerInterface $logger,
-        string $dataDirectory,
-        JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter,
-    );
-
     public function loadInputData(
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
@@ -30,7 +22,7 @@ interface DataLoaderInterface
 
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue;
 
-    public function storeDataArchive(string $fileName, array $tags): void;
+    public function storeDataArchive(string $jobId, string $configRowId, string $fileName): void;
 
     public function getWorkspaceCredentials(): array;
 
