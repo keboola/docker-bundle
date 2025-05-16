@@ -46,6 +46,7 @@ class DataLoader implements DataLoaderInterface
     private ComponentSpecification $component;
     private readonly Configuration $configuration;
     private readonly State $state;
+    /** @var non-empty-string|null */
     private ?string $configId;
     private ?string $configRowId;
     private InputStrategyFactory $inputStrategyFactory;
@@ -61,11 +62,7 @@ class DataLoader implements DataLoaderInterface
         $this->configuration = Configuration::fromArray($jobDefinition->getConfiguration());
         $this->state = State::fromArray($jobDefinition->getState());
         $this->component = $jobDefinition->getComponent();
-
-        $configId = $jobDefinition->getConfigId();
-        assert($configId !== '');
-        $this->configId = $configId;
-
+        $this->configId = $jobDefinition->getConfigId();
         $this->configRowId = $jobDefinition->getRowId();
 
         $this->defaultBucketName = $this->configuration->storage->output->defaultBucket ?? '';
@@ -109,7 +106,7 @@ class DataLoader implements DataLoaderInterface
         $workspaceProvider = $workspaceProviderFactory->getWorkspaceStaging(
             $stagingStorageInput,
             $this->component,
-            $configId,
+            $this->configId,
             $this->configuration->runtime?->backend,
             $this->configuration->storage->input->readOnlyStorageAccess,
         );

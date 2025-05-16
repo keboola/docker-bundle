@@ -72,14 +72,15 @@ class RunnerGCSTest extends BaseRunnerTest
     }
 
     /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
+     * @param null|non-empty-string $configId
      * @return JobDefinition[]
      */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
+    protected function prepareJobDefinitions(
+        array $componentData,
+        ?string $configId,
+        array $configData,
+        array $state,
+    ): array {
         $jobDefinition = new JobDefinition(
             $configData,
             new ComponentSpecification($componentData),
