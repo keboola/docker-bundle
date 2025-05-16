@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner;
 
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
@@ -11,8 +13,6 @@ use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\Output;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
 use Keboola\DockerBundle\Tests\TestUsageFile;
@@ -1266,7 +1266,7 @@ class RunnerTest extends BaseRunnerTest
                 $outputs,
                 null,
             );
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": There are duplicate columns in CSV file: "foo"',
@@ -1400,7 +1400,7 @@ class RunnerTest extends BaseRunnerTest
                 $outputs,
                 null,
             );
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Failed to process output mapping: Failed to load table "out.c-runner-test.my-table-1": Load error',
                 $e->getMessage(),
@@ -1490,7 +1490,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail with user error');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'child node "direction" at path "parameters" must be configured.',
                 $e->getMessage(),
@@ -1934,7 +1934,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage('Unrecognized option "filterByRunId');
         $outputs = [];
         $runner->run(
@@ -2057,7 +2057,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
         $outputs = [];
         $runner->run(
@@ -2120,7 +2120,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
 
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage("No such file or directory: '/data/in/tables/source.csv'");
         $outputs = [];
         $runner->run(
@@ -2202,7 +2202,7 @@ class RunnerTest extends BaseRunnerTest
                 $outputs,
                 null,
             );
-        } catch (ApplicationException $e) {
+        } catch (ApplicationExceptionInterface $e) {
             self::assertStringContainsString(
                 'developer-portal-v2/' .
                 'keboola.python-transformation:latest container \'1234567-norunid--0-keboola-docker-demo-sync\'' .
@@ -2249,7 +2249,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage('Class 1 error');
         $outputs = [];
         $runner->run(
@@ -2289,7 +2289,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage('Class 2 error');
         $outputs = [];
         $runner->run(
@@ -2329,7 +2329,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $runner = $this->getRunner();
 
-        $this->expectException(ApplicationException::class);
+        $this->expectException(ApplicationExceptionInterface::class);
         $this->expectExceptionMessage('Component definition is invalid');
         $outputs = [];
         $runner->run(
@@ -2378,7 +2378,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage('Unrecognized option "foo" under "container.storage.input.tables.0"');
         $outputs = [];
         $runner->run(
@@ -2455,7 +2455,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             $this->fail('Run action should fail with UserException');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertSame('Table sources not found: "sliced.csv"', $e->getMessage());
         }
 
@@ -2506,7 +2506,7 @@ class RunnerTest extends BaseRunnerTest
             ],
         ];
         $runner = $this->getRunner();
-        $this->expectException(UserException::class);
+        $this->expectException(UserExceptionInterface::class);
         $this->expectExceptionMessage('Invalid type for path "container.storage.input.tables.0.columns.0".');
         $outputs = [];
         $runner->run(
@@ -3306,7 +3306,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString('One input and output mapping is required.', $e->getMessage());
             $options = new ListConfigurationWorkspacesOptions();
             $options->setComponentId('keboola.runner-workspace-test');
@@ -3392,7 +3392,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Some columns are missing in the csv file. Missing columns: invalid_column',
                 $e->getMessage(),
@@ -3794,7 +3794,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Class 1 error',
                 $e->getMessage(),
@@ -3882,7 +3882,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Query "CRATE TABLE INTO A BOX" in "Main" failed with error',
                 $e->getMessage(),
@@ -3957,7 +3957,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Class 1 error',
                 $e->getMessage(),
@@ -4044,7 +4044,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "non-existent.csv"',
                 $e->getMessage(),
@@ -4118,7 +4118,7 @@ class RunnerTest extends BaseRunnerTest
                 null,
             );
             self::fail('Must fail');
-        } catch (UserException $e) {
+        } catch (UserExceptionInterface $e) {
             self::assertStringContainsString(
                 'Table sources not found: "write-always.csv"',
                 $e->getMessage(),
