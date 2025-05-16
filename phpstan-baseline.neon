@@ -1366,41 +1366,6 @@ parameters:
 			path: src/Docker/Runner/DataLoader/DataLoader.php
 
 		-
-			message: "#^Parameter \\#1 \\$text of method Keboola\\\\DockerBundle\\\\Docker\\\\OutputFilter\\\\OutputFilterInterface\\:\\:filter\\(\\) expects string, string\\|false given\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/DataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$clientWrapper\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$dataDirectory\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$jobDefinition\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$logger\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Constructor of class Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader has an unused parameter \\$outputFilter\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\DataLoader\\\\NullDataLoader\\:\\:__construct\\(\\) has parameter \\$dataDirectory with no type specified\\.$#"
-			count: 1
-			path: src/Docker/Runner/DataLoader/NullDataLoader.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Runner\\\\Limits\\:\\:getCpuLimit\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: src/Docker/Runner/Limits.php

@@ -37,14 +37,9 @@ use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
 use Keboola\StagingProvider\Provider\WorkspaceProviderInterface;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
-use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
@@ -56,6 +51,7 @@ class DataLoader implements DataLoaderInterface
     private ?string $configRowId;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
+    private DataDirUploader $dataDirUploader;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
@@ -74,6 +70,12 @@ class DataLoader implements DataLoaderInterface
         if ($this->defaultBucketName === '') {
             $this->defaultBucketName = $this->getDefaultBucket();
         }
+
+        $this->dataDirUploader = new DataDirUploader(
+            $this->clientWrapper->getBranchClient(),
+            $this->outputFilter,
+        );
+
         $this->validateStagingSetting();
         $externallyManagedWorkspaceCredentials = $this->getExternallyManagedWorkspaceCredentials($this->runtimeConfig);
 
@@ -342,49 +344,15 @@ class DataLoader implements DataLoaderInterface
         yield $stagingDefinition->getTableMetadataProvider();
     }
 
-    /**
-     * Archive data directory and save it to Storage
-     */
-    public function storeDataArchive(string $fileName, array $tags): void
+    public function storeDataArchive(string $jobId, string $configRowId, string $fileName): void
     {
-        $zip = new ZipArchive();
-        $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . $fileName . '.zip';
-        $zip->open($zipFileName, ZipArchive::CREATE);
-        $finder = new Finder();
-        /** @var SplFileInfo $item */
-        foreach ($finder->in($this->dataDirectory) as $item) {
-            if ($item->isDir()) {
-                if (!$zip->addEmptyDir($item->getRelativePathname())) {
-                    throw new ApplicationException('Failed to add directory: ' . $item->getFilename());
-                }
-            } else {
-                if ($item->getPathname() === $zipFileName) {
-                    continue;
-                }
-                if (($item->getRelativePathname() === 'config.json') ||
-                    ($item->getRelativePathname() === 'state.json')
-                ) {
-                    $configData = file_get_contents($item->getPathname());
-                    $configData = $this->outputFilter->filter($configData);
-                    if (!$zip->addFromString($item->getRelativePathname(), $configData)) {
-                        throw new ApplicationException('Failed to add file: ' . $item->getFilename());
-                    }
-                } elseif (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
-                    throw new ApplicationException('Failed to add file: ' . $item->getFilename());
-                }
-            }
-        }
-        $zip->close();
-        $uploadOptions = new FileUploadOptions();
-        $uploadOptions->setTags($tags);
-        $uploadOptions->setIsPermanent(false);
-        $uploadOptions->setIsPublic(false);
-        $uploadOptions->setNotify(false);
-
-        $this->clientWrapper->getTableAndFileStorageClient()->uploadFile($zipFileName, $uploadOptions);
-
-        $fs = new Filesystem();
-        $fs->remove($zipFileName);
+        $this->dataDirUploader->uploadDataDir(
+            $jobId,
+            $this->component->getId(),
+            $configRowId,
+            $this->dataDirectory,
+            $fileName,
+        );
     }
 
     protected function getDefaultBucket(): string

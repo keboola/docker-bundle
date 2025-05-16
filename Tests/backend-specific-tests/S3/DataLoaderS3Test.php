@@ -76,10 +76,17 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
             new OutputFilter(10000),
         );
-        $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
+
+        $jobId = uniqid('job-');
+
+        $dataLoader->storeDataArchive(
+            $jobId,
+            'row-id',
+            'data',
+        );
         sleep(1);
         $files = $this->clientWrapper->getBasicClient()->listFiles(
-            (new ListFilesOptions())->setTags(['docker-demo-test-s3']),
+            (new ListFilesOptions())->setTags(['jobId:' . $jobId]),
         );
         self::assertCount(1, $files);
 
