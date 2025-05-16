@@ -14,6 +14,6 @@ class NullFilterTest extends TestCase
         // phpcs:ignore Generic.Files.LineLength.MaxExceeded
         $value = 'some text WARNING: Your kernel does not support swap limit capabilities or the cgroup is not mounted. Memory limited without swap. another text';
         $filter = new MinimalFilter();
-        self::assertSame('some text  another text', $filter->filter($value));
+        self::assertSame('some text  another text', $filter->redactSecrets($value));
     }
 }

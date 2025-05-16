@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Options\FileUploadOptions;
 use RuntimeException;
@@ -26,7 +25,7 @@ class DataDirUploader
 
     public function __construct(
         private readonly BranchAwareClient $storageApiClient,
-        private readonly OutputFilterInterface $outputFilter,
+        private readonly SecretsRedactorInterface $secretRedactor,
     ) {
     }
 
@@ -42,10 +41,13 @@ class DataDirUploader
         try {
             $this->prepareZipFile($dataDirPath, $zipFilePath);
             $this->uploadZipFile(
-                $jobId,
-                $componentId,
-                $configRowId,
                 $zipFilePath,
+                [
+                    self::TAG_DEBUG,
+                    $componentId,
+                    sprintf('%s:%s', self::TAG_PREFIX_JOB_ID, $jobId),
+                    sprintf('%s:%s', self::TAG_PREFIX_ROW_ID, $configRowId ?? ''),
+                ],
             );
         } finally {
             (new Filesystem())->remove($zipFilePath);
@@ -75,7 +77,7 @@ class DataDirUploader
                     file_get_contents($item->getPathname()),
                     'Failed to read file: ' . $filename,
                 );
-                $configData = $this->outputFilter->filter($configData);
+                $configData = $this->secretRedactor->redactSecrets($configData);
 
                 self::failOnFalse(
                     $zip->addFromString($filepath, $configData),
@@ -93,18 +95,11 @@ class DataDirUploader
     }
 
     private function uploadZipFile(
-        string $jobId,
-        string $componentId,
-        ?string $configRowId,
         string $zipPathname,
+        array $tags,
     ): void {
         $uploadOptions = new FileUploadOptions();
-        $uploadOptions->setTags([
-            self::TAG_DEBUG,
-            $componentId,
-            sprintf('%s:%s', self::TAG_PREFIX_JOB_ID, $jobId),
-            sprintf('%s:%s', self::TAG_PREFIX_ROW_ID, $configRowId ?? ''),
-        ]);
+        $uploadOptions->setTags($tags);
         $uploadOptions->setIsPermanent(false);
         $uploadOptions->setIsPublic(false);
         $uploadOptions->setNotify(false);
