@@ -10,6 +10,7 @@ use Keboola\Artifacts\Tags;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\Authorization;
 use Keboola\DockerBundle\Docker\Runner\ConfigFile;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\DataDirUploader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\NullDataLoader;
@@ -230,11 +231,15 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $this->outputFilter,
             );
         } else {
             $dataLoader = new NullDataLoader();
         }
+
+        $dataDirUploader = new DataDirUploader(
+            $this->clientWrapper->getBranchClient(),
+            $this->outputFilter,
+        );
 
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
@@ -292,6 +297,7 @@ class Runner
                 $component,
                 $usageFile,
                 $dataLoader,
+                $dataDirUploader,
                 $workingDirectory,
                 $stateFile,
                 $imageCreator,
@@ -435,29 +441,6 @@ class Runner
         }
     }
 
-    /**
-     * @param string $jobId
-     * @param string|null $configId
-     * @param string|null $rowId
-     * @param Component $component
-     * @param UsageFileInterface $usageFile
-     * @param DataLoaderInterface $dataLoader
-     * @param WorkingDirectory $workingDirectory
-     * @param StateFile $stateFile
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param OutputFilterInterface $outputFilter
-     * @param string $mode
-     * @param InputTableStateList $inputTableStateList
-     * @param InputFileStateList $inputFileStateList
-     * @param Output $output
-     * @param Artifacts $artifacts
-     * @param string|null $backendSize
-     * @param bool $storeState
-     * @return Output
-     * @throws ApplicationException
-     * @throws UserException
-     */
     private function runComponent(
         string $jobId,
         ?string $configId,
@@ -466,6 +449,7 @@ class Runner
         Component $component,
         UsageFileInterface $usageFile,
         DataLoaderInterface $dataLoader,
+        DataDirUploader $dataDirUploader,
         WorkingDirectory $workingDirectory,
         StateFile $stateFile,
         ImageCreator $imageCreator,
@@ -480,7 +464,7 @@ class Runner
         bool $storeState,
         ?string $orchestrationId,
         JobScopedEncryptor $jobScopedEncryptor,
-    ) {
+    ): Output {
         // initialize
         $workingDirectory->createWorkingDir();
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
@@ -499,6 +483,7 @@ class Runner
                 $stateFile,
                 $outputFilter,
                 $dataLoader,
+                $dataDirUploader,
                 $mode,
                 $output,
                 $artifacts,
@@ -511,7 +496,13 @@ class Runner
             $output->setDataLoader($dataLoader);
 
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive($jobId, $rowId, 'stage_output');
+                $dataDirUploader->uploadDataDir(
+                    $jobId,
+                    $component->getId(),
+                    $rowId,
+                    $workingDirectory->getDataDir(),
+                    'stage_output',
+                );
             } else {
                 $tableQueue = $dataLoader->storeOutput();
                 $output->setTableQueue($tableQueue);
@@ -538,26 +529,6 @@ class Runner
         }
     }
 
-    /**
-     * @param string $jobId
-     * @param string|null $configId
-     * @param string|null $rowId
-     * @param Component $component
-     * @param UsageFileInterface $usageFile
-     * @param WorkingDirectory $workingDirectory
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param StateFile $stateFile
-     * @param OutputFilterInterface $outputFilter
-     * @param DataLoaderInterface $dataLoader
-     * @param string $mode
-     * @param Output $output
-     * @param Artifacts $artifacts
-     * @param string|null $backendSize
-     * @return void
-     * @throws ApplicationException
-     * @throws UserException
-     */
     private function runImages(
         string $jobId,
         ?string $configId,
@@ -571,6 +542,7 @@ class Runner
         StateFile $stateFile,
         OutputFilterInterface $outputFilter,
         DataLoaderInterface $dataLoader,
+        DataDirUploader $dataDirUploader,
         string $mode,
         Output $output,
         Artifacts $artifacts,
@@ -578,7 +550,7 @@ class Runner
         bool $storeState,
         ?string $orchestrationId,
         JobScopedEncryptor $jobScopedEncryptor,
-    ) {
+    ): void {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
@@ -677,7 +649,13 @@ class Runner
                 $limits,
             );
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive($jobId, $rowId, 'stage_' . $priority);
+                $dataDirUploader->uploadDataDir(
+                    $jobId,
+                    $component->getId(),
+                    $rowId,
+                    $workingDirectory->getDataDir(),
+                    'stage_' . $priority,
+                );
             }
             try {
                 $process = $container->run();

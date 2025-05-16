@@ -107,7 +107,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
-            new OutputFilter(10000),
         );
     }
 
@@ -147,7 +146,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
     }
@@ -176,7 +174,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000),
         );
     }
 
@@ -217,7 +214,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -262,7 +258,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -332,7 +327,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         self::expectException(UserException::class);
         self::expectExceptionMessage(
@@ -395,7 +389,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
@@ -460,7 +453,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -590,7 +582,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -698,7 +689,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -854,7 +844,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1054,7 +1043,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1213,7 +1201,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1273,7 +1260,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
         // immediately calling cleanWorkspace without using it means it was not initialized
         $dataLoader->cleanWorkspace();
@@ -1334,7 +1320,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
 
         // this causes the workspaces to initialize
@@ -1424,7 +1409,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertArrayHasKey('host', $credentials);
@@ -1500,7 +1484,6 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
                 $component,
             ),
-            new OutputFilter(10000),
         );
 
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -1592,7 +1575,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition($jobConfig, $component, $configId),
-            new OutputFilter(10000),
         );
 
         self::assertEquals($expectedType, $dataLoader->getDataTypeSupport());
@@ -1725,7 +1707,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1839,7 +1820,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);

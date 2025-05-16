@@ -22,8 +22,6 @@ interface DataLoaderInterface
 
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue;
 
-    public function storeDataArchive(string $jobId, string $configRowId, string $fileName): void;
-
     public function getWorkspaceCredentials(): array;
 
     public function cleanWorkspace(): void;

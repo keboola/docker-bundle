@@ -30,10 +30,6 @@ class NullDataLoader implements DataLoaderInterface
         return null;
     }
 
-    public function storeDataArchive(string $jobId, string $configRowId, string $fileName): void
-    {
-    }
-
     public function getWorkspaceCredentials(): array
     {
         return [];

@@ -9,6 +9,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\DataDirUploader;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
@@ -47,41 +48,24 @@ class DataLoaderS3Test extends BaseDataLoaderTest
 
     public function testStoreArchive(): void
     {
-        $config = [
-            'input' => [
-                'tables' => [
-                    [
-                        'source' => 'in.c-docker-demo-testConfig-s3.test',
-                    ],
-                ],
-            ],
-            'output' => [
-                'tables' => [
-                    [
-                        'source' => 'sliced.csv',
-                        'destination' => 'in.c-docker-demo-testConfig-s3.out',
-                    ],
-                ],
-            ],
-        ];
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
+
+        $dataDirUploader = new DataDirUploader(
+            $this->clientWrapper->getBranchClient(),
             new OutputFilter(10000),
         );
 
         $jobId = uniqid('job-');
 
-        $dataLoader->storeDataArchive(
+        $dataDirUploader->uploadDataDir(
             $jobId,
+            $this->getNoDefaultBucketComponent()->getId(),
             'row-id',
+            $this->workingDir->getDataDir(),
             'data',
         );
         sleep(1);
@@ -142,7 +126,6 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
-            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 

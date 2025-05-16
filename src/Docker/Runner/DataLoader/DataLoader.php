@@ -6,7 +6,6 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
 use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -51,14 +50,12 @@ class DataLoader implements DataLoaderInterface
     private ?string $configRowId;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
-    private DataDirUploader $dataDirUploader;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
         private readonly LoggerInterface $logger,
         private readonly string $dataDirectory,
         JobDefinition $jobDefinition,
-        private readonly OutputFilterInterface $outputFilter,
     ) {
         $configuration = $jobDefinition->getConfiguration();
         $this->storageConfig = $configuration['storage'] ?? [];
@@ -70,11 +67,6 @@ class DataLoader implements DataLoaderInterface
         if ($this->defaultBucketName === '') {
             $this->defaultBucketName = $this->getDefaultBucket();
         }
-
-        $this->dataDirUploader = new DataDirUploader(
-            $this->clientWrapper->getBranchClient(),
-            $this->outputFilter,
-        );
 
         $this->validateStagingSetting();
         $externallyManagedWorkspaceCredentials = $this->getExternallyManagedWorkspaceCredentials($this->runtimeConfig);
@@ -342,17 +334,6 @@ class DataLoader implements DataLoaderInterface
         yield $stagingDefinition->getFileMetadataProvider();
         yield $stagingDefinition->getTableDataProvider();
         yield $stagingDefinition->getTableMetadataProvider();
-    }
-
-    public function storeDataArchive(string $jobId, string $configRowId, string $fileName): void
-    {
-        $this->dataDirUploader->uploadDataDir(
-            $jobId,
-            $this->component->getId(),
-            $configRowId,
-            $this->dataDirectory,
-            $fileName,
-        );
     }
 
     protected function getDefaultBucket(): string
