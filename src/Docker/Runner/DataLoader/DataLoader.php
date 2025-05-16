@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
 use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\UserException;
-use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\AbstractStagingDefinition;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
-use Keboola\InputMapping\Table\Options\InputTableOptionsList;
-use Keboola\InputMapping\Table\Options\ReaderOptions;
-use Keboola\InputMapping\Table\Result as InputTableResult;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
+use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\OutputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
-use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\OutputMapping\OutputMappingSettings;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
-use Keboola\OutputMapping\SystemMetadata;
-use Keboola\OutputMapping\TableLoader;
-use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
@@ -37,45 +31,38 @@ use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
 use Keboola\StagingProvider\Provider\WorkspaceProviderInterface;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
-use Keboola\StorageApi\Options\FileUploadOptions;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
-use ZipArchive;
 
 class DataLoader implements DataLoaderInterface
 {
-    private array $storageConfig;
-    private array $runtimeConfig;
-    private string $defaultBucketName;
-    private Component $component;
-    private ?string $configId;
-    private ?string $configRowId;
-    private InputStrategyFactory $inputStrategyFactory;
-    private OutputStrategyFactory $outputStrategyFactory;
+    private readonly ComponentSpecification $component;
+    private readonly Configuration $configuration;
+    private readonly State $state;
+    /** @var non-empty-string|null */
+    private readonly ?string $configId;
+    private readonly ?string $configRowId;
+    private readonly InputStrategyFactory $inputStrategyFactory;
+    private readonly OutputStrategyFactory $outputStrategyFactory;
+    private readonly InputDataLoader $inputDataLoader;
+    private readonly OutputDataLoader $outputDataLoader;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
         private readonly LoggerInterface $logger,
         private readonly string $dataDirectory,
         JobDefinition $jobDefinition,
-        private readonly OutputFilterInterface $outputFilter,
     ) {
-        $configuration = $jobDefinition->getConfiguration();
-        $this->storageConfig = $configuration['storage'] ?? [];
-        $this->runtimeConfig = $configuration['runtime'] ?? [];
+        $this->configuration = Configuration::fromArray($jobDefinition->getConfiguration());
+        $this->state = State::fromArray($jobDefinition->getState());
         $this->component = $jobDefinition->getComponent();
         $this->configId = $jobDefinition->getConfigId();
         $this->configRowId = $jobDefinition->getRowId();
-        $this->defaultBucketName = (string) ($this->storageConfig['output']['default_bucket'] ?? '');
-        if ($this->defaultBucketName === '') {
-            $this->defaultBucketName = $this->getDefaultBucket();
-        }
-        $this->validateStagingSetting();
-        $externallyManagedWorkspaceCredentials = $this->getExternallyManagedWorkspaceCredentials($this->runtimeConfig);
+
+        $stagingStorageInput = $this->component->getInputStagingStorage();
+        $stagingStorageOutput = $this->component->getOutputStagingStorage();
+        $this->validateStagingSetting($stagingStorageInput, $stagingStorageOutput);
 
         $this->inputStrategyFactory = new InputStrategyFactory(
             $this->clientWrapper,
@@ -107,12 +94,11 @@ class DataLoader implements DataLoaderInterface
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         $workspaceProvider = $workspaceProviderFactory->getWorkspaceStaging(
-            $this->getStagingStorageInput(),
+            $stagingStorageInput,
             $this->component,
             $this->configId,
-            $this->runtimeConfig['backend'] ?? [],
-            $this->storageConfig['input']['read_only_storage_access'] ?? null,
-            $externallyManagedWorkspaceCredentials,
+            $this->configuration->runtime?->backend,
+            $this->configuration->storage->input->readOnlyStorageAccess,
         );
         $localProviderFactory = new LocalStagingProvider($dataDirectory);
 
@@ -122,8 +108,13 @@ class DataLoader implements DataLoaderInterface
             $localProviderFactory,
         );
         $inputProviderInitializer->initializeProviders(
-            $this->getStagingStorageInput(),
+            $stagingStorageInput,
             $tokenInfo,
+        );
+        $this->inputDataLoader = new InputDataLoader(
+            $this->inputStrategyFactory,
+            $this->logger,
+            'data/in/',
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
@@ -132,8 +123,13 @@ class DataLoader implements DataLoaderInterface
             $localProviderFactory,
         );
         $outputProviderInitializer->initializeProviders(
-            $this->getStagingStorageOutput(),
+            $stagingStorageOutput,
             $tokenInfo,
+        );
+        $this->outputDataLoader = new OutputDataLoader(
+            $this->outputStrategyFactory,
+            $this->logger,
+            'data/out/',
         );
     }
 
@@ -144,160 +140,29 @@ class DataLoader implements DataLoaderInterface
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
     ): StorageState {
-        $reader = new Reader($this->inputStrategyFactory);
-        $inputTableResult = new InputTableResult();
-        $inputTableResult->setInputTableStateList(new InputTableStateList([]));
-        $resultInputFilesStateList = new InputFileStateList([]);
-        $readerOptions = new ReaderOptions(
-            !$this->component->allowBranchMapping(),
-            /* preserve is true only for ABS Workspaces which are persistent (shared across runs) (preserve = true).
-                Redshift workspaces are reusable, but still cleaned up before each run (preserve = false).
-                Other workspaces (Snowflake, Local) are ephemeral (thus the preserver flag is irrelevant for them).
-            */
-            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS,
+        $result = $this->inputDataLoader->loadInputData(
+            $this->component,
+            $this->configuration,
+            $this->state,
         );
 
-        try {
-            if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
-                $this->logger->debug('Downloading source tables.');
-                $inputTableResult = $reader->downloadTables(
-                    new InputTableOptionsList($this->storageConfig['input']['tables']),
-                    $inputTableStateList,
-                    'data/in/tables/',
-                    $this->getStagingStorageInput(),
-                    $readerOptions,
-                );
-            }
-            if (isset($this->storageConfig['input']['files']) &&
-                count($this->storageConfig['input']['files'])
-            ) {
-                $this->logger->debug('Downloading source files.');
-                $resultInputFilesStateList = $reader->downloadFiles(
-                    $this->storageConfig['input']['files'],
-                    'data/in/files/',
-                    $this->getStagingStorageInput(),
-                    $inputFileStateList,
-                );
-            }
-        } catch (ClientException $e) {
-            throw new UserException('Cannot import data from Storage API: ' . $e->getMessage(), $e);
-        } catch (InvalidInputException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-
-        return new StorageState($inputTableResult, $resultInputFilesStateList);
+        return new StorageState(
+            inputTableResult: $result->inputTableResult,
+            inputFileStateList: $result->inputFileStateList,
+        );
     }
 
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue
     {
-        $this->logger->debug('Storing results.');
-        $outputTablesConfig = [];
-        $outputFilesConfig = [];
-        $outputTableFilesConfig = [];
-
-        if (isset($this->storageConfig['output']['tables']) &&
-            count($this->storageConfig['output']['tables'])
-        ) {
-            $outputTablesConfig = $this->storageConfig['output']['tables'];
-        }
-        if (isset($this->storageConfig['output']['files']) &&
-            count($this->storageConfig['output']['files'])
-        ) {
-            $outputFilesConfig = $this->storageConfig['output']['files'];
-        }
-        if (isset($this->storageConfig['output']['table_files']) &&
-            count($this->storageConfig['output']['table_files'])
-        ) {
-            $outputTableFilesConfig = $this->storageConfig['output']['table_files'];
-        }
-        $this->logger->debug('Uploading output tables and files.');
-
-        $uploadTablesOptions = ['mapping' => $outputTablesConfig];
-
-        $commonSystemMetadata = [
-            SystemMetadata::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
-            SystemMetadata::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
-        ];
-        if ($this->configRowId) {
-            $commonSystemMetadata[SystemMetadata::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
-        }
-        $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
-        if ($this->clientWrapper->isDevelopmentBranch()) {
-            $tableSystemMetadata[SystemMetadata::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
-        }
-
-        $fileSystemMetadata[SystemMetadata::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBranchClient()->getRunId();
-
-        // Get default bucket
-        if ($this->defaultBucketName) {
-            $uploadTablesOptions['bucket'] = $this->defaultBucketName;
-            $this->logger->debug('Default bucket ' . $uploadTablesOptions['bucket']);
-        }
-
-        $treatValuesAsNull = $this->storageConfig['output']['treat_values_as_null'] ?? null;
-        if ($treatValuesAsNull !== null) {
-            $uploadTablesOptions['treat_values_as_null'] = $treatValuesAsNull;
-        }
-
-        try {
-            $fileWriter = new FileWriter($this->outputStrategyFactory);
-            $fileWriter->uploadFiles(
-                'data/out/files/',
-                ['mapping' => $outputFilesConfig],
-                $fileSystemMetadata,
-                $this->getStagingStorageOutput(),
-                [],
-                $isFailedJob,
-            );
-            if ($this->useFileStorageOnly()) {
-                $fileWriter->uploadFiles(
-                    'data/out/tables/',
-                    [],
-                    $fileSystemMetadata,
-                    $this->getStagingStorageOutput(),
-                    $outputTableFilesConfig,
-                    $isFailedJob,
-                );
-                if (isset($this->storageConfig['input']['files'])) {
-                    // tag input files
-                    $fileWriter->tagFiles($this->storageConfig['input']['files']);
-                }
-                return null;
-            }
-
-            $tableLoader = new TableLoader(
-                logger: $this->outputStrategyFactory->getLogger(),
-                clientWrapper: $this->outputStrategyFactory->getClientWrapper(),
-                strategyFactory: $this->outputStrategyFactory,
-            );
-
-            $mappingSettings = new OutputMappingSettings(
-                configuration: $uploadTablesOptions,
-                sourcePathPrefix: 'data/out/tables/',
-                storageApiToken: $this->outputStrategyFactory->getClientWrapper()->getToken(),
-                isFailedJob: $isFailedJob,
-                dataTypeSupport: $this->getDataTypeSupport(),
-            );
-
-            $tableQueue = $tableLoader->uploadTables(
-                outputStaging: $this->getStagingStorageOutput(),
-                configuration: $mappingSettings,
-                systemMetadata: new SystemMetadata($tableSystemMetadata),
-            );
-
-            if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
-                // tag input files
-                $fileWriter->tagFiles($this->storageConfig['input']['files']);
-            }
-            return $tableQueue;
-        } catch (InvalidOutputException $ex) {
-            throw new UserException($ex->getMessage(), $ex);
-        }
-    }
-
-    private function useFileStorageOnly(): bool
-    {
-        return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
+        return $this->outputDataLoader->storeOutput(
+            $this->component,
+            $this->configuration,
+            $this->clientWrapper->getBranchId(),
+            $this->clientWrapper->getBranchClient()->getRunId(),
+            $this->configId,
+            $this->configRowId,
+            $isFailedJob,
+        );
     }
 
     public function getWorkspaceBackendSize(): ?string
@@ -346,98 +211,22 @@ class DataLoader implements DataLoaderInterface
         yield $stagingDefinition->getTableMetadataProvider();
     }
 
-    /**
-     * Archive data directory and save it to Storage
-     */
-    public function storeDataArchive(string $fileName, array $tags): void
-    {
-        $zip = new ZipArchive();
-        $zipFileName = $this->dataDirectory . DIRECTORY_SEPARATOR . $fileName . '.zip';
-        $zip->open($zipFileName, ZipArchive::CREATE);
-        $finder = new Finder();
-        /** @var SplFileInfo $item */
-        foreach ($finder->in($this->dataDirectory) as $item) {
-            if ($item->isDir()) {
-                if (!$zip->addEmptyDir($item->getRelativePathname())) {
-                    throw new ApplicationException('Failed to add directory: ' . $item->getFilename());
-                }
-            } else {
-                if ($item->getPathname() === $zipFileName) {
-                    continue;
-                }
-                if (($item->getRelativePathname() === 'config.json') ||
-                    ($item->getRelativePathname() === 'state.json')
-                ) {
-                    $configData = file_get_contents($item->getPathname());
-                    $configData = $this->outputFilter->filter($configData);
-                    if (!$zip->addFromString($item->getRelativePathname(), $configData)) {
-                        throw new ApplicationException('Failed to add file: ' . $item->getFilename());
-                    }
-                } elseif (!$zip->addFile($item->getPathname(), $item->getRelativePathname())) {
-                    throw new ApplicationException('Failed to add file: ' . $item->getFilename());
-                }
-            }
-        }
-        $zip->close();
-        $uploadOptions = new FileUploadOptions();
-        $uploadOptions->setTags($tags);
-        $uploadOptions->setIsPermanent(false);
-        $uploadOptions->setIsPublic(false);
-        $uploadOptions->setNotify(false);
-
-        $this->clientWrapper->getTableAndFileStorageClient()->uploadFile($zipFileName, $uploadOptions);
-
-        $fs = new Filesystem();
-        $fs->remove($zipFileName);
-    }
-
-    protected function getDefaultBucket(): string
-    {
-        if ($this->component->hasDefaultBucket()) {
-            if (!$this->configId) {
-                throw new UserException('Configuration ID not set, but is required for default_bucket option.');
-            }
-            return $this->component->getDefaultBucketName($this->configId);
-        } else {
-            return '';
-        }
-    }
-
-    private function getStagingStorageInput(): string
-    {
-        $stagingStorage = $this->component->getStagingStorage();
-        if ($stagingStorage !== null) {
-            if (isset($stagingStorage['input'])) {
-                return $stagingStorage['input'];
-            }
-        }
-        return AbstractStrategyFactory::LOCAL;
-    }
-
-    private function getStagingStorageOutput(): string
-    {
-        $stagingStorage = $this->component->getStagingStorage();
-        if ($stagingStorage !== null) {
-            if (isset($stagingStorage['output'])) {
-                return $stagingStorage['output'];
-            }
-        }
-        return AbstractStrategyFactory::LOCAL;
-    }
-
-    private function validateStagingSetting(): void
-    {
-        $workspaceTypes = [AbstractStrategyFactory::WORKSPACE_ABS, AbstractStrategyFactory::WORKSPACE_REDSHIFT,
-            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE, AbstractStrategyFactory::WORKSPACE_SYNAPSE,
-            AbstractStrategyFactory::WORKSPACE_BIGQUERY];
-        if (in_array($this->getStagingStorageInput(), $workspaceTypes)
-            && in_array($this->getStagingStorageOutput(), $workspaceTypes)
-            && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
+    private function validateStagingSetting(
+        string $stagingStorageInput,
+        string $stagingStorageOutput,
+    ): void {
+        $workspaceTypes = [
+            AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
+            AbstractStrategyFactory::WORKSPACE_BIGQUERY,
+        ];
+        if (in_array($stagingStorageInput, $workspaceTypes)
+            && in_array($stagingStorageOutput, $workspaceTypes)
+            && $stagingStorageInput !== $stagingStorageOutput
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
-                $this->getStagingStorageInput(),
-                $this->getStagingStorageOutput(),
+                $stagingStorageInput,
+                $stagingStorageOutput,
             ));
         }
     }
@@ -457,18 +246,6 @@ class DataLoader implements DataLoaderInterface
                 if (in_array($stagingProvider, $cleanedProviders, true)) {
                     continue;
                 }
-                /* don't clean ABS workspaces or Redshift workspaces which are reusable if created for a config.
-
-                    The whole condition and the isReusableWorkspace method can probably be completely removed,
-                    because now it is distinguished between NewWorkspaceStagingProvider (cleanup) and
-                    ExistingWorkspaceStagingProvider (no cleanup).
-
-                    However, since ABS and Redshift workspaces are not used in real life and badly tested, I don't
-                    want to remove it now.
-                 */
-                if ($this->configId && $this->isReusableWorkspace()) {
-                    continue;
-                }
 
                 try {
                     $stagingProvider->cleanup();
@@ -485,28 +262,12 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    public function getDataTypeSupport(): string
+    public function getDataTypeSupport(): DataTypeSupport
     {
         if (!$this->clientWrapper->getToken()->hasFeature('new-native-types')) {
-            return 'none';
+            return DataTypeSupport::NONE;
         }
-        return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport();
-    }
 
-    private function isReusableWorkspace(): bool
-    {
-        return $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_ABS ||
-            $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_ABS ||
-            $this->getStagingStorageInput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT ||
-            $this->getStagingStorageOutput() === AbstractStrategyFactory::WORKSPACE_REDSHIFT;
-    }
-
-    private function getExternallyManagedWorkspaceCredentials(
-        array $runtimeConfig,
-    ): ?ExternallyManagedWorkspaceCredentials {
-        if (isset($runtimeConfig['backend']['workspace_credentials'])) {
-            return ExternallyManagedWorkspaceCredentials::fromArray($runtimeConfig['backend']['workspace_credentials']);
-        }
-        return null;
+        return $this->configuration->storage->output->dataTypeSupport ?? $this->component->getDataTypesSupport();
     }
 }

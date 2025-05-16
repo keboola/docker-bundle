@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
-use Keboola\DockerBundle\Docker\Component;
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
@@ -82,7 +82,7 @@ class Runner2Test extends BaseRunnerTest
         ];
 
         $runner = $this->getRunner();
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         // touch: cannot touch '/data/out/tables/mytable.csv.gz/part1': Permission denied
         self::expectExceptionMessageMatches('/Permission denied/');
         $outputs = [];
@@ -130,7 +130,7 @@ class Runner2Test extends BaseRunnerTest
 
         $jobDefinition = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -154,7 +154,7 @@ class Runner2Test extends BaseRunnerTest
             );
             self::fail('Expected exception');
         } catch (Throwable $e) {
-            self::assertInstanceOf(UserException::class, $e);
+            self::assertInstanceOf(UserExceptionInterface::class, $e);
             self::assertSame(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 'Running developer-portal-v2/keboola.runner-config-test:1.2.1 container exceeded the timeout of 10 seconds.',
@@ -198,7 +198,7 @@ class Runner2Test extends BaseRunnerTest
 
         $jobDefinition = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -222,7 +222,7 @@ class Runner2Test extends BaseRunnerTest
             );
             self::fail('Expected exception');
         } catch (Throwable $e) {
-            self::assertInstanceOf(UserException::class, $e);
+            self::assertInstanceOf(UserExceptionInterface::class, $e);
             self::assertSame(
                 // phpcs:ignore Generic.Files.LineLength.MaxExceeded
                 'Running developer-portal-v2/keboola.runner-config-test:1.2.1 container exceeded the timeout of 20 seconds.',

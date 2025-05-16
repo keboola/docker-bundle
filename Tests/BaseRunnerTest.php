@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Monolog\ContainerLogger;
 use Keboola\DockerBundle\Service\LoggersService;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\ObjectEncryptor\EncryptorOptions;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\ObjectEncryptor\ObjectEncryptorFactory;
@@ -183,15 +183,22 @@ abstract class BaseRunnerTest extends TestCase
     }
 
     /**
-     * @param array $componentData
-     * @param $configId
-     * @param array $configData
-     * @param array $state
+     * @param null|non-empty-string $configId
      * @return JobDefinition[]
      */
-    protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
-    {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
+    protected function prepareJobDefinitions(
+        array $componentData,
+        ?string $configId,
+        array $configData,
+        array $state,
+    ): array {
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new ComponentSpecification($componentData),
+            $configId,
+            'v123',
+            $state,
+        );
         return [$jobDefinition];
     }
 }

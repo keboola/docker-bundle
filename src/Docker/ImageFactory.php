@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Docker;
 
 use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\LoggerInterface;
 
 abstract class ImageFactory
@@ -17,7 +18,7 @@ abstract class ImageFactory
      */
     public static function getImage(
         LoggerInterface $logger,
-        Component $component,
+        ComponentSpecification $component,
         $isMain,
     ) {
         switch ($component->getType()) {

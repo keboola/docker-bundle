@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilterInterface;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 
 class Environment
 {
@@ -14,29 +15,27 @@ class Environment
     private readonly array $tokenInfo;
     private readonly ?string $runId;
     private readonly string $url;
-    private readonly Component $component;
+    private readonly ComponentSpecification $component;
     private readonly string $stackId;
     private readonly ?string $configRowId;
     private readonly string $token;
     private readonly ?string $branchId;
-    private readonly ?string $absConnectionString;
     private readonly string $mode;
-    private readonly string $dataTypeSupport;
+    private readonly DataTypeSupport $dataTypeSupport;
 
     public function __construct(
         ?string $configId,
         ?string $configVersion,
         ?string $configRowId,
-        Component $component,
+        ComponentSpecification $component,
         array $config,
         array $tokenInfo,
         ?string $runId,
         string $url,
         string $token,
         ?string $branchId,
-        ?string $absConnectionString,
         string $mode,
-        string $dataTypeSupport,
+        DataTypeSupport $dataTypeSupport,
     ) {
         $this->configId = $configId ?: sha1(serialize($config));
         $this->configVersion = $configVersion;
@@ -48,7 +47,6 @@ class Environment
         $this->token = $token;
         $this->configRowId = $configRowId;
         $this->branchId = $branchId;
-        $this->absConnectionString = $absConnectionString;
         $this->mode = $mode;
         $this->dataTypeSupport = $dataTypeSupport;
     }
@@ -70,18 +68,18 @@ class Environment
         ];
 
         if ($this->hasNativeTypesFeature()) {
-            $envs['KBC_DATA_TYPE_SUPPORT'] = $this->dataTypeSupport;
+            $envs['KBC_DATA_TYPE_SUPPORT'] = $this->dataTypeSupport->value;
         }
 
         if ($this->configRowId) {
             $envs['KBC_CONFIGROWID'] = $this->configRowId;
         }
-        if ($this->component->forwardToken()) {
+        if ($this->component->hasForwardToken()) {
             $envs['KBC_TOKEN'] = $this->token;
             $outputFilter->addValue($this->token);
             $envs['KBC_URL'] = $this->url;
         }
-        if ($this->component->forwardTokenDetails()) {
+        if ($this->component->hasForwardTokenDetails()) {
             $envs['KBC_PROJECTNAME'] = $this->tokenInfo['owner']['name'];
             $envs['KBC_TOKENID'] = $this->tokenInfo['id'];
             $envs['KBC_TOKENDESC'] = $this->tokenInfo['description'];
@@ -91,10 +89,6 @@ class Environment
         }
         if ($this->branchId) {
             $envs['KBC_BRANCHID'] = (string) $this->branchId;
-        }
-
-        if ($this->absConnectionString !== null) {
-            $envs['AZURE_STORAGE_CONNECTION_STRING'] = $this->absConnectionString;
         }
 
         return $envs;

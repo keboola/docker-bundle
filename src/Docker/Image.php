@@ -6,6 +6,7 @@ namespace Keboola\DockerBundle\Docker;
 
 use Exception;
 use InvalidArgumentException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\LoggerInterface;
 use Retry\BackOff\ExponentialBackOffPolicy;
 use Retry\Policy\SimpleRetryPolicy;
@@ -47,10 +48,7 @@ abstract class Image
      */
     private $isMain;
 
-    /**
-     * @var Component
-     */
-    private $component;
+    private ComponentSpecification $component;
 
     /**
      * @var array
@@ -74,7 +72,7 @@ abstract class Image
 
     abstract protected function pullImage();
 
-    public function __construct(Component $component, LoggerInterface $logger)
+    public function __construct(ComponentSpecification $component, LoggerInterface $logger)
     {
         $this->component = $component;
         $this->logger = $logger;

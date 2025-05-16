@@ -6,13 +6,14 @@ namespace Keboola\DockerBundle\BackendTests\S3;
 
 use Aws\S3\S3Client;
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
 use Keboola\StorageApi\Options\GetFileOptions;
 use Keboola\StorageApi\Options\ListFilesOptions;
 use Keboola\Temp\Temp;
@@ -28,9 +29,9 @@ class DataLoaderS3Test extends BaseDataLoaderTest
         $this->cleanup('-s3');
     }
 
-    private function getS3StagingComponent(): Component
+    private function getS3StagingComponent(): ComponentSpecification
     {
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -47,39 +48,29 @@ class DataLoaderS3Test extends BaseDataLoaderTest
 
     public function testStoreArchive(): void
     {
-        $config = [
-            'input' => [
-                'tables' => [
-                    [
-                        'source' => 'in.c-docker-demo-testConfig-s3.test',
-                    ],
-                ],
-            ],
-            'output' => [
-                'tables' => [
-                    [
-                        'source' => 'sliced.csv',
-                        'destination' => 'in.c-docker-demo-testConfig-s3.out',
-                    ],
-                ],
-            ],
-        ];
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/in/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
-        $dataLoader = new DataLoader(
-            $this->clientWrapper,
-            new NullLogger(),
-            $this->workingDir->getDataDir(),
-            new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
+
+        $dataDirUploader = new DataDirUploader(
+            $this->clientWrapper->getBranchClient(),
             new OutputFilter(10000),
         );
-        $dataLoader->storeDataArchive('data', ['docker-demo-test-s3']);
+
+        $jobId = uniqid('job-');
+
+        $dataDirUploader->uploadDataDir(
+            $jobId,
+            $this->getNoDefaultBucketComponent()->getId(),
+            'row-id',
+            $this->workingDir->getDataDir(),
+            'data',
+        );
         sleep(1);
         $files = $this->clientWrapper->getBasicClient()->listFiles(
-            (new ListFilesOptions())->setTags(['docker-demo-test-s3']),
+            (new ListFilesOptions())->setTags(['jobId:' . $jobId]),
         );
         self::assertCount(1, $files);
 
@@ -135,7 +126,6 @@ class DataLoaderS3Test extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getS3StagingComponent()),
-            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
 

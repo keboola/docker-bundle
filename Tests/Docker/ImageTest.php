@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\DockerHub;
 use Keboola\DockerBundle\Docker\Image\QuayIO;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Tests\BaseImageTest;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
@@ -20,7 +20,7 @@ class ImageTest extends BaseImageTest
 
     public function testDockerHub()
     {
-        $configuration = new Component([
+        $configuration = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'dockerhub',
@@ -38,7 +38,7 @@ class ImageTest extends BaseImageTest
 
     public function testQuayIO()
     {
-        $configuration = new Component([
+        $configuration = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'quayio',
@@ -57,7 +57,7 @@ class ImageTest extends BaseImageTest
     {
         $command = Process::fromShellCommandline('sudo docker rmi ' . getenv('AWS_ECR_REGISTRY_URI') . ':test-hash');
         $command->run();
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -82,7 +82,7 @@ class ImageTest extends BaseImageTest
     public function testImageDigestPulled()
     {
 
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -108,7 +108,7 @@ class ImageTest extends BaseImageTest
 
     public function testImageDigestInvalid()
     {
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -122,7 +122,7 @@ class ImageTest extends BaseImageTest
         $image->prepare([]);
         preg_match('#@sha256:(.*)$#', $image->getImageDigests()[0], $matches);
         self::assertCount(2, $matches);
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -191,7 +191,7 @@ class ImageTest extends BaseImageTest
     ): void {
         $image = ImageFactory::getImage(
             new Logger('test'),
-            new Component([
+            new ComponentSpecification([
                 'data' => [
                     'process_timeout' => $componentTimeout,
                     'definition' => [

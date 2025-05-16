@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\OutputFilter;
 
-interface OutputFilterInterface
+use Keboola\JobQueue\JobConfiguration\Mapping\SecretsRedactorInterface;
+
+interface OutputFilterInterface extends SecretsRedactorInterface
 {
     /**
      * Add a single sensitive value
@@ -18,6 +20,4 @@ interface OutputFilterInterface
      * considered sensitive.
      */
     public function collectValues(array $data): void;
-
-    public function filter(string $text): string;
 }

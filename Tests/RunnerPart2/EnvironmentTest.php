@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\Environment;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 use PHPUnit\Framework\TestCase;
 
 class EnvironmentTest extends TestCase
@@ -33,7 +34,7 @@ class EnvironmentTest extends TestCase
 
     public function testExecutorEnvs(): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -56,9 +57,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '1234',
-            'connection-string',
             'debug',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -79,7 +79,6 @@ class EnvironmentTest extends TestCase
         self::assertArrayNotHasKey('KBC_TOKENDESC', $envs);
         self::assertEquals('1234', $envs['KBC_BRANCHID']);
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
-        self::assertSame('connection-string', $envs['AZURE_STORAGE_CONNECTION_STRING']);
         self::assertSame('feature1,feature2,feature3,new-native-types', $envs['KBC_PROJECT_FEATURE_GATES']);
         self::assertSame('debug', $envs['KBC_COMPONENT_RUN_MODE']);
         self::assertSame('authoritative', $envs['KBC_DATA_TYPE_SUPPORT']);
@@ -91,7 +90,7 @@ class EnvironmentTest extends TestCase
             'userId' => 'boo',
             'someOtherValue' => 'foo',
         ];
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -113,9 +112,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
-            'hint',
+            DataTypeSupport::HINTS,
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -139,12 +137,12 @@ class EnvironmentTest extends TestCase
         self::assertSame('aws', $envs['KBC_STAGING_FILE_PROVIDER']);
         self::assertArrayNotHasKey('AZURE_STORAGE_CONNECTION_STRING', $envs);
         self::assertSame('run', $envs['KBC_COMPONENT_RUN_MODE']);
-        self::assertSame('hint', $envs['KBC_DATA_TYPE_SUPPORT']);
+        self::assertSame('hints', $envs['KBC_DATA_TYPE_SUPPORT']);
     }
 
     public function testExecutorForwardTokenAndDetails(): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -166,9 +164,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -195,7 +192,7 @@ class EnvironmentTest extends TestCase
 
     public function testExecutorForwardDetails(): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -222,9 +219,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            'connection-string',
             'run',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -254,7 +250,7 @@ class EnvironmentTest extends TestCase
             'userId' => 'boo',
             'someOtherValue' => 'foo',
         ];
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -280,9 +276,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
         self::assertArrayHasKey('KBC_PROJECTID', $envs);
@@ -313,7 +308,7 @@ class EnvironmentTest extends TestCase
             'feature1', 'feature2', 'feature3',
         ];
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.test-component',
             'data' => [
                 'definition' => [
@@ -339,9 +334,8 @@ class EnvironmentTest extends TestCase
             (string) getenv('STORAGE_API_URL'),
             '572-xxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
             '',
-            null,
             'run',
-            'authoritative', // <<< from component but project doesn't support New Native Types
+            DataTypeSupport::AUTHORITATIVE, // <<< from component but project doesn't support New Native Types
         );
         $envs = $environment->getEnvironmentVariables(new OutputFilter(10000));
 
