@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\OutputFilter;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\SecretsRedactorInterface;
+use Keboola\JobQueue\JobConfiguration\Mapping\SecretsRedactorInterface;
 
 interface OutputFilterInterface extends SecretsRedactorInterface
 {
