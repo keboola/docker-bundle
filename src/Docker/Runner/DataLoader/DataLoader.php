@@ -7,7 +7,6 @@ namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\InputMapping\Staging\AbstractStagingDefinition;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\InputMapping\Staging\ProviderInterface;
@@ -19,15 +18,11 @@ use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
 use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\OutputDataLoader;
 use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
-use Keboola\OutputMapping\Exception\InvalidOutputException;
-use Keboola\OutputMapping\OutputMappingSettings;
 use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
-use Keboola\OutputMapping\SystemMetadata;
-use Keboola\OutputMapping\TableLoader;
-use Keboola\OutputMapping\Writer\FileWriter;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
@@ -42,16 +37,16 @@ use Psr\Log\LoggerInterface;
 
 class DataLoader implements DataLoaderInterface
 {
-    private string $defaultBucketName;
-    private ComponentSpecification $component;
+    private readonly ComponentSpecification $component;
     private readonly Configuration $configuration;
     private readonly State $state;
     /** @var non-empty-string|null */
-    private ?string $configId;
-    private ?string $configRowId;
-    private InputStrategyFactory $inputStrategyFactory;
-    private OutputStrategyFactory $outputStrategyFactory;
+    private readonly ?string $configId;
+    private readonly ?string $configRowId;
+    private readonly InputStrategyFactory $inputStrategyFactory;
+    private readonly OutputStrategyFactory $outputStrategyFactory;
     private readonly InputDataLoader $inputDataLoader;
+    private readonly OutputDataLoader $outputDataLoader;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
@@ -64,11 +59,6 @@ class DataLoader implements DataLoaderInterface
         $this->component = $jobDefinition->getComponent();
         $this->configId = $jobDefinition->getConfigId();
         $this->configRowId = $jobDefinition->getRowId();
-
-        $this->defaultBucketName = $this->configuration->storage->output->defaultBucket ?? '';
-        if ($this->defaultBucketName === '') {
-            $this->defaultBucketName = $this->getDefaultBucket();
-        }
 
         $stagingStorageInput = $this->component->getInputStagingStorage();
         $stagingStorageOutput = $this->component->getOutputStagingStorage();
@@ -136,6 +126,11 @@ class DataLoader implements DataLoaderInterface
             $stagingStorageOutput,
             $tokenInfo,
         );
+        $this->outputDataLoader = new OutputDataLoader(
+            $this->outputStrategyFactory,
+            $this->logger,
+            'data/out/',
+        );
     }
 
     /**
@@ -159,98 +154,13 @@ class DataLoader implements DataLoaderInterface
 
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue
     {
-        $this->logger->debug('Storing results.');
-        $outputTablesConfig = $this->configuration->storage->output->tables->toArray();
-        $outputFilesConfig = $this->configuration->storage->output->files->toArray();
-        $outputTableFilesConfig = $this->configuration->storage->output->tableFiles->toArray();
-
-        $this->logger->debug('Uploading output tables and files.');
-
-        $uploadTablesOptions = ['mapping' => $outputTablesConfig];
-
-        $commonSystemMetadata = [
-            SystemMetadata::SYSTEM_KEY_COMPONENT_ID => $this->component->getId(),
-            SystemMetadata::SYSTEM_KEY_CONFIGURATION_ID => $this->configId,
-        ];
-        if ($this->configRowId) {
-            $commonSystemMetadata[SystemMetadata::SYSTEM_KEY_CONFIGURATION_ROW_ID] = $this->configRowId;
-        }
-        $tableSystemMetadata = $fileSystemMetadata = $commonSystemMetadata;
-        if ($this->clientWrapper->isDevelopmentBranch()) {
-            $tableSystemMetadata[SystemMetadata::SYSTEM_KEY_BRANCH_ID] = $this->clientWrapper->getBranchId();
-        }
-
-        $fileSystemMetadata[SystemMetadata::SYSTEM_KEY_RUN_ID] = $this->clientWrapper->getBranchClient()->getRunId();
-
-        // Get default bucket
-        if ($this->defaultBucketName) {
-            $uploadTablesOptions['bucket'] = $this->defaultBucketName;
-            $this->logger->debug('Default bucket ' . $uploadTablesOptions['bucket']);
-        }
-
-        $treatValuesAsNull = $this->configuration->storage->output->treatValuesAsNull;
-        if ($treatValuesAsNull !== null) {
-            $uploadTablesOptions['treat_values_as_null'] = $treatValuesAsNull;
-        }
-
-        try {
-            $fileWriter = new FileWriter($this->outputStrategyFactory);
-            $fileWriter->uploadFiles(
-                'data/out/files/',
-                ['mapping' => $outputFilesConfig],
-                $fileSystemMetadata,
-                $this->component->getOutputStagingStorage(),
-                [],
-                $isFailedJob,
-            );
-            if ($this->useFileStorageOnly()) {
-                $fileWriter->uploadFiles(
-                    'data/out/tables/',
-                    [],
-                    $fileSystemMetadata,
-                    $this->component->getOutputStagingStorage(),
-                    $outputTableFilesConfig,
-                    $isFailedJob,
-                );
-
-                // tag input files
-                $fileWriter->tagFiles($this->configuration->storage->input->files->toArray());
-                return null;
-            }
-
-            $tableLoader = new TableLoader(
-                logger: $this->outputStrategyFactory->getLogger(),
-                clientWrapper: $this->outputStrategyFactory->getClientWrapper(),
-                strategyFactory: $this->outputStrategyFactory,
-            );
-
-            $mappingSettings = new OutputMappingSettings(
-                configuration: $uploadTablesOptions,
-                sourcePathPrefix: 'data/out/tables/',
-                storageApiToken: $this->outputStrategyFactory->getClientWrapper()->getToken(),
-                isFailedJob: $isFailedJob,
-                dataTypeSupport: $this->getDataTypeSupport()->value,
-            );
-
-            $tableQueue = $tableLoader->uploadTables(
-                outputStaging: $this->component->getOutputStagingStorage(),
-                configuration: $mappingSettings,
-                systemMetadata: new SystemMetadata($tableSystemMetadata),
-            );
-
-            if (!$isFailedJob) {
-                // tag input files
-                $fileWriter->tagFiles($this->configuration->storage->input->files->toArray());
-            }
-            return $tableQueue;
-        } catch (InvalidOutputException $ex) {
-            throw new UserException($ex->getMessage(), $ex);
-        }
-    }
-
-    private function useFileStorageOnly(): bool
-    {
-        return $this->component->allowUseFileStorageOnly() && isset($this->configuration->runtime?->useFileStorageOnly);
+        return $this->outputDataLoader->storeOutput(
+            $this->component,
+            $this->configuration,
+            $this->configId,
+            $this->configRowId,
+            $isFailedJob,
+        );
     }
 
     public function getWorkspaceBackendSize(): ?string
@@ -297,18 +207,6 @@ class DataLoader implements DataLoaderInterface
         yield $stagingDefinition->getFileMetadataProvider();
         yield $stagingDefinition->getTableDataProvider();
         yield $stagingDefinition->getTableMetadataProvider();
-    }
-
-    protected function getDefaultBucket(): string
-    {
-        if ($this->component->hasDefaultBucket()) {
-            if (!$this->configId) {
-                throw new UserException('Configuration ID not set, but is required for default_bucket option.');
-            }
-            return $this->component->getDefaultBucketName($this->configId);
-        } else {
-            return '';
-        }
     }
 
     private function validateStagingSetting(
