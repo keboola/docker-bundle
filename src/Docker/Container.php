@@ -258,7 +258,7 @@ class Container
                     return;
                 }
                 array_walk_recursive($event, function (&$value) {
-                    $value = $this->outputFilter->filter((string) $value);
+                    $value = $this->outputFilter->redactSecrets((string) $value);
                 });
                 $this->containerLogger->addRawRecord(
                     (int) $event['level'],
