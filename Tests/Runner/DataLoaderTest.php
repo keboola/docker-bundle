@@ -9,9 +9,7 @@ use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
@@ -19,6 +17,7 @@ use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\OutputMapping\Writer\Table\MappingDestination;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
@@ -153,7 +152,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     /** @dataProvider invalidStagingProvider */
     public function testWorkspaceInvalid(string $input, string $output, string $error): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -195,7 +194,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testWorkspace(): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -230,7 +229,7 @@ class DataLoaderTest extends BaseDataLoaderTest
      */
     public function testWorkspaceReadOnly(bool $readOnlyWorkspace): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -296,7 +295,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -357,7 +356,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -402,7 +401,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -479,7 +478,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -612,7 +611,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -774,7 +773,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -957,7 +956,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             '1,text,text2,text3',
         );
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1124,7 +1123,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             '1,1,1.0',
         );
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1219,7 +1218,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testWorkspaceCleanupSuccess(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1274,7 +1273,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testWorkspaceCleanupWhenInitialized(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1364,7 +1363,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         ClientException $deleteException,
         bool $shouldBeLogged,
     ): void {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.runner-workspace-test',
             'data' => [
                 'definition' => [
@@ -1430,7 +1429,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testExternallyManagedWorkspaceSuccess(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1536,7 +1535,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $componentConfig['dataTypesConfiguration']['dataTypesSupport'] = $componentType;
         }
 
-        $component = new Component($componentConfig);
+        $component = new ComponentSpecification($componentConfig);
 
         $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
@@ -1646,7 +1645,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'columns' => ['id', 'name', 'price'],
             ]),
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1759,7 +1758,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'columns' => ['id', 'name', 'price'],
             ]),
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [

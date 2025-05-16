@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Runner\DataLoader;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\ExternallyManagedWorkspaceCredentials;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\WorkspaceProviderFactory;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\KeyGenerator\PemKeyCertificatePair;
 use Keboola\StagingProvider\Provider\ExistingWorkspaceProvider;
 use Keboola\StagingProvider\Provider\InvalidWorkspaceProvider;
@@ -44,7 +44,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             $this->testLogger,
         );
 
-        $component = $this->createMock(Component::class);
+        $component = $this->createMock(ComponentSpecification::class);
 
         $result = $factory->getWorkspaceStaging(
             'invalid-type',
@@ -88,7 +88,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             $this->testLogger,
         );
 
-        $component = $this->createMock(Component::class);
+        $component = $this->createMock(ComponentSpecification::class);
 
         $result = $factory->getWorkspaceStaging(
             AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
@@ -182,7 +182,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             $this->testLogger,
         );
 
-        $component = $this->createMock(Component::class);
+        $component = $this->createMock(ComponentSpecification::class);
         $component->method('useSnowflakeKeyPairAuth')->willReturn($useKeyPairAuth);
         $component->method('getId')->willReturn('component-id');
 
@@ -242,7 +242,7 @@ class WorkspaceProviderFactoryTest extends TestCase
             $this->testLogger,
         );
 
-        $component = $this->createMock(Component::class);
+        $component = $this->createMock(ComponentSpecification::class);
         $component->method('getId')->willReturn('component-id');
 
         $result = $factory->getWorkspaceStaging(

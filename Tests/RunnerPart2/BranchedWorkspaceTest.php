@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -222,7 +222,7 @@ class BranchedWorkspaceTest extends BaseRunnerTest
             ],
         ];
 
-        return new JobDefinition($configData, new Component($componentData), $configId, 'v123', []);
+        return new JobDefinition($configData, new ComponentSpecification($componentData), $configId, 'v123', []);
     }
 
     private function runJob(ClientWrapper $storageApiWrapper, JobDefinition $jobDefinition)

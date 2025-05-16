@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -80,10 +79,10 @@ abstract class BaseDataLoaderTest extends TestCase
         );
     }
 
-    protected function getDefaultBucketComponent(): Component
+    protected function getDefaultBucketComponent(): ComponentSpecification
     {
         // use the docker-demo component for testing
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -96,9 +95,9 @@ abstract class BaseDataLoaderTest extends TestCase
         ]);
     }
 
-    protected function getNoDefaultBucketComponent(): Component
+    protected function getNoDefaultBucketComponent(): ComponentSpecification
     {
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [

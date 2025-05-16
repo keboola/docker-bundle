@@ -96,71 +96,6 @@ parameters:
 			path: Tests/BaseRunnerTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfiguration\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testConfigurationDefaults\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOff\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testFlagsOn\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameNoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testGetSanitizedBucketNameTwoDot\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasNoSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testHasSwap\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentEmptyUri\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testInvalidComponentNoDefinition\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\ComponentTest\\:\\:testSetTag\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/Docker/ComponentTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -1024,11 +959,6 @@ parameters:
 			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/S3/DataLoaderS3Test.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Component\\:\\:getSanitizedComponentId\\(\\) should return string but returns string\\|null\\.$#"
-			count: 1
-			path: src/Docker/Component.php
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Docker\\\\Configuration\\:\\:parse\\(\\) has parameter \\$configurations with no type specified\\.$#"

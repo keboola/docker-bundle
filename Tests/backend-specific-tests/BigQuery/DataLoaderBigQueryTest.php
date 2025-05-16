@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\BackendTests\BigQuery;
 
-use Generator;
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\Configuration;
@@ -64,7 +62,7 @@ class DataLoaderBigQueryTest extends BaseDataLoaderTest
         $csv = new CsvFile($this->temp->getTmpFolder() . '/data.csv');
         $this->clientWrapper->getBasicClient()->createTableAsync($bucketId, 'test', $csv);
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => self::COMPONENT_ID,
             'data' => [
                 'definition' => [

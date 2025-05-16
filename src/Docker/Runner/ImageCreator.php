@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -21,7 +21,7 @@ class ImageCreator
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly BranchAwareClient $storageClient,
-        private readonly Component $mainComponent,
+        private readonly ComponentSpecification $mainComponent,
         private readonly array $componentConfig,
     ) {
         $this->before = $componentConfig['processors']['before'] ?? [];
@@ -48,12 +48,12 @@ class ImageCreator
         return $images;
     }
 
-    private function getComponent(string $id): Component
+    private function getComponent(string $id): ComponentSpecification
     {
         $componentsApi = new Components($this->storageClient);
         try {
             $component = $componentsApi->getComponent($id);
-            return new Component($component);
+            return new ComponentSpecification($component);
         } catch (ClientException $e) {
             throw new UserException(sprintf('Cannot get component "%s": %s.', $id, $e->getMessage()), $e);
         }

@@ -20,6 +20,7 @@ use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Options\InputTableOptionsList;
 use Keboola\InputMapping\Table\Options\ReaderOptions;
 use Keboola\InputMapping\Table\Result as InputTableResult;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
@@ -45,7 +46,7 @@ class DataLoader implements DataLoaderInterface
     private array $storageConfig;
     private array $runtimeConfig;
     private string $defaultBucketName;
-    private Component $component;
+    private ComponentSpecification $component;
     private ?string $configId;
     private ?string $configRowId;
     private InputStrategyFactory $inputStrategyFactory;
@@ -424,7 +425,7 @@ class DataLoader implements DataLoaderInterface
         if (!$this->clientWrapper->getToken()->hasFeature('new-native-types')) {
             return 'none';
         }
-        return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport();
+        return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport()->value;
     }
 
     private function getExternallyManagedWorkspaceCredentials(

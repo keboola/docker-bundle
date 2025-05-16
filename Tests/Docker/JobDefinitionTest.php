@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use PHPUnit\Framework\TestCase;
 
@@ -13,7 +13,7 @@ class JobDefinitionTest extends TestCase
 {
     public function testDefaults(): void
     {
-        $componentMock = $this->createMock(Component::class);
+        $componentMock = $this->createMock(ComponentSpecification::class);
         $componentMock->expects(self::once())
             ->method('getId')
             ->willReturn('keboola.sandboxes')
@@ -51,7 +51,7 @@ class JobDefinitionTest extends TestCase
     }
     public function testGetters(): void
     {
-        $componentMock = $this->createMock(Component::class);
+        $componentMock = $this->createMock(ComponentSpecification::class);
         $componentMock->expects(self::once())
             ->method('getId')
             ->willReturn('keboola.sandboxes')

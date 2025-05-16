@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StagingProvider\Provider\Configuration\NetworkPolicy;
 use Keboola\StagingProvider\Provider\Configuration\WorkspaceBackendConfig;
 use Keboola\StagingProvider\Provider\Credentials\ExistingCredentialsProvider;
@@ -31,7 +31,7 @@ class WorkspaceProviderFactory
 
     public function getWorkspaceStaging(
         string $stagingStorage,
-        Component $component,
+        ComponentSpecification $component,
         ?string $configId,
         array $backendConfig,
         ?bool $useReadonlyRole,
