@@ -4,23 +4,22 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner\DataLoader;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StorageState;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\UserException;
-use Keboola\InputMapping\Exception\InvalidInputException;
-use Keboola\InputMapping\Reader;
 use Keboola\InputMapping\Staging\AbstractStagingDefinition;
 use Keboola\InputMapping\Staging\AbstractStrategyFactory;
 use Keboola\InputMapping\Staging\ProviderInterface;
 use Keboola\InputMapping\Staging\StrategyFactory as InputStrategyFactory;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
-use Keboola\InputMapping\Table\Options\InputTableOptionsList;
-use Keboola\InputMapping\Table\Options\ReaderOptions;
-use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
+use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
@@ -43,14 +42,15 @@ use Psr\Log\LoggerInterface;
 
 class DataLoader implements DataLoaderInterface
 {
-    private array $storageConfig;
-    private array $runtimeConfig;
     private string $defaultBucketName;
     private ComponentSpecification $component;
+    private readonly Configuration $configuration;
+    private readonly State $state;
     private ?string $configId;
     private ?string $configRowId;
     private InputStrategyFactory $inputStrategyFactory;
     private OutputStrategyFactory $outputStrategyFactory;
+    private readonly InputDataLoader $inputDataLoader;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
@@ -58,19 +58,24 @@ class DataLoader implements DataLoaderInterface
         private readonly string $dataDirectory,
         JobDefinition $jobDefinition,
     ) {
-        $configuration = $jobDefinition->getConfiguration();
-        $this->storageConfig = $configuration['storage'] ?? [];
-        $this->runtimeConfig = $configuration['runtime'] ?? [];
+        $this->configuration = Configuration::fromArray($jobDefinition->getConfiguration());
+        $this->state = State::fromArray($jobDefinition->getState());
         $this->component = $jobDefinition->getComponent();
-        $this->configId = $jobDefinition->getConfigId();
+
+        $configId = $jobDefinition->getConfigId();
+        assert($configId !== '');
+        $this->configId = $configId;
+
         $this->configRowId = $jobDefinition->getRowId();
-        $this->defaultBucketName = (string) ($this->storageConfig['output']['default_bucket'] ?? '');
+
+        $this->defaultBucketName = $this->configuration->storage->output->defaultBucket ?? '';
         if ($this->defaultBucketName === '') {
             $this->defaultBucketName = $this->getDefaultBucket();
         }
 
-        $this->validateStagingSetting();
-        $externallyManagedWorkspaceCredentials = $this->getExternallyManagedWorkspaceCredentials($this->runtimeConfig);
+        $stagingStorageInput = $this->component->getInputStagingStorage();
+        $stagingStorageOutput = $this->component->getOutputStagingStorage();
+        $this->validateStagingSetting($stagingStorageInput, $stagingStorageOutput);
 
         $this->inputStrategyFactory = new InputStrategyFactory(
             $this->clientWrapper,
@@ -102,12 +107,11 @@ class DataLoader implements DataLoaderInterface
         /* There can only be one workspace type (ensured in validateStagingSetting()) - so we're checking
             just input staging here (because if it is workspace, it must be the same as output mapping). */
         $workspaceProvider = $workspaceProviderFactory->getWorkspaceStaging(
-            $this->getStagingStorageInput(),
+            $stagingStorageInput,
             $this->component,
-            $this->configId,
-            $this->runtimeConfig['backend'] ?? [],
-            $this->storageConfig['input']['read_only_storage_access'] ?? null,
-            $externallyManagedWorkspaceCredentials,
+            $configId,
+            $this->configuration->runtime?->backend,
+            $this->configuration->storage->input->readOnlyStorageAccess,
         );
         $localProviderFactory = new LocalStagingProvider($dataDirectory);
 
@@ -117,8 +121,13 @@ class DataLoader implements DataLoaderInterface
             $localProviderFactory,
         );
         $inputProviderInitializer->initializeProviders(
-            $this->getStagingStorageInput(),
+            $stagingStorageInput,
             $tokenInfo,
+        );
+        $this->inputDataLoader = new InputDataLoader(
+            $this->inputStrategyFactory,
+            $this->logger,
+            'data/in/',
         );
 
         $outputProviderInitializer = new OutputProviderInitializer(
@@ -127,7 +136,7 @@ class DataLoader implements DataLoaderInterface
             $localProviderFactory,
         );
         $outputProviderInitializer->initializeProviders(
-            $this->getStagingStorageOutput(),
+            $stagingStorageOutput,
             $tokenInfo,
         );
     }
@@ -139,68 +148,25 @@ class DataLoader implements DataLoaderInterface
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
     ): StorageState {
-        $reader = new Reader($this->inputStrategyFactory);
-        $inputTableResult = new InputTableResult();
-        $inputTableResult->setInputTableStateList(new InputTableStateList([]));
-        $resultInputFilesStateList = new InputFileStateList([]);
-        $readerOptions = new ReaderOptions(
-            !$this->component->allowBranchMapping(),
-            preserveWorkspace: false,
+        $result = $this->inputDataLoader->loadInputData(
+            $this->component,
+            $this->configuration,
+            $this->state,
         );
 
-        try {
-            if (isset($this->storageConfig['input']['tables']) && count($this->storageConfig['input']['tables'])) {
-                $this->logger->debug('Downloading source tables.');
-                $inputTableResult = $reader->downloadTables(
-                    new InputTableOptionsList($this->storageConfig['input']['tables']),
-                    $inputTableStateList,
-                    'data/in/tables/',
-                    $this->getStagingStorageInput(),
-                    $readerOptions,
-                );
-            }
-            if (isset($this->storageConfig['input']['files']) &&
-                count($this->storageConfig['input']['files'])
-            ) {
-                $this->logger->debug('Downloading source files.');
-                $resultInputFilesStateList = $reader->downloadFiles(
-                    $this->storageConfig['input']['files'],
-                    'data/in/files/',
-                    $this->getStagingStorageInput(),
-                    $inputFileStateList,
-                );
-            }
-        } catch (ClientException $e) {
-            throw new UserException('Cannot import data from Storage API: ' . $e->getMessage(), $e);
-        } catch (InvalidInputException $e) {
-            throw new UserException($e->getMessage(), $e);
-        }
-
-        return new StorageState($inputTableResult, $resultInputFilesStateList);
+        return new StorageState(
+            inputTableResult: $result->inputTableResult,
+            inputFileStateList: $result->inputFileStateList,
+        );
     }
 
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue
     {
         $this->logger->debug('Storing results.');
-        $outputTablesConfig = [];
-        $outputFilesConfig = [];
-        $outputTableFilesConfig = [];
+        $outputTablesConfig = $this->configuration->storage->output->tables->toArray();
+        $outputFilesConfig = $this->configuration->storage->output->files->toArray();
+        $outputTableFilesConfig = $this->configuration->storage->output->tableFiles->toArray();
 
-        if (isset($this->storageConfig['output']['tables']) &&
-            count($this->storageConfig['output']['tables'])
-        ) {
-            $outputTablesConfig = $this->storageConfig['output']['tables'];
-        }
-        if (isset($this->storageConfig['output']['files']) &&
-            count($this->storageConfig['output']['files'])
-        ) {
-            $outputFilesConfig = $this->storageConfig['output']['files'];
-        }
-        if (isset($this->storageConfig['output']['table_files']) &&
-            count($this->storageConfig['output']['table_files'])
-        ) {
-            $outputTableFilesConfig = $this->storageConfig['output']['table_files'];
-        }
         $this->logger->debug('Uploading output tables and files.');
 
         $uploadTablesOptions = ['mapping' => $outputTablesConfig];
@@ -225,7 +191,7 @@ class DataLoader implements DataLoaderInterface
             $this->logger->debug('Default bucket ' . $uploadTablesOptions['bucket']);
         }
 
-        $treatValuesAsNull = $this->storageConfig['output']['treat_values_as_null'] ?? null;
+        $treatValuesAsNull = $this->configuration->storage->output->treatValuesAsNull;
         if ($treatValuesAsNull !== null) {
             $uploadTablesOptions['treat_values_as_null'] = $treatValuesAsNull;
         }
@@ -236,7 +202,7 @@ class DataLoader implements DataLoaderInterface
                 'data/out/files/',
                 ['mapping' => $outputFilesConfig],
                 $fileSystemMetadata,
-                $this->getStagingStorageOutput(),
+                $this->component->getOutputStagingStorage(),
                 [],
                 $isFailedJob,
             );
@@ -245,14 +211,13 @@ class DataLoader implements DataLoaderInterface
                     'data/out/tables/',
                     [],
                     $fileSystemMetadata,
-                    $this->getStagingStorageOutput(),
+                    $this->component->getOutputStagingStorage(),
                     $outputTableFilesConfig,
                     $isFailedJob,
                 );
-                if (isset($this->storageConfig['input']['files'])) {
-                    // tag input files
-                    $fileWriter->tagFiles($this->storageConfig['input']['files']);
-                }
+
+                // tag input files
+                $fileWriter->tagFiles($this->configuration->storage->input->files->toArray());
                 return null;
             }
 
@@ -267,18 +232,18 @@ class DataLoader implements DataLoaderInterface
                 sourcePathPrefix: 'data/out/tables/',
                 storageApiToken: $this->outputStrategyFactory->getClientWrapper()->getToken(),
                 isFailedJob: $isFailedJob,
-                dataTypeSupport: $this->getDataTypeSupport(),
+                dataTypeSupport: $this->getDataTypeSupport()->value,
             );
 
             $tableQueue = $tableLoader->uploadTables(
-                outputStaging: $this->getStagingStorageOutput(),
+                outputStaging: $this->component->getOutputStagingStorage(),
                 configuration: $mappingSettings,
                 systemMetadata: new SystemMetadata($tableSystemMetadata),
             );
 
-            if (isset($this->storageConfig['input']['files']) && !$isFailedJob) {
+            if (!$isFailedJob) {
                 // tag input files
-                $fileWriter->tagFiles($this->storageConfig['input']['files']);
+                $fileWriter->tagFiles($this->configuration->storage->input->files->toArray());
             }
             return $tableQueue;
         } catch (InvalidOutputException $ex) {
@@ -288,7 +253,7 @@ class DataLoader implements DataLoaderInterface
 
     private function useFileStorageOnly(): bool
     {
-        return $this->component->allowUseFileStorageOnly() && isset($this->runtimeConfig['use_file_storage_only']);
+        return $this->component->allowUseFileStorageOnly() && isset($this->configuration->runtime?->useFileStorageOnly);
     }
 
     public function getWorkspaceBackendSize(): ?string
@@ -349,42 +314,22 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    private function getStagingStorageInput(): string
-    {
-        $stagingStorage = $this->component->getStagingStorage();
-        if ($stagingStorage !== null) {
-            if (isset($stagingStorage['input'])) {
-                return $stagingStorage['input'];
-            }
-        }
-        return AbstractStrategyFactory::LOCAL;
-    }
-
-    private function getStagingStorageOutput(): string
-    {
-        $stagingStorage = $this->component->getStagingStorage();
-        if ($stagingStorage !== null) {
-            if (isset($stagingStorage['output'])) {
-                return $stagingStorage['output'];
-            }
-        }
-        return AbstractStrategyFactory::LOCAL;
-    }
-
-    private function validateStagingSetting(): void
-    {
+    private function validateStagingSetting(
+        string $stagingStorageInput,
+        string $stagingStorageOutput,
+    ): void {
         $workspaceTypes = [
             AbstractStrategyFactory::WORKSPACE_SNOWFLAKE,
             AbstractStrategyFactory::WORKSPACE_BIGQUERY,
         ];
-        if (in_array($this->getStagingStorageInput(), $workspaceTypes)
-            && in_array($this->getStagingStorageOutput(), $workspaceTypes)
-            && $this->getStagingStorageInput() !== $this->getStagingStorageOutput()
+        if (in_array($stagingStorageInput, $workspaceTypes)
+            && in_array($stagingStorageOutput, $workspaceTypes)
+            && $stagingStorageInput !== $stagingStorageOutput
         ) {
             throw new ApplicationException(sprintf(
                 'Component staging setting mismatch - input: "%s", output: "%s".',
-                $this->getStagingStorageInput(),
-                $this->getStagingStorageOutput(),
+                $stagingStorageInput,
+                $stagingStorageOutput,
             ));
         }
     }
@@ -420,20 +365,12 @@ class DataLoader implements DataLoaderInterface
         }
     }
 
-    public function getDataTypeSupport(): string
+    public function getDataTypeSupport(): DataTypeSupport
     {
         if (!$this->clientWrapper->getToken()->hasFeature('new-native-types')) {
-            return 'none';
+            return DataTypeSupport::NONE;
         }
-        return $this->storageConfig['output']['data_type_support'] ?? $this->component->getDataTypesSupport()->value;
-    }
 
-    private function getExternallyManagedWorkspaceCredentials(
-        array $runtimeConfig,
-    ): ?ExternallyManagedWorkspaceCredentials {
-        if (isset($runtimeConfig['backend']['workspace_credentials'])) {
-            return ExternallyManagedWorkspaceCredentials::fromArray($runtimeConfig['backend']['workspace_credentials']);
-        }
-        return null;
+        return $this->configuration->storage->output->dataTypeSupport ?? $this->component->getDataTypesSupport();
     }
 }

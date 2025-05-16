@@ -5,19 +5,20 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 use Keboola\OutputMapping\Writer\Table\MappingDestination;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
@@ -99,7 +100,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testNoConfigDefaultBucketException(): void
     {
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage('Configuration ID not set');
         new DataLoader(
             $this->clientWrapper,
@@ -136,7 +137,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage(
             'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"',
         );
@@ -166,7 +167,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        self::expectException(ApplicationException::class);
+        self::expectException(ApplicationExceptionInterface::class);
         self::expectExceptionMessage($error);
         new DataLoader(
             $this->clientWrapper,
@@ -327,7 +328,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
         );
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage(
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
             'branch and must not be used directly in input mapping.',
@@ -1513,7 +1514,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         bool $hasFeature,
         ?string $componentType,
         ?string $configType,
-        string $expectedType,
+        DataTypeSupport $expectedType,
     ): void {
         $componentId = 'keboola.runner-workspace-test';
         $componentConfig = [
@@ -1579,56 +1580,55 @@ class DataLoaderTest extends BaseDataLoaderTest
         self::assertEquals($expectedType, $dataLoader->getDataTypeSupport());
     }
 
-    public function dataTypeSupportProvider(): Generator
+    public function dataTypeSupportProvider(): iterable
     {
-
         yield 'default-values' => [
             true,
             null,
             null,
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'component-override' => [
             true,
             'hints',
             null,
-            'hints',
+            DataTypeSupport::HINTS,
         ];
 
         yield 'config-override' => [
             true,
             null,
             'authoritative',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         ];
 
         yield 'component-config-override' => [
             true,
             'hints',
             'authoritative',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         ];
 
         yield 'component-override-without-feature' => [
             false,
             'hints',
             null,
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'config-override-without-feature' => [
             false,
             null,
             'authoritative',
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'component-config-override-without-feature' => [
             false,
             'hints',
             'authoritative',
-            'none',
+            DataTypeSupport::NONE,
         ];
     }
 
