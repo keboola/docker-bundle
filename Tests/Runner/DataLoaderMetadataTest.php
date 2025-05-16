@@ -210,6 +210,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testExecutorConfigMetadata(): void
     {
+        $this->dropBucket($this->clientWrapper, 'in.c-runner-test');
+
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',

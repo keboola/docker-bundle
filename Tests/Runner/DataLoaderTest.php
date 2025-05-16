@@ -100,14 +100,16 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testNoConfigDefaultBucketException(): void
     {
-        self::expectException(UserExceptionInterface::class);
-        self::expectExceptionMessage('Configuration ID not set');
-        new DataLoader(
+        $dataLoader =new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
         );
+
+        self::expectException(UserExceptionInterface::class);
+        self::expectExceptionMessage('Configuration ID not set');
+        $dataLoader->storeOutput();
     }
 
     public function testExecutorInvalidOutputMapping(): void
