@@ -125,7 +125,6 @@ class DataLoaderBigQueryTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component, $configId),
-            new OutputFilter(10000),
         );
         $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         $credentials = $dataLoader->getWorkspaceCredentials();
