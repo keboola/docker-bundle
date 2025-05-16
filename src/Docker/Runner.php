@@ -25,6 +25,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
@@ -446,7 +447,7 @@ class Runner
         ?string $configId,
         ?string $configVersion,
         ?string $rowId,
-        Component $component,
+        ComponentSpecification $component,
         UsageFileInterface $usageFile,
         DataLoaderInterface $dataLoader,
         DataDirUploader $dataDirUploader,
@@ -534,7 +535,7 @@ class Runner
         ?string $configId,
         ?string $configVersion,
         ?string $rowId,
-        Component $component,
+        ComponentSpecification $component,
         UsageFileInterface $usageFile,
         WorkingDirectory $workingDirectory,
         ImageCreator $imageCreator,

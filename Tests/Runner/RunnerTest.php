@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner;
@@ -20,6 +19,7 @@ use Keboola\DockerBundle\Tests\TestUsageFile;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
 use Keboola\InputMapping\Table\Result\Column;
 use Keboola\InputMapping\Table\Result\TableInfo;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
@@ -1138,7 +1138,7 @@ class RunnerTest extends BaseRunnerTest
             [
                 new JobDefinition(
                     $configData1,
-                    new Component($componentData),
+                    new ComponentSpecification($componentData),
                     'runner-configuration',
                     'v123',
                     [],
@@ -1146,7 +1146,7 @@ class RunnerTest extends BaseRunnerTest
                 ),
                 new JobDefinition(
                     $configData2,
-                    new Component($componentData),
+                    new ComponentSpecification($componentData),
                     'runner-configuration',
                     'v123',
                     [],
@@ -1251,7 +1251,7 @@ class RunnerTest extends BaseRunnerTest
                 [
                     new JobDefinition(
                         $configData1,
-                        new Component($componentData),
+                        new ComponentSpecification($componentData),
                         'runner-configuration',
                         'v123',
                         [],
@@ -1377,7 +1377,7 @@ class RunnerTest extends BaseRunnerTest
                 [
                     new JobDefinition(
                         $configData1,
-                        new Component($componentData),
+                        new ComponentSpecification($componentData),
                         'runner-configuration',
                         'v123',
                         [],
@@ -1385,7 +1385,7 @@ class RunnerTest extends BaseRunnerTest
                     ),
                     new JobDefinition(
                         $configData2,
-                        new Component($componentData),
+                        new ComponentSpecification($componentData),
                         'runner-configuration',
                         'v123',
                         [],
@@ -2795,7 +2795,11 @@ class RunnerTest extends BaseRunnerTest
                 ],
             ],
         ];
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new ComponentSpecification($componentData),
+            'runner-configuration',
+        );
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs, null);
@@ -2839,7 +2843,7 @@ class RunnerTest extends BaseRunnerTest
         ];
         $jobDefinition = new JobDefinition(
             configuration: $configData,
-            component: new Component($componentData),
+            component: new ComponentSpecification($componentData),
             configId: 'runner-configuration',
             inputVariableValues: $variableValues,
         );
@@ -2906,7 +2910,7 @@ class RunnerTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -2914,7 +2918,7 @@ class RunnerTest extends BaseRunnerTest
         );
         $jobDefinition2 = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -2976,7 +2980,11 @@ class RunnerTest extends BaseRunnerTest
                 'script' => [],
             ],
         ];
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), 'runner-configuration');
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new ComponentSpecification($componentData),
+            'runner-configuration',
+        );
         $runner = $this->getRunner();
         $outputs = [];
         $runner->run([$jobDefinition], 'run', 'run', '987654', $usageFile, [], $outputs, null);
@@ -3019,7 +3027,7 @@ class RunnerTest extends BaseRunnerTest
         );
         sleep(2);
 
-        $componentDefinition = new Component([
+        $componentDefinition = new ComponentSpecification([
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [

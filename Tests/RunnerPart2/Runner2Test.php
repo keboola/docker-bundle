@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\ReflectionPropertyAccessTestCase;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\BranchAwareClient as StorageApiClient;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Options\Components\ListComponentConfigurationsOptions;
@@ -130,7 +130,7 @@ class Runner2Test extends BaseRunnerTest
 
         $jobDefinition = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -198,7 +198,7 @@ class Runner2Test extends BaseRunnerTest
 
         $jobDefinition = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],

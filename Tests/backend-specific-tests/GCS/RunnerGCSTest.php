@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\BackendTests\GCS;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\DockerBundle\Tests\Runner\BackendAssertsTrait;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -80,7 +80,13 @@ class RunnerGCSTest extends BaseRunnerTest
      */
     protected function prepareJobDefinitions(array $componentData, $configId, array $configData, array $state)
     {
-        $jobDefinition = new JobDefinition($configData, new Component($componentData), $configId, 'v123', $state);
+        $jobDefinition = new JobDefinition(
+            $configData,
+            new ComponentSpecification($componentData),
+            $configId,
+            'v123',
+            $state,
+        );
         return [$jobDefinition];
     }
 
