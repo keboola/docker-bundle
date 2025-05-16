@@ -19,6 +19,7 @@ class JobDefinition
     public function __construct(
         array $configuration,
         private readonly ComponentSpecification $component,
+        /** @var null|non-empty-string */
         private readonly ?string $configId = null,
         private readonly ?string $configVersion = null,
         private readonly array $state = [],
@@ -36,6 +37,9 @@ class JobDefinition
         return $this->component->getId();
     }
 
+    /**
+     * @return non-empty-string|null
+     */
     public function getConfigId(): ?string
     {
         return $this->configId;

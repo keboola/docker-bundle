@@ -91,11 +91,6 @@ parameters:
 			path: Tests/BaseDataLoaderTest.php
 
 		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\BaseRunnerTest\\:\\:prepareJobDefinitions\\(\\) has parameter \\$configId with no type specified\\.$#"
-			count: 1
-			path: Tests/BaseRunnerTest.php
-
-		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\Tests\\\\Docker\\\\Configuration\\\\ConfigurationAdapterTest\\:\\:getJsonConfigFileTemplate\\(\\) has no return type specified\\.$#"
 			count: 1
 			path: Tests/Docker/Configuration/ConfigurationAdapterTest.php
@@ -927,11 +922,6 @@ parameters:
 
 		-
 			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:createBuckets\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
-
-		-
-			message: "#^Method Keboola\\\\DockerBundle\\\\BackendTests\\\\GCS\\\\RunnerGCSTest\\:\\:prepareJobDefinitions\\(\\) has parameter \\$configId with no type specified\\.$#"
 			count: 1
 			path: Tests/backend-specific-tests/GCS/RunnerGCSTest.php
 

@@ -1826,7 +1826,7 @@ class RunnerTest extends BaseRunnerTest
         $runner->run(
             $this->prepareJobDefinitions(
                 $componentData,
-                '',
+                null,
                 $configData,
                 [],
             ),
