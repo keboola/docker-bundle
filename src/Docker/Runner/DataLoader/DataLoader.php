@@ -19,6 +19,7 @@ use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSuppor
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
 use Keboola\JobQueue\JobConfiguration\Mapping\InputDataLoader;
 use Keboola\JobQueue\JobConfiguration\Mapping\OutputDataLoader;
+use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceCleaner;
 use Keboola\JobQueue\JobConfiguration\Mapping\WorkspaceProviderFactory;
 use Keboola\KeyGenerator\PemKeyCertificateGenerator;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
@@ -26,10 +27,8 @@ use Keboola\OutputMapping\Staging\StrategyFactory as OutputStrategyFactory;
 use Keboola\StagingProvider\InputProviderInitializer;
 use Keboola\StagingProvider\OutputProviderInitializer;
 use Keboola\StagingProvider\Provider\LocalStagingProvider;
-use Keboola\StagingProvider\Provider\NewWorkspaceProvider;
 use Keboola\StagingProvider\Provider\SnowflakeKeypairGenerator;
 use Keboola\StagingProvider\Provider\WorkspaceProviderInterface;
-use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
 use Keboola\StorageApi\Workspaces;
 use Keboola\StorageApiBranch\ClientWrapper;
@@ -47,6 +46,7 @@ class DataLoader implements DataLoaderInterface
     private readonly OutputStrategyFactory $outputStrategyFactory;
     private readonly InputDataLoader $inputDataLoader;
     private readonly OutputDataLoader $outputDataLoader;
+    private readonly WorkspaceCleaner $workspaceCleaner;
 
     public function __construct(
         private readonly ClientWrapper $clientWrapper,
@@ -130,6 +130,12 @@ class DataLoader implements DataLoaderInterface
             $this->outputStrategyFactory,
             $this->logger,
             'data/out/',
+        );
+
+        $this->workspaceCleaner = new WorkspaceCleaner(
+            $this->outputStrategyFactory,
+            $this->inputStrategyFactory,
+            $this->logger,
         );
     }
 
@@ -231,33 +237,7 @@ class DataLoader implements DataLoaderInterface
 
     public function cleanWorkspace(): void
     {
-        $cleanedProviders = [];
-        $maps = array_merge(
-            $this->inputStrategyFactory->getStrategyMap(),
-            $this->outputStrategyFactory->getStrategyMap(),
-        );
-        foreach ($maps as $stagingDefinition) {
-            foreach ($this->getStagingProviders($stagingDefinition) as $stagingProvider) {
-                if (!$stagingProvider instanceof NewWorkspaceProvider) {
-                    continue;
-                }
-                if (in_array($stagingProvider, $cleanedProviders, true)) {
-                    continue;
-                }
-
-                try {
-                    $stagingProvider->cleanup();
-                    $cleanedProviders[] = $stagingProvider;
-                } catch (ClientException $e) {
-                    if ($e->getCode() === 404) {
-                        // workspace is already deleted
-                        continue;
-                    }
-                    // ignore errors if the cleanup fails because we a) can't fix it b) should not break the job
-                    $this->logger->error('Failed to cleanup workspace: ' . $e->getMessage());
-                }
-            }
-        }
+        $this->workspaceCleaner->cleanWorkspace();
     }
 
     public function getDataTypeSupport(): DataTypeSupport
