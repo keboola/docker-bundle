@@ -28,7 +28,7 @@ class OutputTest extends TestCase
         self::assertNull($output->getTableQueue());
         self::assertNull($output->getInputTableResult());
         self::assertNull($output->getInputFileStateList());
-        self::assertNull($output->getDataLoader());
+        self::assertNull($output->getStagingWorkspace());
         // self::assertNull($output->getStateFile()); // does not have default value
         self::assertSame([], $output->getArtifactsUploaded());
         self::assertSame([], $output->getArtifactsDownloaded());
@@ -70,8 +70,8 @@ class OutputTest extends TestCase
         self::assertSame($inputFileStateList, $output->getInputFileStateList());
 
         $dataLoader = $this->createMock(DataLoaderInterface::class);
-        $output->setDataLoader($dataLoader);
-        self::assertSame($dataLoader, $output->getDataLoader());
+        $output->setStagingWorkspace($dataLoader);
+        self::assertSame($dataLoader, $output->getStagingWorkspace());
 
         $stateFileMock = $this->createMock(StateFile::class);
         $output->setStateFile($stateFileMock);

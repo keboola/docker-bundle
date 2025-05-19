@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Docker\Runner;
 
-use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoaderInterface;
+use Keboola\DockerBundle\Docker\Runner\DataLoader\StagingWorkspaceFacade;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\Table\Result as InputTableResult;
 use Keboola\OutputMapping\DeferredTasks\LoadTableQueue;
@@ -18,7 +18,7 @@ class Output
     private ?LoadTableQueue $tableQueue = null;
     private StateFile $stateFile;
     private ?InputFileStateList $inputFileStateList = null;
-    private ?DataLoaderInterface $dataLoader = null;
+    private ?StagingWorkspaceFacade $stagingWorkspace = null;
     private ?InputTableResult $inputTableResult = null;
     private ?OutputTableResult $outputTableResult = null;
     private array $artifactsDownloaded = [];
@@ -70,9 +70,9 @@ class Output
         $this->inputFileStateList = $inputFileStateList;
     }
 
-    public function setDataLoader(DataLoaderInterface $dataLoader): void
+    public function setStagingWorkspace(?StagingWorkspaceFacade $stagingWorkspace): void
     {
-        $this->dataLoader = $dataLoader;
+        $this->stagingWorkspace = $stagingWorkspace;
     }
 
     public function getInputTableResult(): ?InputTableResult
@@ -100,9 +100,9 @@ class Output
         return $this->stateFile;
     }
 
-    public function getDataLoader(): ?DataLoaderInterface
+    public function getStagingWorkspace(): ?StagingWorkspaceFacade
     {
-        return $this->dataLoader;
+        return $this->stagingWorkspace;
     }
 
     public function setArtifactsDownloaded(array $downloadedArtifacts): void
