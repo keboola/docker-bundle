@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\Csv\CsvFile;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
 use Keboola\DockerBundle\Docker\Runner\StateFile;
 use Keboola\DockerBundle\Docker\Runner\UsageFile\NullUsageFile;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseRunnerTest;
 use Keboola\InputMapping\Table\Options\InputTableOptions;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\Client;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Components;
@@ -118,7 +118,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
     private function getComponent()
     {
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
@@ -181,7 +181,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
     public function testRunMultipleRowsWithContainerRootUserFeature()
     {
-        $componentData = new Component([
+        $componentData = new ComponentSpecification([
             'id' => 'keboola.docker-demo-sync',
             'data' => [
                 'definition' => [
@@ -665,7 +665,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
 
         $jobDefinition1 = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],
@@ -673,7 +673,7 @@ class RunnerConfigRowsTest extends BaseRunnerTest
         );
         $jobDefinition2 = new JobDefinition(
             $configData,
-            new Component($componentData),
+            new ComponentSpecification($componentData),
             'runner-configuration',
             null,
             [],

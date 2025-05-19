@@ -8,11 +8,11 @@ use Aws\Credentials\CredentialProvider;
 use Aws\Ecr\EcrClient;
 use Aws\Result;
 use Aws\Sts\StsClient;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Exception\ApplicationException;
 use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Exception\UserException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -24,7 +24,7 @@ class AWSElasticContainerRegistry extends Image
     private const CONNECT_RETRIES = 0;
     private const TRANSFER_TIMEOUT = 120;
 
-    public function __construct(Component $component, LoggerInterface $logger)
+    public function __construct(ComponentSpecification $component, LoggerInterface $logger)
     {
         parent::__construct($component, $logger);
         if (!empty($component->getImageDefinition()['repository']['region'])) {
@@ -94,7 +94,7 @@ class AWSElasticContainerRegistry extends Image
             throw new LoginFailedException($e->getMessage(), $e);
         }
         // decode token and extract user
-        list($user, $token) =
+        [$user, $token] =
             explode(':', base64_decode($authorization->get('authorizationData')[0]['authorizationToken']));
 
         $loginParams[] = '--username=' . escapeshellarg($user);

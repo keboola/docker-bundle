@@ -16,15 +16,6 @@ use Psr\Log\LoggerInterface;
 
 class NullDataLoader implements DataLoaderInterface
 {
-    public function __construct(
-        ClientWrapper $clientWrapper,
-        LoggerInterface $logger,
-        $dataDirectory,
-        JobDefinition $jobDefinition,
-        OutputFilterInterface $outputFilter,
-    ) {
-    }
-
     public function loadInputData(
         InputTableStateList $inputTableStateList,
         InputFileStateList $inputFileStateList,
@@ -37,10 +28,6 @@ class NullDataLoader implements DataLoaderInterface
     public function storeOutput(bool $isFailedJob = false): ?LoadTableQueue
     {
         return null;
-    }
-
-    public function storeDataArchive(string $fileName, array $tags): void
-    {
     }
 
     public function getWorkspaceCredentials(): array

@@ -43,7 +43,7 @@ class OutputFilter implements OutputFilterInterface
         });
     }
 
-    public function filter(string $text): string
+    public function redactSecrets(string $text): string
     {
         return $this->filterGarbage($this->filterSecrets($text));
     }

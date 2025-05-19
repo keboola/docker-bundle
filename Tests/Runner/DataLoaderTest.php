@@ -5,20 +5,20 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Generator;
+use Keboola\CommonExceptions\ApplicationExceptionInterface;
+use Keboola\CommonExceptions\UserExceptionInterface;
 use Keboola\Csv\CsvFile;
 use Keboola\Datatype\Definition\BaseType;
 use Keboola\Datatype\Definition\GenericStorage;
 use Keboola\Datatype\Definition\Snowflake;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
-use Keboola\DockerBundle\Exception\ApplicationException;
-use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
 use Keboola\InputMapping\Table\Result;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\DataTypeSupport;
 use Keboola\OutputMapping\Writer\Table\MappingDestination;
 use Keboola\StorageApi\BranchAwareClient;
 use Keboola\StorageApi\ClientException;
@@ -100,15 +100,16 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testNoConfigDefaultBucketException(): void
     {
-        self::expectException(UserException::class);
-        self::expectExceptionMessage('Configuration ID not set');
-        new DataLoader(
+        $dataLoader =new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent()),
-            new OutputFilter(10000),
         );
+
+        self::expectException(UserExceptionInterface::class);
+        self::expectExceptionMessage('Configuration ID not set');
+        $dataLoader->storeOutput();
     }
 
     public function testExecutorInvalidOutputMapping(): void
@@ -138,7 +139,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',
             "id,text,row_number\n1,test,1\n1,test,2\n1,test,3",
         );
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage(
             'Invalid type for path "container.storage.output.tables.0.primary_key". Expected "array", but got "string"',
         );
@@ -147,7 +148,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition(['storage' => $config], $this->getNoDefaultBucketComponent()),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
     }
@@ -155,7 +155,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     /** @dataProvider invalidStagingProvider */
     public function testWorkspaceInvalid(string $input, string $output, string $error): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -169,14 +169,13 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         ]);
-        self::expectException(ApplicationException::class);
+        self::expectException(ApplicationExceptionInterface::class);
         self::expectExceptionMessage($error);
         new DataLoader(
             $this->clientWrapper,
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000),
         );
     }
 
@@ -198,7 +197,7 @@ class DataLoaderTest extends BaseDataLoaderTest
 
     public function testWorkspace(): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -217,7 +216,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -234,7 +232,7 @@ class DataLoaderTest extends BaseDataLoaderTest
      */
     public function testWorkspaceReadOnly(bool $readOnlyWorkspace): void
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -262,7 +260,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $dataLoader->storeOutput();
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -301,7 +298,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -332,9 +329,8 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
-        self::expectException(UserException::class);
+        self::expectException(UserExceptionInterface::class);
         self::expectExceptionMessage(
             'The buckets "in.c-docker-demo-testConfig" come from a development ' .
             'branch and must not be used directly in input mapping.',
@@ -363,7 +359,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
             ],
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -395,7 +391,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $storageState = $dataLoader->loadInputData(new InputTableStateList([]), new InputFileStateList([]));
         self::assertInstanceOf(Result::class, $storageState->getInputTableResult());
@@ -409,7 +404,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -460,7 +455,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -487,7 +481,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45,3.3333,true,2020-02-02,2020-02-02 02:02:02',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -590,7 +584,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -621,7 +614,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text,123.45',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -698,7 +691,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -784,7 +776,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $this->workingDir->getDataDir() . '/out/tables/typed-data.csv',
             '1,text',
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -854,7 +846,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -968,7 +959,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             '1,text,text2,text3',
         );
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1054,7 +1045,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1136,7 +1126,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             '1,1,1.0',
         );
 
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1213,7 +1203,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1232,7 +1221,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testWorkspaceCleanupSuccess(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1273,7 +1262,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
         // immediately calling cleanWorkspace without using it means it was not initialized
         $dataLoader->cleanWorkspace();
@@ -1288,7 +1276,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testWorkspaceCleanupWhenInitialized(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1334,7 +1322,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
 
         // this causes the workspaces to initialize
@@ -1379,7 +1366,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         ClientException $deleteException,
         bool $shouldBeLogged,
     ): void {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.runner-workspace-test',
             'data' => [
                 'definition' => [
@@ -1424,7 +1411,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition([], $component, $configId),
-            new OutputFilter(10000),
         );
         $credentials = $dataLoader->getWorkspaceCredentials();
         self::assertArrayHasKey('host', $credentials);
@@ -1446,7 +1432,7 @@ class DataLoaderTest extends BaseDataLoaderTest
     public function testExternallyManagedWorkspaceSuccess(): void
     {
         $componentId = 'keboola.runner-workspace-test';
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $componentId,
             'data' => [
                 'definition' => [
@@ -1500,7 +1486,6 @@ class DataLoaderTest extends BaseDataLoaderTest
                 ],
                 $component,
             ),
-            new OutputFilter(10000),
         );
 
         $credentials = $dataLoader->getWorkspaceCredentials();
@@ -1531,7 +1516,7 @@ class DataLoaderTest extends BaseDataLoaderTest
         bool $hasFeature,
         ?string $componentType,
         ?string $configType,
-        string $expectedType,
+        DataTypeSupport $expectedType,
     ): void {
         $componentId = 'keboola.runner-workspace-test';
         $componentConfig = [
@@ -1553,7 +1538,7 @@ class DataLoaderTest extends BaseDataLoaderTest
             $componentConfig['dataTypesConfiguration']['dataTypesSupport'] = $componentType;
         }
 
-        $component = new Component($componentConfig);
+        $component = new ComponentSpecification($componentConfig);
 
         $clientMock = $this->createMock(BranchAwareClient::class);
         $clientMock->method('verifyToken')->willReturn($this->clientWrapper->getBasicClient()->verifyToken());
@@ -1592,62 +1577,60 @@ class DataLoaderTest extends BaseDataLoaderTest
             $logger,
             $this->workingDir->getDataDir(),
             new JobDefinition($jobConfig, $component, $configId),
-            new OutputFilter(10000),
         );
 
         self::assertEquals($expectedType, $dataLoader->getDataTypeSupport());
     }
 
-    public function dataTypeSupportProvider(): Generator
+    public function dataTypeSupportProvider(): iterable
     {
-
         yield 'default-values' => [
             true,
             null,
             null,
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'component-override' => [
             true,
             'hints',
             null,
-            'hints',
+            DataTypeSupport::HINTS,
         ];
 
         yield 'config-override' => [
             true,
             null,
             'authoritative',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         ];
 
         yield 'component-config-override' => [
             true,
             'hints',
             'authoritative',
-            'authoritative',
+            DataTypeSupport::AUTHORITATIVE,
         ];
 
         yield 'component-override-without-feature' => [
             false,
             'hints',
             null,
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'config-override-without-feature' => [
             false,
             null,
             'authoritative',
-            'none',
+            DataTypeSupport::NONE,
         ];
 
         yield 'component-config-override-without-feature' => [
             false,
             'hints',
             'authoritative',
-            'none',
+            DataTypeSupport::NONE,
         ];
     }
 
@@ -1664,7 +1647,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'columns' => ['id', 'name', 'price'],
             ]),
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1725,7 +1708,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);
@@ -1778,7 +1760,7 @@ class DataLoaderTest extends BaseDataLoaderTest
                 'columns' => ['id', 'name', 'price'],
             ]),
         );
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -1839,7 +1821,6 @@ class DataLoaderTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition($config, $component),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         self::assertNotNull($tableQueue);

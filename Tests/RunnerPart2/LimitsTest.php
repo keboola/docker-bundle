@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\RunnerPart2;
 
 use Generator;
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\Runner\Limits;
 use Keboola\DockerBundle\Exception\ApplicationException;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use PHPUnit\Framework\TestCase;
@@ -207,7 +207,7 @@ class LimitsTest extends TestCase
      */
     private function getImageMock($id = 'my-component')
     {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => $id,
             'data' => [
                 'definition' => [
@@ -234,7 +234,7 @@ class LimitsTest extends TestCase
         string $expectedMemoryLimit,
         string $expectedCpuLimit,
     ) {
-        $component = new Component([
+        $component = new ComponentSpecification([
             'id' => 'keboola.runner-config-test',
             'data' => [
                 'definition' => [

@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Docker\Runner\WorkingDirectory;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\StorageApi\ClientException;
 use Keboola\StorageApi\Metadata;
 use Keboola\StorageApi\Options\ListFilesOptions;
@@ -43,21 +42,29 @@ abstract class BaseDataLoaderTest extends TestCase
 
     protected function cleanup($suffix = ''): void
     {
-        try {
-            $this->clientWrapper->getBasicClient()->dropBucket(
-                'in.c-docker-demo-testConfig' . $suffix,
-                ['force' => true, 'async' => true],
-            );
-        } catch (ClientException $e) {
-            if ($e->getCode() !== 404) {
-                throw $e;
-            }
-        }
+        $this->dropBucket($this->clientWrapper, 'in.c-docker-demo-testConfig' . $suffix);
+        ;
+
         $files = $this->clientWrapper->getBasicClient()->listFiles(
             (new ListFilesOptions())->setTags(['docker-demo-test' . $suffix]),
         );
         foreach ($files as $file) {
             $this->clientWrapper->getBasicClient()->deleteFile($file['id']);
+        }
+    }
+
+    protected static function dropBucket(ClientWrapper $clientWrapper, string $bucketId): void
+    {
+        $storageApiClient = $clientWrapper->getBasicClient();
+
+        try {
+            $storageApiClient->dropBucket($bucketId, ['async' => true, 'force' => true]);
+        } catch (ClientException $e) {
+            if ($e->getCode() === 404) {
+                return;
+            }
+
+            throw $e;
         }
     }
 
@@ -77,14 +84,13 @@ abstract class BaseDataLoaderTest extends TestCase
             new NullLogger(),
             $this->workingDir->getDataDir(),
             $jobDefinition,
-            new OutputFilter(10000),
         );
     }
 
-    protected function getDefaultBucketComponent(): Component
+    protected function getDefaultBucketComponent(): ComponentSpecification
     {
         // use the docker-demo component for testing
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [
@@ -97,9 +103,9 @@ abstract class BaseDataLoaderTest extends TestCase
         ]);
     }
 
-    protected function getNoDefaultBucketComponent(): Component
+    protected function getNoDefaultBucketComponent(): ComponentSpecification
     {
-        return new Component([
+        return new ComponentSpecification([
             'id' => 'docker-demo',
             'data' => [
                 'definition' => [

@@ -25,6 +25,8 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
+use Keboola\JobQueue\JobConfiguration\Mapping\DataDirUploader;
 use Keboola\OAuthV2Api\Credentials;
 use Keboola\ObjectEncryptor\ObjectEncryptor;
 use Keboola\OutputMapping\Exception\InvalidOutputException;
@@ -230,17 +232,15 @@ class Runner
                 $this->loggersService->getLog(),
                 $workingDirectory->getDataDir(),
                 $jobDefinition,
-                $this->outputFilter,
             );
         } else {
-            $dataLoader = new NullDataLoader(
-                $this->clientWrapper,
-                $this->loggersService->getLog(),
-                $workingDirectory->getDataDir(),
-                $jobDefinition,
-                $this->outputFilter,
-            );
+            $dataLoader = new NullDataLoader();
         }
+
+        $dataDirUploader = new DataDirUploader(
+            $this->clientWrapper->getBranchClient(),
+            $this->outputFilter,
+        );
 
         $stateFile = new StateFile(
             $workingDirectory->getDataDir(),
@@ -298,6 +298,7 @@ class Runner
                 $component,
                 $usageFile,
                 $dataLoader,
+                $dataDirUploader,
                 $workingDirectory,
                 $stateFile,
                 $imageCreator,
@@ -441,37 +442,15 @@ class Runner
         }
     }
 
-    /**
-     * @param string $jobId
-     * @param string|null $configId
-     * @param string|null $rowId
-     * @param Component $component
-     * @param UsageFileInterface $usageFile
-     * @param DataLoaderInterface $dataLoader
-     * @param WorkingDirectory $workingDirectory
-     * @param StateFile $stateFile
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param OutputFilterInterface $outputFilter
-     * @param string $mode
-     * @param InputTableStateList $inputTableStateList
-     * @param InputFileStateList $inputFileStateList
-     * @param Output $output
-     * @param Artifacts $artifacts
-     * @param string|null $backendSize
-     * @param bool $storeState
-     * @return Output
-     * @throws ApplicationException
-     * @throws UserException
-     */
     private function runComponent(
         string $jobId,
         ?string $configId,
         ?string $configVersion,
         ?string $rowId,
-        Component $component,
+        ComponentSpecification $component,
         UsageFileInterface $usageFile,
         DataLoaderInterface $dataLoader,
+        DataDirUploader $dataDirUploader,
         WorkingDirectory $workingDirectory,
         StateFile $stateFile,
         ImageCreator $imageCreator,
@@ -486,7 +465,7 @@ class Runner
         bool $storeState,
         ?string $orchestrationId,
         JobScopedEncryptor $jobScopedEncryptor,
-    ) {
+    ): Output {
         // initialize
         $workingDirectory->createWorkingDir();
         $storageState = $dataLoader->loadInputData($inputTableStateList, $inputFileStateList);
@@ -505,6 +484,7 @@ class Runner
                 $stateFile,
                 $outputFilter,
                 $dataLoader,
+                $dataDirUploader,
                 $mode,
                 $output,
                 $artifacts,
@@ -517,9 +497,12 @@ class Runner
             $output->setDataLoader($dataLoader);
 
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive(
+                $dataDirUploader->uploadDataDir(
+                    $jobId,
+                    $component->getId(),
+                    $rowId,
+                    $workingDirectory->getDataDir(),
                     'stage_output',
-                    [self::MODE_DEBUG, $component->getId(), 'RowId:' . $rowId, 'JobId:' . $jobId],
                 );
             } else {
                 $tableQueue = $dataLoader->storeOutput();
@@ -547,32 +530,12 @@ class Runner
         }
     }
 
-    /**
-     * @param string $jobId
-     * @param string|null $configId
-     * @param string|null $rowId
-     * @param Component $component
-     * @param UsageFileInterface $usageFile
-     * @param WorkingDirectory $workingDirectory
-     * @param ImageCreator $imageCreator
-     * @param ConfigFile $configFile
-     * @param StateFile $stateFile
-     * @param OutputFilterInterface $outputFilter
-     * @param DataLoaderInterface $dataLoader
-     * @param string $mode
-     * @param Output $output
-     * @param Artifacts $artifacts
-     * @param string|null $backendSize
-     * @return void
-     * @throws ApplicationException
-     * @throws UserException
-     */
     private function runImages(
         string $jobId,
         ?string $configId,
         ?string $configVersion,
         ?string $rowId,
-        Component $component,
+        ComponentSpecification $component,
         UsageFileInterface $usageFile,
         WorkingDirectory $workingDirectory,
         ImageCreator $imageCreator,
@@ -580,6 +543,7 @@ class Runner
         StateFile $stateFile,
         OutputFilterInterface $outputFilter,
         DataLoaderInterface $dataLoader,
+        DataDirUploader $dataDirUploader,
         string $mode,
         Output $output,
         Artifacts $artifacts,
@@ -587,7 +551,7 @@ class Runner
         bool $storeState,
         ?string $orchestrationId,
         JobScopedEncryptor $jobScopedEncryptor,
-    ) {
+    ): void {
         $images = $imageCreator->prepareImages();
         $this->loggersService->setVerbosity($component->getLoggerVerbosity());
         $tokenInfo = $this->clientWrapper->getBranchClient()->verifyToken();
@@ -686,13 +650,12 @@ class Runner
                 $limits,
             );
             if ($mode === self::MODE_DEBUG) {
-                $dataLoader->storeDataArchive(
+                $dataDirUploader->uploadDataDir(
+                    $jobId,
+                    $component->getId(),
+                    $rowId,
+                    $workingDirectory->getDataDir(),
                     'stage_' . $priority,
-                    [
-                        self::MODE_DEBUG, $image->getSourceComponent()->getId(),
-                        'RowId:' . $rowId,
-                        'JobId:' . $jobId, $image->getImageId(),
-                    ],
                 );
             }
             try {

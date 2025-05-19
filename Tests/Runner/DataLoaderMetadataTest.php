@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Keboola\DockerBundle\Tests\Runner;
 
 use Keboola\DockerBundle\Docker\JobDefinition;
-use Keboola\DockerBundle\Docker\OutputFilter\OutputFilter;
 use Keboola\DockerBundle\Docker\Runner\DataLoader\DataLoader;
 use Keboola\DockerBundle\Tests\BaseDataLoaderTest;
 use Keboola\StorageApi\Client;
@@ -129,7 +128,6 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
             new NullLogger(),
             $this->workingDir->getDataDir(),
             new JobDefinition([], $this->getDefaultBucketComponent(), 'testConfig'),
-            new OutputFilter(10000),
         );
         $tableQueue = $dataLoader->storeOutput();
         $tableQueue->waitForAll();
@@ -212,6 +210,8 @@ class DataLoaderMetadataTest extends BaseDataLoaderTest
 
     public function testExecutorConfigMetadata(): void
     {
+        $this->dropBucket($this->clientWrapper, 'in.c-runner-test');
+
         $fs = new Filesystem();
         $fs->dumpFile(
             $this->workingDir->getDataDir() . '/out/tables/sliced.csv',

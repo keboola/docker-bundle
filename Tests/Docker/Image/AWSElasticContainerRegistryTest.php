@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Keboola\DockerBundle\Tests\Docker\Image;
 
-use Keboola\DockerBundle\Docker\Component;
 use Keboola\DockerBundle\Docker\Image\AWSElasticContainerRegistry;
 use Keboola\DockerBundle\Docker\ImageFactory;
 use Keboola\DockerBundle\Exception\ApplicationException;
@@ -12,6 +11,7 @@ use Keboola\DockerBundle\Exception\LoginFailedException;
 use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Tests\BaseImageTest;
 use Keboola\DockerBundle\Tests\Docker\ImageTest;
+use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Psr\Log\NullLogger;
@@ -24,7 +24,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
     {
         putenv('AWS_ACCESS_KEY_ID=');
         putenv('AWS_SECRET_ACCESS_KEY=');
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -45,7 +45,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
     {
         putenv('AWS_ACCESS_KEY_ID=' . getenv('AWS_ECR_ACCESS_KEY_ID') . '_invalid');
         putenv('AWS_SECRET_ACCESS_KEY=' . getenv('AWS_ECR_SECRET_ACCESS_KEY'));
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -73,7 +73,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testImageNotFound(): void
     {
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'id' => 'test',
             'data' => [
                 'definition' => [
@@ -106,7 +106,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
         $process->run();
         self::assertEquals(0, trim($process->getOutput()));
 
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -134,7 +134,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testGetAwsAccountId(): void
     {
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -152,7 +152,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testGetAwsAccountIdInvalid(): void
     {
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
@@ -172,7 +172,7 @@ class AWSElasticContainerRegistryTest extends BaseImageTest
 
     public function testLogger(): void
     {
-        $imageConfig = new Component([
+        $imageConfig = new ComponentSpecification([
             'data' => [
                 'definition' => [
                     'type' => 'aws-ecr',
