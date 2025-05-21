@@ -26,6 +26,7 @@ use Keboola\DockerBundle\Exception\UserException;
 use Keboola\DockerBundle\Service\LoggersService;
 use Keboola\InputMapping\State\InputFileStateList;
 use Keboola\InputMapping\State\InputTableStateList;
+use Keboola\JobQueue\JobConfiguration\Exception\InvalidDataException;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Component\ComponentSpecification;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\Configuration\Configuration as JobConfiguration;
 use Keboola\JobQueue\JobConfiguration\JobDefinition\State\State;
@@ -236,8 +237,12 @@ class Runner
         );
 
         if (($action === 'run') && ($component->getStagingStorage()['input'] !== 'none')) {
-            $jobConfiguration = JobConfiguration::fromArray($jobDefinition->getConfiguration());
-            $jobState = State::fromArray($jobDefinition->getState());
+            try {
+                $jobConfiguration = JobConfiguration::fromArray($jobDefinition->getConfiguration());
+                $jobState = State::fromArray($jobDefinition->getState());
+            } catch (InvalidDataException $e) {
+                throw new UserException('Failed to parse job configuration: ' . $e->getMessage(), $e);
+            }
 
             // setup staging workspace
             $workspaceProvider = new WorkspaceProvider(
