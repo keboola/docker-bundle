@@ -8,6 +8,7 @@ use Keboola\StagingProvider\Staging\File\LocalStaging;
 use Keboola\StagingProvider\Staging\StagingClass;
 use Keboola\StagingProvider\Staging\StagingProvider;
 use Keboola\StagingProvider\Staging\StagingType;
+use Keboola\StagingProvider\Staging\Workspace\WorkspaceStaging;
 use Keboola\StagingProvider\Workspace\WorkspaceProvider;
 use LogicException;
 use Psr\Log\LoggerInterface;
@@ -34,7 +35,8 @@ abstract class BaseDataLoaderFactory
         if ($stagingWorkspaceId === null) {
             $stagingWorkspace = null;
         } else {
-            $stagingWorkspace = $this->workspaceProvider->getExistingWorkspace($stagingWorkspaceId);
+            // we don't even need to "load" the workspace here as staging needs only its ID
+            $stagingWorkspace = new WorkspaceStaging($stagingWorkspaceId);
         }
 
         return new StagingProvider(
