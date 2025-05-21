@@ -47,15 +47,15 @@ class StagingWorkspaceFactory
                 $externallyManagedWorkspaceCredentials->id,
             ));
 
-            $workspace = $this->workspaceProvider->getExistingWorkspace($externallyManagedWorkspaceCredentials->id);
+            $workspace = $this->workspaceProvider->getExistingWorkspace(
+                $externallyManagedWorkspaceCredentials->id,
+                $externallyManagedWorkspaceCredentials->getCredentials(),
+            );
 
             return new StagingWorkspaceFacade(
                 $this->workspaceProvider,
                 $this->logger,
-                new WorkspaceWithCredentials(
-                    $workspace,
-                    WorkspaceCredentials::fromData($externallyManagedWorkspaceCredentials->getCredentials()),
-                ),
+                $workspace,
                 isReusable: true, // Externally managed workspaces are persistent
             );
         }
